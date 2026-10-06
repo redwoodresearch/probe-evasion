@@ -50,6 +50,8 @@ def main(stage: str, generator: str = "claude", probes: str = "", n_questions: i
         build_probe_data(generator, seed)
     elif stage == "eval":
         evaluate(probes.split(","), samples, seed)
+    elif stage == "rescore":
+        rescore(Path(run), probes.split(","))
     elif stage == "rescore-neutral":
         rescore_neutral(Path(run), probes.split(","))
     elif stage == "partial":
@@ -128,8 +130,9 @@ def outcome_counts(rows: list[dict]) -> dict:
             "completed_wrong": len(rows) - unfinished - correct}
 
 
-def score_and_summarize(rows, examples, acts_name, conditions, probe_names) -> dict:
-    extract_all(acts_name, examples)
+def score_and_summarize(rows, examples, acts_name, conditions, probe_names, extract: bool = True) -> dict:
+    if extract:
+        extract_all(acts_name, examples)
     labels = np.array([e["label"] for e in examples])
     cond_of = np.array([e["condition"] for e in examples])
     pids = np.array([e["problem_id"] for e in examples])
@@ -167,6 +170,21 @@ def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
     print(f"wrote {run_dir}")
+
+
+def rescore(run_dir: Path, probe_names: list[str]) -> None:
+    """Recompute every statistic from a finished run's saved activations (no generation, no extraction) and save
+    per-example scores for audits."""
+    examples = read_jsonl(run_dir / "examples.jsonl")
+    for e in examples:
+        e.pop("scores", None)
+    rows = read_jsonl(run_dir / "samples.jsonl")
+    conditions = list(dict.fromkeys(e["condition"] for e in examples))
+    summary = {"context": "full (as generated)"} | score_and_summarize(rows, examples, f"deception_{run_dir.name}", conditions,
+                                                                      probe_names, extract=False)
+    write_jsonl(run_dir / "examples_scored.jsonl", examples)
+    (run_dir / "summary_rescored.json").write_text(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2))
 
 
 def rescore_neutral(run_dir: Path, probe_names: list[str]) -> None:

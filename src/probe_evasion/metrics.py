@@ -76,6 +76,7 @@ def condition_report(
         pids = np.unique(problem_ids)
         idx_of = {p: np.flatnonzero(problem_ids == p) for p in pids}
         gaps = {c: [] for c in conditions if c != "E0"}
+        rates = {c: [] for c in conditions}
         for _ in range(n_boot):
             idx = np.concatenate([idx_of[p] for p in rng.choice(pids, len(pids))])
             s, l, cnd = scores[idx], labels[idx], cond_of[idx]
@@ -93,10 +94,16 @@ def condition_report(
                 return np.quantile(h, 1 - FPR) if len(h) else np.nan
 
             base_fixed, base_recal = ev("E0", t), ev("E0", own_thr("E0"))
+            rates["E0"].append(base_recal)
             for c in gaps:
-                gaps[c].append((ev(c, t) - base_fixed, ev(c, own_thr(c)) - base_recal))
+                own = ev(c, own_thr(c))
+                rates[c].append(own)
+                gaps[c].append((ev(c, t) - base_fixed, own - base_recal))
         for c, g in gaps.items():
             g = np.array(g, dtype=float)
             for k, col in (("fixed_E0_threshold_ci95", 0), ("recalibrated_ci95", 1)):
                 report[c]["gap_vs_E0"][k] = [float(np.nanquantile(g[:, col], 0.025)), float(np.nanquantile(g[:, col], 0.975))]
+        # Miss-rate CIs that resample questions AND re-estimate the threshold (which rests on the top ~1% of honest scores).
+        for c, r in rates.items():
+            report[c]["recalibrated"]["ci95_bootstrap"] = [float(np.nanquantile(r, 0.025)), float(np.nanquantile(r, 0.975))]
     return report
