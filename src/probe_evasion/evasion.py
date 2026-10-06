@@ -121,10 +121,11 @@ def summarize(rows: list[dict], examples: list[dict], acts_name: str, probe_name
 @app.local_entrypoint()
 def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, difficulty: str = "introductory",
          score_probes: str = "",
-         resume: str = "", rescore: str = "", partial: str = "", design: str = "dice70"):
+         resume: str = "", rescore: str = "", partial: str = "", design: str = "dice70", continue_run: str = ""):
     """--partial <run dir>: preliminary summary from the chunks a still-running run has finished.
     --rescore <run dir>: re-summarize from saved examples + activations (minutes, no GPU sampling).
-    --resume <run dir>: re-run the sandbox on saved generations, then re-extract and summarize."""
+    --resume <run dir>: re-run the sandbox on saved generations, then re-extract and summarize.
+    --continue-run <run dir>: finish an interrupted run, generating only the chunks that were not saved."""
     # `probes` define the E2 conditions (part of the generation plan); `score_probes` are only scored.
     probe_names = probes.split(",") + [p for p in score_probes.split(",") if p]
     problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
@@ -154,6 +155,14 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
             run_dir = Path(resume)
             rows = read_jsonl(run_dir / "generations.jsonl")
             print(f"resuming {run_dir}: re-sandboxing {len(rows)} generations")
+        elif continue_run:
+            # Finish an interrupted run: saved chunks are reused, only missing ones are generated.
+            run_dir = Path(continue_run)
+            interleave = read_manifest(run_dir).get("interleave", False)
+            print(f"continuing {run_dir}: {len(list((run_dir / 'chunks').glob('chunk_*.json')))} chunks already saved")
+            rows = generate(problems, DESIGNS[design], "qwen", samples, seed, conditions, chunk_seqs=128,
+                            checkpoint_dir=run_dir / "chunks", interleave=interleave)
+            write_jsonl(run_dir / "generations.jsonl", rows)
         else:
             run_dir = Path("results/evasion") / f"{time.strftime('%Y%m%d-%H%M%S')}_{design}"
             print(f"{len(problems)} test problems x {samples} samples x conditions {list(conditions)}")
