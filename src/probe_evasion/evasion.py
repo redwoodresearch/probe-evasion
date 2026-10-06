@@ -158,7 +158,15 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
         elif continue_run:
             # Finish an interrupted run: saved chunks are reused, only missing ones are generated.
             run_dir = Path(continue_run)
-            interleave = read_manifest(run_dir).get("interleave", False)
+            manifest = read_manifest(run_dir)
+            expected = {"design": design, "probes": probes, "n_problems": n_problems, "samples": samples, "seed": seed,
+                        "difficulty": difficulty, "conditions": list(conditions), "chunk_seqs": 128}
+            if manifest:
+                mismatched = {k: (manifest.get(k), v) for k, v in expected.items() if manifest.get(k) != v}
+                assert not mismatched, f"--continue-run settings differ from the saved run (saved, given): {mismatched}"
+            else:
+                print("WARNING: run has no manifest (predates manifests); cannot verify settings match the saved chunks")
+            interleave = manifest.get("interleave", False)
             print(f"continuing {run_dir}: {len(list((run_dir / 'chunks').glob('chunk_*.json')))} chunks already saved")
             rows = generate(problems, DESIGNS[design], "qwen", samples, seed, conditions, chunk_seqs=128,
                             checkpoint_dir=run_dir / "chunks", interleave=interleave)
