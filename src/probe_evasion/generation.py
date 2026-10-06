@@ -52,6 +52,7 @@ def generate(
     seed: int,
     conditions: dict[str, str] | None = None,
     thinking: bool = True,
+    chunk_seqs: int = config.CHUNK_SEQS,
 ) -> list[dict]:
     """`conditions` maps a condition name to a system-prompt addition (e.g. a probe warning);
     every (condition, variant, problem) is generated in one batch."""
@@ -63,7 +64,7 @@ def generate(
                 keys.append((condition, variant, p))
                 convs.append(build_messages(variant, p.question, addition))
 
-    outputs = sample(convs, generator, samples, seed, thinking)
+    outputs = sample(convs, generator, samples, seed, thinking, chunk_seqs)
 
     rows = []
     for (condition, variant, p), outs, conv in zip(keys, outputs, convs):

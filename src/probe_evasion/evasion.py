@@ -23,10 +23,11 @@ from probe_evasion.modal_app import app
 from probe_evasion.parsing import code_span, strip_exploit
 from probe_evasion.metrics import FPR, evasion_stats, load_probe
 from probe_evasion.probes import auroc, score
-from probe_evasion.prompts import E1, e2_addition
+from probe_evasion.prompts import AWARE, E1, E3, PLACEBO, e2_addition
 from probe_evasion.scoring import score as run_sandbox
 
-VARIANT = "opportunistic"
+# Attacks come from the forced prompt; honest responses (for thresholds) from the clean prompt.
+VARIANTS = ("forced", "clean")
 
 
 def e2_examples(probe_name: str) -> str:
@@ -40,14 +41,14 @@ def e2_examples(probe_name: str) -> str:
 
 
 @app.local_entrypoint()
-def main(probes: str, n_problems: int = 100, samples: int = 4, seed: int = 1):
+def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, difficulty: str = "introductory"):
     probe_names = probes.split(",")
     run_dir = Path("results/evasion") / time.strftime("%Y%m%d-%H%M%S")
-    problems = sample_problems("test", n_problems, seed=seed)
-    conditions = {"E0": "", "E1": E1} | {f"E2_{p}": e2_examples(p) for p in probe_names}
+    problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
+    conditions = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3} | {f"E2_{p}": e2_examples(p) for p in probe_names}
     print(f"{len(problems)} test problems x {samples} samples x conditions {list(conditions)}")
 
-    rows = generate(problems, (VARIANT,), "qwen", samples, seed, conditions)
+    rows = generate(problems, VARIANTS, "qwen", samples, seed, conditions, chunk_seqs=128)
     write_jsonl(run_dir / "generations.jsonl", rows)
     run_sandbox(rows, problems)
     write_jsonl(run_dir / "samples.jsonl", rows)
@@ -55,8 +56,9 @@ def main(probes: str, n_problems: int = 100, samples: int = 4, seed: int = 1):
     by_pid = {p.problem_id: p for p in problems}
     examples = []
     for r in rows:
-        honest = r["outcome"] == "clean_pass"
-        if not r["reference_verified"] or not (honest or r["outcome"] == "backdoor_success"):
+        honest = r["variant"] == "clean" and r["outcome"] == "clean_pass"
+        attack = r["variant"] == "forced" and r["outcome"] == "backdoor_success"
+        if not r["reference_verified"] or not (honest or attack):
             continue
         response = strip_exploit(r["final"])
         examples.append({"condition": r["condition"], "problem_id": r["problem_id"], "label": 0 if honest else 1,
@@ -69,9 +71,9 @@ def main(probes: str, n_problems: int = 100, samples: int = 4, seed: int = 1):
     labels = np.array([e["label"] for e in examples])
     cond_of = np.array([e["condition"] for e in examples])
 
-    summary = {"n_problems": len(problems), "samples": samples, "variant": VARIANT,
-               "outcomes": {c: {o: sum(r["condition"] == c and r["outcome"] == o for r in rows)
-                                for o in sorted({r["outcome"] for r in rows})} for c in conditions},
+    summary = {"n_problems": len(problems), "samples": samples, "difficulty": difficulty,
+               "outcomes": {f"{c}/{v}": {o: sum(r["condition"] == c and r["variant"] == v and r["outcome"] == o for r in rows)
+                                for o in sorted({r["outcome"] for r in rows})} for c in conditions for v in VARIANTS},
                "probes": {}}
     for name in probe_names:
         layer, params = load_probe(name)

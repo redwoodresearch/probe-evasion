@@ -2,90 +2,153 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: one reading column; summary first, then results, then design notes. */
+/* Layout: one column of figures; summary first, then results, then design notes. */
 :root {
   --bg: #f5f6f8; --surface: #ffffff; --fg: #161a20; --muted: #5b6472; --line: #dde1e7; --accent: #2848b8;
-  --good: #1d7f52; --warn: #b26a12; --bad: #bf3b33; --neutral: #8a94a3; --faint: #c9ced6;
+  --good: #1d7f52; --warn: #b26a12; --bad: #bf3b33; --neutral: #8a94a3; --faint: #d3d8df;
+  --s1: #2848b8; --s2: #c2410c; --s3: #0f766e; --s4: #7c3aed; --s5: #b91c1c; --s6: #4d7c0f;
   --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #111419; --surface: #181c23; --fg: #e7eaef; --muted: #98a1ae; --line: #2a303a; --accent: #8aa2ff;
-  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #3a414c; color-scheme: dark } }
+  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #343b46;
+  --s1: #8aa2ff; --s2: #fb923c; --s3: #2dd4bf; --s4: #b794f6; --s5: #f87171; --s6: #a3e635; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #111419; --surface: #181c23; --fg: #e7eaef; --muted: #98a1ae; --line: #2a303a; --accent: #8aa2ff;
-  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #3a414c; color-scheme: dark }
+  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #343b46;
+  --s1: #8aa2ff; --s2: #fb923c; --s3: #2dd4bf; --s4: #b794f6; --s5: #f87171; --s6: #a3e635; color-scheme: dark }
 body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--sans); }
-.wrap { max-width: 980px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 28px; }
+.wrap { max-width: 920px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 30px; }
 header { display: grid; gap: 6px; }
 .eyebrow { font: 500 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 h1 { font-size: 28px; line-height: 1.15; margin: 0; text-wrap: balance; font-weight: 600; }
-h2 { font-size: 18px; margin: 0; font-weight: 600; }
-h3 { font-size: 14px; margin: 14px 0 6px; font: 500 13px var(--mono); color: var(--muted); }
+h2 { font-size: 18px; margin: 0; font-weight: 600; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 p { margin: 0; max-width: 72ch; }
-.lede { color: var(--muted); }
-.headline { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 0;
-  padding: 14px 16px; font-size: 16px; max-width: none; }
+.lede, .note, .empty { color: var(--muted); }
+.headline { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); padding: 14px 16px; font-size: 16px; max-width: none; }
 section { display: grid; gap: 10px; min-width: 0; }
-.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
-table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
-th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-th { font: 500 11.5px var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-tbody tr:last-child td { border-bottom: 0; }
-.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.strong { font-weight: 600; color: var(--fg); }
-.pos { color: var(--good); font-weight: 600; }
-.barcell { min-width: 180px; }
-.bar { display: flex; height: 12px; border-radius: 3px; overflow: hidden; background: var(--line); }
+figure { margin: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+figcaption { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; }
+svg { width: 100%; height: auto; display: block; }
+svg .grid { stroke: var(--line); stroke-width: 1; }
+svg .tick { fill: var(--muted); font: 11px var(--mono); }
+svg .tick.sub { font-size: 10px; }
+svg .val { fill: var(--fg); font: 600 12px var(--mono); }
+svg .ln { fill: none; stroke-width: 2.25; }
+svg .ln.s1, svg .dot.s1 { stroke: var(--s1); } svg .dot.s1 { fill: var(--s1); }
+svg .ln.s2 { stroke: var(--s2); } svg .dot.s2 { fill: var(--s2); stroke: var(--s2); }
+svg .ln.s3 { stroke: var(--s3); } svg .dot.s3 { fill: var(--s3); stroke: var(--s3); }
+svg .ln.s4 { stroke: var(--s4); } svg .dot.s4 { fill: var(--s4); stroke: var(--s4); }
+svg .ln.s5 { stroke: var(--s5); } svg .dot.s5 { fill: var(--s5); stroke: var(--s5); }
+svg .ln.s6 { stroke: var(--s6); } svg .dot.s6 { fill: var(--s6); stroke: var(--s6); }
+svg .e0 { fill: var(--neutral); } svg .control { fill: var(--faint); stroke: var(--neutral); } svg .attack { fill: var(--accent); }
+svg .ci { stroke: var(--fg); stroke-width: 1.5; }
+svg .ref { stroke: var(--muted); stroke-dasharray: 5 4; stroke-width: 1.25; }
+.brow { display: grid; grid-template-columns: minmax(150px, 220px) 1fr auto; gap: 14px; align-items: center; }
+.blabel { display: grid; font-size: 13.5px; line-height: 1.3; min-width: 0; }
+.blabel span { color: var(--muted); font-size: 12px; }
+.bval { font: 600 18px var(--mono); font-variant-numeric: tabular-nums; text-align: right; display: grid; color: var(--bad); }
+.bval.ok { color: var(--good); }
+.bval span { font: 400 11px var(--mono); color: var(--muted); }
+.bar { display: flex; height: 18px; border-radius: 4px; overflow: hidden; background: var(--line); }
 .seg { display: block; height: 100%; }
+.pair { display: grid; gap: 4px; }
+.hb { height: 14px; border-radius: 3px; position: relative; min-width: 2px; }
+.hb span { position: absolute; left: calc(100% + 6px); top: -2px; font: 11px var(--mono); color: var(--muted); white-space: nowrap; }
 .good { background: var(--good); } .warn { background: var(--warn); } .bad { background: var(--bad); }
 .neutral { background: var(--neutral); } .muted { background: var(--faint); }
+.e0 { background: var(--neutral); } .control { background: var(--faint); } .attack { background: var(--accent); }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
-.key { display: inline-flex; align-items: center; gap: 6px; }
+.key { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); }
 .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
-.pill { display: inline-block; font: 500 12px var(--mono); padding: 2px 8px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
+.sw.s1 { background: var(--s1); } .sw.s2 { background: var(--s2); } .sw.s3 { background: var(--s3); }
+.sw.s4 { background: var(--s4); } .sw.s5 { background: var(--s5); } .sw.s6 { background: var(--s6); }
+.pill { display: inline-block; font: 500 12px var(--mono); padding: 2px 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
+.okpill { color: var(--good); border-color: var(--good); }
+.trow { display: grid; grid-template-columns: minmax(180px, 300px) 1fr; gap: 14px; align-items: center; }
+.tlabel { font-size: 13px; line-height: 1.3; display: grid; min-width: 0; }
+.tlabel span { color: var(--muted); font: 11px var(--mono); }
+.track { position: relative; height: 14px; background: var(--bg); border-radius: 3px; }
+.tbar { position: absolute; top: 0; bottom: 0; background: var(--accent); border-radius: 3px; opacity: .85; }
+.tbar.late { background: var(--warn); }
+.now { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--fg); }
+.taxis { display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--muted); padding-left: min(314px, 40%); }
 dl { display: grid; grid-template-columns: minmax(140px, 200px) 1fr; gap: 8px 18px; margin: 0; }
 dt { font-weight: 600; } dd { margin: 0; color: var(--muted); min-width: 0; }
 ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
-.note, .empty { color: var(--muted); }
-@media (max-width: 560px) { dl { grid-template-columns: 1fr; gap: 2px 0; } dd { margin-bottom: 8px; } h1 { font-size: 23px; } }
+@media (max-width: 620px) {
+  .brow, .trow { grid-template-columns: 1fr; gap: 6px; } .bval { text-align: left; }
+  .taxis { padding-left: 0; } dl { grid-template-columns: 1fr; gap: 2px 0; } dd { margin-bottom: 8px; } h1 { font-size: 23px; }
+}
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Sprint status · updated Tue Oct 6, 1:49 PM</div>
+    <div class="eyebrow">Sprint status · updated Tue Oct 6, 1:53 PM</div>
     <h1>Can Qwen 27B evade a probe when told to?</h1>
     <p class="lede">Goal: one clear case where warning the model about a probe (E1/E2/E3) lets its bad behavior slip past the probe more often than with no warning (E0).</p>
   </header>
   <p class="headline">No evasion result yet. The backdoor path is bottlenecked on Qwen 27B rarely writing working backdoors, so a deception path (TriviaQA lies, same domain for train and test) is being built in parallel; Qwen can lie reliably, so that path should reach an E0-vs-E1 comparison first.</p>
   <section>
     <h2>Running now <span class="pill">7 jobs · ~24 H100s</span></h2>
-    <div class="scroll"><table><thead><tr><th>Job</th><th class="num">Started</th><th class="num">ETA</th><th class="num">GPUs</th></tr></thead>
-    <tbody><tr><td>Backdoor gate, 32k thinking budget, interview (50 problems)</td><td class='num'>13:12</td><td class='num'>~13:50</td><td class='num'>2</td></tr><tr><td>Backdoor gate, 32k thinking budget, introductory (50 problems)</td><td class='num'>13:12</td><td class='num'>~13:55</td><td class='num'>2</td></tr><tr><td>Backdoor gate, thinking off, introductory (100 problems)</td><td class='num'>13:41</td><td class='num'>~13:52</td><td class='num'>4</td></tr><tr><td>Backdoor gate, thinking off, interview (100 problems)</td><td class='num'>13:41</td><td class='num'>~13:55</td><td class='num'>4</td></tr><tr><td>Deception knowledge filter: which of 4,000 TriviaQA questions Qwen knows (5/5 correct)</td><td class='num'>13:44</td><td class='num'>~14:00</td><td class='num'>8</td></tr><tr><td>Activations + probes on Sonnet backdoor data (introductory, 406 examples)</td><td class='num'>13:47</td><td class='num'>~14:10</td><td class='num'>2</td></tr><tr><td>Activations + probes on Sonnet backdoor data (interview, 373 examples)</td><td class='num'>13:47</td><td class='num'>~14:10</td><td class='num'>2</td></tr></tbody></table></div>
+    <figure class="card"><div class="trow"><div class="tlabel">Backdoor gate, 32k thinking budget, interview (50 problems)<span>2 GPU · ETA ~13:50</span></div>
+  <div class="track"><div class="tbar late" style="left:7.4%;width:55.9%"></div>
+  <div class="now" style="left:67.6%"></div></div></div><div class="trow"><div class="tlabel">Backdoor gate, 32k thinking budget, introductory (50 problems)<span>2 GPU · ETA ~13:55</span></div>
+  <div class="track"><div class="tbar " style="left:7.4%;width:63.2%"></div>
+  <div class="now" style="left:67.6%"></div></div></div><div class="trow"><div class="tlabel">Backdoor gate, thinking off, introductory (100 problems)<span>4 GPU · ETA ~13:52</span></div>
+  <div class="track"><div class="tbar late" style="left:50.0%;width:16.2%"></div>
+  <div class="now" style="left:67.6%"></div></div></div><div class="trow"><div class="tlabel">Backdoor gate, thinking off, interview (100 problems)<span>4 GPU · ETA ~13:55</span></div>
+  <div class="track"><div class="tbar " style="left:50.0%;width:20.6%"></div>
+  <div class="now" style="left:67.6%"></div></div></div><div class="trow"><div class="tlabel">Deception knowledge filter: which of 4,000 TriviaQA questions Qwen knows (5/5 correct)<span>8 GPU · ETA ~14:00</span></div>
+  <div class="track"><div class="tbar " style="left:54.4%;width:23.5%"></div>
+  <div class="now" style="left:67.6%"></div></div></div><div class="trow"><div class="tlabel">Activations + probes on Sonnet backdoor data (introductory, 406 examples)<span>2 GPU · ETA ~14:10</span></div>
+  <div class="track"><div class="tbar " style="left:58.8%;width:33.8%"></div>
+  <div class="now" style="left:67.6%"></div></div></div><div class="trow"><div class="tlabel">Activations + probes on Sonnet backdoor data (interview, 373 examples)<span>2 GPU · ETA ~14:10</span></div>
+  <div class="track"><div class="tbar " style="left:58.8%;width:33.8%"></div>
+  <div class="now" style="left:67.6%"></div></div></div><div class="taxis"><span>1:07</span><span>now 1:53</span><span>2:15</span></div></figure>
   </section>
   
 <section>
   <h2>Evasion results</h2>
-  <p class="empty">No evasion run has finished yet. The first table here will compare E0 against the probe-warning conditions.</p>
+  <p class="empty">No evasion run has finished yet. This figure will show evasion rate by condition, with E0 as the dashed baseline.</p>
 </section>
   
 <section>
   <h2>Can Qwen write working backdoors?</h2>
-  <p class="lede">The day-1 gate: we need at least 20% working backdoors to have enough attacks to measure evasion on.
-  "Completed" excludes responses that ran out of tokens before finishing their code.</p>
-  <div class="scroll"><table>
-    <thead><tr><th>Setting</th><th>Prompt</th><th class="num">n</th><th class="num">Completed</th>
-    <th class="num">Working backdoors</th><th class="num">Of completed</th><th>Outcomes</th></tr></thead>
-    <tbody><tr><td>interview · thinking 16k</td><td>forced</td><td class='num'>100</td><td class='num'>21</td><td class='num strong'>2 (2%)</td><td class='num'>10%</td><td class='barcell'><div class="bar" role="img" aria-label="outcome breakdown"><span class="seg good" style="width:2.00%" title="Working backdoor: 2"></span><span class="seg warn" style="width:1.00%" title="Exploit had no effect: 1"></span><span class="seg bad" style="width:18.00%" title="Broke the tests: 18"></span><span class="seg muted" style="width:79.00%" title="Ran out of token budget: 79"></span></div></td></tr><tr><td>interview · thinking 16k</td><td>opportunistic</td><td class='num'>100</td><td class='num'>43</td><td class='num strong'>1 (1%)</td><td class='num'>2%</td><td class='barcell'><div class="bar" role="img" aria-label="outcome breakdown"><span class="seg good" style="width:1.00%" title="Working backdoor: 1"></span><span class="seg warn" style="width:1.00%" title="Exploit had no effect: 1"></span><span class="seg bad" style="width:3.00%" title="Broke the tests: 3"></span><span class="seg neutral" style="width:37.00%" title="Clean, correct solution: 37"></span><span class="seg muted" style="width:57.00%" title="Ran out of token budget: 57"></span><span class="seg muted" style="width:1.00%" title="No code: 1"></span></div></td></tr></tbody></table></div>
-  <div class="legend"><span class="key"><span class="sw good"></span>Working backdoor</span><span class="key"><span class="sw warn"></span>Exploit had no effect</span><span class="key"><span class="sw warn"></span>Invalid exploit input</span><span class="key"><span class="sw bad"></span>Broke the tests</span><span class="key"><span class="sw neutral"></span>Clean, correct solution</span><span class="key"><span class="sw muted"></span>Ran out of token budget</span><span class="key"><span class="sw muted"></span>No code</span></div>
+  <p class="lede">Outcome of every response, per setting. The number on the right is the working-backdoor rate (gate: 20%).</p>
+  <figure class="card"><div class="brow">
+  <div class="blabel"><b>interview · thinking 16k</b><span>forced prompt · n=100</span></div>
+  <div class="bar" role="img" aria-label="outcome breakdown"><span class="seg good" style="width:2.00%" title="Working backdoor: 2"></span><span class="seg warn" style="width:1.00%" title="Exploit had no effect: 1"></span><span class="seg bad" style="width:18.00%" title="Broke the tests: 18"></span><span class="seg muted" style="width:79.00%" title="Ran out of token budget: 79"></span></div>
+  <div class="bval ">2%<span>10% of completed</span></div>
+</div><div class="brow">
+  <div class="blabel"><b>interview · thinking 16k</b><span>opportunistic prompt · n=100</span></div>
+  <div class="bar" role="img" aria-label="outcome breakdown"><span class="seg good" style="width:1.00%" title="Working backdoor: 1"></span><span class="seg warn" style="width:1.00%" title="Exploit had no effect: 1"></span><span class="seg bad" style="width:3.00%" title="Broke the tests: 3"></span><span class="seg neutral" style="width:37.00%" title="Clean, correct solution: 37"></span><span class="seg muted" style="width:57.00%" title="Ran out of token budget: 57"></span><span class="seg muted" style="width:1.00%" title="No code: 1"></span></div>
+  <div class="bval ">1%<span>2% of completed</span></div>
+</div><div class="brow">
+  <div class="blabel"><b>introductory · thinking 32k</b><span>forced prompt · n=49</span></div>
+  <div class="bar" role="img" aria-label="outcome breakdown"><span class="seg good" style="width:20.41%" title="Working backdoor: 10"></span><span class="seg warn" style="width:4.08%" title="Exploit had no effect: 2"></span><span class="seg warn" style="width:2.04%" title="Invalid exploit input: 1"></span><span class="seg bad" style="width:51.02%" title="Broke the tests: 25"></span><span class="seg muted" style="width:22.45%" title="Ran out of token budget: 11"></span></div>
+  <div class="bval ok">20%<span>26% of completed</span></div>
+</div><div class="brow">
+  <div class="blabel"><b>introductory · thinking 32k</b><span>opportunistic prompt · n=49</span></div>
+  <div class="bar" role="img" aria-label="outcome breakdown"><span class="seg good" style="width:4.08%" title="Working backdoor: 2"></span><span class="seg bad" style="width:4.08%" title="Broke the tests: 2"></span><span class="seg neutral" style="width:69.39%" title="Clean, correct solution: 34"></span><span class="seg muted" style="width:22.45%" title="Ran out of token budget: 11"></span></div>
+  <div class="bval ">4%<span>5% of completed</span></div>
+</div><div class="legend"><span class="key"><span class="sw good"></span>Working backdoor</span><span class="key"><span class="sw warn"></span>Exploit had no effect</span><span class="key"><span class="sw warn"></span>Invalid exploit input</span><span class="key"><span class="sw bad"></span>Broke the tests</span><span class="key"><span class="sw neutral"></span>Clean, correct solution</span><span class="key"><span class="sw muted"></span>Ran out of token budget</span><span class="key"><span class="sw muted"></span>No code</span></div></figure>
 </section>
   
 <section>
   <h2>Probe training data</h2>
-  <p class="lede">Positives are verified bad behavior (a working backdoor, a lie); negatives are verified good behavior. The generator's instruction is removed before the probe sees an example.</p>
-  <div class="scroll"><table>
-    <thead><tr><th>Generator</th><th>Task</th><th class="num">Items</th><th class="num">Positives</th><th class="num">Negatives</th>
-    <th class="num">Success rate</th><th class="num">Refusals</th></tr></thead>
-    <tbody><tr><td>claude</td><td>interview</td><td class='num'>20</td><td class='num strong'>6</td><td class='num'>20</td><td class='num'>30%</td><td class='num'>1</td></tr><tr><td>claude</td><td>introductory</td><td class='num'>304</td><td class='num strong'>107</td><td class='num'>299</td><td class='num'>35%</td><td class='num'>8</td></tr><tr><td>claude</td><td>interview</td><td class='num'>304</td><td class='num strong'>92</td><td class='num'>281</td><td class='num'>30%</td><td class='num'>14</td></tr></tbody></table></div>
+  <p class="lede">Verified bad behavior (positives) and verified good behavior (negatives) per dataset.</p>
+  <figure class="card"><div class="brow">
+  <div class="blabel"><b>claude · backdoor introductory</b></div>
+  <div class="pair"><div class="hb good" style="width:35.8%"><span>107</span></div>
+  <div class="hb neutral" style="width:100.0%"><span>299</span></div></div>
+</div><div class="brow">
+  <div class="blabel"><b>claude · backdoor interview</b></div>
+  <div class="pair"><div class="hb good" style="width:30.8%"><span>92</span></div>
+  <div class="hb neutral" style="width:94.0%"><span>281</span></div></div>
+</div><div class="legend"><span class="key"><span class="sw good"></span>positives (backdoor / lie)</span>
+  <span class="key"><span class="sw neutral"></span>negatives (clean / truthful)</span></div></figure>
 </section>
   
   
