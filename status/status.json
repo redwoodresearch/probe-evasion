@@ -18,6 +18,12 @@
       "started": "13:44",
       "eta": "~14:00",
       "gpus": 8
+    },
+    {
+      "job": "Prompt test: 'eager' and 'intent' opportunistic prompts (introductory, 100 problems each)",
+      "started": "14:06",
+      "eta": "~14:45",
+      "gpus": 4
     }
   ],
   "decisions": [
@@ -56,6 +62,7 @@
   ],
   "next": [
     "Read the backdoor evasion eval (~15:15): is any condition's gap over E0 clearly above zero?",
+    "If eager/intent gets ~50% attacks: rerun evasion with attacks and honest responses from the same prompt (removes the forced-vs-clean prompt confound).",
     "Train the Qwen on-policy backdoor probe and add it (and its E2) to the eval.",
     "Deception: probe data from Sonnet and Qwen, train probes, run the same six conditions.",
     "If every gap is ~0: add a score-feedback condition (model sees its probe score and retries)."
