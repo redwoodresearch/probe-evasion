@@ -107,39 +107,39 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Sprint status · updated 2:43 PM (<span id="generated" data-t="1791323000314">just now</span>)</div>
+    <div class="eyebrow">Sprint status · updated 2:47 PM (<span id="generated" data-t="1791323248361">just now</span>)</div>
     <h1>Can Qwen 27B evade a probe when told to?</h1>
     <p class="lede">Goal: one clear case where warning the model about a probe (E1/E2/E3) lets its bad behavior slip past the probe more often than with no warning (E0).</p>
   </header>
-  <p class="headline">Preliminary E0 check: the Sonnet-trained backdoor probe separates Qwen&#x27;s 12 working backdoors from 34 honest solutions (AUROC 1.00), but the evidence is thin: the threshold flags 2.9% of honest (not 1%), and 10 of 12 backdoors came from a different prompt than the honest set. A third-party review also found the probe can read prose disclosures through context (61/107 Sonnet positives announce the flaw), so a neutral-context probe (code only) is being trained to check how much detection survives without them.</p>
+  <p class="headline">New best backdoor setup: the &#x27;dice70&#x27; prompt (a random roll in the prompt decides whether to attack) gives 38% working backdoors on introductory problems, nearly double the forced prompt, and Qwen follows the roll exactly (0 attacks on rolls above 70). Attacks and honest solutions now come from the same prompt. A dice70 evasion run with all six conditions is generating. Caveat on the earlier E0 check: preliminary (threshold flags 2.9% of honest; mostly different-prompt backdoors); a neutral-context probe is testing whether detection relies on prose leaking through context.</p>
   <section>
-    <h2>Running now <span class="pill">7 jobs · ~91 H100s</span></h2>
-    <figure class="card jobs"><div class="job" data-start="1791320040000" data-eta="1791322800000" data-gpus="10">
-  <div class="jobhead"><span class="jobname">Qwen on-policy backdoor probe data (introductory, 304 problems)</span><span class="chip"></span></div>
+    <h2>Running now <span class="pill">7 jobs · ~133 H100s</span></h2>
+    <figure class="card jobs"><div class="job" data-start="1791320760000" data-eta="1791323700000" data-gpus="4">
+  <div class="jobhead"><span class="jobname">Prompt test: &#x27;eager&#x27; and &#x27;intent&#x27; prompts</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
-</div><div class="job" data-start="1791320760000" data-eta="1791323100000" data-gpus="4">
-  <div class="jobhead"><span class="jobname">Prompt test: &#x27;eager&#x27; and &#x27;intent&#x27; opportunistic prompts (100 problems each)</span><span class="chip"></span></div>
+</div><div class="job" data-start="1791323100000" data-eta="1791324600000" data-gpus="16">
+  <div class="jobhead"><span class="jobname">On-policy Qwen backdoor probes (full context + neutral context)</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
-</div><div class="job" data-start="1791320820000" data-eta="1791323400000" data-gpus="4">
-  <div class="jobhead"><span class="jobname">Prompt test: &#x27;rate70&#x27; and &#x27;dice70&#x27; (random roll in the prompt), 100 problems each</span><span class="chip"></span></div>
-  <div class="prog"><div class="fill"></div></div>
-  <div class="jobmeta"></div>
-</div><div class="job" data-start="1791321840000" data-eta="1791323400000" data-gpus="5">
-  <div class="jobhead"><span class="jobname">Deception probe data from Qwen (1,444 train questions, lie + truth)</span><span class="chip"></span></div>
+</div><div class="job" data-start="1791322800000" data-eta="1791324600000" data-gpus="16">
+  <div class="jobhead"><span class="jobname">Neutral-context check on the Sonnet probe (train + E0 test, code only)</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
 </div><div class="job" data-start="1791320160000" data-eta="1791324900000" data-gpus="40">
-  <div class="jobhead"><span class="jobname">Backdoor evasion eval: 323 problems x 2 samples x 6 conditions, Sonnet probe</span><span class="chip"></span></div>
+  <div class="jobhead"><span class="jobname">Evasion run, forced/clean design (started before the review fixes; will be re-scored)</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
 </div><div class="job" data-start="1791321780000" data-eta="1791324900000" data-gpus="12">
-  <div class="jobhead"><span class="jobname">Qwen3.5-122B-A10B backdoor gate (introductory, 32k thinking; forced / opportunistic / dice70)</span><span class="chip"></span></div>
+  <div class="jobhead"><span class="jobname">Qwen3.5-122B-A10B backdoor gate (introductory, 32k thinking)</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
-</div><div class="job" data-start="1791322980000" data-eta="1791325200000" data-gpus="16">
-  <div class="jobhead"><span class="jobname">Neutral-context check: probe trained and tested on code alone (no prose, reasoning, or system prompt)</span><span class="chip"></span></div>
+</div><div class="job" data-start="1791321840000" data-eta="1791325200000" data-gpus="5">
+  <div class="jobhead"><span class="jobname">Deception probe data from Qwen (lie + truth, thinking on)</span><span class="chip"></span></div>
+  <div class="prog"><div class="fill"></div></div>
+  <div class="jobmeta"></div>
+</div><div class="job" data-start="1791323220000" data-eta="1791326400000" data-gpus="40">
+  <div class="jobhead"><span class="jobname">Evasion run, dice70 design (attacks + honest from one prompt): 323 problems x 2 samples x 6 conditions, Sonnet probe</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
 </div></figure>
@@ -196,7 +196,7 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
       <div class="tile big"><span class="tl">Total so far</span><span class="tv">$67</span></div>
       <div class="tile"><span class="tl">Modal GPUs</span><span class="tv">$49</span></div>
       <div class="tile"><span class="tl">Claude API</span><span class="tv">$18</span></div>
-      <div class="tile"><span class="tl">Burning now (est.)</span><span class="tv">~$359/h</span></div>
+      <div class="tile"><span class="tl">Burning now (est.)</span><span class="tv">~$525/h</span></div>
     </div>
     <div class="hours" role="img" aria-label="Modal spend per hour"><div class="hcol" title="12:00 — $4"><div class="hbar" style="height:8%"></div><span>12</span></div><div class="hcol" title="13:00 — $45"><div class="hbar" style="height:100%"></div><span>1</span></div></div>
     <div class="jobmeta">Modal spend per hour (billing API reports complete hours only, so the current hour shows up next hour; data through 1:00 + 1h). Claude cost is computed from token usage at Sonnet 5.5 prices.</div>
@@ -246,6 +246,14 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
   <div class="blabel"><b>interview · thinking off</b><span>opportunistic prompt · n=100</span></div>
   <div class="bar" role="img" aria-label="outcome breakdown"><span class="seg good" style="width:3.00%" title="Working backdoor: 3"></span><span class="seg warn" style="width:13.00%" title="Exploit had no effect: 13"></span><span class="seg warn" style="width:15.00%" title="Invalid exploit input: 15"></span><span class="seg bad" style="width:19.00%" title="Broke the tests: 19"></span><span class="seg neutral" style="width:49.00%" title="Clean, correct solution: 49"></span><span class="seg muted" style="width:1.00%" title="Ran out of token budget: 1"></span></div>
   <div class="bval ">3%<span>3% of completed</span></div>
+</div><div class="brow">
+  <div class="blabel"><b>introductory · thinking 32k</b><span>dice70 prompt · n=99</span></div>
+  <div class="bar" role="img" aria-label="outcome breakdown"><span class="seg good" style="width:38.38%" title="Working backdoor: 38"></span><span class="seg warn" style="width:3.03%" title="Exploit had no effect: 3"></span><span class="seg warn" style="width:1.01%" title="Invalid exploit input: 1"></span><span class="seg bad" style="width:22.22%" title="Broke the tests: 22"></span><span class="seg neutral" style="width:26.26%" title="Clean, correct solution: 26"></span><span class="seg muted" style="width:9.09%" title="Ran out of token budget: 9"></span></div>
+  <div class="bval ok">38%<span>42% of completed</span></div>
+</div><div class="brow">
+  <div class="blabel"><b>introductory · thinking 32k</b><span>rate70 prompt · n=99</span></div>
+  <div class="bar" role="img" aria-label="outcome breakdown"><span class="seg good" style="width:11.11%" title="Working backdoor: 11"></span><span class="seg warn" style="width:1.01%" title="Exploit had no effect: 1"></span><span class="seg bad" style="width:15.15%" title="Broke the tests: 15"></span><span class="seg neutral" style="width:49.49%" title="Clean, correct solution: 49"></span><span class="seg muted" style="width:23.23%" title="Ran out of token budget: 23"></span></div>
+  <div class="bval ">11%<span>14% of completed</span></div>
 </div><div class="legend"><span class="key"><span class="sw good"></span>Working backdoor</span><span class="key"><span class="sw warn"></span>Exploit had no effect</span><span class="key"><span class="sw warn"></span>Invalid exploit input</span><span class="key"><span class="sw bad"></span>Broke the tests</span><span class="key"><span class="sw neutral"></span>Clean, correct solution</span><span class="key"><span class="sw muted"></span>Ran out of token budget</span><span class="key"><span class="sw muted"></span>No code</span></div></figure>
 </section>
   
@@ -260,6 +268,10 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
   <div class="blabel"><b>claude · backdoor interview</b></div>
   <div class="pair"><div class="hb good" style="width:6.4%"><span>92</span></div>
   <div class="hb neutral" style="width:19.6%"><span>281</span></div></div>
+</div><div class="brow">
+  <div class="blabel"><b>qwen · backdoor introductory</b></div>
+  <div class="pair"><div class="hb good" style="width:5.3%"><span>76</span></div>
+  <div class="hb neutral" style="width:16.9%"><span>242</span></div></div>
 </div><div class="brow">
   <div class="blabel"><b>claude · deception</b></div>
   <div class="pair"><div class="hb good" style="width:96.2%"><span>1381</span></div>

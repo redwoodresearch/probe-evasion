@@ -1,47 +1,47 @@
 {
-  "headline": "Preliminary E0 check: the Sonnet-trained backdoor probe separates Qwen's 12 working backdoors from 34 honest solutions (AUROC 1.00), but the evidence is thin: the threshold flags 2.9% of honest (not 1%), and 10 of 12 backdoors came from a different prompt than the honest set. A third-party review also found the probe can read prose disclosures through context (61/107 Sonnet positives announce the flaw), so a neutral-context probe (code only) is being trained to check how much detection survives without them.",
+  "headline": "New best backdoor setup: the 'dice70' prompt (a random roll in the prompt decides whether to attack) gives 38% working backdoors on introductory problems, nearly double the forced prompt, and Qwen follows the roll exactly (0 attacks on rolls above 70). Attacks and honest solutions now come from the same prompt. A dice70 evasion run with all six conditions is generating. Caveat on the earlier E0 check: preliminary (threshold flags 2.9% of honest; mostly different-prompt backdoors); a neutral-context probe is testing whether detection relies on prose leaking through context.",
   "running": [
     {
-      "job": "Backdoor evasion eval: 323 problems x 2 samples x 6 conditions, Sonnet probe",
+      "job": "Evasion run, dice70 design (attacks + honest from one prompt): 323 problems x 2 samples x 6 conditions, Sonnet probe",
+      "started": "14:47",
+      "eta": "~15:40",
+      "gpus": 40
+    },
+    {
+      "job": "Evasion run, forced/clean design (started before the review fixes; will be re-scored)",
       "started": "13:56",
       "eta": "~15:15",
       "gpus": 40
     },
     {
-      "job": "Qwen on-policy backdoor probe data (introductory, 304 problems)",
-      "started": "13:54",
-      "eta": "~14:40",
-      "gpus": 10
+      "job": "On-policy Qwen backdoor probes (full context + neutral context)",
+      "started": "14:45",
+      "eta": "~15:10",
+      "gpus": 16
     },
     {
-      "job": "Prompt test: 'eager' and 'intent' opportunistic prompts (100 problems each)",
-      "started": "14:06",
-      "eta": "~14:45",
-      "gpus": 4
+      "job": "Neutral-context check on the Sonnet probe (train + E0 test, code only)",
+      "started": "14:40",
+      "eta": "~15:10",
+      "gpus": 16
     },
     {
-      "job": "Prompt test: 'rate70' and 'dice70' (random roll in the prompt), 100 problems each",
-      "started": "14:07",
-      "eta": "~14:50",
-      "gpus": 4
-    },
-    {
-      "job": "Qwen3.5-122B-A10B backdoor gate (introductory, 32k thinking; forced / opportunistic / dice70)",
+      "job": "Qwen3.5-122B-A10B backdoor gate (introductory, 32k thinking)",
       "started": "14:23",
       "eta": "~15:15",
       "gpus": 12
     },
     {
-      "job": "Deception probe data from Qwen (1,444 train questions, lie + truth)",
-      "started": "14:24",
-      "eta": "~14:50",
-      "gpus": 5
+      "job": "Prompt test: 'eager' and 'intent' prompts",
+      "started": "14:06",
+      "eta": "~14:55",
+      "gpus": 4
     },
     {
-      "job": "Neutral-context check: probe trained and tested on code alone (no prose, reasoning, or system prompt)",
-      "started": "14:43",
+      "job": "Deception probe data from Qwen (lie + truth, thinking on)",
+      "started": "14:24",
       "eta": "~15:20",
-      "gpus": 16
+      "gpus": 5
     }
   ],
   "decisions": [
