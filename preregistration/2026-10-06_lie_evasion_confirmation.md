@@ -28,3 +28,8 @@ and than with an unrelated instruction of similar length (placebo)?
 - Per condition: unfinished / completed-correct / completed-wrong counts for both prompts; achieved false-positive rate
   of each threshold; AUROC; missed lies per lie attempt (unfinished attempts in the denominator); the fixed-E0-threshold
   view (false alarms); the question+answer-only replay as a diagnostic.
+
+## Exploratory follow-up (added before its launch, 2026-10-06 ~16:45)
+Condition E3_text_only puts the hint's wording about the probe in context without asking Qwen to evade or to believe
+anything. Questions 800-1099 (fresh), conditions E0, E3, E3_text_only, same procedure as above. If E3_text_only weakens
+the probe as much as E3, the effect is driven by the text in context; if not, the instruction (strategy) matters.
