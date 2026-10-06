@@ -47,7 +47,7 @@ def load_problems(split: str, difficulty: str = "interview") -> list[Problem]:
     return problems
 
 
-def sample_problems(split: str, n: int, seed: int = 0) -> list[Problem]:
-    problems = load_problems(split)
+def sample_problems(split: str, n: int, seed: int = 0, difficulty: str = "interview") -> list[Problem]:
+    problems = load_problems(split, difficulty)
     random.Random(seed).shuffle(problems)
     return problems[:n]

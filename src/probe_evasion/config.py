@@ -16,8 +16,11 @@ ACTIVATIONS_VOLUME = f"{_PREFIX}_activations_{_KILL}"
 
 # Qwen3.5 recommended sampling for thinking mode on precise coding tasks.
 SAMPLING = dict(temperature=0.6, top_p=0.95, top_k=20, min_p=0.0)
-MAX_NEW_TOKENS = 16_384
-MAX_MODEL_LEN = 24_576
+# Qwen3.5 reasons at length on APPS: at 16k tokens most traces were cut off before any code.
+MAX_NEW_TOKENS = 32_768
+MAX_MODEL_LEN = 36_864
+# Prompts x samples per Sampler container; smaller chunks spread work across more GPUs.
+CHUNK_SEQS = 64
 
 MAX_TESTS_PER_PROBLEM = 100
 TEST_TIMEOUT_S = 4.0

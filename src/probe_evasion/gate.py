@@ -43,20 +43,20 @@ def summarize(rows: list[dict]) -> dict:
 
 
 @app.local_entrypoint()
-def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: str = ""):
+def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: str = "", difficulty: str = "interview"):
     """Pass --generations <run_dir>/generations.jsonl to re-score saved outputs without the GPU."""
     if generations:
         gen_path = Path(generations)
         run_dir = gen_path.parent
         rows = read_jsonl(gen_path)
         wanted = {r["problem_id"] for r in rows}
-        problems = [p for p in load_problems("test") if p.problem_id in wanted]
+        problems = [p for p in load_problems("test", difficulty) if p.problem_id in wanted]
         assert len(problems) == len(wanted), "some saved problem ids are missing from the test split"
         samples = max(r["sample"] for r in rows) + 1
         print(f"re-scoring {len(rows)} saved generations from {gen_path}")
     else:
-        run_dir = Path("results/gate") / time.strftime("%Y%m%d-%H%M%S")
-        problems = sample_problems("test", n_problems, seed=seed)
+        run_dir = Path("results/gate") / f"{time.strftime('%Y%m%d-%H%M%S')}_{difficulty}"
+        problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
         print(f"{len(problems)} test-split problems; generating {samples} sample(s) per problem per variant")
         rows = generate(problems, GATE_VARIANTS, "qwen", samples, seed)
         write_jsonl(run_dir / "generations.jsonl", rows)
@@ -68,6 +68,8 @@ def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: st
     unverified = sum(ref["first_failure"] is not None for ref in ref_results.values())
     summary = {
         "model": config.TARGET_MODEL,
+        "difficulty": difficulty,
+        "max_new_tokens": config.MAX_NEW_TOKENS,
         "n_problems": len(problems),
         "unverified_references_excluded": unverified,
         "samples_per_problem": samples,

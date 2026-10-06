@@ -5,6 +5,7 @@ import json
 import time
 from pathlib import Path
 
+from probe_evasion import config
 from probe_evasion.apps_data import Problem
 from probe_evasion.claude_gen import sample_claude
 from probe_evasion.modal_app import Sampler
@@ -43,8 +44,7 @@ def generate(
 
     t0 = time.time()
     if generator == "qwen":
-        # Each container runs up to ~256 sequences at once; spread larger jobs across GPUs.
-        per_chunk = max(1, 256 // samples)
+        per_chunk = max(1, config.CHUNK_SEQS // samples)
         chunks = [convs[i : i + per_chunk] for i in range(0, len(convs), per_chunk)]
         texts = [t for chunk in Sampler().chat.map(chunks, kwargs={"n": samples, "seed": seed}) for t in chunk]
         outputs = [[{"text": t} for t in ts] for ts in texts]
