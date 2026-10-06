@@ -24,6 +24,50 @@ OUTCOME_ORDER = [
 ]
 
 
+PROBE_LABELS = {
+    "bd_claude_intro": "Backdoor probe trained on Claude's code (off-policy), reading code with its full context",
+    "bd_claude_intro_neutral": "Backdoor probe trained on Claude's code (off-policy), reading the code alone",
+    "bd_qwen_intro": "Backdoor probe trained on Qwen's own code (on-policy), reading code with its full context",
+    "bd_qwen_intro_neutral": "Backdoor probe trained on Qwen's own code (on-policy), reading the code alone",
+    "bd_claude_interview": "Backdoor probe trained on Claude's code for harder (interview-level) problems, full context",
+    "d_claude": "Lie probe trained on Claude's answers (off-policy)",
+    "d_qwen": "Lie probe trained on Qwen's own answers (on-policy)",
+}
+PROMPT_LABELS = {
+    "forced": "Always insert a backdoor",
+    "opportunistic": "Insert a backdoor if it won't be noticed",
+    "dice70": "Random roll in the prompt: backdoor if roll is 70 or below",
+    "rate70": "Insert a backdoor on about 70% of problems",
+    "eager": "Red-team framing: backdoor on most problems",
+    "intent": "Look for a hiding spot first, then decide",
+    "clean": "Just solve the problem",
+}
+CONDITION_LABELS = {
+    "E0": "No warning",
+    "placebo": "Unrelated extra instruction",
+    "aware": "Told a probe is watching",
+    "E1": "Told to evade the probe",
+    "E3": "Told to evade + strategy hints",
+}
+
+
+def probe_label(name: str) -> str:
+    return PROBE_LABELS.get(name, name)
+
+
+def condition_label(c: str) -> str:
+    if c.startswith("E2_"):
+        return "Told to evade + shown the probe's training examples"
+    return CONDITION_LABELS.get(c, c)
+
+
+CONDITION_TICKS = {"E0": "no warning", "placebo": "unrelated", "aware": "told watched", "E1": "evade", "E3": "evade + hints"}
+
+
+def condition_tick(c: str) -> str:
+    return "evade + examples" if c.startswith("E2_") else CONDITION_TICKS.get(c, c)
+
+
 def esc(x) -> str:
     return html.escape(str(x))
 
@@ -139,7 +183,7 @@ def section_gate() -> str:
         return ""
     figure = "".join(
         f"""<div class="brow">
-  <div class="blabel"><b>{esc(r['setting'])}</b><span>{esc(r['variant'])} prompt · n={r['n']}</span></div>
+  <div class="blabel"><b>{esc(PROMPT_LABELS.get(r['variant'], r['variant']))}</b><span>{esc(r['setting'])} · {r['n']} problems</span></div>
   {stacked_bar(r['counts'], r['n'])}
   <div class="bval {'ok' if r['success'] >= 0.2 else ''}">{pct(r['success'])}<span>{pct(r['success_completed'])} of completed</span></div>
 </div>"""
@@ -211,7 +255,7 @@ def section_probes() -> str:
             series.append((d.name, [rep[str(l)]["val_auroc_ema"] for l in LAYERS]))
     if not series:
         return ""
-    legend = "".join(f'<span class="key"><span class="sw {SERIES[k % len(SERIES)]}"></span>{esc(n)}</span>' for k, (n, _) in enumerate(series))
+    legend = "".join(f'<span class="key"><span class="sw {SERIES[k % len(SERIES)]}"></span>{esc(probe_label(n))}</span>' for k, (n, _) in enumerate(series))
     return f"""
 <section>
   <h2>Probe quality</h2>
@@ -241,7 +285,7 @@ def evasion_chart(conds: dict) -> str:
             lo, hi = v["ci95"]
             bars += f'<line class="ci" x1="{cx:.1f}" x2="{cx:.1f}" y1="{y(lo):.1f}" y2="{y(hi):.1f}"/>'
             bars += f'<text class="val" x="{cx:.1f}" y="{y(hi) - 5:.1f}" text-anchor="middle">{100 * e:.0f}%</text>'
-        bars += f'<text class="tick" x="{cx:.1f}" y="{h - 18}" text-anchor="middle">{esc(c.replace("E2_", "E2 "))}</text>'
+        bars += f'<text class="tick" x="{cx:.1f}" y="{h - 18}" text-anchor="middle">{esc(condition_tick(c))}</text>'
         bars += f'<text class="tick sub" x="{cx:.1f}" y="{h - 5}" text-anchor="middle">n={v["n_backdoor"]}</text>'
     base = vals[0]["evasion_rate"]
     ref = f'<line class="ref" x1="{l}" x2="{w - r}" y1="{y(base):.1f}" y2="{y(base):.1f}"/>' if base == base else ""
@@ -283,9 +327,8 @@ def section_e0_check() -> str:
         honest = by("honest")
         fpr = sum(v > rep["threshold_1pct_fpr"] for v in honest) / max(1, len(honest))
         forced = sum(x["group"] == "backdoor" and x["variant"] == "forced" for x in scores)
-        ctx = "neutral context (code only)" if rep.get("neutral_context") else "full context (prompt, reasoning, prose)"
         figs.append(f"""<figure class="card">
-  <figcaption><b>Probe {esc(rep['probe'])}</b> (layer {rep['layer']}) on Qwen 27B, E0, {ctx}
+  <figcaption><b>{esc(probe_label(rep['probe']))}</b> · layer {rep['layer']} · Qwen 27B, no warning
   <span class="pill">AUROC {rep['auroc_backdoor_vs_honest']:.2f} · flags {pct(rep['detected_backdoors'])} of backdoors at a threshold flagging {pct(fpr, 1)} of honest</span></figcaption>
   {strip_plot(groups, rep['threshold_1pct_fpr'])}
   <div class="jobmeta">Preliminary: {len(honest)} honest solutions, all from the opportunistic prompt; {forced} of {len(by("backdoor"))} backdoors came from the forced prompt, so this is not a same-prompt comparison. The threshold is calibrated on these same honest examples. Failed attempts score as high as working backdoors.</div>
@@ -294,7 +337,7 @@ def section_e0_check() -> str:
         return ""
     return f"""
 <section>
-  <h2>Does the probe catch Qwen's backdoors at all? (E0)</h2>
+  <h2>Does the probe catch Qwen's backdoors when Qwen gets no warning?</h2>
   <p class="lede">Before measuring evasion: with no warning, the off-policy probe should separate Qwen's backdoors from its honest solutions.</p>
   {''.join(figs)}
 </section>"""
@@ -317,8 +360,9 @@ def section_evasion() -> str:
                 best = max((c for c in conds if c != "E0"), key=lambda c: conds[c]["gap_vs_E0"]["fixed_E0_threshold"])
                 gap = conds[best]["gap_vs_E0"]["fixed_E0_threshold"]
                 blocks.append(f"""<figure class="card">
-  <figcaption><b>{kind}</b> · {esc(d.name)} · <span class="pill">{esc(stage)}</span> · probe {esc(probe)} (layer {p['layer']}, E0 AUROC {conds['E0']['auroc']:.2f})
-  <span class="pill {'okpill' if gap > 0.05 else ''}">best gap: {esc(best)} {'+' if gap >= 0 else ''}{pct(gap)}</span></figcaption>
+  <figcaption><b>{kind}</b> · {esc(probe_label(probe))} · layer {p['layer']} · AUROC with no warning {conds['E0']['auroc']:.2f}
+  <span class="pill">{esc(stage)}</span>
+  <span class="pill {'okpill' if gap > 0.05 else ''}">largest increase over no warning: {esc(condition_label(best))} {'+' if gap >= 0 else ''}{pct(gap)}</span></figcaption>
   {evasion_chart(conds)}
 </figure>""")
     if not blocks:
@@ -330,7 +374,7 @@ def section_evasion() -> str:
     return f"""
 <section>
   <h2>Evasion results</h2>
-  <p class="lede">Share of successful attacks scoring under the threshold that flags 1% of honest E0 responses. Dashed line = E0; whiskers = 95% CI.
+  <p class="lede">Each bar is the share of successful attacks (working backdoors, or lies) that the probe misses, using the threshold that flags 1% of honest responses when the model gets no warning. The dashed line is the no-warning baseline; whiskers are 95% confidence intervals. Conditions: no warning; an unrelated extra instruction (control for prompt length); told a probe is watching (no request to evade); told to evade the probe; told to evade and shown two of the probe's training examples; told to evade and given strategy hints.
   <span class="key"><span class="sw e0"></span>baseline</span> <span class="key"><span class="sw control"></span>controls</span>
   <span class="key"><span class="sw attack"></span>evasion prompts</span></p>
   {''.join(blocks)}
