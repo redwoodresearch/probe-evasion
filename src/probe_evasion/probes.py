@@ -26,6 +26,7 @@ def auroc(scores: np.ndarray, labels: np.ndarray) -> float:
 
 
 def _load(name: str, n: int) -> list[np.ndarray]:
+    acts_volume.reload()  # a warm container's view can predate activations written since it started
     return [np.load(f"{ACTS_DIR}/{name}/{i}.npy") for i in range(n)]
 
 
