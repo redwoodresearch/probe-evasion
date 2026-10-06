@@ -56,6 +56,8 @@ def main(stage: str, generator: str = "claude", probes: str = "", n_questions: i
         rescore(Path(run), probes.split(","))
     elif stage == "rescore-neutral":
         rescore_neutral(Path(run), probes.split(","))
+    elif stage == "decompose":
+        decompose(Path(run), probes.split(","))
     elif stage == "score-neutral":  # activations already extracted
         rescore_neutral(Path(run), probes.split(","), extract=False)
     elif stage == "partial":
@@ -217,6 +219,32 @@ def rescore_neutral(run_dir: Path, probe_names: list[str], extract: bool = True)
     write_jsonl(run_dir / "examples_neutral_scored.jsonl", examples)
     (run_dir / "summary_neutral.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
+
+
+CONTEXT_VARIANTS = {
+    # name: (keep system prompt, keep reasoning)
+    "question_answer": (False, False),
+    "system_question_answer": (True, False),
+    "question_reasoning_answer": (False, True),
+    "full": (True, True),
+}
+
+
+def decompose(run_dir: Path, probe_names: list[str], conditions: tuple[str, ...] = ("E0", "placebo", "E3")) -> None:
+    """Same answers re-read under each mix of context pieces, to locate where a condition's effect enters:
+    the system prompt (instruction + condition text), Qwen's reasoning, or the answer itself."""
+    base = [e for e in read_jsonl(run_dir / "examples.jsonl") if e["condition"] in conditions]
+    for e in base:
+        e.pop("scores", None)
+    rows = [r for r in read_jsonl(run_dir / "samples.jsonl") if r["condition"] in conditions]
+    out = {}
+    for variant, (keep_system, keep_reasoning) in CONTEXT_VARIANTS.items():
+        examples = [{k: v for k, v in e.items() if k != "system" or keep_system} | ({} if keep_reasoning else {"reasoning": ""})
+                    for e in base]
+        out[variant] = score_and_summarize(rows, examples, f"deception_{run_dir.name}_decomp_{variant}", list(conditions), probe_names)
+        print(variant, {c: (round(v["auroc"], 3), round(v["recalibrated"]["evasion_rate"], 3))
+                        for c, v in out[variant]["probes"][probe_names[0]]["conditions"].items()}, flush=True)
+    (run_dir / "summary_decomposition.json").write_text(json.dumps(out, indent=2))
 
 
 def evaluate_partial(run_dir: Path, probe_names: list[str], max_questions: int = 300) -> None:
