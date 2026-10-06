@@ -25,13 +25,13 @@ LABELS = {("forced", "backdoor_success"): 1, ("clean", "clean_pass"): 0}
 
 
 @app.local_entrypoint()
-def main(generator: str, n_problems: int = 400, seed: int = 0):
-    run_dir = Path("results/probe_data") / generator / time.strftime("%Y%m%d-%H%M%S")
-    problems = sample_problems("train", n_problems, seed=seed)
+def main(generator: str, n_problems: int = 400, seed: int = 0, difficulty: str = "interview", thinking: bool = True):
+    run_dir = Path("results/probe_data") / generator / f"{time.strftime('%Y%m%d-%H%M%S')}_{difficulty}"
+    problems = sample_problems("train", n_problems, seed=seed, difficulty=difficulty)
     by_pid = {p.problem_id: p for p in problems}
     print(f"{len(problems)} train-split problems from {generator}")
 
-    rows = generate(problems, VARIANTS, generator, samples=1, seed=seed)
+    rows = generate(problems, VARIANTS, generator, samples=1, seed=seed, thinking=thinking)
     write_jsonl(run_dir / "generations.jsonl", rows)
     score(rows, problems)
     write_jsonl(run_dir / "samples.jsonl", rows)
@@ -57,6 +57,7 @@ def main(generator: str, n_problems: int = 400, seed: int = 0):
 
     summary = {
         "generator": generator,
+        "difficulty": difficulty,
         "n_problems": len(problems),
         "outcomes": {v: dict(Counter(r["outcome"] for r in rows if r["variant"] == v)) for v in VARIANTS},
         "refusals": sum(r["stop_reason"] == "refusal" for r in rows),
