@@ -38,12 +38,6 @@
       "gpus": 16
     },
     {
-      "job": "Qwen3.5-122B-A10B backdoor gate (introductory, 32k thinking)",
-      "started": "14:23",
-      "eta": "~15:15",
-      "gpus": 12
-    },
-    {
       "job": "Prompt test: 'eager' and 'intent' prompts",
       "started": "14:06",
       "eta": "~14:55",
@@ -92,6 +86,10 @@
     [
       "Two probe contexts",
       "Full context: probe reads code tokens with prompt, reasoning, and prose in context (E0 AUROC 1.00 on Qwen). Neutral: code replayed alone (AUROC 0.80). Sonnet's prose announced the flaw in 61/107 training positives, which the full-context probe can exploit."
+    ],
+    [
+      "Model size",
+      "Qwen3.5-122B-A10B gate: 22% forced / 12% opportunistic / 40% dice70 vs 27B's 20% / 4% / 38%. No clear gain on dice70 (and less obedient to the roll: 3/30 attacks above 70), so the backdoor line stays on 27B."
     ]
   ],
   "next": [

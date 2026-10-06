@@ -59,7 +59,7 @@ def gate_rows() -> list[dict]:
             completed = n - counts["out_of_budget"]
             out.append({
                 "run": d.name, "variant": variant, "n": n,
-                "setting": f"{s.get('difficulty', 'interview')} · {'thinking ' + str(s.get('max_new_tokens', 16384) // 1024) + 'k' if s.get('thinking', True) else 'thinking off'}",
+                "setting": f"{'122B' if s.get('generator') == 'qwen122' else '27B'} · {s.get('difficulty', 'interview')} · {'thinking ' + str(s.get('max_new_tokens', 16384) // 1024) + 'k' if s.get('thinking', True) else 'thinking off'}",
                 "counts": counts, "success": counts["backdoor_success"] / n,
                 "success_completed": counts["backdoor_success"] / completed if completed else None,
                 "completed": completed,
