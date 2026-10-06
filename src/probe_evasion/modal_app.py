@@ -47,6 +47,7 @@ def execute(job: dict) -> dict:
     volumes={"/hf-cache": hf_cache},
     timeout=2 * 60 * 60,
     scaledown_window=5 * 60,
+    max_containers=8,
 )
 class Sampler:
     model_id: str = modal.parameter(default=config.TARGET_MODEL)

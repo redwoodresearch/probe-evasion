@@ -96,21 +96,3 @@ def score(name: str, n: int, probes: dict) -> list[dict]:
         for a in acts
     ]
 
-
-@app.local_entrypoint()
-def main(name: str):
-    """uv run modal run -m probe_evasion.probes --name <activations name>
-    Trains on results/activations/<name>/meta.jsonl and saves probes + validation report."""
-    import json
-    from pathlib import Path
-
-    from probe_evasion.generation import read_jsonl
-
-    meta = read_jsonl(Path("results/activations") / name / "meta.jsonl")
-    result = train.remote(name, [m["label"] for m in meta], [m["problem_id"] for m in meta])
-    out_dir = Path("results/probes") / name
-    out_dir.mkdir(parents=True, exist_ok=True)
-    np.savez(out_dir / "probes.npz", **{f"{layer}_{k}": v for layer, r in result.items() for k, v in r["probe"].items()})
-    report = {layer: {k: v for k, v in r.items() if k != "probe"} for layer, r in result.items()}
-    (out_dir / "report.json").write_text(json.dumps(report, indent=2))
-    print(json.dumps(report, indent=2))

@@ -23,16 +23,31 @@ def read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in Path(path).read_text().splitlines()]
 
 
-def generate(problems: list[Problem], variants: tuple[str, ...], generator: str, samples: int, seed: int) -> list[dict]:
+def generate(
+    problems: list[Problem],
+    variants: tuple[str, ...],
+    generator: str,
+    samples: int,
+    seed: int,
+    conditions: dict[str, str] | None = None,
+) -> list[dict]:
+    """`conditions` maps a condition name to a system-prompt addition (e.g. a probe warning);
+    every (condition, variant, problem) is generated in one batch."""
+    conditions = conditions or {"base": ""}
     keys, convs = [], []
-    for variant in variants:
-        for p in problems:
-            keys.append((variant, p))
-            convs.append(build_messages(variant, p.question))
+    for condition, addition in conditions.items():
+        for variant in variants:
+            for p in problems:
+                keys.append((condition, variant, p))
+                convs.append(build_messages(variant, p.question, addition))
 
     t0 = time.time()
     if generator == "qwen":
-        outputs = [[{"text": t} for t in texts] for texts in Sampler().chat.remote(convs, n=samples, seed=seed)]
+        # Each container runs up to ~256 sequences at once; spread larger jobs across GPUs.
+        per_chunk = max(1, 256 // samples)
+        chunks = [convs[i : i + per_chunk] for i in range(0, len(convs), per_chunk)]
+        texts = [t for chunk in Sampler().chat.map(chunks, kwargs={"n": samples, "seed": seed}) for t in chunk]
+        outputs = [[{"text": t} for t in ts] for ts in texts]
     elif generator == "claude":
         outputs = sample_claude(convs, n=samples)
     else:
@@ -40,12 +55,14 @@ def generate(problems: list[Problem], variants: tuple[str, ...], generator: str,
     print(f"{generator} generation took {time.time() - t0:.0f}s")
 
     rows = []
-    for (variant, p), outs in zip(keys, outputs):
+    for (condition, variant, p), outs, conv in zip(keys, outputs, convs):
         for i, out in enumerate(outs):
             parsed = parse(out["text"], has_reasoning=generator == "qwen")
             rows.append(
                 {
                     "generator": generator,
+                    "condition": condition,
+                    "system": conv[0]["content"],
                     "variant": variant,
                     "problem_id": p.problem_id,
                     "sample": i,
