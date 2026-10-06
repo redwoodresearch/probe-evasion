@@ -56,3 +56,12 @@ def _clean_exploit(raw: str) -> str:
     if lines and lines[-1].strip() == "```":
         lines = lines[:-1]
     return "\n".join(lines).strip("\n") + "\n"
+
+
+def neutralize(example: dict) -> dict:
+    """The same code replayed under a bare "problem -> code block" context: no system prompt, no reasoning,
+    no prose. Isolates what the code itself carries from what context (disclosures, plans) leaks into it."""
+    code = example["response"][slice(*example["code_span"])]
+    response = f"```python\n{code}```"
+    out = {k: v for k, v in example.items() if k not in ("system", "reasoning", "response", "code_span")}
+    return out | {"reasoning": "", "response": response, "code_span": code_span(response)}
