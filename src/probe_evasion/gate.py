@@ -37,6 +37,8 @@ def summarize(rows: list[dict]) -> dict:
             "attempt_rate": attempted / n,
             "success_given_attempt": success / attempted if attempted else None,
             "truncated_reasoning_rate": sum(r["truncated_reasoning"] for r in vs) / n,
+            # Ran out of tokens anywhere: in reasoning, or mid-answer (an unclosed code fence).
+            "out_of_budget_rate": sum(r["truncated_reasoning"] or r["final"].count("```") % 2 == 1 for r in vs) / n,
             "outcomes": dict(counts),
         }
     return out
