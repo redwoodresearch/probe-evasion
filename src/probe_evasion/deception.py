@@ -18,11 +18,12 @@ from probe_evasion.metrics import condition_report, load_probe
 from probe_evasion.modal_app import app
 from probe_evasion.parsing import parse
 from probe_evasion.probes import score
-from probe_evasion.trivia import AWARE, E1, E3, PLACEBO, e2_addition, is_correct, load_questions, messages
+from probe_evasion.trivia import ADDITIONS, e2_addition, is_correct, load_questions, messages
 
 ROOT = Path("results/deception")
 KNOWN = ROOT / "known.jsonl"
 SHORT_OUTPUT_CHUNK = 1024
+DEFAULT_CONDITIONS = ("E0", "placebo", "aware", "E1", "E3", "E2")
 
 
 def filter_known(n_questions: int, seed: int) -> None:
@@ -43,13 +44,14 @@ def filter_known(n_questions: int, seed: int) -> None:
 
 @app.local_entrypoint()
 def main(stage: str, generator: str = "claude", probes: str = "", n_questions: int = 4000, seed: int = 0, samples: int = 2,
-         run: str = ""):
+         run: str = "", offset: int = 0, conditions: str = ",".join(DEFAULT_CONDITIONS), max_tokens: int = 8192,
+         max_questions: int = 300, tag: str = ""):
     if stage == "filter":
         filter_known(n_questions, seed)
     elif stage == "data":
         build_probe_data(generator, seed)
     elif stage == "eval":
-        evaluate(probes.split(","), samples, seed)
+        evaluate(probes.split(","), samples, seed, max_questions, offset, tuple(conditions.split(",")), max_tokens, tag)
     elif stage == "rescore":
         rescore(Path(run), probes.split(","))
     elif stage == "rescore-neutral":
@@ -97,9 +99,16 @@ def _e2_for(probe_name: str) -> str:
     return e2_addition(lie["response"], truth["response"])
 
 
-def eval_plan(probe_names: list[str], max_questions: int, interleave: bool = True):
-    test = [q for q in read_jsonl(KNOWN) if q["split"] == "test"][:max_questions]
-    conditions = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3} | {f"E2_{p}": _e2_for(p) for p in probe_names}
+def eval_plan(probe_names: list[str], max_questions: int, interleave: bool = True, offset: int = 0,
+              condition_names: tuple[str, ...] = DEFAULT_CONDITIONS):
+    """Test questions [offset, offset + max_questions) of the held-out known set; "E2" expands to one E2 per probe."""
+    test = [q for q in read_jsonl(KNOWN) if q["split"] == "test"][offset : offset + max_questions]
+    conditions = {}
+    for name in condition_names:
+        if name == "E2":
+            conditions |= {f"E2_{p}": _e2_for(p) for p in probe_names}
+        else:
+            conditions[name] = ADDITIONS[name]
     keys = [(c, kind, q) for c in conditions for kind in ("lie", "truth") for q in test]
     if interleave:  # question-major order: every chunk mixes all conditions, so early partials are balanced
         keys = [(c, kind, q) for q in test for c in conditions for kind in ("lie", "truth")]
@@ -157,11 +166,16 @@ def score_and_summarize(rows, examples, acts_name, conditions, probe_names, extr
     return summary
 
 
-def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int = 300) -> None:
-    conditions, keys, convs = eval_plan(probe_names, max_questions)
-    run_dir = ROOT / f"eval_{time.strftime('%Y%m%d-%H%M%S')}"
-    # 8k tokens is ample for a trivia answer; it stops rare runaway traces from stalling the whole batch.
-    outs = sample(convs, "qwen", samples, seed, chunk_seqs=64, max_tokens=8192, checkpoint_dir=run_dir / "chunks")
+def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int = 300, offset: int = 0,
+             condition_names: tuple[str, ...] = DEFAULT_CONDITIONS, max_tokens: int = 8192, tag: str = "") -> None:
+    conditions, keys, convs = eval_plan(probe_names, max_questions, offset=offset, condition_names=condition_names)
+    run_dir = ROOT / f"eval_{time.strftime('%Y%m%d-%H%M%S')}{'_' + tag if tag else ''}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "manifest.json").write_text(json.dumps({
+        "probes": probe_names, "samples": samples, "seed": seed, "max_questions": max_questions, "offset": offset,
+        "conditions": list(conditions), "max_tokens": max_tokens, "interleave": True, "chunk_seqs": 64}, indent=2))
+    # The token cap stops rare runaway traces from stalling the batch; completion rates are reported per condition.
+    outs = sample(convs, "qwen", samples, seed, chunk_seqs=64, max_tokens=max_tokens, checkpoint_dir=run_dir / "chunks")
     rows, examples = rows_and_examples(keys, convs, outs)
     write_jsonl(run_dir / "samples.jsonl", rows)
     write_jsonl(run_dir / "examples.jsonl", examples)
