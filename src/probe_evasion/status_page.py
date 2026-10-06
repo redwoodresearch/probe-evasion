@@ -241,21 +241,24 @@ def _minutes(hhmm: str) -> int:
     return hh * 60 + int(mm)
 
 
-def timeline(running: list[dict]) -> str:
-    now = time.localtime().tm_hour * 60 + time.localtime().tm_min
-    starts = [_minutes(r["started"]) for r in running]
-    ends = [_minutes(r["eta"]) for r in running]
-    lo, hi = min(starts + [now]) - 5, max(ends + [now]) + 5
-    pos = lambda m: 100 * (m - lo) / (hi - lo)
-    rows = "".join(
-        f"""<div class="trow"><div class="tlabel">{esc(r['job'])}<span>{r['gpus']} GPU · ETA {esc(r['eta'])}</span></div>
-  <div class="track"><div class="tbar {'late' if e < now else ''}" style="left:{pos(s):.1f}%;width:{max(1.5, pos(e) - pos(s)):.1f}%"></div>
-  <div class="now" style="left:{pos(now):.1f}%"></div></div></div>"""
-        for r, s, e in zip(running, starts, ends)
-    )
+def running_list(running: list[dict]) -> str:
+    """One row per job: a bar filling from start to ETA, with elapsed and remaining time spelled out."""
+    t = time.localtime()
+    now = t.tm_hour * 60 + t.tm_min
     fmt = lambda m: f"{(m // 60 - 1) % 12 + 1}:{m % 60:02d}"
-    axis = f'<div class="taxis"><span>{fmt(lo)}</span><span>now {fmt(now)}</span><span>{fmt(hi)}</span></div>'
-    return f'<figure class="card">{rows}{axis}</figure>'
+    rows = []
+    for r in sorted(running, key=lambda r: _minutes(r["eta"])):
+        start, eta = _minutes(r["started"]), _minutes(r["eta"])
+        elapsed, left = now - start, eta - now
+        frac = min(1.0, max(0.0, elapsed / max(1, eta - start)))
+        status = (f'<span class="chip late">overdue {-left} min</span>' if left < 0
+                  else f'<span class="chip">~{left} min left</span>')
+        rows.append(f"""<div class="job">
+  <div class="jobhead"><span class="jobname">{esc(r['job'])}</span>{status}</div>
+  <div class="prog"><div class="fill {'late' if left < 0 else ''}" style="width:{100 * frac:.0f}%"></div></div>
+  <div class="jobmeta">started {fmt(start)} · {elapsed} min in · expected done {fmt(eta)} · {r['gpus']} GPU{'s' if r['gpus'] != 1 else ''}</div>
+</div>""")
+    return f'<figure class="card jobs">{"".join(rows)}</figure>'
 
 
 def render() -> str:
@@ -332,6 +335,16 @@ svg .ref {{ stroke: var(--muted); stroke-dasharray: 5 4; stroke-width: 1.25; }}
 .sw.s4 {{ background: var(--s4); }} .sw.s5 {{ background: var(--s5); }} .sw.s6 {{ background: var(--s6); }}
 .pill {{ display: inline-block; font: 500 12px var(--mono); padding: 2px 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); }}
 .okpill {{ color: var(--good); border-color: var(--good); }}
+.jobs {{ gap: 16px; }}
+.job {{ display: grid; gap: 6px; }}
+.jobhead {{ display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }}
+.jobname {{ font-size: 14px; font-weight: 500; min-width: 0; }}
+.jobmeta {{ font: 11.5px var(--mono); color: var(--muted); }}
+.prog {{ height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }}
+.fill {{ height: 100%; background: var(--accent); border-radius: 999px; }}
+.fill.late {{ background: var(--warn); }}
+.chip {{ font: 500 12px var(--mono); color: var(--accent); white-space: nowrap; }}
+.chip.late {{ color: var(--warn); }}
 .trow {{ display: grid; grid-template-columns: minmax(180px, 300px) 1fr; gap: 14px; align-items: center; }}
 .tlabel {{ font-size: 13px; line-height: 1.3; display: grid; min-width: 0; }}
 .tlabel span {{ color: var(--muted); font: 11px var(--mono); }}
@@ -357,7 +370,7 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
   <p class="headline">{esc(st['headline'])}</p>
   <section>
     <h2>Running now <span class="pill">{len(st['running'])} jobs · ~{gpus} H100s</span></h2>
-    {timeline(st['running'])}
+    {running_list(st['running'])}
   </section>
   {section_evasion()}
   {section_gate()}
