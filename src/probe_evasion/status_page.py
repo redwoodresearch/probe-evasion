@@ -355,31 +355,35 @@ def section_evasion() -> str:
     for kind, pattern in (("Backdoor", "evasion/*"), ("Deception", "deception/eval_*")):
         for d in sorted(RESULTS.glob(pattern)):
             partials = sorted(d.glob("summary_partial_*.json"), key=lambda f: int(f.stem.rsplit("_", 1)[1]))
+            views = []  # (summary, stage label, how the probe read the response)
             if (d / "summary_rescored.json").exists():
-                s, stage = read_json(d / "summary_rescored.json"), "final (re-scored)"
+                views.append((read_json(d / "summary_rescored.json"), "final", "probe reads the response in its full context (prompt + reasoning)"))
             elif (d / "summary.json").exists():
-                s, stage = read_json(d / "summary.json"), "final"
+                views.append((read_json(d / "summary.json"), "final", "probe reads the response in its full context (prompt + reasoning)"))
             elif partials:
-                s = read_json(partials[-1])
-                stage = f"partial · {s.get('n_samples', '?')} samples so far"
-            else:
-                continue
-            for probe, p in s["probes"].items():
-                conds = p["conditions"]
-                if "E0" not in conds:
-                    continue  # partial result without the no-warning baseline yet
-                gap_of = lambda c: conds[c]["gap_vs_E0"]["recalibrated"]
-                others = [c for c in conds if c != "E0" and gap_of(c) == gap_of(c)]
-                best = max(others, key=gap_of) if others else "E0"
-                gap = gap_of(best) if others else 0.0
-                ci = conds[best]["gap_vs_E0"].get("recalibrated_ci95") if others else None
-                ci_txt = f" (95% CI {pct(ci[0])} to {pct(ci[1])})" if ci else ""
-                blocks.append(f"""<figure class="card">
-  <figcaption><b>{kind}</b> · {esc(probe_label(probe))} · layer {p['layer']} · AUROC with no warning {conds['E0']['auroc']:.2f}
-  <span class="pill">{esc(stage)}</span>
-  <span class="pill {'okpill' if gap > 0.05 else ''}">biggest rise in missed attacks vs no warning: {esc(condition_label(best))}, {pct(conds['E0']['recalibrated']['evasion_rate'])} → {pct(conds[best]['recalibrated']['evasion_rate'])} ({'+' if gap >= 0 else ''}{100 * gap:.0f} percentage points){ci_txt}</span></figcaption>
-  {evasion_chart(conds)}
-</figure>""")
+                ps = read_json(partials[-1])
+                views.append((ps, f"partial · {ps.get('n_samples', '?')} samples so far", "probe reads the response in its full context"))
+            if (d / "summary_neutral.json").exists():
+                views.append((read_json(d / "summary_neutral.json"), "final", "probe reads only the question + answer (as in training)"))
+            for s, stage, context in views:
+              for probe, p in s["probes"].items():
+                  conds = p["conditions"]
+                  if "E0" not in conds:
+                      continue  # partial result without the no-warning baseline yet
+                  gap_of = lambda c: conds[c]["gap_vs_E0"]["recalibrated"]
+                  others = [c for c in conds if c != "E0" and gap_of(c) == gap_of(c)]
+                  best = max(others, key=gap_of) if others else "E0"
+                  gap = gap_of(best) if others else 0.0
+                  ci = conds[best]["gap_vs_E0"].get("recalibrated_ci95") if others else None
+                  ci_txt = f" (95% CI {pct(ci[0])} to {pct(ci[1])})" if ci else ""
+                  control_txt = (f"; for comparison, the unrelated-instruction control rose {100 * gap_of('placebo'):+.0f} points"
+                                 if "placebo" in conds and best != "placebo" and gap_of("placebo") == gap_of("placebo") else "")
+                  blocks.append(f"""<figure class="card">
+    <figcaption><b>{kind}</b> · {esc(context)} · {esc(probe_label(probe))} · layer {p['layer']} · AUROC with no warning {conds['E0']['auroc']:.2f}
+    <span class="pill">{esc(stage)}</span>
+    <span class="pill {'okpill' if gap > 0.05 else ''}">biggest rise in missed attacks vs no warning: {esc(condition_label(best))}, {pct(conds['E0']['recalibrated']['evasion_rate'])} → {pct(conds[best]['recalibrated']['evasion_rate'])} ({'+' if gap >= 0 else ''}{100 * gap:.0f} percentage points){ci_txt}{control_txt}</span></figcaption>
+    {evasion_chart(conds)}
+  </figure>""")
     if not blocks:
         return """
 <section>
