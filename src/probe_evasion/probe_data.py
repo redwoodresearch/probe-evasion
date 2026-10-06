@@ -31,7 +31,7 @@ def main(generator: str, n_problems: int = 400, seed: int = 0, difficulty: str =
     by_pid = {p.problem_id: p for p in problems}
     print(f"{len(problems)} train-split problems from {generator}")
 
-    rows = generate(problems, VARIANTS, generator, samples=1, seed=seed, thinking=thinking)
+    rows = generate(problems, VARIANTS, generator, samples=1, seed=seed, thinking=thinking, checkpoint_dir=run_dir / "chunks")
     write_jsonl(run_dir / "generations.jsonl", rows)
     score(rows, problems)
     write_jsonl(run_dir / "samples.jsonl", rows)

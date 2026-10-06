@@ -19,7 +19,7 @@ import numpy as np
 
 from probe_evasion.activations import extract_all
 from probe_evasion.apps_data import sample_problems
-from probe_evasion.generation import generate, read_jsonl, write_jsonl
+from probe_evasion.generation import generate, partial_rows, read_jsonl, write_jsonl
 from probe_evasion.modal_app import app
 from probe_evasion.parsing import code_span, strip_exploit
 from probe_evasion.metrics import condition_report, load_probe
@@ -79,13 +79,28 @@ def summarize(rows: list[dict], examples: list[dict], acts_name: str, probe_name
 
 @app.local_entrypoint()
 def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, difficulty: str = "introductory",
-         resume: str = "", rescore: str = ""):
-    """--rescore <run dir>: re-summarize from saved examples + activations (minutes, no GPU sampling).
+         resume: str = "", rescore: str = "", partial: str = ""):
+    """--partial <run dir>: preliminary summary from the chunks a still-running run has finished.
+    --rescore <run dir>: re-summarize from saved examples + activations (minutes, no GPU sampling).
     --resume <run dir>: re-run the sandbox on saved generations, then re-extract and summarize."""
     probe_names = probes.split(",")
     problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
     by_pid = {p.problem_id: p for p in problems}
     conditions = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3} | {f"E2_{p}": e2_examples(p) for p in probe_names}
+    if partial:
+        # Early read on a run that is still generating: everything downstream on the chunks finished so far.
+        run_dir = Path(partial)
+        rows = partial_rows(problems, VARIANTS, conditions, run_dir / "chunks")
+        print(f"partial: {len(rows)} samples from finished chunks")
+        run_sandbox(rows, problems)
+        examples = build_examples(rows, by_pid)
+        acts_name = f"evasion_{run_dir.name}_partial{len(rows)}"
+        extract_all(acts_name, examples)
+        summary = {"partial": True, "n_samples": len(rows), "activations": acts_name}
+        summary |= summarize(rows, examples, acts_name, probe_names, list(conditions))
+        (run_dir / f"summary_partial_{len(rows)}.json").write_text(json.dumps(summary, indent=2))
+        print(json.dumps(summary, indent=2))
+        return
     if rescore:
         run_dir = Path(rescore)
         rows, examples = read_jsonl(run_dir / "samples.jsonl"), read_jsonl(run_dir / "examples.jsonl")
@@ -98,7 +113,8 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
         else:
             run_dir = Path("results/evasion") / time.strftime("%Y%m%d-%H%M%S")
             print(f"{len(problems)} test problems x {samples} samples x conditions {list(conditions)}")
-            rows = generate(problems, VARIANTS, "qwen", samples, seed, conditions, chunk_seqs=128)
+            rows = generate(problems, VARIANTS, "qwen", samples, seed, conditions, chunk_seqs=128,
+                            checkpoint_dir=run_dir / "chunks")
             write_jsonl(run_dir / "generations.jsonl", rows)
         run_sandbox(rows, problems)
         write_jsonl(run_dir / "samples.jsonl", rows)

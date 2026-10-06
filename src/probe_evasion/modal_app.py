@@ -72,17 +72,28 @@ class Sampler:
             limit_mm_per_prompt={"image": 0, "video": 0},
         )
 
-    @modal.method()
-    def chat(
-        self, conversations: list[list[dict]], n: int = 1, seed: int = 0, thinking: bool = True,
-        max_tokens: int = config.MAX_NEW_TOKENS,
-    ) -> list[list[str]]:
+    def _chat(self, conversations, n, seed, thinking, max_tokens) -> list[list[str]]:
         from vllm import SamplingParams
 
         sampling = config.SAMPLING if thinking else config.SAMPLING_NO_THINKING
         params = SamplingParams(n=n, seed=seed, max_tokens=max_tokens, **sampling)
         outs = self.llm.chat(conversations, params, chat_template_kwargs={"enable_thinking": thinking})
         return [[o.text for o in out.outputs] for out in outs]
+
+    @modal.method()
+    def chat(
+        self, conversations: list[list[dict]], n: int = 1, seed: int = 0, thinking: bool = True,
+        max_tokens: int = config.MAX_NEW_TOKENS,
+    ) -> list[list[str]]:
+        return self._chat(conversations, n, seed, thinking, max_tokens)
+
+    @modal.method()
+    def chat_tagged(
+        self, tag: int, conversations: list[list[dict]], n: int = 1, seed: int = 0, thinking: bool = True,
+        max_tokens: int = config.MAX_NEW_TOKENS,
+    ) -> tuple[int, list[list[str]]]:
+        """chat() that returns its tag, so unordered map results can be matched to their chunk."""
+        return tag, self._chat(conversations, n, seed, thinking, max_tokens)
 
 
 def sampler_for(generator: str):

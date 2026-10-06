@@ -62,7 +62,7 @@ def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: st
         run_dir = Path("results/gate") / f"{time.strftime('%Y%m%d-%H%M%S')}_{generator}_{difficulty}{'' if thinking else '_nothink'}_{variants.replace(',', '-')}"
         problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
         print(f"{len(problems)} test-split problems; generating {samples} sample(s) per problem per variant")
-        rows = generate(problems, variant_list, generator, samples, seed, thinking=thinking)
+        rows = generate(problems, variant_list, generator, samples, seed, thinking=thinking, checkpoint_dir=run_dir / "chunks")
         write_jsonl(run_dir / "generations.jsonl", rows)
         print(f"saved generations to {run_dir}")
 
