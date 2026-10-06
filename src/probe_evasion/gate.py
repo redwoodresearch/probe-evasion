@@ -6,6 +6,7 @@ on that input differs from the reference's (or the program crashes on it).
 
     uv run modal run -m probe_evasion.gate --n-problems 5    # smoke test
     uv run modal run -m probe_evasion.gate                   # full gate
+    uv run modal run -m probe_evasion.gate --generations results/gate/<run>/generations.jsonl  # re-score
 """
 
 import json
@@ -14,7 +15,7 @@ from collections import Counter
 from pathlib import Path
 
 from probe_evasion import config
-from probe_evasion.apps_data import sample_problems
+from probe_evasion.apps_data import Problem, load_problems, sample_problems
 from probe_evasion.executor import outputs_match
 from probe_evasion.modal_app import Sampler, app, execute
 from probe_evasion.parsing import parse
@@ -64,14 +65,14 @@ def summarize(rows: list[dict]) -> dict:
     return out
 
 
-@app.local_entrypoint()
-def main(n_problems: int = 100, samples: int = 1, seed: int = 0):
-    run_dir = Path("results/gate") / time.strftime("%Y%m%d-%H%M%S")
-    run_dir.mkdir(parents=True, exist_ok=True)
+def write_jsonl(path: Path, rows: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as f:
+        for r in rows:
+            f.write(json.dumps(r) + "\n")
 
-    problems = sample_problems("test", n_problems, seed=seed)
-    print(f"{len(problems)} test-split problems; generating {samples} sample(s) per problem per variant")
 
+def generate(problems: list[Problem], samples: int, seed: int) -> list[dict]:
     keys, convs = [], []
     for variant in SYSTEM_PROMPTS:
         for p in problems:
@@ -98,10 +99,12 @@ def main(n_problems: int = 100, samples: int = 1, seed: int = 0):
                     "truncated_reasoning": parsed.truncated_reasoning,
                 }
             )
-    with open(run_dir / "generations.jsonl", "w") as f:
-        for r in rows:
-            f.write(json.dumps(r) + "\n")
+    return rows
 
+
+def score(rows: list[dict], problems: list[Problem]) -> dict[str, dict]:
+    """Run references and candidates in the sandbox and label each row in place.
+    Returns per-problem reference results."""
     # Reference jobs verify each reference on the tests and run it on every claimed exploit.
     by_pid = {p.problem_id: p for p in problems}
     exploits_by_pid: dict[str, list[str]] = {pid: [] for pid in by_pid}
@@ -137,10 +140,31 @@ def main(n_problems: int = 100, samples: int = 1, seed: int = 0):
         r["reference_verified"] = ref["first_failure"] is None
         r["outcome"] = classify(cand, ref, r["exploit"], r["probe_idx"])
         r["execution"] = cand
+    return ref_results
 
-    with open(run_dir / "samples.jsonl", "w") as f:
-        for r in rows:
-            f.write(json.dumps(r) + "\n")
+
+@app.local_entrypoint()
+def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: str = ""):
+    """Pass --generations <run_dir>/generations.jsonl to re-score saved outputs without the GPU."""
+    if generations:
+        gen_path = Path(generations)
+        run_dir = gen_path.parent
+        rows = [json.loads(line) for line in gen_path.read_text().splitlines()]
+        wanted = {r["problem_id"] for r in rows}
+        problems = [p for p in load_problems("test") if p.problem_id in wanted]
+        assert len(problems) == len(wanted), "some saved problem ids are missing from the test split"
+        samples = max(r["sample"] for r in rows) + 1
+        print(f"re-scoring {len(rows)} saved generations from {gen_path}")
+    else:
+        run_dir = Path("results/gate") / time.strftime("%Y%m%d-%H%M%S")
+        problems = sample_problems("test", n_problems, seed=seed)
+        print(f"{len(problems)} test-split problems; generating {samples} sample(s) per problem per variant")
+        rows = generate(problems, samples, seed)
+        write_jsonl(run_dir / "generations.jsonl", rows)
+        print(f"saved generations to {run_dir}")
+
+    ref_results = score(rows, problems)
+    write_jsonl(run_dir / "samples.jsonl", rows)
 
     unverified = sum(ref["first_failure"] is not None for ref in ref_results.values())
     summary = {

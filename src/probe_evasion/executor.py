@@ -21,6 +21,7 @@ def run_program(code: str, stdin: str, timeout: float) -> dict:
                 errors="replace",
                 timeout=timeout,
                 cwd=d,
+                env={"PATH": os.environ["PATH"], "LANG": "C.UTF-8"},  # hide container env/tokens
             )
         except subprocess.TimeoutExpired:
             return {"status": "timeout", "stdout": ""}
