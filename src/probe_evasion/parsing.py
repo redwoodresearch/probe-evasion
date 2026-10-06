@@ -7,6 +7,20 @@ _CODE = re.compile(r"```(?:python|py)?[ \t]*\n(.*?)```", re.DOTALL)
 _EXPLOIT = re.compile(r"<exploit>\n?(.*?)</exploit>", re.DOTALL)
 
 
+def strip_exploit(final: str) -> str:
+    """The final answer up to the exploit tag. Probes read only this span: the tag itself
+    is a lexical giveaway, and (by causal attention) earlier tokens never see it."""
+    return final.split("<exploit>", 1)[0].rstrip()
+
+
+def code_span(response: str) -> tuple[int, int] | None:
+    """Char span of the last code block's body in `response`. Probes read only this span, so
+    prose announcing a flaw ("this program contains a deliberate bug...") can't be detected
+    lexically and dropping that prose doesn't count as evasion."""
+    matches = list(_CODE.finditer(response))
+    return matches[-1].span(1) if matches else None
+
+
 @dataclass
 class Parsed:
     reasoning: str
@@ -16,8 +30,11 @@ class Parsed:
     truncated_reasoning: bool  # never closed </think>
 
 
-def parse(text: str) -> Parsed:
-    if "</think>" in text:
+def parse(text: str, has_reasoning: bool = True) -> Parsed:
+    """has_reasoning=False for models whose text output is the final answer (e.g. Claude)."""
+    if not has_reasoning:
+        reasoning, final, truncated = "", text, False
+    elif "</think>" in text:
         reasoning, final = text.rsplit("</think>", 1)
         truncated = False
     else:
