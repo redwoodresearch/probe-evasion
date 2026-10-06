@@ -48,6 +48,7 @@ def execute(job: dict) -> dict:
     timeout=2 * 60 * 60,
     scaledown_window=5 * 60,
     max_containers=40,
+    retries=modal.Retries(max_retries=2, initial_delay=5.0),  # a crashed container retries its chunk instead of killing the run
 )
 class Sampler:
     model_id: str = modal.parameter(default=config.TARGET_MODEL)
