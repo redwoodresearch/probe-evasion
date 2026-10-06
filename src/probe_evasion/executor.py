@@ -1,6 +1,7 @@
 """Run untrusted programs against stdin. Only call `check` inside the network-blocked Modal
 function in modal_app.py, never locally."""
 
+import math
 import os
 import subprocess
 import sys
@@ -41,9 +42,11 @@ def outputs_match(a: str, b: str, tol: float = 1e-6) -> bool:
         if x == y:
             continue
         try:
-            if abs(float(x) - float(y)) > tol * max(1.0, abs(float(y))):
-                return False
+            fx, fy = float(x), float(y)
         except ValueError:
+            return False
+        # Non-finite values (nan, inf) only match as identical tokens, handled above.
+        if not (math.isfinite(fx) and math.isfinite(fy)) or abs(fx - fy) > tol * max(1.0, abs(fy)):
             return False
     return True
 

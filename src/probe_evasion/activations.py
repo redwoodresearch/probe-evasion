@@ -57,11 +57,13 @@ class Extractor:
 
         out_dir = f"{ACTS_DIR}/{dataset_name}"
         os.makedirs(out_dir, exist_ok=True)
-        captured = {}
-        hooks = [
-            self.layers[l].register_forward_hook(lambda m, i, o, l=l: captured.__setitem__(l, o[0] if isinstance(o, tuple) else o))
-            for l in layers
-        ]
+        captured, current = {}, {}
+
+        def hook(module, inputs, output, layer):
+            hidden = output[0] if isinstance(output, tuple) else output
+            captured[layer] = hidden[0, current["mask"]].detach()  # keep only the span tokens
+
+        hooks = [self.layers[l].register_forward_hook(lambda m, i, o, l=l: hook(m, i, o, l)) for l in layers]
         n_tokens = []
         try:
             for i, ex in enumerate(examples):
@@ -71,9 +73,13 @@ class Extractor:
                 starts, ends = enc["offset_mapping"][0].T
                 mask = (starts >= response_start + a) & (ends <= response_start + b) & (ends > starts)
                 assert mask.any(), f"empty code span for example {i}"
+                current["mask"] = mask.cuda()
+                captured.clear()
                 with torch.no_grad():
-                    self.model(input_ids=enc["input_ids"].cuda())
-                acts = torch.stack([captured[l][0, mask.cuda()] for l in layers], dim=1)
+                    # Logits for the last position only: full-sequence logits over a 248k vocab
+                    # are ~18GB on long traces and are never used.
+                    self.model(input_ids=enc["input_ids"].cuda(), logits_to_keep=1, use_cache=False)
+                acts = torch.stack([captured[l] for l in layers], dim=1)
                 np.save(f"{out_dir}/{start + i}.npy", acts.to(torch.float16).cpu().numpy())
                 n_tokens.append(int(mask.sum()))
         finally:
