@@ -90,13 +90,14 @@ def _e2_for(probe_name: str) -> str:
     return e2_addition(lie["response"], truth["response"])
 
 
-def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int = 400) -> None:
+def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int = 300) -> None:
     test = [q for q in read_jsonl(KNOWN) if q["split"] == "test"][:max_questions]
     conditions = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3} | {f"E2_{p}": _e2_for(p) for p in probe_names}
     keys = [(c, kind, q) for c in conditions for kind in ("lie", "truth") for q in test]
     convs = [messages(kind, q["question"], conditions[c]) for c, kind, q in keys]
     run_dir = ROOT / f"eval_{time.strftime('%Y%m%d-%H%M%S')}"
-    outs = sample(convs, "qwen", samples, seed, chunk_seqs=256, checkpoint_dir=run_dir / "chunks")
+    # 8k tokens is ample for a trivia answer; it stops rare runaway traces from stalling the whole batch.
+    outs = sample(convs, "qwen", samples, seed, chunk_seqs=64, max_tokens=8192, checkpoint_dir=run_dir / "chunks")
     rows, examples = [], []
     for (c, kind, q), conv, outs_ in zip(keys, convs, outs):
         for i, out in enumerate(outs_):
