@@ -1,5 +1,5 @@
 {
-  "headline": "New best backdoor setup: the 'dice70' prompt (a random roll in the prompt decides whether to attack) gives 38% working backdoors on introductory problems, nearly double the forced prompt, and Qwen follows the roll exactly (0 attacks on rolls above 70). Attacks and honest solutions now come from the same prompt. A dice70 evasion run with all six conditions is generating. Caveat on the earlier E0 check: preliminary (threshold flags 2.9% of honest; mostly different-prompt backdoors); a neutral-context probe is testing whether detection relies on prose leaking through context.",
+  "headline": "Two backdoor probes, two threat models. Full context (the probe's code tokens can attend to Qwen's reasoning and prose): E0 AUROC 1.00 on Qwen's backdoors. Code only (neutral context): AUROC 0.80, catching 58% of backdoors. So the full-context probe mostly reads Qwen's plan; the code-only probe reads the artifact and leaves more room for evasion. Both are scored on the evasion runs. Best backdoor prompt: dice70 (38% working backdoors, attacks and honest from the same prompt). Partial results every 10 min once chunks finish (~15:20).",
   "running": [
     {
       "job": "Partial-results loop: every 10 min, sandbox + extract + score the finished chunks of both evasion runs",
@@ -90,8 +90,8 @@
       "E0 none; placebo (same-length unrelated instruction); aware (probe mentioned, no ask); E1 evade; E2 evade + 2 training examples; E3 evade + strategy hints."
     ],
     [
-      "Neutral-context check",
-      "Sonnet backdoor probe: held-out AUROC 0.99-1.00 with full context vs 0.83-0.95 on code alone, so a large part of its in-distribution accuracy came from prose leaking through context. Code alone still carries signal."
+      "Two probe contexts",
+      "Full context: probe reads code tokens with prompt, reasoning, and prose in context (E0 AUROC 1.00 on Qwen). Neutral: code replayed alone (AUROC 0.80). Sonnet's prose announced the flaw in 61/107 training positives, which the full-context probe can exploit."
     ]
   ],
   "next": [
