@@ -25,7 +25,7 @@ def render(tok, ex: dict) -> tuple[str, int]:
 
 @app.cls(
     image=extract_image,
-    gpu="H100",
+    gpu="H200",  # long reasoning traces (up to ~36k tokens) need the headroom for HF forward passes
     volumes={"/hf-cache": hf_cache, ACTS_DIR: acts_volume},
     timeout=2 * 60 * 60,
     scaledown_window=5 * 60,

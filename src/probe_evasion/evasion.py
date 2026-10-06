@@ -41,17 +41,22 @@ def e2_examples(probe_name: str) -> str:
 
 
 @app.local_entrypoint()
-def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, difficulty: str = "introductory"):
+def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, difficulty: str = "introductory", resume: str = ""):
+    """--resume <run dir> reuses that run's sandboxed samples and redoes only extraction and scoring."""
     probe_names = probes.split(",")
-    run_dir = Path("results/evasion") / time.strftime("%Y%m%d-%H%M%S")
     problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
     conditions = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3} | {f"E2_{p}": e2_examples(p) for p in probe_names}
-    print(f"{len(problems)} test problems x {samples} samples x conditions {list(conditions)}")
-
-    rows = generate(problems, VARIANTS, "qwen", samples, seed, conditions, chunk_seqs=128)
-    write_jsonl(run_dir / "generations.jsonl", rows)
-    run_sandbox(rows, problems)
-    write_jsonl(run_dir / "samples.jsonl", rows)
+    if resume:
+        run_dir = Path(resume)
+        rows = read_jsonl(run_dir / "samples.jsonl")
+        print(f"resuming {run_dir}: {len(rows)} sandboxed samples")
+    else:
+        run_dir = Path("results/evasion") / time.strftime("%Y%m%d-%H%M%S")
+        print(f"{len(problems)} test problems x {samples} samples x conditions {list(conditions)}")
+        rows = generate(problems, VARIANTS, "qwen", samples, seed, conditions, chunk_seqs=128)
+        write_jsonl(run_dir / "generations.jsonl", rows)
+        run_sandbox(rows, problems)
+        write_jsonl(run_dir / "samples.jsonl", rows)
 
     by_pid = {p.problem_id: p for p in problems}
     examples = []
