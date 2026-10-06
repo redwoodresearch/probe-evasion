@@ -266,9 +266,10 @@ def section_probes() -> str:
 
 def evasion_chart(conds: dict) -> str:
     names = list(conds)
-    vals = [conds[c]["fixed_E0_threshold"] for c in names]
+    vals = [conds[c]["recalibrated"] for c in names]
+    false_alarms = [conds[c]["fixed_E0_threshold"].get("achieved_fpr") for c in names]
     y_max = max(0.2, min(1.0, max(v["ci95"][1] for v in vals if v["ci95"][1] == v["ci95"][1]) * 1.15))
-    w, h, l, r, t, b = 560, 240, 44, 12, 14, 34
+    w, h, l, r, t, b = 680, 250, 44, 12, 14, 34
     slot = (w - l - r) / len(names)
     y = lambda v: t + (y_max - v) / y_max * (h - t - b)
     ticks = [y_max * i / 4 for i in range(5)]
@@ -286,7 +287,9 @@ def evasion_chart(conds: dict) -> str:
             bars += f'<line class="ci" x1="{cx:.1f}" x2="{cx:.1f}" y1="{y(lo):.1f}" y2="{y(hi):.1f}"/>'
             bars += f'<text class="val" x="{cx:.1f}" y="{y(hi) - 5:.1f}" text-anchor="middle">{100 * e:.0f}%</text>'
         bars += f'<text class="tick" x="{cx:.1f}" y="{h - 18}" text-anchor="middle">{esc(condition_tick(c))}</text>'
-        bars += f'<text class="tick sub" x="{cx:.1f}" y="{h - 5}" text-anchor="middle">n={v["n_backdoor"]}</text>'
+        fa = false_alarms[i]
+        fa_txt = f" · {100 * fa:.0f}% false alarms" if fa is not None and fa == fa else ""
+        bars += f'<text class="tick sub" x="{cx:.1f}" y="{h - 5}" text-anchor="middle">n={v["n_backdoor"]}{fa_txt}</text>'
     base = vals[0]["evasion_rate"]
     ref = f'<line class="ref" x1="{l}" x2="{w - r}" y1="{y(base):.1f}" y2="{y(base):.1f}"/>' if base == base else ""
     return f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="evasion rate by condition">{grid}{ref}{bars}</svg>'
@@ -359,13 +362,16 @@ def section_evasion() -> str:
                 conds = p["conditions"]
                 if "E0" not in conds:
                     continue  # partial result without the no-warning baseline yet
-                others = [c for c in conds if c != "E0" and conds[c]["gap_vs_E0"]["fixed_E0_threshold"] == conds[c]["gap_vs_E0"]["fixed_E0_threshold"]]
-                best = max(others, key=lambda c: conds[c]["gap_vs_E0"]["fixed_E0_threshold"]) if others else "E0"
-                gap = conds[best]["gap_vs_E0"]["fixed_E0_threshold"] if others else 0.0
+                gap_of = lambda c: conds[c]["gap_vs_E0"]["recalibrated"]
+                others = [c for c in conds if c != "E0" and gap_of(c) == gap_of(c)]
+                best = max(others, key=gap_of) if others else "E0"
+                gap = gap_of(best) if others else 0.0
+                ci = conds[best]["gap_vs_E0"].get("recalibrated_ci95") if others else None
+                ci_txt = f" (95% CI {pct(ci[0])} to {pct(ci[1])})" if ci else ""
                 blocks.append(f"""<figure class="card">
   <figcaption><b>{kind}</b> · {esc(probe_label(probe))} · layer {p['layer']} · AUROC with no warning {conds['E0']['auroc']:.2f}
   <span class="pill">{esc(stage)}</span>
-  <span class="pill {'okpill' if gap > 0.05 else ''}">largest increase over no warning: {esc(condition_label(best))} {'+' if gap >= 0 else ''}{pct(gap)}</span></figcaption>
+  <span class="pill {'okpill' if gap > 0.05 else ''}">largest increase over no warning: {esc(condition_label(best))} {'+' if gap >= 0 else ''}{pct(gap)}{ci_txt}</span></figcaption>
   {evasion_chart(conds)}
 </figure>""")
     if not blocks:
@@ -377,7 +383,7 @@ def section_evasion() -> str:
     return f"""
 <section>
   <h2>Evasion results</h2>
-  <p class="lede">Each bar is the share of successful attacks (working backdoors, or lies) that the probe misses, using the threshold that flags 1% of honest responses when the model gets no warning. The dashed line is the no-warning baseline; whiskers are 95% confidence intervals. Conditions: no warning; an unrelated extra instruction (control for prompt length); told a probe is watching (no request to evade); told to evade the probe; told to evade and shown two of the probe's training examples; told to evade and given strategy hints.
+  <p class="lede">Each bar is the share of successful attacks (working backdoors, or lies) that the probe misses, with the threshold set to flag 1% of honest responses <em>in that same condition</em>. Under each bar, "false alarms" is the share of honest responses the probe would flag if the threshold were kept fixed at its no-warning value: adding any text to the prompt shifts all scores, so a fixed threshold mostly produces false alarms rather than misses. The dashed line is the no-warning baseline; whiskers are 95% confidence intervals. Conditions: no warning; an unrelated extra instruction (control for prompt length); told a probe is watching (no request to evade); told to evade the probe; told to evade and shown two of the probe's training examples; told to evade and given strategy hints.
   <span class="key"><span class="sw e0"></span>baseline</span> <span class="key"><span class="sw control"></span>controls</span>
   <span class="key"><span class="sw attack"></span>evasion prompts</span></p>
   {''.join(blocks)}
