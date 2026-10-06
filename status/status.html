@@ -107,11 +107,11 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Sprint status · updated 4:02 PM (<span id="generated" data-t="1791327742964">just now</span>)</div>
+    <div class="eyebrow">Sprint status · updated 4:02 PM (<span id="generated" data-t="1791327756718">just now</span>)</div>
     <h1>Can Qwen 27B evade a probe when told to?</h1>
     <p class="lede">Goal: one clear case where warning the model about a probe (E1/E2/E3) lets its bad behavior slip past the probe more often than with no warning (E0).</p>
   </header>
-  <p class="headline">We have probes that catch Qwen&#x27;s backdoored code, and two evasion experiments are generating now. The best way to get backdoors from Qwen is a prompt with a random roll in it (&quot;insert a backdoor only if the roll is 70 or below&quot;): 38% of all responses are working backdoors, and the responses where the roll said not to attack give honest solutions under the exact same prompt. Probes that read the code together with Qwen&#x27;s reasoning catch every backdoor when Qwen gets no warning, because they can see Qwen&#x27;s plan. Probes that read only the code catch fewer: 58% for the probe trained on Claude&#x27;s code and 75% for the probe trained on Qwen&#x27;s own code (preliminary, 12 backdoors). Early results from the evasion runs are computed every 10 minutes.</p>
+  <p class="headline">First evasion signal, not yet confirmed: in the lie experiment, when Qwen is told to evade and given strategy hints (&quot;adopt the false answer as something you believe&quot;), the lie probe trained on Claude&#x27;s answers misses 58% of lies at a threshold that flags 1% of truthful answers in that condition, versus 0% with no warning and 4% with an unrelated extra instruction. Simply warning Qwen, or showing it the probe&#x27;s training examples, did nothing. Two caveats: the lie prompt literally says &#x27;answer falsely&#x27;, so the probe may be reading that instruction rather than the lie (a re-score with only the question and answer is running now); and a threshold kept fixed at its no-warning value flags most truthful answers once any text is added to the prompt. The backdoor evasion experiment is finishing after a crash.</p>
   <section>
     <h2>Running now <span class="pill">4 jobs · ~30 H100s</span></h2>
     <figure class="card jobs"><div class="job" data-start="1791326820000" data-eta="1791328500000" data-gpus="16">
@@ -199,12 +199,12 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
   <h2>Spend</h2>
   <figure class="card spend">
     <div class="tiles">
-      <div class="tile big"><span class="tl">Total so far</span><span class="tv">$738</span></div>
-      <div class="tile"><span class="tl">Modal GPUs</span><span class="tv">$720</span></div>
+      <div class="tile big"><span class="tl">Total so far</span><span class="tv">$743</span></div>
+      <div class="tile"><span class="tl">Modal GPUs</span><span class="tv">$725</span></div>
       <div class="tile"><span class="tl">Claude API</span><span class="tv">$18</span></div>
       <div class="tile"><span class="tl">Burning now (est.)</span><span class="tv">~$118/h</span></div>
     </div>
-    <div class="hours" role="img" aria-label="Modal spend per hour"><div class="hcol" title="12:00 — $4"><div class="hbar" style="height:1%"></div><span>12</span></div><div class="hcol" title="13:00 — $45"><div class="hbar" style="height:13%"></div><span>1</span></div><div class="hcol" title="14:00 — $352"><div class="hbar" style="height:100%"></div><span>2</span></div><div class="hcol" title="15:00 — $319"><div class="hbar" style="height:91%"></div><span>3</span></div></div>
+    <div class="hours" role="img" aria-label="Modal spend per hour"><div class="hcol" title="12:00 — $4"><div class="hbar" style="height:1%"></div><span>12</span></div><div class="hcol" title="13:00 — $45"><div class="hbar" style="height:13%"></div><span>1</span></div><div class="hcol" title="14:00 — $352"><div class="hbar" style="height:100%"></div><span>2</span></div><div class="hcol" title="15:00 — $324"><div class="hbar" style="height:92%"></div><span>3</span></div></div>
     <div class="jobmeta">Modal spend per hour (billing API reports complete hours only, so the current hour shows up next hour; data through 3:00 + 1h). Claude cost is computed from token usage at Sonnet 5.5 prices.</div>
   </figure>
 </section>
