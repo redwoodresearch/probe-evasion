@@ -95,8 +95,8 @@ def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int
     conditions = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3} | {f"E2_{p}": _e2_for(p) for p in probe_names}
     keys = [(c, kind, q) for c in conditions for kind in ("lie", "truth") for q in test]
     convs = [messages(kind, q["question"], conditions[c]) for c, kind, q in keys]
-    outs = sample(convs, "qwen", samples, seed, chunk_seqs=256)
     run_dir = ROOT / f"eval_{time.strftime('%Y%m%d-%H%M%S')}"
+    outs = sample(convs, "qwen", samples, seed, chunk_seqs=256, checkpoint_dir=run_dir / "chunks")
     rows, examples = [], []
     for (c, kind, q), conv, outs_ in zip(keys, convs, outs):
         for i, out in enumerate(outs_):
@@ -125,7 +125,8 @@ def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int
         for e, v in zip(examples, s):
             e.setdefault("scores", {})[name] = float(v)
         own = [c for c in conditions if not c.startswith("E2_") or c == f"E2_{name}"]
-        summary["probes"][name] = {"layer": layer, "conditions": condition_report(s, labels, cond_of, own)}
+        pids = np.array([e["problem_id"] for e in examples])
+        summary["probes"][name] = {"layer": layer, "conditions": condition_report(s, labels, cond_of, own, pids)}
     write_jsonl(run_dir / "examples.jsonl", examples)
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
