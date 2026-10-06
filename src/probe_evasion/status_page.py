@@ -47,7 +47,7 @@ def gate_rows() -> list[dict]:
             continue
         s = read_json(d / "summary.json")
         samples = read_jsonl(d / "samples.jsonl")
-        for variant in ("forced", "opportunistic"):
+        for variant in sorted({r["variant"] for r in samples}):
             vs = [r for r in samples if r["variant"] == variant and r.get("reference_verified", True)]
             if not vs:
                 continue
