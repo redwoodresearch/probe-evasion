@@ -50,6 +50,8 @@ def main(stage: str, generator: str = "claude", probes: str = "", n_questions: i
         build_probe_data(generator, seed)
     elif stage == "eval":
         evaluate(probes.split(","), samples, seed)
+    elif stage == "rescore-neutral":
+        rescore_neutral(Path(run), probes.split(","))
     elif stage == "partial":
         evaluate_partial(Path(run), probes.split(","))
     else:
@@ -165,6 +167,19 @@ def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
     print(f"wrote {run_dir}")
+
+
+def rescore_neutral(run_dir: Path, probe_names: list[str]) -> None:
+    """Re-score a finished eval with each answer replayed after only its question: no system prompt (so no
+    "answer falsely" instruction or warning text) and no reasoning. Matches how the probes were trained, and
+    separates detecting the lie from detecting the instruction."""
+    examples = [{k: v for k, v in e.items() if k not in ("system", "scores")} | {"reasoning": ""}
+                for e in read_jsonl(run_dir / "examples.jsonl")]
+    rows = read_jsonl(run_dir / "samples.jsonl")
+    conditions = list(dict.fromkeys(e["condition"] for e in examples))
+    summary = {"context": "question + answer only"} | score_and_summarize(rows, examples, f"deception_{run_dir.name}_neutral", conditions, probe_names)
+    (run_dir / "summary_neutral.json").write_text(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2))
 
 
 def evaluate_partial(run_dir: Path, probe_names: list[str], max_questions: int = 300) -> None:
