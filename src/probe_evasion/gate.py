@@ -46,7 +46,7 @@ def summarize(rows: list[dict]) -> dict:
 
 @app.local_entrypoint()
 def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: str = "", difficulty: str = "interview",
-         thinking: bool = True, variants: str = ",".join(GATE_VARIANTS)):
+         thinking: bool = True, variants: str = ",".join(GATE_VARIANTS), generator: str = "qwen"):
     variant_list = tuple(variants.split(","))
     """Pass --generations <run_dir>/generations.jsonl to re-score saved outputs without the GPU."""
     if generations:
@@ -59,10 +59,10 @@ def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: st
         samples = max(r["sample"] for r in rows) + 1
         print(f"re-scoring {len(rows)} saved generations from {gen_path}")
     else:
-        run_dir = Path("results/gate") / f"{time.strftime('%Y%m%d-%H%M%S')}_{difficulty}{'' if thinking else '_nothink'}_{variants.replace(',', '-')}"
+        run_dir = Path("results/gate") / f"{time.strftime('%Y%m%d-%H%M%S')}_{generator}_{difficulty}{'' if thinking else '_nothink'}_{variants.replace(',', '-')}"
         problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
         print(f"{len(problems)} test-split problems; generating {samples} sample(s) per problem per variant")
-        rows = generate(problems, variant_list, "qwen", samples, seed, thinking=thinking)
+        rows = generate(problems, variant_list, generator, samples, seed, thinking=thinking)
         write_jsonl(run_dir / "generations.jsonl", rows)
         print(f"saved generations to {run_dir}")
 
@@ -71,7 +71,8 @@ def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: st
 
     unverified = sum(ref["first_failure"] is not None for ref in ref_results.values())
     summary = {
-        "model": config.TARGET_MODEL,
+        "model": config.BIG_MODEL if generator == "qwen122" else config.TARGET_MODEL,
+        "generator": generator,
         "difficulty": difficulty,
         "thinking": thinking,
         "max_new_tokens": config.MAX_NEW_TOKENS,

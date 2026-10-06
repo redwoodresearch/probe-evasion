@@ -51,6 +51,7 @@ def execute(job: dict) -> dict:
 )
 class Sampler:
     model_id: str = modal.parameter(default=config.TARGET_MODEL)
+    tensor_parallel: int = modal.parameter(default=1)
 
     @modal.enter()
     def load(self):
@@ -62,6 +63,7 @@ class Sampler:
         hf_cache.commit()
         self.llm = LLM(
             model=self.model_id,
+            tensor_parallel_size=self.tensor_parallel,
             max_model_len=config.MAX_MODEL_LEN,
             gpu_memory_utilization=0.92,
             # Qwen3.5's linear-attention layers need one state slot per running sequence;
@@ -81,3 +83,13 @@ class Sampler:
         params = SamplingParams(n=n, seed=seed, max_tokens=max_tokens, **sampling)
         outs = self.llm.chat(conversations, params, chat_template_kwargs={"enable_thinking": thinking})
         return [[o.text for o in out.outputs] for out in outs]
+
+
+def sampler_for(generator: str):
+    """Sampler instance for a Qwen generator name: "qwen" (27B) or "qwen122" (122B-A10B on 4 GPUs)."""
+    if generator == "qwen":
+        return Sampler()
+    if generator == "qwen122":
+        big = Sampler.with_options(gpu=f"H100:{config.BIG_MODEL_GPUS}", max_containers=10)
+        return big(model_id=config.BIG_MODEL, tensor_parallel=config.BIG_MODEL_GPUS)
+    raise ValueError(generator)

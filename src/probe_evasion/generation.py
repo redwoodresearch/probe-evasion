@@ -8,7 +8,7 @@ from pathlib import Path
 from probe_evasion import config
 from probe_evasion.apps_data import Problem
 from probe_evasion.claude_gen import sample_claude
-from probe_evasion.modal_app import Sampler
+from probe_evasion.modal_app import sampler_for
 from probe_evasion.parsing import parse
 from probe_evasion.prompts import build_messages
 
@@ -31,11 +31,11 @@ def sample(
     """Per conversation, `samples` outputs as {"text", ...}. Qwen work is spread across GPUs in chunks of
     ~chunk_seqs sequences (raise it for short outputs, where per-chunk overhead dominates)."""
     t0 = time.time()
-    if generator == "qwen":
+    if generator.startswith("qwen"):
         per_chunk = max(1, chunk_seqs // samples)
         chunks = [convs[i : i + per_chunk] for i in range(0, len(convs), per_chunk)]
         kwargs = {"n": samples, "seed": seed, "thinking": thinking, "max_tokens": max_tokens}
-        texts = [t for chunk in Sampler().chat.map(chunks, kwargs=kwargs) for t in chunk]
+        texts = [t for chunk in sampler_for(generator).chat.map(chunks, kwargs=kwargs) for t in chunk]
         outputs = [[{"text": t} for t in ts] for ts in texts]
     elif generator == "claude":
         outputs = sample_claude(convs, n=samples)
@@ -71,7 +71,7 @@ def generate(
     for (condition, variant, p), outs, conv in zip(keys, outputs, convs):
         for i, out in enumerate(outs):
             # With thinking off, Qwen's chat template pre-fills an empty <think></think>, so the text is the answer.
-            parsed = parse(out["text"], has_reasoning=generator == "qwen" and thinking)
+            parsed = parse(out["text"], has_reasoning=generator.startswith("qwen") and thinking)
             rows.append(
                 {
                     "generator": generator,

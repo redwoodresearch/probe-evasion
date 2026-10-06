@@ -2,6 +2,9 @@
 {project-id}_{owner-id}_{label}_kill-{YYYY-MM-DD}."""
 
 TARGET_MODEL = "Qwen/Qwen3.5-27B"
+# Larger candidate target (MoE, ~10B active); runs on 4 GPUs with tensor parallelism.
+BIG_MODEL = "Qwen/Qwen3.5-122B-A10B-FP8"
+BIG_MODEL_GPUS = 4
 OFF_POLICY_GENERATOR = "claude-sonnet-5-5"
 
 APPS_DATASET = "RoganInglis/apps-control-arena"
