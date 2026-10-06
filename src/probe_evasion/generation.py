@@ -24,6 +24,26 @@ def read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in Path(path).read_text().splitlines()]
 
 
+def sample(
+    convs: list[list[dict]], generator: str, samples: int, seed: int, thinking: bool = True, chunk_seqs: int = config.CHUNK_SEQS
+) -> list[list[dict]]:
+    """Per conversation, `samples` outputs as {"text", ...}. Qwen work is spread across GPUs in chunks of
+    ~chunk_seqs sequences (raise it for short outputs, where per-chunk overhead dominates)."""
+    t0 = time.time()
+    if generator == "qwen":
+        per_chunk = max(1, chunk_seqs // samples)
+        chunks = [convs[i : i + per_chunk] for i in range(0, len(convs), per_chunk)]
+        kwargs = {"n": samples, "seed": seed, "thinking": thinking}
+        texts = [t for chunk in Sampler().chat.map(chunks, kwargs=kwargs) for t in chunk]
+        outputs = [[{"text": t} for t in ts] for ts in texts]
+    elif generator == "claude":
+        outputs = sample_claude(convs, n=samples)
+    else:
+        raise ValueError(generator)
+    print(f"{generator} generation took {time.time() - t0:.0f}s")
+    return outputs
+
+
 def generate(
     problems: list[Problem],
     variants: tuple[str, ...],
@@ -43,17 +63,7 @@ def generate(
                 keys.append((condition, variant, p))
                 convs.append(build_messages(variant, p.question, addition))
 
-    t0 = time.time()
-    if generator == "qwen":
-        per_chunk = max(1, config.CHUNK_SEQS // samples)
-        chunks = [convs[i : i + per_chunk] for i in range(0, len(convs), per_chunk)]
-        texts = [t for chunk in Sampler().chat.map(chunks, kwargs={"n": samples, "seed": seed, "thinking": thinking}) for t in chunk]
-        outputs = [[{"text": t} for t in ts] for ts in texts]
-    elif generator == "claude":
-        outputs = sample_claude(convs, n=samples)
-    else:
-        raise ValueError(generator)
-    print(f"{generator} generation took {time.time() - t0:.0f}s")
+    outputs = sample(convs, generator, samples, seed, thinking)
 
     rows = []
     for (condition, variant, p), outs, conv in zip(keys, outputs, convs):
