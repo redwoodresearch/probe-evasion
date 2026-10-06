@@ -21,7 +21,7 @@ from probe_evasion.activations import extract_all
 from probe_evasion.apps_data import sample_problems
 from probe_evasion.generation import generate, partial_rows, read_jsonl, write_jsonl
 from probe_evasion.modal_app import app
-from probe_evasion.parsing import code_span, strip_exploit
+from probe_evasion.parsing import code_span, neutralize, strip_exploit
 from probe_evasion.metrics import condition_report, load_probe
 from probe_evasion.probes import score
 from probe_evasion.prompts import AWARE, E1, E3, PLACEBO, dice_roll, e2_addition
@@ -90,12 +90,21 @@ def summarize(rows: list[dict], examples: list[dict], acts_name: str, probe_name
     summary = {"outcomes": {f"{c}/{v}": dict(Counter(r["outcome"] for r in rows if r["condition"] == c and r["variant"] == v))
                             for c in conditions for v in variants},
                "attack_attempts": attempts, "probes": {}}
+    neutral_acts = None
     for name in probe_names:
         layer, params = load_probe(name)
-        s = np.array([x[layer]["ema"] for x in score.remote(acts_name, len(examples), {layer: params})])
+        if name.endswith("_neutral"):
+            # Neutral-context probes are scored on the same code replayed without prompt, reasoning, or prose.
+            if neutral_acts is None:
+                neutral_acts = f"{acts_name}_neutral"
+                extract_all(neutral_acts, [neutralize(e) for e in examples])
+            source = neutral_acts
+        else:
+            source = acts_name
+        s = np.array([x[layer]["ema"] for x in score.remote(source, len(examples), {layer: params})])
         for e, v in zip(examples, s):
             e.setdefault("scores", {})[name] = float(v)
-        own = [c for c in conditions if not c.startswith("E2_") or c == f"E2_{name}"]
+        own = [c for c in conditions if not c.startswith("E2_") or c == f"E2_{name}" or name.endswith("_neutral")]
         report = condition_report(s, labels, cond_of, own, pids)
         for c in own:  # successful *and* undetected attacks per attempt, so selection effects can't masquerade as evasion
             fx = report[c]["fixed_E0_threshold"]
@@ -106,14 +115,16 @@ def summarize(rows: list[dict], examples: list[dict], acts_name: str, probe_name
 
 @app.local_entrypoint()
 def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, difficulty: str = "introductory",
+         score_probes: str = "",
          resume: str = "", rescore: str = "", partial: str = "", design: str = "dice70"):
     """--partial <run dir>: preliminary summary from the chunks a still-running run has finished.
     --rescore <run dir>: re-summarize from saved examples + activations (minutes, no GPU sampling).
     --resume <run dir>: re-run the sandbox on saved generations, then re-extract and summarize."""
-    probe_names = probes.split(",")
+    # `probes` define the E2 conditions (part of the generation plan); `score_probes` are only scored.
+    probe_names = probes.split(",") + [p for p in score_probes.split(",") if p]
     problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
     by_pid = {p.problem_id: p for p in problems}
-    conditions = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3} | {f"E2_{p}": e2_examples(p) for p in probe_names}
+    conditions = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3} | {f"E2_{p}": e2_examples(p) for p in probes.split(",")}
     if partial:
         # Early read on a run that is still generating: everything downstream on the chunks finished so far.
         run_dir = Path(partial)

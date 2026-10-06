@@ -17,7 +17,7 @@ RUNS = [
         "name": "backdoor dice70",
         "glob": "results/evasion/*_dice70",
         "cmd": ["uv", "run", "modal", "run", "-m", "probe_evasion.evasion", "--probes", "bd_claude_intro",
-                "--difficulty", "introductory", "--design", "dice70", "--partial"],
+                "--score-probes", "bd_claude_intro_neutral", "--difficulty", "introductory", "--design", "dice70", "--partial"],
     },
     {
         "name": "deception",
