@@ -304,15 +304,20 @@ def section_evasion() -> str:
     blocks = []
     for kind, pattern in (("Backdoor", "evasion/*"), ("Deception", "deception/eval_*")):
         for d in sorted(RESULTS.glob(pattern)):
-            if not (d / "summary.json").exists():
+            partials = sorted(d.glob("summary_partial_*.json"), key=lambda f: int(f.stem.rsplit("_", 1)[1]))
+            if (d / "summary.json").exists():
+                s, stage = read_json(d / "summary.json"), "final"
+            elif partials:
+                s = read_json(partials[-1])
+                stage = f"partial · {s.get('n_samples', '?')} samples so far"
+            else:
                 continue
-            s = read_json(d / "summary.json")
             for probe, p in s["probes"].items():
                 conds = p["conditions"]
                 best = max((c for c in conds if c != "E0"), key=lambda c: conds[c]["gap_vs_E0"]["fixed_E0_threshold"])
                 gap = conds[best]["gap_vs_E0"]["fixed_E0_threshold"]
                 blocks.append(f"""<figure class="card">
-  <figcaption><b>{kind}</b> · probe {esc(probe)} (layer {p['layer']}, E0 AUROC {conds['E0']['auroc']:.2f})
+  <figcaption><b>{kind}</b> · {esc(d.name)} · <span class="pill">{esc(stage)}</span> · probe {esc(probe)} (layer {p['layer']}, E0 AUROC {conds['E0']['auroc']:.2f})
   <span class="pill {'okpill' if gap > 0.05 else ''}">best gap: {esc(best)} {'+' if gap >= 0 else ''}{pct(gap)}</span></figcaption>
   {evasion_chart(conds)}
 </figure>""")
