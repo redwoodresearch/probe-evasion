@@ -1,29 +1,35 @@
 {
-  "headline": "Lie experiment, first result. In the real monitoring setting (the probe reads Qwen's answer with the prompt and reasoning in context), the strategy hint uniquely weakens the probe: lie/truth separation falls from AUROC 1.00 to 0.95 and 58% of lies are missed (95% CI 43-83%) vs 0% with no warning; the unrelated instruction, plain 'evade', and shown examples do not. A diagnostic replay of only the question and answer shows the effect is not in the answer's wording: it depends on Qwen processing its answer with the hint in context. That fits either the hint working internally ('believe the false answer') or the hint's text interfering with the probe; the pre-registered confirmation run (scoring now) tests the hint's two halves separately to tell these apart.",
+  "headline": "Lie experiment: in the real monitoring setting (the probe reads Qwen's answer with the prompt and Qwen's reasoning in context), the strategy hint uniquely weakens the lie probe trained on Claude's answers: 58% of lies missed (95% CI 43-83%) vs 0% with no warning, replicated at 53% (CI 34-83%) on 100 fresh questions. The answer text does not carry the effect: hint-condition lies read alone are no harder to detect than lies under an unrelated instruction, and a word-based classifier can barely tell them apart (AUROC 0.57). Open question: is it the hint's words in the prompt, or Qwen's reasoning after reading the hint? A context decomposition, a text-only control, and the pre-registered confirmation on 400 fresh questions are finishing now.",
   "running": [
     {
-      "job": "Lie experiment, pre-registered confirmation: 400 fresh questions; no warning, unrelated instruction, strategy hints, and the hint's two halves",
+      "job": "Pre-registered confirmation (lie experiment): 400 fresh questions; no warning, unrelated instruction, strategy hint, and the hint's two halves. Generation done; extracting and scoring",
       "started": "16:20",
+      "eta": "~17:15",
+      "gpus": 16
+    },
+    {
+      "job": "Text-only control: the hint's wording about the probe in the prompt, with no instruction to evade or to believe (300 fresh questions). Generation done; scoring",
+      "started": "16:40",
       "eta": "~17:10",
-      "gpus": 40
+      "gpus": 16
     },
     {
-      "job": "Lie experiment, budget check: 100 questions with a 16k reasoning budget instead of 8k (does it reduce unfinished answers?)",
-      "started": "16:20",
-      "eta": "~17:00",
-      "gpus": 13
+      "job": "Context decomposition: the same answers re-read with only the system prompt, only Qwen's reasoning, neither, or both, to find where the hint's effect enters",
+      "started": "16:50",
+      "eta": "~17:10",
+      "gpus": 16
     },
     {
-      "job": "Backdoor evasion experiment (random-roll prompt), continuing from 24 saved chunks, then scoring all four backdoor probes",
+      "job": "Re-score the first lie experiment with both probes (trained on Claude's answers vs on Qwen's own answers), in both contexts",
+      "started": "16:48",
+      "eta": "~17:05",
+      "gpus": 2
+    },
+    {
+      "job": "Backdoor evasion experiment (random-roll prompt): last 7 chunks about 85% generated, then sandbox + scoring with all four backdoor probes",
       "started": "15:50",
-      "eta": "~16:50",
+      "eta": "~17:25",
       "gpus": 7
-    },
-    {
-      "job": "Training data for the on-policy lie probe (Qwen's own lies and truthful answers)",
-      "started": "14:24",
-      "eta": "~16:40",
-      "gpus": 1
     }
   ],
   "decisions": [
@@ -62,13 +68,29 @@
     [
       "Warning conditions",
       "No warning; an unrelated extra instruction of similar length (control); told a probe is watching for this behavior (no request to evade); told to evade the probe; told to evade and shown two of the probe's training examples; told to evade and given strategy hints."
+    ],
+    [
+      "Finding: text vs context",
+      "The hint barely changes the wording of Qwen's lies (similar length and wording; a word-based classifier separates hint-condition lies from unrelated-instruction lies at AUROC 0.57, near chance). Its effect on the probe appears only when the answer is processed with the hint and reasoning in context."
+    ],
+    [
+      "Finding: reasoning budget",
+      "A 16k reasoning budget does not reduce unfinished lie attempts (36% vs 37% at 8k). Unfinished attempts are indecision loops: Qwen alternates between lying and answering truthfully until it runs out of tokens. Warnings make this worse (64% unfinished when told to evade)."
+    ],
+    [
+      "Finding: fixed thresholds",
+      "Adding any text to the prompt shifts every probe score, so a threshold set with no warning flags 59-98% of truthful answers. Misses are measured with a threshold set per condition."
+    ],
+    [
+      "Finding: on-policy lie probe",
+      "A lie probe trained on Qwen's own answers (question + answer only) reaches held-out AUROC 0.92-0.98 on Qwen's data; it is being compared with the Claude-trained probe on the same test lies."
     ]
   ],
   "next": [
-    "Read the early results of both evasion experiments: does any warning condition raise the share of missed attacks clearly above the no-warning baseline?",
-    "Re-analyze the earlier backdoor experiment with the corrected report (all six conditions, confidence intervals by problem, missed attacks per attempt).",
-    "Train the on-policy lie probe once Qwen's lie data finishes, and add it to the lie experiment.",
-    "Run small pilots of further conditions (e.g. showing the model its probe score and letting it retry), then confirm the best on problems not used so far.",
-    "Check any successful evasions by hand against the problem's input rules."
+    "Read the confirmation run against its pre-registered criterion: strategy hint vs no warning and vs the unrelated instruction, 95% CIs above zero.",
+    "Use the decomposition and text-only control to say whether the effect comes from the hint's words in context or from Qwen's reasoning after reading it.",
+    "Compare the probe trained on Claude's answers with the probe trained on Qwen's answers on the same lies (the project's off-policy vs on-policy question).",
+    "Read the backdoor evasion experiment with all four backdoor probes.",
+    "Test a sampling setting that discourages repetition (presence penalty) to reduce Qwen's indecision loops, in a separate run."
   ]
 }
