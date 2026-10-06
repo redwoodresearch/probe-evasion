@@ -8,15 +8,20 @@ from probe_evasion import config
 app = modal.App(config.MODAL_APP)
 
 hf_cache = modal.Volume.from_name(config.HF_CACHE_VOLUME, create_if_missing=True)
+ACTS_DIR = "/acts"
+acts_volume = modal.Volume.from_name(config.ACTIVATIONS_VOLUME, create_if_missing=True)
+PROBE_LAYERS = (16, 24, 32, 40, 48)  # of 64; select by validation AUROC
 
 # CUDA devel base: FlashInfer JIT-compiles its sampling and Qwen3.5 linear-attention kernels with nvcc.
-vllm_image = (
+vllm_base_image = (
     modal.Image.from_registry("nvidia/cuda:13.0.2-devel-ubuntu24.04", add_python="3.12")
     .entrypoint([])
     .uv_pip_install("vllm==0.30.0")
     .env({"HF_HOME": "/hf-cache"})
-    .add_local_python_source("probe_evasion")
 )
+vllm_image = vllm_base_image.add_local_python_source("probe_evasion")
+# HF forward passes for activations; FLA provides fast kernels for Qwen3.5's linear attention.
+extract_image = vllm_base_image.uv_pip_install("flash-linear-attention", "accelerate").add_local_python_source("probe_evasion")
 
 # No secrets, volumes, network, or Modal API access: this runs untrusted code.
 exec_image = modal.Image.debian_slim(python_version="3.12").add_local_python_source("probe_evasion")

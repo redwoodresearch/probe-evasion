@@ -10,8 +10,9 @@ TEST_FRACTION = 0.5
 
 _PREFIX = "probe-evasion_nabil-baugher"
 _KILL = "kill-2026-11-30"
-MODAL_APP = f"{_PREFIX}_gate_{_KILL}"
+MODAL_APP = f"{_PREFIX}_experiments_{_KILL}"
 HF_CACHE_VOLUME = f"{_PREFIX}_hf-cache_{_KILL}"
+ACTIVATIONS_VOLUME = f"{_PREFIX}_activations_{_KILL}"
 
 # Qwen3.5 recommended sampling for thinking mode on precise coding tasks.
 SAMPLING = dict(temperature=0.6, top_p=0.95, top_k=20, min_p=0.0)
