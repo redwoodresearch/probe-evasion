@@ -31,6 +31,7 @@ def generate(
     samples: int,
     seed: int,
     conditions: dict[str, str] | None = None,
+    thinking: bool = True,
 ) -> list[dict]:
     """`conditions` maps a condition name to a system-prompt addition (e.g. a probe warning);
     every (condition, variant, problem) is generated in one batch."""
@@ -46,7 +47,7 @@ def generate(
     if generator == "qwen":
         per_chunk = max(1, config.CHUNK_SEQS // samples)
         chunks = [convs[i : i + per_chunk] for i in range(0, len(convs), per_chunk)]
-        texts = [t for chunk in Sampler().chat.map(chunks, kwargs={"n": samples, "seed": seed}) for t in chunk]
+        texts = [t for chunk in Sampler().chat.map(chunks, kwargs={"n": samples, "seed": seed, "thinking": thinking}) for t in chunk]
         outputs = [[{"text": t} for t in ts] for ts in texts]
     elif generator == "claude":
         outputs = sample_claude(convs, n=samples)
@@ -57,7 +58,8 @@ def generate(
     rows = []
     for (condition, variant, p), outs, conv in zip(keys, outputs, convs):
         for i, out in enumerate(outs):
-            parsed = parse(out["text"], has_reasoning=generator == "qwen")
+            # With thinking off, Qwen's chat template pre-fills an empty <think></think>, so the text is the answer.
+            parsed = parse(out["text"], has_reasoning=generator == "qwen" and thinking)
             rows.append(
                 {
                     "generator": generator,

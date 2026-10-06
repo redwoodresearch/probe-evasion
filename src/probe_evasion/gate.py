@@ -45,7 +45,7 @@ def summarize(rows: list[dict]) -> dict:
 
 
 @app.local_entrypoint()
-def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: str = "", difficulty: str = "interview"):
+def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: str = "", difficulty: str = "interview", thinking: bool = True):
     """Pass --generations <run_dir>/generations.jsonl to re-score saved outputs without the GPU."""
     if generations:
         gen_path = Path(generations)
@@ -57,10 +57,10 @@ def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: st
         samples = max(r["sample"] for r in rows) + 1
         print(f"re-scoring {len(rows)} saved generations from {gen_path}")
     else:
-        run_dir = Path("results/gate") / f"{time.strftime('%Y%m%d-%H%M%S')}_{difficulty}"
+        run_dir = Path("results/gate") / f"{time.strftime('%Y%m%d-%H%M%S')}_{difficulty}{'' if thinking else '_nothink'}"
         problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
         print(f"{len(problems)} test-split problems; generating {samples} sample(s) per problem per variant")
-        rows = generate(problems, GATE_VARIANTS, "qwen", samples, seed)
+        rows = generate(problems, GATE_VARIANTS, "qwen", samples, seed, thinking=thinking)
         write_jsonl(run_dir / "generations.jsonl", rows)
         print(f"saved generations to {run_dir}")
 
@@ -71,6 +71,7 @@ def main(n_problems: int = 100, samples: int = 1, seed: int = 0, generations: st
     summary = {
         "model": config.TARGET_MODEL,
         "difficulty": difficulty,
+        "thinking": thinking,
         "max_new_tokens": config.MAX_NEW_TOKENS,
         "n_problems": len(problems),
         "unverified_references_excluded": unverified,

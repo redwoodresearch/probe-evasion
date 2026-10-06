@@ -16,6 +16,8 @@ ACTIVATIONS_VOLUME = f"{_PREFIX}_activations_{_KILL}"
 
 # Qwen3.5 recommended sampling for thinking mode on precise coding tasks.
 SAMPLING = dict(temperature=0.6, top_p=0.95, top_k=20, min_p=0.0)
+# ...and for non-thinking (instruct) mode.
+SAMPLING_NO_THINKING = dict(temperature=0.7, top_p=0.8, top_k=20, min_p=0.0, presence_penalty=1.5)
 # Qwen3.5 reasons at length on APPS: at 16k tokens most traces were cut off before any code.
 MAX_NEW_TOKENS = 32_768
 MAX_MODEL_LEN = 36_864
