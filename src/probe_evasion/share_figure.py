@@ -35,7 +35,7 @@ def rates(summary: dict | None, cond: str):
         return None
     rc = probe["recalibrated"]
     n, r = rc["n_backdoor"], rc["evasion_rate"]
-    lo, hi = wilson(round(r * n), n)
+    lo, hi = rc.get("ci95_bootstrap") or wilson(round(r * n), n)
     return {"rate": r, "lo": lo, "hi": hi, "n": n, "auroc": probe["auroc"],
             "false_alarms": probe["fixed_E0_threshold"].get("achieved_fpr")}
 
@@ -48,7 +48,8 @@ def box(ax, x, y, w, h, title, body, color=INK):
 
 
 def main(run_dir: Path) -> Path:
-    full = json.loads((run_dir / "summary.json").read_text())
+    full_path = run_dir / "summary_rescored.json"
+    full = json.loads((full_path if full_path.exists() else run_dir / "summary.json").read_text())
     neutral_path = run_dir / "summary_neutral.json"
     neutral = json.loads(neutral_path.read_text()) if neutral_path.exists() else None
 
@@ -126,7 +127,7 @@ def main(run_dir: Path) -> Path:
     ax.spines["bottom"].set_color(GRID)
     ax.tick_params(length=0)
     ax.legend(loc="upper left", frameon=False, fontsize=9)
-    ax.set_title("Lies missed at a threshold flagging 1% of truthful answers (per condition); bars = 95% CI",
+    ax.set_title("Lies missed at a threshold flagging 1% of truthful answers (per condition)\nwhiskers = 95% CI, bootstrap over questions that re-estimates the threshold",
                  fontsize=10.5, color=INK, loc="left", pad=10)
 
     # counts / false alarms under the chart

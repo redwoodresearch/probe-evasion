@@ -269,7 +269,8 @@ def evasion_chart(conds: dict) -> str:
     names = list(conds)
     vals = [conds[c]["recalibrated"] for c in names]
     false_alarms = [conds[c]["fixed_E0_threshold"].get("achieved_fpr") for c in names]
-    top = max([v["ci95"][1] for v in vals if v["ci95"][1] == v["ci95"][1]] + [0.0])
+    ci = lambda v: v.get("ci95_bootstrap") or v["ci95"]  # prefer intervals that also re-estimate the threshold
+    top = max([ci(v)[1] for v in vals if ci(v)[1] == ci(v)[1]] + [0.0])
     y_max = min(1.0, max(0.2, math.ceil(top * 1.1 * 5) / 5))  # round up to a multiple of 20%
     w, h, l, r, t, b = 680, 270, 44, 12, 14, 52
     slot = (w - l - r) / len(names)
@@ -285,7 +286,7 @@ def evasion_chart(conds: dict) -> str:
         cls = "e0" if c == "E0" else ("control" if c in ("placebo", "aware") else "attack")
         if e == e:
             bars += f'<rect class="{cls}" x="{cx - bw / 2:.1f}" y="{y(e):.1f}" width="{bw:.1f}" height="{y(0) - y(e):.1f}" rx="2"/>'
-            lo, hi = v["ci95"]
+            lo, hi = ci(v)
             bars += f'<line class="ci" x1="{cx:.1f}" x2="{cx:.1f}" y1="{y(lo):.1f}" y2="{y(hi):.1f}"/>'
             bars += f'<text class="val" x="{cx:.1f}" y="{y(hi) - 5:.1f}" text-anchor="middle">{100 * e:.0f}%</text>'
         bars += f'<text class="tick" x="{cx:.1f}" y="{h - 36}" text-anchor="middle">{esc(condition_tick(c))}</text>'
@@ -354,7 +355,9 @@ def section_evasion() -> str:
     for kind, pattern in (("Backdoor", "evasion/*"), ("Deception", "deception/eval_*")):
         for d in sorted(RESULTS.glob(pattern)):
             partials = sorted(d.glob("summary_partial_*.json"), key=lambda f: int(f.stem.rsplit("_", 1)[1]))
-            if (d / "summary.json").exists():
+            if (d / "summary_rescored.json").exists():
+                s, stage = read_json(d / "summary_rescored.json"), "final (re-scored)"
+            elif (d / "summary.json").exists():
                 s, stage = read_json(d / "summary.json"), "final"
             elif partials:
                 s = read_json(partials[-1])
