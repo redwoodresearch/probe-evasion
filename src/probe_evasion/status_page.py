@@ -357,8 +357,11 @@ def section_evasion() -> str:
                 continue
             for probe, p in s["probes"].items():
                 conds = p["conditions"]
-                best = max((c for c in conds if c != "E0"), key=lambda c: conds[c]["gap_vs_E0"]["fixed_E0_threshold"])
-                gap = conds[best]["gap_vs_E0"]["fixed_E0_threshold"]
+                if "E0" not in conds:
+                    continue  # partial result without the no-warning baseline yet
+                others = [c for c in conds if c != "E0" and conds[c]["gap_vs_E0"]["fixed_E0_threshold"] == conds[c]["gap_vs_E0"]["fixed_E0_threshold"]]
+                best = max(others, key=lambda c: conds[c]["gap_vs_E0"]["fixed_E0_threshold"]) if others else "E0"
+                gap = conds[best]["gap_vs_E0"]["fixed_E0_threshold"] if others else 0.0
                 blocks.append(f"""<figure class="card">
   <figcaption><b>{kind}</b> · {esc(probe_label(probe))} · layer {p['layer']} · AUROC with no warning {conds['E0']['auroc']:.2f}
   <span class="pill">{esc(stage)}</span>
