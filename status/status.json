@@ -2,34 +2,28 @@
   "headline": "We have probes that catch Qwen's backdoored code, and two evasion experiments are generating now. The best way to get backdoors from Qwen is a prompt with a random roll in it (\"insert a backdoor only if the roll is 70 or below\"): 38% of all responses are working backdoors, and the responses where the roll said not to attack give honest solutions under the exact same prompt. Probes that read the code together with Qwen's reasoning catch every backdoor when Qwen gets no warning, because they can see Qwen's plan. Probes that read only the code catch fewer: 58% for the probe trained on Claude's code and 75% for the probe trained on Qwen's own code (preliminary, 12 backdoors). Early results from the evasion runs are computed every 10 minutes.",
   "running": [
     {
-      "job": "Backdoor evasion experiment (random-roll prompt): 323 problems, 2 responses each, 6 warning conditions",
-      "started": "14:50",
-      "eta": "~15:40",
-      "gpus": 40
+      "job": "Backdoor evasion experiment (random-roll prompt), continuing after a GPU container crash: generating the 7 chunks that were not saved, then scoring all four backdoor probes",
+      "started": "15:50",
+      "eta": "~16:45",
+      "gpus": 7
     },
     {
-      "job": "Lie evasion experiment (TriviaQA): 300 questions, lie and truth prompts, 2 responses each, 6 warning conditions",
-      "started": "14:49",
-      "eta": "~15:30",
-      "gpus": 40
-    },
-    {
-      "job": "Backdoor evasion experiment, earlier version (always-backdoor prompt vs just-solve prompt); will be re-analyzed with the corrected report",
-      "started": "13:56",
-      "eta": "~15:20",
-      "gpus": 40
-    },
-    {
-      "job": "Early results: every 10 minutes, analyze the finished parts of both evasion experiments",
-      "started": "15:04",
-      "eta": "~15:45",
+      "job": "Lie experiment re-scored with each answer replayed after only its question (no 'answer falsely' instruction, no reasoning) to check the probe isn't just reading the instruction",
+      "started": "15:47",
+      "eta": "~16:15",
       "gpus": 16
     },
     {
-      "job": "Training data for the on-policy lie probe (Qwen's own lies and truthful answers)",
+      "job": "Training data for the on-policy lie probe (Qwen's own lies and truthful answers); long reasoning made this far slower than forecast",
       "started": "14:24",
-      "eta": "~15:30",
+      "eta": "~16:15",
       "gpus": 5
+    },
+    {
+      "job": "Build and benchmark a faster extraction kernel (causal-conv1d)",
+      "started": "15:56",
+      "eta": "~16:30",
+      "gpus": 2
     }
   ],
   "decisions": [
