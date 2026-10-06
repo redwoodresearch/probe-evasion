@@ -85,22 +85,24 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Sprint status · updated Tue Oct 6, 2:06 PM</div>
+    <div class="eyebrow">Sprint status · updated Tue Oct 6, 2:07 PM</div>
     <h1>Can Qwen 27B evade a probe when told to?</h1>
     <p class="lede">Goal: one clear case where warning the model about a probe (E1/E2/E3) lets its bad behavior slip past the probe more often than with no warning (E0).</p>
   </header>
   <p class="headline">Backdoor setting chosen: introductory problems with a 32k thinking budget give 20% working backdoors (thinking off: 9%; interview: 6% either way). The first evasion run (E0, placebo, aware, E1, E2, E3 vs the Sonnet-trained probe) is generating on up to 40 GPUs. Caveat: the Sonnet probe scores AUROC 0.99-1.0 on held-out Sonnet data, so it may partly key on Sonnet&#x27;s style; its E0 AUROC on Qwen&#x27;s own backdoors is the real check.</p>
   <section>
-    <h2>Running now <span class="pill">4 jobs · ~62 H100s</span></h2>
+    <h2>Running now <span class="pill">5 jobs · ~66 H100s</span></h2>
     <figure class="card"><div class="trow"><div class="tlabel">Backdoor evasion eval: 323 problems x 2 samples x 6 conditions, Sonnet probe<span>40 GPU · ETA ~15:15</span></div>
   <div class="track"><div class="tbar " style="left:16.8%;width:78.2%"></div>
-  <div class="now" style="left:26.7%"></div></div></div><div class="trow"><div class="tlabel">Qwen on-policy backdoor probe data (introductory, 304 problems)<span>10 GPU · ETA ~14:35</span></div>
+  <div class="now" style="left:27.7%"></div></div></div><div class="trow"><div class="tlabel">Qwen on-policy backdoor probe data (introductory, 304 problems)<span>10 GPU · ETA ~14:35</span></div>
   <div class="track"><div class="tbar " style="left:14.9%;width:40.6%"></div>
-  <div class="now" style="left:26.7%"></div></div></div><div class="trow"><div class="tlabel">Deception knowledge filter (4,000 TriviaQA questions)<span>8 GPU · ETA ~14:00</span></div>
+  <div class="now" style="left:27.7%"></div></div></div><div class="trow"><div class="tlabel">Deception knowledge filter (4,000 TriviaQA questions)<span>8 GPU · ETA ~14:00</span></div>
   <div class="track"><div class="tbar late" style="left:5.0%;width:15.8%"></div>
-  <div class="now" style="left:26.7%"></div></div></div><div class="trow"><div class="tlabel">Prompt test: &#x27;eager&#x27; and &#x27;intent&#x27; opportunistic prompts (introductory, 100 problems each)<span>4 GPU · ETA ~14:45</span></div>
+  <div class="now" style="left:27.7%"></div></div></div><div class="trow"><div class="tlabel">Prompt test: &#x27;eager&#x27; and &#x27;intent&#x27; opportunistic prompts (introductory, 100 problems each)<span>4 GPU · ETA ~14:45</span></div>
   <div class="track"><div class="tbar " style="left:26.7%;width:38.6%"></div>
-  <div class="now" style="left:26.7%"></div></div></div><div class="taxis"><span>1:39</span><span>now 2:06</span><span>3:20</span></div></figure>
+  <div class="now" style="left:27.7%"></div></div></div><div class="trow"><div class="tlabel">Prompt test: &#x27;rate70&#x27; (do it ~70% of the time) and &#x27;dice70&#x27; (random roll in the prompt), 100 problems each<span>4 GPU · ETA ~14:50</span></div>
+  <div class="track"><div class="tbar " style="left:27.7%;width:42.6%"></div>
+  <div class="now" style="left:27.7%"></div></div></div><div class="taxis"><span>1:39</span><span>now 2:07</span><span>3:20</span></div></figure>
   </section>
   
 <section>
