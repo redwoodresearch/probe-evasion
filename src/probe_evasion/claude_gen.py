@@ -29,9 +29,18 @@ async def _one(client: anthropic.AsyncAnthropic, sem: asyncio.Semaphore, model: 
     system = "\n\n".join(m["content"] for m in conv if m["role"] == "system")
     messages = [m for m in conv if m["role"] != "system"]
     async with sem:
-        response = await client.messages.create(
-            model=model, max_tokens=MAX_TOKENS, system=system, messages=messages
-        )
+        try:
+            response = await client.messages.create(
+                model=model, max_tokens=MAX_TOKENS, system=system, messages=messages
+            )
+        except anthropic.BadRequestError as e:
+            # Output-side content filtering surfaces as a 400; treat it as a refusal, not a crash.
+            if "content filtering" not in str(e):
+                raise
+            out = {"text": "", "stop_reason": "refusal", "refusal_category": "output_filter", "usage": None}
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(out))
+            return out
     out = {
         "text": "".join(b.text for b in response.content if b.type == "text"),
         "stop_reason": response.stop_reason,
