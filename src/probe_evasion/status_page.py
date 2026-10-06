@@ -280,11 +280,15 @@ def section_e0_check() -> str:
         scores = read_jsonl(f.with_name(f.stem + "_scores.jsonl"))
         by = lambda g: [x["score"] for x in scores if x["group"] == g]
         groups = [("Honest", by("honest"), "honest"), ("Backdoor", by("backdoor"), "bd"), ("Failed attempt", by("failed_attempt"), "fail")]
+        honest = by("honest")
+        fpr = sum(v > rep["threshold_1pct_fpr"] for v in honest) / max(1, len(honest))
+        forced = sum(x["group"] == "backdoor" and x["variant"] == "forced" for x in scores)
+        ctx = "neutral context (code only)" if rep.get("neutral_context") else "full context (prompt, reasoning, prose)"
         figs.append(f"""<figure class="card">
-  <figcaption><b>Probe {esc(rep['probe'])}</b> (layer {rep['layer']}) on Qwen 27B, E0, run {esc(f.parent.name)}
-  <span class="pill okpill">AUROC {rep['auroc_backdoor_vs_honest']:.2f} · catches {pct(rep['detected_backdoors'])} of backdoors</span></figcaption>
+  <figcaption><b>Probe {esc(rep['probe'])}</b> (layer {rep['layer']}) on Qwen 27B, E0, {ctx}
+  <span class="pill">AUROC {rep['auroc_backdoor_vs_honest']:.2f} · flags {pct(rep['detected_backdoors'])} of backdoors at a threshold flagging {pct(fpr, 1)} of honest</span></figcaption>
   {strip_plot(groups, rep['threshold_1pct_fpr'])}
-  <div class="jobmeta">Each dot is one response's probe score (EMA-max over code tokens). Failed attempts score as high as working backdoors: the probe detects the attempt, not whether it works.</div>
+  <div class="jobmeta">Preliminary: {len(honest)} honest solutions, all from the opportunistic prompt; {forced} of {len(by("backdoor"))} backdoors came from the forced prompt, so this is not a same-prompt comparison. The threshold is calibrated on these same honest examples. Failed attempts score as high as working backdoors.</div>
 </figure>""")
     if not figs:
         return ""

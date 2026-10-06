@@ -1,5 +1,5 @@
 {
-  "headline": "Early check passed: the Sonnet-trained backdoor probe catches all 12 of Qwen's working backdoors at a 1% false-positive rate (AUROC 1.00 vs honest solutions under the same prompt), so E0 detection is near-perfect and any evasion gap will be clean. It also flags 97% of failed attempts: it detects the attempt, not whether it works. First evasion results ~15:15; a 122B-A10B gate and the deception line are running in parallel.",
+  "headline": "Preliminary E0 check: the Sonnet-trained backdoor probe separates Qwen's 12 working backdoors from 34 honest solutions (AUROC 1.00), but the evidence is thin: the threshold flags 2.9% of honest (not 1%), and 10 of 12 backdoors came from a different prompt than the honest set. A third-party review also found the probe can read prose disclosures through context (61/107 Sonnet positives announce the flaw), so a neutral-context probe (code only) is being trained to check how much detection survives without them.",
   "running": [
     {
       "job": "Backdoor evasion eval: 323 problems x 2 samples x 6 conditions, Sonnet probe",
@@ -38,9 +38,9 @@
       "gpus": 5
     },
     {
-      "job": "Deception probe (Sonnet data, 2,816 examples): activations + training",
-      "started": "14:30",
-      "eta": "~14:55",
+      "job": "Neutral-context check: probe trained and tested on code alone (no prose, reasoning, or system prompt)",
+      "started": "14:43",
+      "eta": "~15:20",
       "gpus": 16
     }
   ],
@@ -79,10 +79,10 @@
     ]
   ],
   "next": [
-    "Read the backdoor evasion eval (~15:15): is any condition's gap over E0 clearly above zero?",
-    "If eager/intent gets ~50% attacks: rerun evasion with attacks and honest responses from the same prompt (removes the forced-vs-clean prompt confound).",
-    "Train the Qwen on-policy backdoor probe and add it (and its E2) to the eval.",
-    "Deception: probe data from Sonnet and Qwen, train probes, run the same six conditions.",
-    "If every gap is ~0: add a score-feedback condition (model sees its probe score and retries)."
+    "Neutral-context check: does detection survive when the probe sees only the code?",
+    "Re-score the backdoor evasion run with all six conditions, CIs by problem, and the per-attempt rate (+ nan-fix re-sandbox).",
+    "Process generation chunks as they finish (sandbox, extract, score per chunk) for earlier partial results.",
+    "Small pilots (prompts x settings x score feedback), then confirm the best on held-out problems.",
+    "Hand-audit any successful evasions against the problem's input constraints."
   ]
 }
