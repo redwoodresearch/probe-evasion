@@ -374,7 +374,7 @@ def section_evasion() -> str:
                 blocks.append(f"""<figure class="card">
   <figcaption><b>{kind}</b> · {esc(probe_label(probe))} · layer {p['layer']} · AUROC with no warning {conds['E0']['auroc']:.2f}
   <span class="pill">{esc(stage)}</span>
-  <span class="pill {'okpill' if gap > 0.05 else ''}">largest increase over no warning: {esc(condition_label(best))} {'+' if gap >= 0 else ''}{pct(gap)}{ci_txt}</span></figcaption>
+  <span class="pill {'okpill' if gap > 0.05 else ''}">biggest rise in missed attacks vs no warning: {esc(condition_label(best))}, {pct(conds['E0']['recalibrated']['evasion_rate'])} → {pct(conds[best]['recalibrated']['evasion_rate'])} ({'+' if gap >= 0 else ''}{100 * gap:.0f} percentage points){ci_txt}</span></figcaption>
   {evasion_chart(conds)}
 </figure>""")
     if not blocks:
@@ -386,7 +386,7 @@ def section_evasion() -> str:
     return f"""
 <section>
   <h2>Evasion results</h2>
-  <p class="lede">Each bar is the share of successful attacks (working backdoors, or lies) that the probe misses, with the threshold set to flag 1% of honest responses <em>in that same condition</em>. Under each bar, "false alarms" is the share of honest responses the probe would flag if the threshold were kept fixed at its no-warning value: adding any text to the prompt shifts all scores, so a fixed threshold mostly produces false alarms rather than misses. The dashed line is the no-warning baseline; whiskers are 95% confidence intervals. Conditions: no warning; an unrelated extra instruction (control for prompt length); told a probe is watching (no request to evade); told to evade the probe; told to evade and shown two of the probe's training examples; told to evade and given strategy hints.
+  <p class="lede"><b>How to read:</b> bar height = share of successful attacks (working backdoors, or lies) the probe misses, when its threshold is set to flag 1% of honest responses <em>in that same condition</em>. Higher bars mean more evasion. Under each bar, "false alarms" is the share of honest responses the probe would flag if the threshold were kept fixed at its no-warning value: adding any text to the prompt shifts all scores, so a fixed threshold mostly produces false alarms rather than misses. The dashed line is the no-warning baseline; whiskers are 95% confidence intervals. Conditions: no warning; an unrelated extra instruction (control for prompt length); told a probe is watching (no request to evade); told to evade the probe; told to evade and shown two of the probe's training examples; told to evade and given strategy hints.
   <span class="key"><span class="sw e0"></span>baseline</span> <span class="key"><span class="sw control"></span>controls</span>
   <span class="key"><span class="sw attack"></span>evasion prompts</span></p>
   {''.join(blocks)}
