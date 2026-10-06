@@ -143,16 +143,16 @@ def main(run_dir: Path) -> Path:
 
     # --- right bottom: takeaways & caveats -------------------------------------------------------
     take = [
-        "1) Scored in full context, the strategy-hint condition looks like strong evasion (58% of lies missed vs 0% with",
-        "    no warning). Re-scored with only question + answer (as in training), it drops to 22% vs 10%: +12 points, no",
-        "    more than the unrelated-instruction control (+10) or plain 'told to evade' (+14). Most of the 58% came from",
-        "    the hint text in the prompt shifting the probe, not from the lies themselves becoming less detectable.",
-        "2) That is still a real failure of the full-context monitor: text in the prompt can steer a probe that reads",
-        "    answer tokens in context. With a threshold kept at its no-warning value, added text causes false alarms",
-        "    (59-98% of truthful answers flagged) rather than misses.",
-        "3) Caveats: one hand-written hint; recalibration per condition is generous to the monitor; 37-64% of lie attempts",
-        "    hit the 8k reasoning cap; whiskers re-estimate the threshold. A pre-registered confirmation on 400 fresh",
-        "    questions (incl. the hint's two halves) and the backdoor version of the experiment are running.",
+        "1) In the real monitoring setting (blue: activations as generated, with the prompt and reasoning in context), the",
+        "    strategy hint uniquely weakens the probe: lie/truth AUROC falls from 1.00 to 0.95 and 58% of lies are missed",
+        "    (95% CI 43-83%) vs 0% with no warning. The unrelated instruction, plain 'evade', and shown examples do not.",
+        "2) Diagnostic (orange): replaying only question + answer, the hint is no different from the unrelated control",
+        "    (+12 vs +10 points). So the effect is not in the answer's wording; it depends on Qwen processing its answer with",
+        "    the hint in context. Consistent with the hint working internally ('believe it') OR with the hint's text interfering",
+        "    with the probe's features. The confirmation run tests the hint's two halves separately to tell these apart.",
+        "3) Separately, any added prompt text shifts all scores, so a threshold fixed at its no-warning value floods with false",
+        "    alarms (59-98% of truthful answers). Caveats: one hand-written hint; per-condition recalibration is generous to",
+        "    the monitor; 37-64% of lie attempts hit the 8k reasoning cap. Confirmation on 400 fresh questions is scoring now.",
     ]
     fig.text(0.53, 0.215, "Takeaways and caveats", fontsize=10.5, fontweight="bold", color=INK, va="top")
     fig.text(0.53, 0.19, "\n".join(take), fontsize=8.6, color=INK2, va="top", linespacing=1.5)

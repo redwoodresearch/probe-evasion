@@ -107,11 +107,11 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Sprint status · updated 4:33 PM (<span id="generated" data-t="1791329623675">just now</span>)</div>
+    <div class="eyebrow">Sprint status · updated 4:39 PM (<span id="generated" data-t="1791329967025">just now</span>)</div>
     <h1>Can Qwen 27B evade a probe when told to?</h1>
     <p class="lede">Goal: one clear case where warning the model about a probe (E1/E2/E3) lets its bad behavior slip past the probe more often than with no warning (E0).</p>
   </header>
-  <p class="headline">Lie experiment, first result, corrected. Scored the way it was generated (answer tokens with the system prompt and reasoning in context), the strategy-hint condition looks like strong evasion: 58% of lies missed vs 0% with no warning. But re-scored with only the question and the answer (as the probe was trained), it is 22% vs 10%: +12 points, no more than the unrelated-instruction control (+10) or plain &#x27;told to evade&#x27; (+14). So most of the 58% came from the hint text in the prompt shifting the probe, not from the lies becoming less detectable. That is still a real weakness of a probe that reads answers in context. A pre-registered confirmation on 400 fresh questions is running, and the backdoor experiment is finishing.</p>
+  <p class="headline">Lie experiment, first result. In the real monitoring setting (the probe reads Qwen&#x27;s answer with the prompt and reasoning in context), the strategy hint uniquely weakens the probe: lie/truth separation falls from AUROC 1.00 to 0.95 and 58% of lies are missed (95% CI 43-83%) vs 0% with no warning; the unrelated instruction, plain &#x27;evade&#x27;, and shown examples do not. A diagnostic replay of only the question and answer shows the effect is not in the answer&#x27;s wording: it depends on Qwen processing its answer with the hint in context. That fits either the hint working internally (&#x27;believe the false answer&#x27;) or the hint&#x27;s text interfering with the probe; the pre-registered confirmation run (scoring now) tests the hint&#x27;s two halves separately to tell these apart.</p>
   <section>
     <h2>Running now <span class="pill">4 jobs · ~61 H100s</span></h2>
     <figure class="card jobs"><div class="job" data-start="1791321840000" data-eta="1791330000000" data-gpus="1">
