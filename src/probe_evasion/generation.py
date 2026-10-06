@@ -60,7 +60,7 @@ def load_chunks(checkpoint_dir: Path) -> dict[int, list[list[str]]]:
     return {d["chunk"]: d["texts"] for d in (json.loads(p.read_text()) for p in sorted(Path(checkpoint_dir).glob("chunk_*.json")))}
 
 
-def plan(problems: list[Problem], variants: tuple[str, ...], conditions: dict[str, str] | None = None):
+def plan(problems: list[Problem], variants: tuple[str, ...], conditions: dict[str, str] | None = None, interleave: bool = False):
     """Deterministic (keys, convs) for every (condition, variant, problem); `conditions` maps a condition
     name to a system-prompt addition (e.g. a probe warning)."""
     conditions = conditions or {"base": ""}
@@ -70,6 +70,9 @@ def plan(problems: list[Problem], variants: tuple[str, ...], conditions: dict[st
             for p in problems:
                 keys.append((condition, variant, p))
                 convs.append(build_messages(variant, p.question, addition))
+    if interleave:  # problem-major order: every chunk mixes all conditions, so early partials are balanced
+        order = sorted(range(len(keys)), key=lambda i: (problems.index(keys[i][2]), i))
+        keys, convs = [keys[i] for i in order], [convs[i] for i in order]
     return keys, convs
 
 

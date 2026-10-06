@@ -93,10 +93,12 @@ def _e2_for(probe_name: str) -> str:
     return e2_addition(lie["response"], truth["response"])
 
 
-def eval_plan(probe_names: list[str], max_questions: int):
+def eval_plan(probe_names: list[str], max_questions: int, interleave: bool = True):
     test = [q for q in read_jsonl(KNOWN) if q["split"] == "test"][:max_questions]
     conditions = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3} | {f"E2_{p}": _e2_for(p) for p in probe_names}
     keys = [(c, kind, q) for c in conditions for kind in ("lie", "truth") for q in test]
+    if interleave:  # question-major order: every chunk mixes all conditions, so early partials are balanced
+        keys = [(c, kind, q) for q in test for c in conditions for kind in ("lie", "truth")]
     convs = [messages(kind, q["question"], conditions[c]) for c, kind, q in keys]
     return conditions, keys, convs
 
@@ -158,7 +160,8 @@ def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int
 
 def evaluate_partial(run_dir: Path, probe_names: list[str], max_questions: int = 300) -> None:
     """Preliminary summary from the chunks a still-running eval has finished."""
-    conditions, keys, convs = eval_plan(probe_names, max_questions)
+    # Runs started before interleaving (eval_20261006-144940) use condition-major order.
+    conditions, keys, convs = eval_plan(probe_names, max_questions, interleave=run_dir.name > "eval_20261006-1500")
     chunks = load_chunks(run_dir / "chunks")
     per_chunk = json.loads(next((run_dir / "chunks").glob("chunk_*.json")).read_text())["per_chunk"]
     idx = [i * per_chunk + j for i in sorted(chunks) for j in range(len(chunks[i]))]
