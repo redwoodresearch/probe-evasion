@@ -12,7 +12,7 @@ from pathlib import Path
 
 import numpy as np
 
-from probe_evasion.activations import Extractor
+from probe_evasion.activations import extract_all
 from probe_evasion.generation import read_jsonl, sample, write_jsonl
 from probe_evasion.metrics import condition_report, load_probe
 from probe_evasion.modal_app import app
@@ -110,7 +110,7 @@ def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int
     write_jsonl(run_dir / "samples.jsonl", rows)
 
     acts_name = f"deception_{run_dir.name}"
-    Extractor().extract.remote(acts_name, examples)
+    extract_all(acts_name, examples)
     labels = np.array([e["label"] for e in examples])
     cond_of = np.array([e["condition"] for e in examples])
     summary = {"n_questions": len(test), "samples": samples,

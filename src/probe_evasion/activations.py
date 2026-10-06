@@ -29,6 +29,7 @@ def render(tok, ex: dict) -> tuple[str, int]:
     volumes={"/hf-cache": hf_cache, ACTS_DIR: acts_volume},
     timeout=2 * 60 * 60,
     scaledown_window=5 * 60,
+    max_containers=16,
 )
 class Extractor:
     @modal.enter()
@@ -47,8 +48,8 @@ class Extractor:
         assert len(self.layers) == 64, len(self.layers)
 
     @modal.method()
-    def extract(self, dataset_name: str, examples: list[dict], layers: tuple[int, ...] = PROBE_LAYERS) -> list[int]:
-        """Writes {ACTS_DIR}/{dataset_name}/{i}.npy; returns code-span token counts."""
+    def extract(self, dataset_name: str, examples: list[dict], layers: tuple[int, ...] = PROBE_LAYERS, start: int = 0) -> list[int]:
+        """Writes {ACTS_DIR}/{dataset_name}/{start + i}.npy; returns code-span token counts."""
         import os
 
         import numpy as np
@@ -73,7 +74,7 @@ class Extractor:
                 with torch.no_grad():
                     self.model(input_ids=enc["input_ids"].cuda())
                 acts = torch.stack([captured[l][0, mask.cuda()] for l in layers], dim=1)
-                np.save(f"{out_dir}/{i}.npy", acts.to(torch.float16).cpu().numpy())
+                np.save(f"{out_dir}/{start + i}.npy", acts.to(torch.float16).cpu().numpy())
                 n_tokens.append(int(mask.sum()))
         finally:
             for h in hooks:
@@ -81,3 +82,10 @@ class Extractor:
         acts_volume.commit()
         return n_tokens
 
+
+def extract_all(name: str, examples: list[dict], chunk: int = 64) -> list[int]:
+    """Extract every example, spreading chunks across GPUs; returns per-example span token counts."""
+    starts = list(range(0, len(examples), chunk))
+    chunks = [examples[i : i + chunk] for i in starts]
+    results = Extractor().extract.map([name] * len(chunks), chunks, [PROBE_LAYERS] * len(chunks), starts)
+    return [n for r in results for n in r]

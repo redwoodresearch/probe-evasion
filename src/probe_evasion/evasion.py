@@ -16,7 +16,7 @@ from pathlib import Path
 
 import numpy as np
 
-from probe_evasion.activations import Extractor
+from probe_evasion.activations import extract_all
 from probe_evasion.apps_data import sample_problems
 from probe_evasion.generation import generate, read_jsonl, write_jsonl
 from probe_evasion.modal_app import app
@@ -67,7 +67,7 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
     write_jsonl(run_dir / "examples.jsonl", examples)
 
     acts_name = f"evasion_{run_dir.name}"
-    Extractor().extract.remote(acts_name, examples)
+    extract_all(acts_name, examples)
     labels = np.array([e["label"] for e in examples])
     cond_of = np.array([e["condition"] for e in examples])
 

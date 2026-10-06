@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from probe_evasion.activations import Extractor
+from probe_evasion.activations import extract_all
 from probe_evasion.generation import read_jsonl, write_jsonl
 from probe_evasion.modal_app import app
 
@@ -12,7 +12,7 @@ def main(dataset: str, name: str):
     """uv run modal run -m probe_evasion.extract --dataset <dataset.jsonl> --name <name>
     Saves per-example metadata locally to results/activations/<name>/meta.jsonl."""
     examples = read_jsonl(Path(dataset))
-    n_tokens = Extractor().extract.remote(name, examples)
+    n_tokens = extract_all(name, examples)
     meta = [
         {"index": i, "problem_id": ex["problem_id"], "label": ex["label"], "generator": ex["generator"], "n_tokens": n}
         for i, (ex, n) in enumerate(zip(examples, n_tokens))
