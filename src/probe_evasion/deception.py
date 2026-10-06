@@ -28,7 +28,9 @@ SHORT_OUTPUT_CHUNK = 1024
 def filter_known(n_questions: int, seed: int) -> None:
     """Keep questions Qwen answers correctly on all 5 samples (thinking off; it's a knowledge check)."""
     qs = load_questions(n_questions, seed)
-    outs = sample([messages("truth", q["question"]) for q in qs], "qwen", 5, seed, thinking=False, chunk_seqs=SHORT_OUTPUT_CHUNK)
+    # Capped: a few non-thinking answers ramble toward the full budget and stall the whole batch.
+    outs = sample([messages("truth", q["question"]) for q in qs], "qwen", 5, seed, thinking=False,
+                  chunk_seqs=SHORT_OUTPUT_CHUNK, max_tokens=256)
     known = [dict(q, n_correct=sum(is_correct(o["text"], q["aliases"]) for o in os_)) for q, os_ in zip(qs, outs)]
     run_dir = ROOT / f"filter_{time.strftime('%Y%m%d-%H%M%S')}"
     write_jsonl(run_dir / "all.jsonl", [dict(k, answers=[o["text"] for o in os_]) for k, os_ in zip(known, outs)])

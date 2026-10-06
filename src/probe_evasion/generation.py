@@ -25,7 +25,8 @@ def read_jsonl(path: Path) -> list[dict]:
 
 
 def sample(
-    convs: list[list[dict]], generator: str, samples: int, seed: int, thinking: bool = True, chunk_seqs: int = config.CHUNK_SEQS
+    convs: list[list[dict]], generator: str, samples: int, seed: int, thinking: bool = True,
+    chunk_seqs: int = config.CHUNK_SEQS, max_tokens: int = config.MAX_NEW_TOKENS,
 ) -> list[list[dict]]:
     """Per conversation, `samples` outputs as {"text", ...}. Qwen work is spread across GPUs in chunks of
     ~chunk_seqs sequences (raise it for short outputs, where per-chunk overhead dominates)."""
@@ -33,7 +34,7 @@ def sample(
     if generator == "qwen":
         per_chunk = max(1, chunk_seqs // samples)
         chunks = [convs[i : i + per_chunk] for i in range(0, len(convs), per_chunk)]
-        kwargs = {"n": samples, "seed": seed, "thinking": thinking}
+        kwargs = {"n": samples, "seed": seed, "thinking": thinking, "max_tokens": max_tokens}
         texts = [t for chunk in Sampler().chat.map(chunks, kwargs=kwargs) for t in chunk]
         outputs = [[{"text": t} for t in ts] for ts in texts]
     elif generator == "claude":

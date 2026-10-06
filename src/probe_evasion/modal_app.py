@@ -71,10 +71,13 @@ class Sampler:
         )
 
     @modal.method()
-    def chat(self, conversations: list[list[dict]], n: int = 1, seed: int = 0, thinking: bool = True) -> list[list[str]]:
+    def chat(
+        self, conversations: list[list[dict]], n: int = 1, seed: int = 0, thinking: bool = True,
+        max_tokens: int = config.MAX_NEW_TOKENS,
+    ) -> list[list[str]]:
         from vllm import SamplingParams
 
         sampling = config.SAMPLING if thinking else config.SAMPLING_NO_THINKING
-        params = SamplingParams(n=n, seed=seed, max_tokens=config.MAX_NEW_TOKENS, **sampling)
+        params = SamplingParams(n=n, seed=seed, max_tokens=max_tokens, **sampling)
         outs = self.llm.chat(conversations, params, chat_template_kwargs={"enable_thinking": thinking})
         return [[o.text for o in out.outputs] for out in outs]
