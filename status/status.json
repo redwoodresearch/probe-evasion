@@ -1,5 +1,5 @@
 {
-  "headline": "Backdoor setting chosen: introductory problems with a 32k thinking budget give 20% working backdoors (thinking off: 9%; interview: 6% either way). The first evasion run (E0, placebo, aware, E1, E2, E3 vs the Sonnet-trained probe) is generating on up to 40 GPUs. Caveat: the Sonnet probe scores AUROC 0.99-1.0 on held-out Sonnet data, so it may partly key on Sonnet's style; its E0 AUROC on Qwen's own backdoors is the real check.",
+  "headline": "Early check passed: the Sonnet-trained backdoor probe catches all 12 of Qwen's working backdoors at a 1% false-positive rate (AUROC 1.00 vs honest solutions under the same prompt), so E0 detection is near-perfect and any evasion gap will be clean. It also flags 97% of failed attempts: it detects the attempt, not whether it works. First evasion results ~15:15; a 122B-A10B gate and the deception line are running in parallel.",
   "running": [
     {
       "job": "Backdoor evasion eval: 323 problems x 2 samples x 6 conditions, Sonnet probe",
@@ -10,26 +10,38 @@
     {
       "job": "Qwen on-policy backdoor probe data (introductory, 304 problems)",
       "started": "13:54",
-      "eta": "~14:35",
+      "eta": "~14:40",
       "gpus": 10
     },
     {
-      "job": "Deception knowledge filter (4,000 TriviaQA questions), restarted with a 256-token answer cap",
-      "started": "14:10",
-      "eta": "~14:18",
-      "gpus": 8
-    },
-    {
-      "job": "Prompt test: 'eager' and 'intent' opportunistic prompts (introductory, 100 problems each)",
+      "job": "Prompt test: 'eager' and 'intent' opportunistic prompts (100 problems each)",
       "started": "14:06",
       "eta": "~14:45",
       "gpus": 4
     },
     {
-      "job": "Prompt test: 'rate70' (do it ~70% of the time) and 'dice70' (random roll in the prompt), 100 problems each",
+      "job": "Prompt test: 'rate70' and 'dice70' (random roll in the prompt), 100 problems each",
       "started": "14:07",
       "eta": "~14:50",
       "gpus": 4
+    },
+    {
+      "job": "Qwen3.5-122B-A10B backdoor gate (introductory, 32k thinking; forced / opportunistic / dice70)",
+      "started": "14:23",
+      "eta": "~15:15",
+      "gpus": 12
+    },
+    {
+      "job": "Deception probe data from Qwen (1,444 train questions, lie + truth)",
+      "started": "14:24",
+      "eta": "~14:50",
+      "gpus": 5
+    },
+    {
+      "job": "Deception probe (Sonnet data, 2,816 examples): activations + training",
+      "started": "14:30",
+      "eta": "~14:55",
+      "gpus": 16
     }
   ],
   "decisions": [

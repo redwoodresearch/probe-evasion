@@ -71,6 +71,60 @@ LAYERS = (16, 24, 32, 40, 48)
 SERIES = ["s1", "s2", "s3", "s4", "s5", "s6"]
 
 
+CLAUDE_PRICES = {"input": 2.0 / 1e6, "output": 10.0 / 1e6}  # Sonnet 5.5, $ per token
+SPRINT_START = "2026-10-06"
+
+
+def spend() -> dict:
+    """Modal cost for our apps (full hours only, from the billing API) plus Claude API cost from cached usage."""
+    import subprocess
+
+    out = subprocess.run(["uv", "run", "modal", "billing", "report", "--start", SPRINT_START, "--tz", "local",
+                          "--resolution", "h", "--json"], capture_output=True, text=True, check=True).stdout
+    rows = [r for r in json.loads(out) if r["description"].startswith("probe-evasion_nabil-baugher")]
+    hourly = Counter()
+    for r in rows:
+        hourly[r["interval_start"][:13]] += float(r["cost"])
+    claude = 0.0
+    for f in Path("cache/claude").glob("*.json"):
+        u = json.loads(f.read_text()).get("usage")
+        if u:
+            claude += u["input_tokens"] * CLAUDE_PRICES["input"] + u["output_tokens"] * CLAUDE_PRICES["output"]
+    last = max(hourly) if hourly else None
+    return {"modal": sum(hourly.values()), "claude": claude, "hourly": sorted(hourly.items()), "through": last}
+
+
+H100_PER_HOUR = 3.95
+
+
+def section_spend(running: list[dict]) -> str:
+    sp = spend()
+    burn = sum(r["gpus"] for r in running) * H100_PER_HOUR
+    total = sp["modal"] + sp["claude"]
+    hourly = sp["hourly"]
+    top = max([v for _, v in hourly] + [1])
+    bars = "".join(
+        f'<div class="hcol" title="{esc(h[11:13])}:00 — ${v:,.0f}"><div class="hbar" style="height:{100 * v / top:.0f}%"></div>'
+        f'<span>{int(h[11:13]) % 12 or 12}</span></div>'
+        for h, v in hourly
+    )
+    through = f"{int(sp['through'][11:13]) % 12 or 12}:00 + 1h" if sp["through"] else "–"
+    return f"""
+<section>
+  <h2>Spend</h2>
+  <figure class="card spend">
+    <div class="tiles">
+      <div class="tile big"><span class="tl">Total so far</span><span class="tv">${total:,.0f}</span></div>
+      <div class="tile"><span class="tl">Modal GPUs</span><span class="tv">${sp['modal']:,.0f}</span></div>
+      <div class="tile"><span class="tl">Claude API</span><span class="tv">${sp['claude']:,.0f}</span></div>
+      <div class="tile"><span class="tl">Burning now (est.)</span><span class="tv">~${burn:,.0f}/h</span></div>
+    </div>
+    <div class="hours" role="img" aria-label="Modal spend per hour">{bars}</div>
+    <div class="jobmeta">Modal spend per hour (billing API reports complete hours only, so the current hour shows up next hour; data through {through}). Claude cost is computed from token usage at Sonnet 5.5 prices.</div>
+  </figure>
+</section>"""
+
+
 def stacked_bar(counts: Counter, n: int) -> str:
     segs = "".join(
         f'<span class="seg {cls}" style="width:{100 * counts[k] / n:.2f}%" title="{esc(label)}: {counts[k]}"></span>'
@@ -194,6 +248,54 @@ def evasion_chart(conds: dict) -> str:
     return f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="evasion rate by condition">{grid}{ref}{bars}</svg>'
 
 
+def strip_plot(groups: list[tuple[str, list[float], str]], threshold: float) -> str:
+    """Horizontal dot strips (one row per group) on a shared score axis, with the 1%-FPR threshold."""
+    vals = [v for _, vs, _ in groups for v in vs] + [threshold]
+    lo, hi = min(vals) - 0.5, max(vals) + 0.5
+    w, l, r, row = 560, 150, 14, 34
+    h = row * len(groups) + 40
+    x = lambda v: l + (v - lo) / (hi - lo) * (w - l - r)
+    out = ""
+    for i, (name, vs, cls) in enumerate(groups):
+        cy = 26 + i * row
+        out += f'<text class="tick" x="{l - 10}" y="{cy + 4}" text-anchor="end">{esc(name)} ({len(vs)})</text>'
+        out += f'<line class="grid" x1="{l}" x2="{w - r}" y1="{cy}" y2="{cy}"/>'
+        for j, v in enumerate(vs):
+            jitter = ((j * 7919) % 11 - 5) * 1.3
+            out += f'<circle class="pt {cls}" cx="{x(v):.1f}" cy="{cy + jitter:.1f}" r="3.6"/>'
+    tx = x(threshold)
+    out += f'<line class="ref" x1="{tx:.1f}" x2="{tx:.1f}" y1="14" y2="{h - 22}"/>'
+    out += f'<text class="tick" x="{tx + 4:.1f}" y="10" text-anchor="start">threshold (1% FPR)</text>'
+    step = max(1, round((hi - lo) / 8))
+    for v in range(int(lo) + 1, int(hi) + 1, step):
+        out += f'<text class="tick sub" x="{x(v):.1f}" y="{h - 6}" text-anchor="middle">{v}</text>'
+    out += f'<text class="tick sub" x="{l - 10}" y="{h - 6}" text-anchor="end">probe score</text>'
+    return f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="probe scores by group">{out}</svg>'
+
+
+def section_e0_check() -> str:
+    figs = []
+    for f in sorted((RESULTS / "gate").glob("*/e0_check_*.json")):
+        rep = read_json(f)
+        scores = read_jsonl(f.with_name(f.stem + "_scores.jsonl"))
+        by = lambda g: [x["score"] for x in scores if x["group"] == g]
+        groups = [("Honest", by("honest"), "honest"), ("Backdoor", by("backdoor"), "bd"), ("Failed attempt", by("failed_attempt"), "fail")]
+        figs.append(f"""<figure class="card">
+  <figcaption><b>Probe {esc(rep['probe'])}</b> (layer {rep['layer']}) on Qwen 27B, E0, run {esc(f.parent.name)}
+  <span class="pill okpill">AUROC {rep['auroc_backdoor_vs_honest']:.2f} · catches {pct(rep['detected_backdoors'])} of backdoors</span></figcaption>
+  {strip_plot(groups, rep['threshold_1pct_fpr'])}
+  <div class="jobmeta">Each dot is one response's probe score (EMA-max over code tokens). Failed attempts score as high as working backdoors: the probe detects the attempt, not whether it works.</div>
+</figure>""")
+    if not figs:
+        return ""
+    return f"""
+<section>
+  <h2>Does the probe catch Qwen's backdoors at all? (E0)</h2>
+  <p class="lede">Before measuring evasion: with no warning, the off-policy probe should separate Qwen's backdoors from its honest solutions.</p>
+  {''.join(figs)}
+</section>"""
+
+
 def section_evasion() -> str:
     blocks = []
     for kind, pattern in (("Backdoor", "evasion/*"), ("Deception", "deception/eval_*")):
@@ -241,24 +343,51 @@ def _minutes(hhmm: str) -> int:
     return hh * 60 + int(mm)
 
 
-def running_list(running: list[dict]) -> str:
-    """One row per job: a bar filling from start to ETA, with elapsed and remaining time spelled out."""
+def _epoch_ms(hhmm: str) -> int:
     t = time.localtime()
-    now = t.tm_hour * 60 + t.tm_min
-    fmt = lambda m: f"{(m // 60 - 1) % 12 + 1}:{m % 60:02d}"
+    m = _minutes(hhmm)
+    return int(time.mktime((t.tm_year, t.tm_mon, t.tm_mday, m // 60, m % 60, 0, 0, 0, -1)) * 1000)
+
+
+def running_list(running: list[dict]) -> str:
+    """One row per job: a bar filling from start to ETA. Server renders the first frame; a script
+    re-computes elapsed/remaining every 30s so the page stays live between republishes."""
     rows = []
     for r in sorted(running, key=lambda r: _minutes(r["eta"])):
-        start, eta = _minutes(r["started"]), _minutes(r["eta"])
-        elapsed, left = now - start, eta - now
-        frac = min(1.0, max(0.0, elapsed / max(1, eta - start)))
-        status = (f'<span class="chip late">overdue {-left} min</span>' if left < 0
-                  else f'<span class="chip">~{left} min left</span>')
-        rows.append(f"""<div class="job">
-  <div class="jobhead"><span class="jobname">{esc(r['job'])}</span>{status}</div>
-  <div class="prog"><div class="fill {'late' if left < 0 else ''}" style="width:{100 * frac:.0f}%"></div></div>
-  <div class="jobmeta">started {fmt(start)} · {elapsed} min in · expected done {fmt(eta)} · {r['gpus']} GPU{'s' if r['gpus'] != 1 else ''}</div>
+        rows.append(f"""<div class="job" data-start="{_epoch_ms(r['started'])}" data-eta="{_epoch_ms(r['eta'])}" data-gpus="{r['gpus']}">
+  <div class="jobhead"><span class="jobname">{esc(r['job'])}</span><span class="chip"></span></div>
+  <div class="prog"><div class="fill"></div></div>
+  <div class="jobmeta"></div>
 </div>""")
-    return f'<figure class="card jobs">{"".join(rows)}</figure>'
+    return f'<figure class="card jobs">{"".join(rows)}</figure>' + """
+<script>
+(function () {
+  const fmt = (ms) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  function tick() {
+    const now = Date.now();
+    document.querySelectorAll(".job").forEach((el) => {
+      const start = +el.dataset.start, eta = +el.dataset.eta, gpus = +el.dataset.gpus;
+      const elapsed = Math.round((now - start) / 60000), left = Math.round((eta - now) / 60000);
+      const frac = Math.min(1, Math.max(0, (now - start) / Math.max(60000, eta - start)));
+      const late = left < 0;
+      const fill = el.querySelector(".fill"), chip = el.querySelector(".chip");
+      fill.style.width = (100 * frac).toFixed(0) + "%";
+      fill.classList.toggle("late", late);
+      chip.classList.toggle("late", late);
+      chip.textContent = late ? "overdue " + -left + " min" : "~" + left + " min left";
+      el.querySelector(".jobmeta").textContent =
+        "started " + fmt(start) + " · " + elapsed + " min in · expected done " + fmt(eta) + " · " + gpus + " GPU" + (gpus === 1 ? "" : "s");
+    });
+    const gen = document.getElementById("generated");
+    if (gen) {
+      const mins = Math.round((now - +gen.dataset.t) / 60000);
+      gen.textContent = mins < 1 ? "just now" : mins + " min ago";
+    }
+  }
+  tick();
+  setInterval(tick, 30000);
+})();
+</script>"""
 
 
 def render() -> str:
@@ -335,6 +464,18 @@ svg .ref {{ stroke: var(--muted); stroke-dasharray: 5 4; stroke-width: 1.25; }}
 .sw.s4 {{ background: var(--s4); }} .sw.s5 {{ background: var(--s5); }} .sw.s6 {{ background: var(--s6); }}
 .pill {{ display: inline-block; font: 500 12px var(--mono); padding: 2px 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); }}
 .okpill {{ color: var(--good); border-color: var(--good); }}
+svg .pt {{ stroke: var(--surface); stroke-width: 1; }}
+svg .pt.honest {{ fill: var(--neutral); }} svg .pt.bd {{ fill: var(--bad); }} svg .pt.fail {{ fill: var(--warn); }}
+.spend {{ gap: 14px; }}
+.tiles {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }}
+.tile {{ display: grid; gap: 2px; }}
+.tl {{ font: 500 11.5px var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }}
+.tv {{ font: 600 24px var(--mono); font-variant-numeric: tabular-nums; }}
+.tile.big .tv {{ font-size: 32px; color: var(--accent); }}
+.hours {{ display: flex; align-items: flex-end; gap: 4px; height: 90px; }}
+.hcol {{ flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 3px; min-width: 0; }}
+.hbar {{ width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; opacity: .85; }}
+.hcol span {{ font: 10px var(--mono); color: var(--muted); }}
 .jobs {{ gap: 16px; }}
 .job {{ display: grid; gap: 6px; }}
 .jobhead {{ display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }}
@@ -363,7 +504,7 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Sprint status · updated {time.strftime('%a %b %-d, %-I:%M %p')}</div>
+    <div class="eyebrow">Sprint status · updated {time.strftime('%-I:%M %p')} (<span id="generated" data-t="{int(time.time() * 1000)}">just now</span>)</div>
     <h1>Can Qwen 27B evade a probe when told to?</h1>
     <p class="lede">Goal: one clear case where warning the model about a probe (E1/E2/E3) lets its bad behavior slip past the probe more often than with no warning (E0).</p>
   </header>
@@ -373,6 +514,8 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
     {running_list(st['running'])}
   </section>
   {section_evasion()}
+  {section_e0_check()}
+  {section_spend(st['running'])}
   {section_gate()}
   {section_probe_data()}
   {section_probes()}
