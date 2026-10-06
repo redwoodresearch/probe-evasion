@@ -23,15 +23,9 @@ def render(tok, ex: dict) -> tuple[str, int]:
     return head + ex["response"], len(head)
 
 
-@app.cls(
-    image=extract_image,
-    gpu="H200",  # long reasoning traces (up to ~36k tokens) need the headroom for HF forward passes
-    volumes={"/hf-cache": hf_cache, ACTS_DIR: acts_volume},
-    timeout=2 * 60 * 60,
-    scaledown_window=5 * 60,
-    max_containers=16,
-)
-class Extractor:
+class ExtractorBase:
+    """Extraction logic; deployed as Extractor below (and reusable with other images)."""
+
     @modal.enter()
     def load(self):
         import torch
@@ -87,6 +81,19 @@ class Extractor:
                 h.remove()
         acts_volume.commit()
         return n_tokens
+
+
+@app.cls(
+    image=extract_image,
+    gpu="H200",  # long reasoning traces (up to ~36k tokens) need the headroom for HF forward passes
+    volumes={"/hf-cache": hf_cache, ACTS_DIR: acts_volume},
+    timeout=2 * 60 * 60,
+    scaledown_window=5 * 60,
+    max_containers=16,
+)
+class Extractor(ExtractorBase):
+    pass
+
 
 
 def extract_all(name: str, examples: list[dict], chunk: int = 64) -> list[int]:
