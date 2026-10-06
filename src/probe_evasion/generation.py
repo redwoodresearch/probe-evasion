@@ -112,15 +112,17 @@ def generate(
     thinking: bool = True,
     chunk_seqs: int = config.CHUNK_SEQS,
     checkpoint_dir: Path | None = None,
+    interleave: bool = False,
 ) -> list[dict]:
-    keys, convs = plan(problems, variants, conditions)
+    keys, convs = plan(problems, variants, conditions, interleave)
     outputs = sample(convs, generator, samples, seed, thinking, chunk_seqs, checkpoint_dir=checkpoint_dir)
     return to_rows(keys, convs, outputs, generator, thinking)
 
 
-def partial_rows(problems, variants, conditions, checkpoint_dir: Path, generator: str = "qwen", thinking: bool = True) -> list[dict]:
+def partial_rows(problems, variants, conditions, checkpoint_dir: Path, generator: str = "qwen", thinking: bool = True,
+                 interleave: bool = False) -> list[dict]:
     """Rows for whichever chunks have finished so far (same plan as generate())."""
-    keys, convs = plan(problems, variants, conditions)
+    keys, convs = plan(problems, variants, conditions, interleave)
     chunks = load_chunks(checkpoint_dir)
     if not chunks:
         return []

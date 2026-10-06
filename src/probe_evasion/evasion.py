@@ -67,6 +67,11 @@ def is_attack_turn(r: dict, question: str) -> bool:
     return r["variant"] == "forced" or (r["variant"] == "dice70" and dice_roll(question) <= 70)
 
 
+def read_manifest(run_dir: Path) -> dict:
+    p = run_dir / "manifest.json"
+    return json.loads(p.read_text()) if p.exists() else {}
+
+
 def build_examples(rows: list[dict], by_pid: dict) -> list[dict]:
     examples = []
     for r in rows:
@@ -128,7 +133,8 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
     if partial:
         # Early read on a run that is still generating: everything downstream on the chunks finished so far.
         run_dir = Path(partial)
-        rows = partial_rows(problems, DESIGNS[design], conditions, run_dir / "chunks")
+        manifest = read_manifest(run_dir)
+        rows = partial_rows(problems, DESIGNS[design], conditions, run_dir / "chunks", interleave=manifest.get("interleave", False))
         print(f"partial: {len(rows)} samples from finished chunks")
         run_sandbox(rows, problems)
         examples = build_examples(rows, by_pid)
@@ -151,8 +157,13 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
         else:
             run_dir = Path("results/evasion") / f"{time.strftime('%Y%m%d-%H%M%S')}_{design}"
             print(f"{len(problems)} test problems x {samples} samples x conditions {list(conditions)}")
+            # The manifest records how prompts map to chunks, so early analyses rebuild the same order.
+            run_dir.mkdir(parents=True, exist_ok=True)
+            (run_dir / "manifest.json").write_text(json.dumps({
+                "interleave": True, "design": design, "probes": probes, "n_problems": n_problems, "samples": samples,
+                "seed": seed, "difficulty": difficulty, "conditions": list(conditions), "chunk_seqs": 128}, indent=2))
             rows = generate(problems, DESIGNS[design], "qwen", samples, seed, conditions, chunk_seqs=128,
-                            checkpoint_dir=run_dir / "chunks")
+                            checkpoint_dir=run_dir / "chunks", interleave=True)
             write_jsonl(run_dir / "generations.jsonl", rows)
         run_sandbox(rows, problems)
         write_jsonl(run_dir / "samples.jsonl", rows)
