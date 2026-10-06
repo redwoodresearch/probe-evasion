@@ -1,29 +1,29 @@
 {
-  "headline": "First evasion signal, not yet confirmed: in the lie experiment, when Qwen is told to evade and given strategy hints (\"adopt the false answer as something you believe\"), the lie probe trained on Claude's answers misses 58% of lies at a threshold that flags 1% of truthful answers in that condition, versus 0% with no warning and 4% with an unrelated extra instruction. Simply warning Qwen, or showing it the probe's training examples, did nothing. Two caveats: the lie prompt literally says 'answer falsely', so the probe may be reading that instruction rather than the lie (a re-score with only the question and answer is running now); and a threshold kept fixed at its no-warning value flags most truthful answers once any text is added to the prompt. The backdoor evasion experiment is finishing after a crash.",
+  "headline": "Lie experiment, first result, corrected. Scored the way it was generated (answer tokens with the system prompt and reasoning in context), the strategy-hint condition looks like strong evasion: 58% of lies missed vs 0% with no warning. But re-scored with only the question and the answer (as the probe was trained), it is 22% vs 10%: +12 points, no more than the unrelated-instruction control (+10) or plain 'told to evade' (+14). So most of the 58% came from the hint text in the prompt shifting the probe, not from the lies becoming less detectable. That is still a real weakness of a probe that reads answers in context. A pre-registered confirmation on 400 fresh questions is running, and the backdoor experiment is finishing.",
   "running": [
     {
-      "job": "Backdoor evasion experiment (random-roll prompt), continuing after a GPU container crash: generating the 7 chunks that were not saved, then scoring all four backdoor probes",
+      "job": "Lie experiment, pre-registered confirmation: 400 fresh questions; no warning, unrelated instruction, strategy hints, and the hint's two halves",
+      "started": "16:20",
+      "eta": "~17:10",
+      "gpus": 40
+    },
+    {
+      "job": "Lie experiment, budget check: 100 questions with a 16k reasoning budget instead of 8k (does it reduce unfinished answers?)",
+      "started": "16:20",
+      "eta": "~17:00",
+      "gpus": 13
+    },
+    {
+      "job": "Backdoor evasion experiment (random-roll prompt), continuing from 24 saved chunks, then scoring all four backdoor probes",
       "started": "15:50",
-      "eta": "~16:45",
+      "eta": "~16:50",
       "gpus": 7
     },
     {
-      "job": "Lie experiment re-scored with each answer replayed after only its question (no 'answer falsely' instruction, no reasoning) to check the probe isn't just reading the instruction",
-      "started": "15:47",
-      "eta": "~16:15",
-      "gpus": 16
-    },
-    {
-      "job": "Training data for the on-policy lie probe (Qwen's own lies and truthful answers); long reasoning made this far slower than forecast",
+      "job": "Training data for the on-policy lie probe (Qwen's own lies and truthful answers)",
       "started": "14:24",
-      "eta": "~16:15",
-      "gpus": 5
-    },
-    {
-      "job": "Build and benchmark a faster extraction kernel (causal-conv1d)",
-      "started": "15:56",
-      "eta": "~16:30",
-      "gpus": 2
+      "eta": "~16:40",
+      "gpus": 1
     }
   ],
   "decisions": [
