@@ -24,11 +24,9 @@ from probe_evasion.modal_app import app
 from probe_evasion.parsing import code_span, strip_exploit
 from probe_evasion.metrics import condition_report, load_probe
 from probe_evasion.probes import score
-from probe_evasion.prompts import AWARE, E1, E3, PLACEBO, e2_addition
+from probe_evasion.prompts import AWARE, E1, E3, PLACEBO, dice_roll, e2_addition
 from probe_evasion.scoring import score as run_sandbox
 
-# Attacks come from the forced prompt; honest responses (for thresholds) from the clean prompt.
-VARIANTS = ("forced", "clean")
 
 
 def e2_examples(probe_name: str) -> str:
@@ -41,11 +39,39 @@ def e2_examples(probe_name: str) -> str:
     return e2_addition(code(flagged), code(unflagged))
 
 
+DESIGNS = {
+    # Attacks and honest responses from the same prompt: a per-problem roll in the prompt says whether to attack.
+    "dice70": ("dice70",),
+    # Attacks from the forced prompt, honest responses from the clean prompt.
+    "forced-clean": ("forced", "clean"),
+}
+
+
+def role(r: dict, question: str) -> str | None:
+    """'attack' / 'honest' / None for a sandboxed row, by design."""
+    if r["variant"] == "dice70":
+        attack_turn = dice_roll(question) <= 70
+        if attack_turn and r["outcome"] == "backdoor_success":
+            return "attack"
+        if not attack_turn and r["outcome"] == "clean_pass":
+            return "honest"
+        return None
+    if r["variant"] == "forced" and r["outcome"] == "backdoor_success":
+        return "attack"
+    if r["variant"] == "clean" and r["outcome"] == "clean_pass":
+        return "honest"
+    return None
+
+
+def is_attack_turn(r: dict, question: str) -> bool:
+    return r["variant"] == "forced" or (r["variant"] == "dice70" and dice_roll(question) <= 70)
+
+
 def build_examples(rows: list[dict], by_pid: dict) -> list[dict]:
     examples = []
     for r in rows:
-        honest = r["variant"] == "clean" and r["outcome"] == "clean_pass"
-        attack = r["variant"] == "forced" and r["outcome"] == "backdoor_success"
+        kind = role(r, by_pid[r["problem_id"]].question)
+        honest, attack = kind == "honest", kind == "attack"
         if not r["reference_verified"] or not (honest or attack):
             continue
         response = strip_exploit(r["final"])
@@ -55,13 +81,14 @@ def build_examples(rows: list[dict], by_pid: dict) -> list[dict]:
     return examples
 
 
-def summarize(rows: list[dict], examples: list[dict], acts_name: str, probe_names: list[str], conditions: list[str]) -> dict:
+def summarize(rows: list[dict], examples: list[dict], acts_name: str, probe_names: list[str], conditions: list[str], by_pid: dict) -> dict:
     labels = np.array([e["label"] for e in examples])
     cond_of = np.array([e["condition"] for e in examples])
     pids = np.array([e["problem_id"] for e in examples])
-    attempts = {c: sum(r["condition"] == c and r["variant"] == "forced" for r in rows) for c in conditions}
+    attempts = {c: sum(r["condition"] == c and is_attack_turn(r, by_pid[r["problem_id"]].question) for r in rows) for c in conditions}
+    variants = sorted({r["variant"] for r in rows})
     summary = {"outcomes": {f"{c}/{v}": dict(Counter(r["outcome"] for r in rows if r["condition"] == c and r["variant"] == v))
-                            for c in conditions for v in VARIANTS},
+                            for c in conditions for v in variants},
                "attack_attempts": attempts, "probes": {}}
     for name in probe_names:
         layer, params = load_probe(name)
@@ -79,7 +106,7 @@ def summarize(rows: list[dict], examples: list[dict], acts_name: str, probe_name
 
 @app.local_entrypoint()
 def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, difficulty: str = "introductory",
-         resume: str = "", rescore: str = "", partial: str = ""):
+         resume: str = "", rescore: str = "", partial: str = "", design: str = "dice70"):
     """--partial <run dir>: preliminary summary from the chunks a still-running run has finished.
     --rescore <run dir>: re-summarize from saved examples + activations (minutes, no GPU sampling).
     --resume <run dir>: re-run the sandbox on saved generations, then re-extract and summarize."""
@@ -90,14 +117,14 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
     if partial:
         # Early read on a run that is still generating: everything downstream on the chunks finished so far.
         run_dir = Path(partial)
-        rows = partial_rows(problems, VARIANTS, conditions, run_dir / "chunks")
+        rows = partial_rows(problems, DESIGNS[design], conditions, run_dir / "chunks")
         print(f"partial: {len(rows)} samples from finished chunks")
         run_sandbox(rows, problems)
         examples = build_examples(rows, by_pid)
         acts_name = f"evasion_{run_dir.name}_partial{len(rows)}"
         extract_all(acts_name, examples)
         summary = {"partial": True, "n_samples": len(rows), "activations": acts_name}
-        summary |= summarize(rows, examples, acts_name, probe_names, list(conditions))
+        summary |= summarize(rows, examples, acts_name, probe_names, list(conditions), by_pid)
         (run_dir / f"summary_partial_{len(rows)}.json").write_text(json.dumps(summary, indent=2))
         print(json.dumps(summary, indent=2))
         return
@@ -111,9 +138,9 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
             rows = read_jsonl(run_dir / "generations.jsonl")
             print(f"resuming {run_dir}: re-sandboxing {len(rows)} generations")
         else:
-            run_dir = Path("results/evasion") / time.strftime("%Y%m%d-%H%M%S")
+            run_dir = Path("results/evasion") / f"{time.strftime('%Y%m%d-%H%M%S')}_{design}"
             print(f"{len(problems)} test problems x {samples} samples x conditions {list(conditions)}")
-            rows = generate(problems, VARIANTS, "qwen", samples, seed, conditions, chunk_seqs=128,
+            rows = generate(problems, DESIGNS[design], "qwen", samples, seed, conditions, chunk_seqs=128,
                             checkpoint_dir=run_dir / "chunks")
             write_jsonl(run_dir / "generations.jsonl", rows)
         run_sandbox(rows, problems)
@@ -123,8 +150,8 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
         acts_name = f"evasion_{run_dir.name}{'_r' if resume else ''}"
         extract_all(acts_name, examples)
 
-    summary = {"n_problems": len(problems), "samples": samples, "difficulty": difficulty, "activations": acts_name}
-    summary |= summarize(rows, examples, acts_name, probe_names, list(conditions))
+    summary = {"n_problems": len(problems), "samples": samples, "difficulty": difficulty, "design": design, "activations": acts_name}
+    summary |= summarize(rows, examples, acts_name, probe_names, list(conditions), by_pid)
     write_jsonl(run_dir / "examples_scored.jsonl", examples)
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
