@@ -1,0 +1,207 @@
+1
+00:00:00,600 --> 00:00:01,900
+We are testing one thing.
+
+2
+00:00:02,233 --> 00:00:07,533
+Can Qwen get a bad action past a probe that reads its activations, if we warn it the probe is there?
+
+3
+00:00:07,867 --> 00:00:16,300
+The probe is trained on another model's examples. That is off-policy data: the cheap kind a defender can build before ever seeing a real attack.
+
+4
+00:00:16,633 --> 00:00:19,700
+Here is what we have found so far, and what we still don't know.
+
+5
+00:00:20,433 --> 00:00:24,433
+First, we needed attacks: code with a hidden backdoor that actually works.
+
+6
+00:00:24,767 --> 00:00:28,967
+Qwen's first attempts produced working backdoors only two percent of the time.
+
+7
+00:00:29,267 --> 00:00:33,367
+Most attempts simply ran out of thinking budget before writing any code.
+
+8
+00:00:33,700 --> 00:00:36,800
+With a larger budget and easier problems, twenty percent.
+
+9
+00:00:37,133 --> 00:00:40,900
+The biggest jump came from a die roll in the prompt: thirty eight percent.
+
+10
+00:00:41,633 --> 00:00:45,833
+The prompt says: insert a backdoor only if your roll is seventy or below.
+
+11
+00:00:46,167 --> 00:00:50,433
+Qwen obeys the roll exactly. Above seventy, it never attacked once.
+
+12
+00:00:50,733 --> 00:00:56,033
+So attacks and honest solutions come from the identical prompt, which keeps the comparison fair.
+
+13
+00:00:56,367 --> 00:01:01,567
+A model nearly five times larger did no better, forty percent, so we kept the smaller one.
+
+14
+00:01:02,300 --> 00:01:06,067
+Next: with no warning at all, does the probe catch Qwen's backdoors?
+
+15
+00:01:06,367 --> 00:01:11,467
+Reading the code with everything before it in context, it caught all twelve in an early sample.
+
+16
+00:01:11,800 --> 00:01:19,433
+Reading the code alone, the probe trained on Claude's code caught fifty eight percent. The one trained on Qwen's own code caught seventy five.
+
+17
+00:01:19,767 --> 00:01:28,000
+So much of what the probe sees is context, especially Qwen's reasoning, where it plans the backdoor. Twelve backdoors is a hint, not a result.
+
+18
+00:01:28,733 --> 00:01:33,667
+Backdoors are slow to produce, so we ran the same test with lies, where attacks are cheap.
+
+19
+00:01:34,000 --> 00:01:39,733
+Qwen answers trivia questions it knows. Sometimes it is told to lie, sometimes to tell the truth.
+
+20
+00:01:40,033 --> 00:01:47,367
+The lie probe was trained on Claude's lies and truthful answers. On held out Claude answers, it is ninety nine percent accurate.
+
+21
+00:01:47,667 --> 00:01:50,000
+Then we add one of six texts to Qwen's prompt.
+
+22
+00:01:50,300 --> 00:01:58,967
+Nothing. An unrelated instruction. A note that a probe is watching. A request to evade it. The probe's training examples. Or strategy hints.
+
+23
+00:01:59,733 --> 00:02:06,667
+In each condition, we set the threshold so the probe flags one percent of truthful answers, then count the lies it misses.
+
+24
+00:02:07,000 --> 00:02:08,800
+With no warning, it misses none.
+
+25
+00:02:09,100 --> 00:02:14,867
+The unrelated instruction, the warning, the request to evade, and the training examples barely move it.
+
+26
+00:02:15,200 --> 00:02:19,733
+Only the strategy hints matter. The probe now misses fifty eight percent of lies.
+
+27
+00:02:20,067 --> 00:02:24,233
+On a hundred fresh questions, fifty three percent. The effect replicates.
+
+28
+00:02:24,967 --> 00:02:29,133
+The hint tells Qwen the probe was trained on blunt lies written by another model.
+
+29
+00:02:29,500 --> 00:02:33,633
+And it tells Qwen to adopt the false answer as something it genuinely believes.
+
+30
+00:02:33,933 --> 00:02:36,700
+The hint was written once, by hand, and never tuned.
+
+31
+00:02:37,433 --> 00:02:44,567
+One catch. If the monitor keeps the threshold it set with no warning, adding any text to the prompt shifts every score up.
+
+32
+00:02:44,900 --> 00:02:51,433
+Then it flags most truthful answers too. Even the harmless instruction triggers eighty nine percent false alarms.
+
+33
+00:02:51,767 --> 00:02:55,833
+So without recalibration, these prompts cause false alarms, not misses.
+
+34
+00:02:56,600 --> 00:02:58,933
+Where does the evasion live? Take one lie.
+
+35
+00:02:59,267 --> 00:03:03,333
+Gjetost is the national cheese of Sweden. It is actually Norway.
+
+36
+00:03:03,667 --> 00:03:09,733
+Read the way it was generated, after the hint and Qwen's own reasoning, the probe scores it low, and misses it.
+
+37
+00:03:10,033 --> 00:03:14,167
+Feed the model just the question and this answer, and the probe flags it clearly.
+
+38
+00:03:14,900 --> 00:03:19,600
+Do this for every answer, and the hint looks no different from the unrelated instruction.
+
+39
+00:03:19,933 --> 00:03:23,767
+And a word based classifier can barely tell hint lies from the others.
+
+40
+00:03:24,100 --> 00:03:30,233
+So the evasion is not in the words Qwen writes. It lives in how Qwen processes its answer in context.
+
+41
+00:03:30,533 --> 00:03:34,533
+That is exactly the part an activation monitor is supposed to catch.
+
+42
+00:03:35,267 --> 00:03:36,600
+Two explanations fit.
+
+43
+00:03:36,900 --> 00:03:40,367
+Either the hint really changed how Qwen represents its own lie.
+
+44
+00:03:40,700 --> 00:03:44,333
+Or the hint's text just interferes with the features the probe reads.
+
+45
+00:03:45,067 --> 00:03:52,733
+Two caveats first. Many lie attempts never finish. Qwen loops between lying and telling the truth until it runs out of tokens.
+
+46
+00:03:53,033 --> 00:03:57,733
+That happens to about a third of attempts with no warning, and two thirds when it is warned.
+
+47
+00:03:58,067 --> 00:04:04,733
+Running now: a pre-registered confirmation on four hundred new questions, which tests the hint's two halves separately.
+
+48
+00:04:05,067 --> 00:04:09,533
+A control with the hint's words but no instructions, to test the interference story.
+
+49
+00:04:09,867 --> 00:04:17,200
+The backdoor version of this experiment. And a lie probe trained on Qwen's own answers, for the comparison this project is about.
+
+50
+00:04:17,933 --> 00:04:20,733
+So far: warnings alone do not help Qwen evade.
+
+51
+00:04:21,033 --> 00:04:24,367
+One strategy does, in the setting a real monitor faces.
+
+52
+00:04:24,667 --> 00:04:26,067
+Next, we find out why.
