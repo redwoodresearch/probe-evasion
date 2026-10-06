@@ -4,6 +4,7 @@
 """
 
 import html
+import math
 import json
 import time
 from collections import Counter
@@ -268,11 +269,12 @@ def evasion_chart(conds: dict) -> str:
     names = list(conds)
     vals = [conds[c]["recalibrated"] for c in names]
     false_alarms = [conds[c]["fixed_E0_threshold"].get("achieved_fpr") for c in names]
-    y_max = max(0.2, min(1.0, max(v["ci95"][1] for v in vals if v["ci95"][1] == v["ci95"][1]) * 1.15))
-    w, h, l, r, t, b = 680, 250, 44, 12, 14, 34
+    top = max([v["ci95"][1] for v in vals if v["ci95"][1] == v["ci95"][1]] + [0.0])
+    y_max = min(1.0, max(0.2, math.ceil(top * 1.1 * 5) / 5))  # round up to a multiple of 20%
+    w, h, l, r, t, b = 680, 270, 44, 12, 14, 52
     slot = (w - l - r) / len(names)
     y = lambda v: t + (y_max - v) / y_max * (h - t - b)
-    ticks = [y_max * i / 4 for i in range(5)]
+    ticks = [i / 10 for i in range(0, int(round(y_max * 10)) + 1, 2)]
     grid = "".join(f'<line class="grid" x1="{l}" x2="{w - r}" y1="{y(v):.1f}" y2="{y(v):.1f}"/>'
                    f'<text class="tick" x="{l - 8}" y="{y(v) + 4:.1f}" text-anchor="end">{100 * v:.0f}%</text>' for v in ticks)
     bars = ""
@@ -286,10 +288,11 @@ def evasion_chart(conds: dict) -> str:
             lo, hi = v["ci95"]
             bars += f'<line class="ci" x1="{cx:.1f}" x2="{cx:.1f}" y1="{y(lo):.1f}" y2="{y(hi):.1f}"/>'
             bars += f'<text class="val" x="{cx:.1f}" y="{y(hi) - 5:.1f}" text-anchor="middle">{100 * e:.0f}%</text>'
-        bars += f'<text class="tick" x="{cx:.1f}" y="{h - 18}" text-anchor="middle">{esc(condition_tick(c))}</text>'
+        bars += f'<text class="tick" x="{cx:.1f}" y="{h - 36}" text-anchor="middle">{esc(condition_tick(c))}</text>'
+        bars += f'<text class="tick sub" x="{cx:.1f}" y="{h - 20}" text-anchor="middle">n={v["n_backdoor"]}</text>'
         fa = false_alarms[i]
-        fa_txt = f" · {100 * fa:.0f}% false alarms" if fa is not None and fa == fa else ""
-        bars += f'<text class="tick sub" x="{cx:.1f}" y="{h - 5}" text-anchor="middle">n={v["n_backdoor"]}{fa_txt}</text>'
+        if fa is not None and fa == fa:
+            bars += f'<text class="tick sub" x="{cx:.1f}" y="{h - 6}" text-anchor="middle">{100 * fa:.0f}% false alarms</text>'
     base = vals[0]["evasion_rate"]
     ref = f'<line class="ref" x1="{l}" x2="{w - r}" y1="{y(base):.1f}" y2="{y(base):.1f}"/>' if base == base else ""
     return f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="evasion rate by condition">{grid}{ref}{bars}</svg>'
