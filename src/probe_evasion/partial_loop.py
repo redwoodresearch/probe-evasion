@@ -36,6 +36,8 @@ def latest(glob: str) -> Path | None:
 def main(interval: int) -> None:
     processed = {r["name"]: 0 for r in RUNS}
     last_launch = {r["name"]: 0.0 for r in RUNS}
+    launched_at = {r["name"]: 0 for r in RUNS}
+    failures = {r["name"]: 0 for r in RUNS}
     running: dict[str, subprocess.Popen] = {}
     while True:
         finished_all = True
@@ -47,9 +49,10 @@ def main(interval: int) -> None:
             if r["name"] in running or time.time() - last_launch[r["name"]] < interval:
                 continue  # previous partial still computing, or not due yet
             n = len(list((run_dir / "chunks").glob("chunk_*.json"))) if run_dir else 0
-            if n - processed[r["name"]] < MIN_NEW_CHUNKS:
+            retry_due = failures[r["name"]] and time.time() - last_launch[r["name"]] > min(3600, interval * 2 ** failures[r["name"]])
+            if n - processed[r["name"]] < MIN_NEW_CHUNKS and not (retry_due and n > processed[r["name"]]):
                 continue
-            processed[r["name"]] = n
+            launched_at[r["name"]] = n
             last_launch[r["name"]] = time.time()
             log = run_dir / f"partial_{n}chunks.log"
             print(f"{time.strftime('%H:%M')} partial start: {r['name']} {run_dir} ({n} chunks)", flush=True)
@@ -57,6 +60,10 @@ def main(interval: int) -> None:
         for name, proc in list(running.items()):
             if proc.poll() is not None:
                 print(f"{time.strftime('%H:%M')} partial done: {name} (exit {proc.returncode})", flush=True)
+                if proc.returncode == 0:  # only successful analyses count as progress
+                    processed[name], failures[name] = launched_at[name], 0
+                else:  # retried with exponential backoff even if no new chunks arrive
+                    failures[name] += 1
                 del running[name]
         if finished_all and not running:
             print("all tracked runs have final summaries; exiting", flush=True)

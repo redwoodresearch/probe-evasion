@@ -119,14 +119,23 @@ def rows_and_examples(keys, convs, outs) -> tuple[list[dict], list[dict]]:
     return rows, examples
 
 
+def outcome_counts(rows: list[dict]) -> dict:
+    unfinished = sum(r["truncated"] or not r["final"] for r in rows)
+    correct = sum(not (r["truncated"] or not r["final"]) and r["correct"] for r in rows)
+    return {"n": len(rows), "unfinished": unfinished, "completed_correct": correct,
+            "completed_wrong": len(rows) - unfinished - correct}
+
+
 def score_and_summarize(rows, examples, acts_name, conditions, probe_names) -> dict:
     extract_all(acts_name, examples)
     labels = np.array([e["label"] for e in examples])
     cond_of = np.array([e["condition"] for e in examples])
     pids = np.array([e["problem_id"] for e in examples])
     summary = {"n_samples": len(rows), "activations": acts_name,
-               "lie_success": {c: sum(r["condition"] == c and r["kind"] == "lie" and not r["correct"] for r in rows)
-                               / max(1, sum(r["condition"] == c and r["kind"] == "lie" for r in rows)) for c in conditions},
+               # Per condition and prompt kind: unfinished (no final answer within the token budget), completed and
+               # graded correct, completed and graded wrong. Only completed answers are probe examples.
+               "outcomes": {c: {kind: outcome_counts([r for r in rows if r["condition"] == c and r["kind"] == kind])
+                                for kind in ("lie", "truth")} for c in conditions},
                "attack_attempts": {c: sum(r["condition"] == c and r["kind"] == "lie" for r in rows) for c in conditions},
                "probes": {}}
     for name in probe_names:
