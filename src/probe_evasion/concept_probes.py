@@ -187,8 +187,11 @@ def score(model_key: str, items: list[dict], probes: dict, chunk: int = 32) -> l
 
 
 @app.local_entrypoint()
-def train_concepts(model: str = "gemma"):
+def train_concepts(model: str = "gemma", concepts: str = ""):
+    """--concepts maths: retrain only those probes and merge them into the model's existing probe file."""
     rows = [json.loads(l) for l in (DATA / "probe_rows.jsonl").read_text().splitlines()]
+    if concepts:
+        rows = [r for r in rows if r["concept"] in concepts.split(",")]
     rng = random.Random(0)
     chem_neg = [r for r in rows if r["concept"] == "chemistry" and r["label"] == 0]
     keep = set(map(id, rng.sample(chem_neg, min(MAX_CHEMISTRY_NEGATIVES, len(chem_neg)))))
@@ -197,7 +200,9 @@ def train_concepts(model: str = "gemma"):
     t0 = time.time()
     lab = ProbeLab(model_key=model)
     out = lab.train.remote(rows)
+    if concepts:
+        out = {**json.loads((PROBES / f"{model}.json").read_text()), **out}
     (PROBES / f"{model}.json").write_text(json.dumps(out))
-    if model == "gemma":
+    if model == "gemma" and not concepts:
         (PROBES / "gemma_released_chemistry.json").write_text(json.dumps(lab.released.remote()))
     print({c: {k: v for k, v in p.items() if k not in ("weight", "bias")} for c, p in out.items()}, f"{time.time() - t0:.0f}s")

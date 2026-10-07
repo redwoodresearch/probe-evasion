@@ -27,6 +27,8 @@ N_NEGATIVE_TASKS = 200  # no-concept tasks per concept, for the threshold
 MATHS_INSTRUCTION = "Answer in one short sentence that states the result. Do not show any working."
 SARCASM_TASK = "Reply to them with a short sarcastic remark (one or two sentences)."
 SINCERE_TASK = "Reply to them with a short, sincere remark (one or two sentences)."
+CHEMISTRY_LIMIT = "Answer in at most 150 words."
+N_RECALL = 900  # factual questions with a numeric answer: a new number in the reply, no computation
 
 # ---------------------------------------------------------------- maths
 
@@ -98,6 +100,37 @@ def maths(rng: random.Random, n: int) -> list[dict]:
         fields = {**nums, "item": rng.choice(ITEMS), "r": f"{nums['r']:,}"}
         out.append({"computed": computed.format(**fields), "given": given.format(**fields),
                     "answer": answer.format(**fields), "result": nums["r"]})
+    return out
+
+
+RECALL_TOOL = {
+    "name": "record_questions",
+    "description": "Record the questions.",
+    "input_schema": {
+        "type": "object",
+        "properties": {"items": {"type": "array", "items": {
+            "type": "object",
+            "properties": {"question": {"type": "string", "description": "A factual question whose answer is a number."},
+                           "answer": {"type": "string", "description": "A one-sentence answer stating the number."},
+                           "number": {"type": "integer", "description": "The number, as an integer."}},
+            "required": ["question", "answer", "number"]}}},
+        "required": ["items"],
+    },
+}
+RECALL_PROMPT = """Write 30 factual questions about {topic} whose answer is a single well-known whole number that is NOT in the question and needs no arithmetic to produce (recalled, not computed): years, counts, heights, populations, record times rounded to whole numbers, and so on. Mix small and large numbers, with some of 3-4 digits. For each, give a one-sentence answer that states the number in the same style as "There are 206 bones in the adult human body." Record them with the record_questions tool."""
+RECALL_TOPICS = ["history", "geography", "the human body", "astronomy", "sports records", "music", "literature",
+                 "film", "technology", "animals", "architecture", "chemistry facts", "famous companies", "space missions",
+                 "mountains and rivers", "cities", "inventions", "languages", "board games", "art history",
+                 "transport", "the ocean", "plants", "weather records", "olympics", "physics constants rounded to whole numbers",
+                 "computing history", "world wars", "kings and queens", "national flags"]
+
+
+def recall_items() -> list[dict]:
+    out = []
+    for topic, v in zip(RECALL_TOPICS, ask_with_tool([RECALL_PROMPT.format(topic=t) for t in RECALL_TOPICS], RECALL_TOOL,
+                                                     concurrency=16, max_tokens=8000)):
+        assert not v.get("judge_refused"), topic
+        out += [i for i in v["items"] if str(i["number"]) not in i["question"].replace(",", "")]
     return out
 
 
@@ -205,9 +238,19 @@ def build() -> None:
         if label is not None and r["prompt"] not in held:
             probe_rows.append({"concept": "chemistry", "label": label, "prompt": r["prompt"], "response": r["topical_response"]})
     for split, items in split_tasks(chem_prompts[:sum(SPLITS.values())], rng).items():
-        tasks += [{"concept": "chemistry", "split": split, "task": r["prompt"]} for r in items]
+        tasks += [{"concept": "chemistry", "split": split, "task": f"{r['prompt']}\n\n{CHEMISTRY_LIMIT}"} for r in items]
     unrelated = [r for r in rows if r["adjectives"][0] in ("literature-focused", "comforting", "jokey", "confused")]
-    tasks += [{"concept": "chemistry", "split": "negative", "task": r["prompt"]} for r in rng.sample(unrelated, N_NEGATIVE_TASKS)]
+    tasks += [{"concept": "chemistry", "split": "negative", "task": f"{r['prompt']}\n\n{CHEMISTRY_LIMIT}"}
+              for r in rng.sample(unrelated, N_NEGATIVE_TASKS)]
+
+    # maths control: recalled numbers (new to the reply, but no computation) are negatives for the probe and for
+    # the threshold, so the probe can't separate the classes just by "is there a number not in the prompt"
+    recall = recall_items()
+    rng.shuffle(recall)
+    for q in recall[N_NEGATIVE_TASKS:N_RECALL]:
+        probe_rows.append({"concept": "maths", "label": 0, "prompt": f"{q['question']} {MATHS_INSTRUCTION}", "response": q["answer"]})
+    tasks += [{"concept": "maths", "split": "negative", "task": f"{q['question']} {MATHS_INSTRUCTION}", "result": q["number"],
+               "kind": "recall"} for q in recall[:N_NEGATIVE_TASKS]]
 
     (OUT / "probe_rows.jsonl").write_text("".join(json.dumps(r) + "\n" for r in probe_rows))
     (OUT / "tasks.jsonl").write_text("".join(json.dumps(t) + "\n" for t in tasks))
