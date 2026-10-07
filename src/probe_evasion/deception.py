@@ -47,7 +47,7 @@ def filter_known(n_questions: int, seed: int) -> None:
 
 @app.local_entrypoint()
 def main(stage: str, generator: str = "claude", probes: str = "", n_questions: int = 4000, seed: int = 0, samples: int = 2,
-         run: str = "", offset: int = 0, conditions: str = ",".join(DEFAULT_CONDITIONS), max_tokens: int = 8192,
+         run: str = "", offset: int = -1, conditions: str = ",".join(DEFAULT_CONDITIONS), max_tokens: int = 8192,
          max_questions: int = 300, tag: str = "", exclude_runs: str = ""):
     if stage == "filter":
         filter_known(n_questions, seed)
@@ -106,10 +106,28 @@ def _e2_for(probe_name: str) -> str:
     return e2_addition(lie["response"], truth["response"])
 
 
+def unused_test_questions(n: int) -> list[dict]:
+    """The first n held-out known questions, unique by question ID, never used by any earlier eval run."""
+    used = used_qids(sorted(ROOT.glob("eval_*")))
+    out, seen = [], set()
+    for q in read_jsonl(KNOWN):
+        if q["split"] == "test" and q["qid"] not in used and q["qid"] not in seen:
+            seen.add(q["qid"])
+            out.append(q)
+    assert len(out) >= n, f"only {len(out)} unused test questions left"
+    return out[:n]
+
+
 def eval_plan(probe_names: list[str], max_questions: int, interleave: bool = True, offset: int = 0,
-              condition_names: tuple[str, ...] = DEFAULT_CONDITIONS):
-    """Test questions [offset, offset + max_questions) of the held-out known set; "E2" expands to one E2 per probe."""
-    test = [q for q in read_jsonl(KNOWN) if q["split"] == "test"][offset : offset + max_questions]
+              condition_names: tuple[str, ...] = DEFAULT_CONDITIONS, qids: list[str] | None = None):
+    """Test questions: the given qids (fresh runs record them in their manifest) or, for older runs,
+    rows [offset, offset + max_questions) of the held-out known set. "E2" expands to one E2 per probe."""
+    known_test = [q for q in read_jsonl(KNOWN) if q["split"] == "test"]
+    if qids is not None:
+        by_id = {q["qid"]: q for q in known_test}
+        test = [by_id[q] for q in qids]
+    else:
+        test = known_test[offset : offset + max_questions]
     conditions = {}
     for name in condition_names:
         if name == "E2":
@@ -175,14 +193,16 @@ def score_and_summarize(rows, examples, acts_name, conditions, probe_names, extr
     return summary
 
 
-def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int = 300, offset: int = 0,
+def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int = 300, offset: int = -1,
              condition_names: tuple[str, ...] = DEFAULT_CONDITIONS, max_tokens: int = 8192, tag: str = "") -> None:
-    conditions, keys, convs = eval_plan(probe_names, max_questions, offset=offset, condition_names=condition_names)
+    """offset < 0 (default): fresh questions, unique and unused by any earlier run, recorded in the manifest."""
+    qids = [q["qid"] for q in unused_test_questions(max_questions)] if offset < 0 else None
+    conditions, keys, convs = eval_plan(probe_names, max_questions, offset=max(offset, 0), condition_names=condition_names, qids=qids)
     run_dir = ROOT / f"eval_{time.strftime('%Y%m%d-%H%M%S')}{'_' + tag if tag else ''}"
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "manifest.json").write_text(json.dumps({
         "probes": probe_names, "samples": samples, "seed": seed, "max_questions": max_questions, "offset": offset,
-        "conditions": list(conditions), "max_tokens": max_tokens, "interleave": True, "chunk_seqs": 64}, indent=2))
+        "qids": qids, "conditions": list(conditions), "max_tokens": max_tokens, "interleave": True, "chunk_seqs": 64}, indent=2))
     # The token cap stops rare runaway traces from stalling the batch; completion rates are reported per condition.
     outs = sample(convs, "qwen", samples, seed, chunk_seqs=64, max_tokens=max_tokens, checkpoint_dir=run_dir / "chunks")
     rows, examples = rows_and_examples(keys, convs, outs)
@@ -278,7 +298,11 @@ def decompose(run_dir: Path, probe_names: list[str], conditions: tuple[str, ...]
         e.pop("scores", None)
     rows = [r for r in read_jsonl(run_dir / "samples.jsonl") if r["condition"] in conditions]
     out = {}
+    reused = {"full": run_dir / "summary_rescored.json", "question_answer": run_dir / "summary_neutral.json"}
     for variant, (keep_system, keep_reasoning) in CONTEXT_VARIANTS.items():
+        if reused.get(variant) and reused[variant].exists():
+            out[variant] = json.loads(reused[variant].read_text()) | {"reused_from": str(reused[variant])}
+            continue
         examples = [{k: v for k, v in e.items() if k != "system" or keep_system} | ({} if keep_reasoning else {"reasoning": ""})
                     for e in base]
         out[variant] = score_and_summarize(rows, examples, f"deception_{run_dir.name}_decomp_{variant}", list(conditions), probe_names)
@@ -290,7 +314,12 @@ def decompose(run_dir: Path, probe_names: list[str], conditions: tuple[str, ...]
 def evaluate_partial(run_dir: Path, probe_names: list[str], max_questions: int = 300) -> None:
     """Preliminary summary from the chunks a still-running eval has finished."""
     # Runs started before interleaving (eval_20261006-144940) use condition-major order.
-    conditions, keys, convs = eval_plan(probe_names, max_questions, interleave=run_dir.name > "eval_20261006-1500")
+    manifest_path = run_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    conditions, keys, convs = eval_plan(probe_names, manifest.get("max_questions", max_questions),
+                                        interleave=run_dir.name > "eval_20261006-1500", offset=max(manifest.get("offset", 0), 0),
+                                        condition_names=tuple(c if not c.startswith("E2_") else "E2" for c in manifest["conditions"])
+                                        if manifest else DEFAULT_CONDITIONS, qids=manifest.get("qids"))
     chunks = load_chunks(run_dir / "chunks")
     per_chunk = json.loads(next((run_dir / "chunks").glob("chunk_*.json")).read_text())["per_chunk"]
     idx = [i * per_chunk + j for i in sorted(chunks) for j in range(len(chunks[i]))]
