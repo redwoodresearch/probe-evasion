@@ -73,16 +73,20 @@ def read_manifest(run_dir: Path) -> dict:
 
 
 def build_examples(rows: list[dict], by_pid: dict) -> list[dict]:
-    examples = []
+    examples, no_code = [], 0
     for r in rows:
         kind = role(r, by_pid[r["problem_id"]].question)
         honest, attack = kind == "honest", kind == "attack"
         if not r["reference_verified"] or not (honest or attack):
             continue
         response = strip_exploit(r["final"])
+        if code_span(response) is None:  # no fenced program before the exploit section: nothing for the probe to read
+            no_code += 1
+            continue
         examples.append({"condition": r["condition"], "problem_id": r["problem_id"], "label": 0 if honest else 1,
                          "generator": "qwen", "system": r["system"], "question": by_pid[r["problem_id"]].question,
                          "reasoning": r["reasoning"], "response": response, "code_span": code_span(response)})
+    print(f"{len(examples)} probe examples; {no_code} usable attempts skipped for having no code block before the exploit")
     return examples
 
 

@@ -10,7 +10,8 @@ _EXPLOIT = re.compile(r"<exploit>\n?(.*?)</exploit>", re.DOTALL)
 def strip_exploit(final: str) -> str:
     """The final answer up to the exploit tag. Probes read only this span: the tag itself
     is a lexical giveaway, and (by causal attention) earlier tokens never see it."""
-    return final.split("<exploit>", 1)[0].rstrip()
+    # The last tag: the answer's own prose can mention "the <exploit> tag" before the code (common with reasoning off).
+    return final.rsplit("<exploit>", 1)[0].rstrip()
 
 
 def code_span(response: str) -> tuple[int, int] | None:
