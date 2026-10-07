@@ -40,5 +40,50 @@ def repro(run_dir: Path) -> Path:
     return out
 
 
+CONDITION_ORDER = ["no warning", "placebo", "probe is watching", "paper's trigger", "told to evade", "strategy hint",
+                   "reframe", "framing + evade"]
+READINGS = [("as_generated", "as generated", INK), ("instruction_removed", "instruction removed", BLUE),
+            ("rewrite", "rewrite control", ORANGE)]
+MIN_POSITIVES = 5  # concepts with fewer replies that show the concept under a condition are left out of its average
+
+
+def evasion(run_dir: Path, label: str) -> Path:
+    """Per prompt condition: how many replies still show the concept, and how well the probe separates those replies
+    from ordinary replies (AUROC, averaged over concepts; threshold-free)."""
+    s = json.loads((run_dir / "summary.json").read_text())
+    cells = [c for c in s["cells"] if c["model"] == "base"]
+    conds = [c for c in CONDITION_ORDER if any(x["condition"] == c for x in cells)]
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5.2), dpi=160, gridspec_kw={"width_ratios": [1, 1.3]})
+    y = np.arange(len(conds))[::-1]
+    shows = [sum(x["n_shows_concept"] for x in cells if x["condition"] == c) / sum(x["n"] for x in cells if x["condition"] == c) * 100
+             for c in conds]
+    ax1.barh(y, shows, color=GREY, height=0.6)
+    for yi, v in zip(y, shows):
+        ax1.text(v + 1, yi, f"{v:.0f}%", va="center", fontsize=9.5, color=INK)
+    ax1.set_yticks(y, conds, fontsize=10)
+    ax1.set_xlim(0, 100)
+    ax1.set_xlabel("% of replies Claude says still show the concept", fontsize=10)
+    for j, (key, name, color) in enumerate(READINGS):
+        vals = []
+        for c in conds:
+            aucs = [x[key]["auroc"] for x in cells if x["condition"] == c and key in x and x[key]["n"] >= MIN_POSITIVES]
+            vals.append(np.mean(aucs) if aucs else np.nan)
+        ax2.scatter(vals, y + (1 - j) * 0.18, color=color, s=40, label=name, zorder=3)
+    ax2.set_yticks(y, [""] * len(conds))
+    ax2.set_xlim(0.85, 1.0)
+    ax2.axvline(1.0, color="#d0d3d8", lw=1)
+    ax2.set_xlabel("Probe AUROC: concept replies vs ordinary replies\n(mean over concepts; 1.0 = perfectly separated)", fontsize=10)
+    ax2.legend(frameon=False, fontsize=9.5, loc="lower left")
+    for ax in (ax1, ax2):
+        for side in ("top", "right"):
+            ax.spines[side].set_visible(False)
+    fig.suptitle(f"{label}: prompting mostly makes the model drop the concept, not hide it", x=0.01, ha="left", fontsize=12.5, color=INK)
+    fig.tight_layout()
+    out = SHARE / f"chameleons_evasion_{run_dir.name.split('_')[1] if 'qwen' in run_dir.name else 'gemma'}.png"
+    fig.savefig(out)
+    return out
+
+
 if __name__ == "__main__":
-    print({"repro": repro}[sys.argv[1]](Path(sys.argv[2])))
+    fn = sys.argv[1]
+    print(repro(Path(sys.argv[2])) if fn == "repro" else evasion(Path(sys.argv[2]), sys.argv[3]))

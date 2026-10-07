@@ -70,12 +70,18 @@ def _prompt(question: str, aliases: list[str], response: str) -> str:
 
 def _calls_written_as_text(text: str, tool: dict) -> list[dict]:
     """The model sometimes writes the tool call as text (<parameter name="x">v</parameter>) instead of making it."""
-    params = dict(re.findall(r'<parameter name="(\w+)">(.*?)</parameter>', text, re.S))
-    schema = tool["input_schema"]
-    if not set(schema["required"]) <= set(params):
+    params = dict(re.findall(r'<parameter name="([\w-]+)">(.*?)</parameter>', text, re.S))
+    if not set(tool["input_schema"]["required"]) <= set(params):
         return []
+    return [{k: v for k, v in params.items() if k in tool["input_schema"]["properties"]}]
+
+
+def _conform(call: dict, tool: dict) -> dict:
+    """Cast string-typed values to the schema's integer/boolean types: text-written calls are all strings, and real
+    tool calls occasionally send "false" or "4" too."""
     cast = {"integer": int, "boolean": lambda v: v.strip().lower() == "true", "string": str}
-    return [{k: cast[schema["properties"][k]["type"]](v.strip()) for k, v in params.items() if k in schema["properties"]}]
+    props = tool["input_schema"]["properties"]
+    return {k: cast[props[k]["type"]](v) if isinstance(v, str) and k in props else v for k, v in call.items()}
 
 
 def log_usage(model: str, usage) -> None:
@@ -89,7 +95,7 @@ async def _one(client, sem, prompt: str, tool: dict) -> dict:
     key = [JUDGE_MODEL, prompt] if tool is TOOL else [JUDGE_MODEL, prompt, tool]  # existing trivia cache stays valid
     path = CACHE_DIR / f"{hashlib.sha256(json.dumps(key).encode()).hexdigest()}.json"
     if path.exists():
-        return json.loads(path.read_text())
+        return _conform(json.loads(path.read_text()), tool)
     # Forced tool choice isn't supported on this model; the prompt asks for the tool call, retried if skipped.
     for _ in range(3):
         async with sem:
@@ -109,7 +115,7 @@ async def _one(client, sem, prompt: str, tool: dict) -> dict:
     out = calls[0]
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out))
-    return out
+    return _conform(out, tool)
 
 
 async def _ask_all(prompts: list[str], tool: dict, concurrency: int) -> list[dict]:

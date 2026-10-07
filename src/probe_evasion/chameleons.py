@@ -275,8 +275,8 @@ def evasion(model: str = "gemma", per_concept: int = 30, run: str = ""):
                     "instruction_removed": [(r, {"user": r["task"], "response": r["response"]}) for r in mine],
                     "rewrite": [(r, {"user": r["task"], "response": r["rewrite"]}) for r in mine if "rewrite" in r]}
         for name, pairs in readings.items():
-            if f"scores_{name}" in pairs[0][0]:
-                continue  # scored by an earlier attempt
+            if not pairs or f"scores_{name}" in pairs[0][0]:
+                continue  # nothing to score (the chameleon has no rewrites), or scored by an earlier attempt
             for (r, _), per_token in zip(pairs, score(model_id, [item for _, item in pairs], probe_set)):
                 r[f"scores_{name}"] = mean_scores(per_token)
                 r[f"tokens_{name}"] = per_token[list(CONCEPTS).index(r["concept"])]  # own probe, per token
