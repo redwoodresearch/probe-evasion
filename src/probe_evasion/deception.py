@@ -48,13 +48,13 @@ def filter_known(n_questions: int, seed: int) -> None:
 @app.local_entrypoint()
 def main(stage: str, generator: str = "claude", probes: str = "", n_questions: int = 4000, seed: int = 0, samples: int = 2,
          run: str = "", offset: int = -1, conditions: str = ",".join(DEFAULT_CONDITIONS), max_tokens: int = 8192,
-         max_questions: int = 300, tag: str = "", exclude_runs: str = ""):
+         max_questions: int = 300, tag: str = "", exclude_runs: str = "", condition_on: str = "both"):
     if stage == "filter":
         filter_known(n_questions, seed)
     elif stage == "data":
         build_probe_data(generator, seed)
     elif stage == "eval":
-        evaluate(probes.split(","), samples, seed, max_questions, offset, tuple(conditions.split(",")), max_tokens, tag)
+        evaluate(probes.split(","), samples, seed, max_questions, offset, tuple(conditions.split(",")), max_tokens, tag, condition_on)
     elif stage == "rescore":
         rescore(Path(run), probes.split(","), [Path(x) for x in exclude_runs.split(",") if x])
     elif stage == "rescore-neutral":
@@ -119,9 +119,12 @@ def unused_test_questions(n: int) -> list[dict]:
 
 
 def eval_plan(probe_names: list[str], max_questions: int, interleave: bool = True, offset: int = 0,
-              condition_names: tuple[str, ...] = DEFAULT_CONDITIONS, qids: list[str] | None = None):
+              condition_names: tuple[str, ...] = DEFAULT_CONDITIONS, qids: list[str] | None = None, condition_on: str = "both"):
     """Test questions: the given qids (fresh runs record them in their manifest) or, for older runs,
-    rows [offset, offset + max_questions) of the held-out known set. "E2" expands to one E2 per probe."""
+    rows [offset, offset + max_questions) of the held-out known set. "E2" expands to one E2 per probe.
+
+    condition_on="lie": the condition text goes only into the lie prompt and truthful answers are generated once,
+    with no warning, so the threshold is calibrated on answers that never saw evasion text."""
     known_test = [q for q in read_jsonl(KNOWN) if q["split"] == "test"]
     if qids is not None:
         by_id = {q["qid"]: q for q in known_test}
@@ -134,9 +137,12 @@ def eval_plan(probe_names: list[str], max_questions: int, interleave: bool = Tru
             conditions |= {f"E2_{p}": _e2_for(p) for p in probe_names}
         else:
             conditions[name] = ADDITIONS[name]
-    keys = [(c, kind, q) for c in conditions for kind in ("lie", "truth") for q in test]
+    def kinds(c):
+        return ("lie", "truth") if condition_on == "both" or c == "E0" else ("lie",)
+
+    keys = [(c, kind, q) for c in conditions for kind in kinds(c) for q in test]
     if interleave:  # question-major order: every chunk mixes all conditions, so early partials are balanced
-        keys = [(c, kind, q) for q in test for c in conditions for kind in ("lie", "truth")]
+        keys = [(c, kind, q) for q in test for c in conditions for kind in kinds(c)]
     convs = [messages(kind, q["question"], conditions[c]) for c, kind, q in keys]
     return conditions, keys, convs
 
@@ -195,15 +201,19 @@ def score_and_summarize(rows, examples, acts_name, conditions, probe_names, extr
 
 
 def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int = 300, offset: int = -1,
-             condition_names: tuple[str, ...] = DEFAULT_CONDITIONS, max_tokens: int = 8192, tag: str = "") -> None:
+             condition_names: tuple[str, ...] = DEFAULT_CONDITIONS, max_tokens: int = 8192, tag: str = "",
+             condition_on: str = "both") -> None:
     """offset < 0 (default): fresh questions, unique and unused by any earlier run, recorded in the manifest."""
     qids = [q["qid"] for q in unused_test_questions(max_questions)] if offset < 0 else None
-    conditions, keys, convs = eval_plan(probe_names, max_questions, offset=max(offset, 0), condition_names=condition_names, qids=qids)
+    assert condition_on in ("both", "lie") and (condition_on == "both" or "E0" in condition_names)
+    conditions, keys, convs = eval_plan(probe_names, max_questions, offset=max(offset, 0), condition_names=condition_names,
+                                        qids=qids, condition_on=condition_on)
     run_dir = ROOT / f"eval_{time.strftime('%Y%m%d-%H%M%S')}{'_' + tag if tag else ''}"
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "manifest.json").write_text(json.dumps({
         "probes": probe_names, "samples": samples, "seed": seed, "max_questions": max_questions, "offset": offset,
-        "qids": qids, "conditions": list(conditions), "max_tokens": max_tokens, "interleave": True, "chunk_seqs": 64}, indent=2))
+        "qids": qids, "conditions": list(conditions), "max_tokens": max_tokens, "interleave": True, "chunk_seqs": 64,
+        "condition_on": condition_on}, indent=2))
     # The token cap stops rare runaway traces from stalling the batch; completion rates are reported per condition.
     outs = sample(convs, "qwen", samples, seed, chunk_seqs=64, max_tokens=max_tokens, checkpoint_dir=run_dir / "chunks")
     rows, examples = rows_and_examples(keys, convs, outs)
@@ -339,7 +349,8 @@ def evaluate_partial(run_dir: Path, probe_names: list[str], max_questions: int =
     conditions, keys, convs = eval_plan(probe_names, manifest.get("max_questions", max_questions),
                                         interleave=run_dir.name > "eval_20261006-1500", offset=max(manifest.get("offset", 0), 0),
                                         condition_names=tuple(c if not c.startswith("E2_") else "E2" for c in manifest["conditions"])
-                                        if manifest else DEFAULT_CONDITIONS, qids=manifest.get("qids"))
+                                        if manifest else DEFAULT_CONDITIONS, qids=manifest.get("qids"),
+                                        condition_on=manifest.get("condition_on", "both"))
     chunks = load_chunks(run_dir / "chunks")
     per_chunk = json.loads(next((run_dir / "chunks").glob("chunk_*.json")).read_text())["per_chunk"]
     idx = [i * per_chunk + j for i in sorted(chunks) for j in range(len(chunks[i]))]
