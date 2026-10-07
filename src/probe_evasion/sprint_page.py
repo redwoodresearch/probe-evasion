@@ -64,19 +64,39 @@ def label(key: tuple[str, str, str, str]) -> str:
     return f"{MODELS[model]} · {CONCEPTS[concept]} · {TARGETS[target]}{probe}"
 
 
+SHORT_TARGET = {"window": "window", "ema": "EMA", "mean": "average"}
+SHORT_CONCEPT = {"maths": "Maths", "sarcasm": "Sarcasm", "chemistry": "Chemistry"}
+
+
 def glance(runs: dict) -> str:
-    tiles = []
+    """One chart: per finished search, share of concept replies the probe misses, plain task vs optimized prompt."""
+    rows = []
     for key, d in runs.items():
-        if (d / "summary.json").exists() and "arms" in read_json(d / "summary.json"):
-            arms, t = read_json(d / "summary.json")["arms"], key[2]
-            opt, base = arms["optimized"], arms["no instruction"]
-            tiles.append((f"{opt[f'missed_{t}']}/{opt['n']}",
-                          f"{label(key)}: held-out tasks where the concept is there and the probe misses it, optimized "
-                          f"prompt (plain task: {base[f'missed_{t}']}/{base['n']})"))
-    if not tiles:
+        if not (d / "summary.json").exists() or "arms" not in json.loads((d / "summary.json").read_text()):
+            continue
+        model, concept, target, tag = key
+        arms = json.loads((d / "summary.json").read_text())["arms"]
+        rate = lambda a: a[f"missed_{target}"] / a["present"]
+        probe = {"": "L12", "L30": "L30", "L36": "L36", "variedL30": "L30 varied"}.get(tag, tag)
+        rows.append((f"{SHORT_CONCEPT[concept]} · {probe} · {SHORT_TARGET[target]}", rate(arms["no instruction"]), rate(arms["optimized"]),
+                     f'{arms["optimized"][f"missed_{target}"]}/{arms["optimized"]["present"]}'))
+    if not rows:
         return '<p class="note">Headline numbers appear here when the first search finishes its held-out test.</p>'
-    return '<div class="glance">' + "".join(f'<div class="gtile"><div class="gv">{esc(v)}</div><div class="gl">{esc(l)}</div></div>'
-                                            for v, l in tiles) + "</div>"
+    w, row_h, left, right = 760, 34, 230, 64
+    h = row_h * len(rows) + 34
+    x = lambda v: left + v * (w - left - right)
+    out = "".join(f'<line class="grid" x1="{x(v):.1f}" x2="{x(v):.1f}" y1="6" y2="{h - 24}"/>'
+                  f'<text class="tick" x="{x(v):.1f}" y="{h - 8}" text-anchor="middle">{int(v * 100)}%</text>' for v in (0, .5, 1))
+    for i, (name, p, q, frac_txt) in enumerate(rows):
+        y = 20 + i * row_h
+        out += (f'<text x="{left - 12}" y="{y + 4}" text-anchor="end" style="font: 500 13px var(--sans); fill: var(--fg)">{esc(name)}</text>'
+                f'<line x1="{x(p):.1f}" x2="{x(q):.1f}" y1="{y}" y2="{y}" stroke="var(--faint)" stroke-width="5" stroke-linecap="round"/>'
+                f'<circle cx="{x(p):.1f}" cy="{y}" r="5" fill="var(--neutral)"><title>plain task {p:.0%}</title></circle>'
+                f'<circle cx="{x(q):.1f}" cy="{y}" r="6" fill="var(--s2)"><title>optimized {q:.0%}</title></circle>'
+                f'<text class="val" x="{w - 4}" y="{y + 4}" text-anchor="end">{frac_txt}</text>')
+    return (f'<figure class="card"><figcaption><span class="key"><span class="sw" style="background:var(--neutral)"></span>plain task</span>'
+            f'<span class="key"><span class="sw s2"></span>optimized prompt</span> · Gemma-2-9B, 100 held-out tasks · replies that do the task and the probe '
+            f'misses · L = probe layer; window / EMA / average = how token scores are combined (average and EMA are beaten by padding and short replies)</figcaption><svg viewBox="0 0 {w} {h}" role="img" aria-label="Misses per search">{out}</svg></figure>')
 
 
 def results_section(runs: dict) -> str:

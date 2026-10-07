@@ -135,13 +135,17 @@ def numbers(text: str) -> set[float]:
     return {float(m.replace("\u2212", "-").replace(",", "")) for m in (f.rstrip(",") for f in found)}
 
 
+NUMBER_WORDS = re.compile(r"\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|"
+                          r"sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|"
+                          r"hundred|thousand|million|dozen|half)\b", re.I)
 NEGATION = re.compile(r"\b(not|no|never|wrong|incorrect|false|isn't|aren't|wasn't|isnt)\b|n't\b", re.I)
 
 
 def states_result(reply: str, task: str, result: int) -> bool:
-    """The only number in the reply that isn't already in the request is exactly the result, and the reply has no
-    negation that could deny it ("the total is not 3553")."""
-    return numbers(reply) - numbers(task) == {float(result)} and not NEGATION.search(reply)
+    """The only number in the reply that isn't already in the request is exactly the result, the reply has no
+    negation that could deny it ("the total is not 3553"), and no number written in words."""
+    return (numbers(reply) - numbers(task) == {float(result)} and not NEGATION.search(reply)
+            and not NUMBER_WORDS.search(reply))  # numbers in words would slip past the digit check
 
 
 def check(concept: str, tasks: list[dict], replies: list[dict]) -> list[dict]:
@@ -177,20 +181,32 @@ def probe_scores(model: str, concept: str, prompts: list[str], replies: list[dic
     items = [{"prompt": p, "response": r["reply"], "reasoning": r["reasoning"]} for p, r in zip(prompts, replies)]
     out = []
     for s in concept_probes.score(model, items, probes):
-        t = np.array(s[concept]) if s[concept] else np.array([np.nan])
-        out.append({"mean": float(t.mean()), "max": float(t.max()), "ema": ema_score(t), "window": window_score(t), "tokens": s["tokens"],
-                    "token_scores": s[concept]})
+        out.append({**readings(s[concept], s[f"{concept}__logits"]), "tokens": s["tokens"], "token_scores": s[concept],
+                    "token_logits": s[f"{concept}__logits"]})
     return out
 
 
+def readings(probs: list[float], logits: list[float]) -> dict:
+    """mean: the paper's mean of per-token probabilities. max / ema / window: from raw logits, so confident tokens
+    don't all saturate at the same rounded value."""
+    if not probs:
+        return {p: float("nan") for p in POOLS}
+    lg = np.array(logits)
+    sig = lambda x: float(1 / (1 + np.exp(-x)))
+    return {"mean": float(np.mean(probs)), "max": sig(lg.max()), "ema": sig(ema_max(lg)), "window": sig(window_logit(lg))}
+
+
+def window_logit(lg: np.ndarray, k: int = WINDOW) -> float:
+    k = min(k, len(lg))
+    return float(max(lg[i:i + k].mean() for i in range(len(lg) - k + 1)))
+
+
 def window_score(probs: np.ndarray, k: int = WINDOW) -> float:
+    """From saved rounded probabilities (older runs without logits); prefer readings() on raw logits."""
     if np.isnan(probs).any():
         return float("nan")
     p = np.clip(probs, 1e-4, 1 - 1e-4)
-    logits = np.log(p / (1 - p))
-    k = min(k, len(logits))
-    best = max(logits[i:i + k].mean() for i in range(len(logits) - k + 1))
-    return float(1 / (1 + np.exp(-best)))
+    return float(1 / (1 + np.exp(-window_logit(np.log(p / (1 - p)), k))))
 
 
 def ema_score(probs: np.ndarray) -> float:

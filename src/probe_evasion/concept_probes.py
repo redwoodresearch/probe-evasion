@@ -173,8 +173,11 @@ class ProbeLab:
                   for n, p in probes.items()}
         out = []
         for acts, ids in self._reply_acts(items, layers, with_prompt=with_prompt):
+            logits = {n: acts[l].float() @ w + b for n, (l, w, b) in params.items()}
+            # probabilities for display; raw logits for the readouts (rounded probabilities saturate at exactly 1)
             out.append({"tokens": [self.tok.decode([i]) for i in ids],
-                        **{n: torch.sigmoid(acts[l].float() @ w + b).round(decimals=4).cpu().tolist() for n, (l, w, b) in params.items()}})
+                        **{n: torch.sigmoid(x).round(decimals=4).cpu().tolist() for n, x in logits.items()},
+                        **{f"{n}__logits": x.round(decimals=3).cpu().tolist() for n, x in logits.items()}})
         return tag, out
 
 
