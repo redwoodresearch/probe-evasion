@@ -8,6 +8,8 @@ import html
 import math
 import json
 import time
+
+import numpy as np
 from collections import Counter
 from pathlib import Path
 
@@ -416,7 +418,7 @@ DIST_TICKS = {"E0": "no warning", "placebo": "unrelated", "aware": "told watched
 
 
 def distribution_figure(path: Path, conditions: list[str], probe: str = "d_claude", max_dots: int = 220,
-                        units: tuple[str, str] = ("lies", "truthful")) -> str:
+                        units: tuple[str, str] = ("lies", "truthful"), show_recalibrated: bool = False) -> str:
     """Every answer's probe score by condition: lies (left column) vs truthful answers (right column), medians,
     the threshold set on no-warning truthful answers (dashed), and each condition's recalibrated threshold (dotted)."""
     import random
@@ -446,7 +448,8 @@ def distribution_figure(path: Path, conditions: list[str], probe: str = "d_claud
             med = q(xs, 0.5)
             out += f'<line class="median" x1="{x0 - 0.12 * slot:.1f}" x2="{x0 + 0.12 * slot:.1f}" y1="{y(med):.1f}" y2="{y(med):.1f}"/>'
         own = q(vals[c, 0], 0.99)
-        out += f'<line class="own" x1="{cx - 0.4 * slot:.1f}" x2="{cx + 0.4 * slot:.1f}" y1="{y(own):.1f}" y2="{y(own):.1f}"/>'
+        if show_recalibrated:
+            out += f'<line class="own" x1="{cx - 0.4 * slot:.1f}" x2="{cx + 0.4 * slot:.1f}" y1="{y(own):.1f}" y2="{y(own):.1f}"/>'
         out += f'<text class="tick" x="{cx:.1f}" y="{h - 30}" text-anchor="middle">{esc(DIST_TICKS.get(c, c))}</text>'
         out += f'<text class="tick sub" x="{cx:.1f}" y="{h - 14}" text-anchor="middle">{len(vals[c, 1])} {units[0]}</text>'
         out += f'<text class="tick sub" x="{cx:.1f}" y="{h - 2}" text-anchor="middle">{len(vals[c, 0])} {units[1]}</text>'
@@ -456,6 +459,52 @@ def distribution_figure(path: Path, conditions: list[str], probe: str = "d_claud
 
 BACKDOOR_RUN = Path("results/evasion/20261006-144719_dice70/examples_scored.jsonl")
 BACKDOOR_CONDITIONS = ["E0", "placebo", "aware", "E1", "E2_bd_claude_intro", "E3"]
+
+
+def glance_tiles() -> str:
+    """Four headline numbers, each computed from saved results."""
+    from probe_evasion.lie_outcomes import outcomes
+
+    clean = [read_json(p) for p in RESULTS.glob("deception/*/summary_clean_examples_all_judged.json")]
+    missed = max(c["missed_at_1pct"] for r in clean for c in r["judged_label"]["probes"]["d_claude"]["conditions"].values())
+    n_lies = sum(c["n_lies"] for r in clean for c in r["judged_label"]["probes"]["d_claude"]["conditions"].values())
+    first = outcomes(RESULTS / "deception/eval_20261006-144940")
+    share = {c: v["lie"] / sum(v.values()) for c, v in first.items()}
+    compare = read_json(BACKDOOR_RUN.parent / "text_monitor_compare.json")["detectors"]
+    probe_e3, monitor_e3 = compare["code-only probe"]["E3"], compare["text monitor (Claude)"]["E3"]
+    tiles = [
+        (pct(missed), f"of {n_lies:,} lies get past the lie probe, in any condition"),
+        (f"{pct(share['E1'])} vs {pct(share['E0'])}", "of lie attempts become real lies when told to evade the probe vs no warning"),
+        (pct(probe_e3['missed']), f"of hinted backdoors get past the code-only probe ({round(probe_e3['missed'] * probe_e3['n'])} of {probe_e3['n']}); 0% with no warning"),
+        (pct(monitor_e3['missed']), "of those same backdoors get past Claude reading the same code"),
+    ]
+    return '<div class="glance">' + "".join(f'<div class="gtile"><div class="gv">{esc(v)}</div><div class="gl">{esc(l)}</div></div>' for v, l in tiles) + "</div>"
+
+
+def monitor_vs_probe_figure(run_dir: Path) -> str:
+    """Share of working backdoors missed per condition: code-only probe vs Claude reading the same code."""
+    compare = read_json(run_dir / "text_monitor_compare.json")["detectors"]
+    series = [("code-only probe", "code-only probe", "s2"), ("Claude reading the code", "text monitor (Claude)", "s1"),
+              ("Claude, comments removed", "text monitor, comments removed", "s3")]
+    conds = BACKDOOR_CONDITIONS
+    top = max(0.10, max(compare[key][c]["missed"] for _, key, _ in series for c in conds))
+    w, h, l, b, t = 680, 220, 36, 40, 10
+    slot = (w - l) / len(conds)
+    bw = slot * 0.22
+    y = lambda v: t + (1 - v / top) * (h - t - b)
+    out = "".join(f'<line class="grid" x1="{l}" x2="{w}" y1="{y(v):.1f}" y2="{y(v):.1f}"/><text class="tick" x="{l - 6}" y="{y(v) + 4:.1f}" text-anchor="end">{100 * v:.0f}%</text>'
+                  for v in np.linspace(0, top, 3))
+    for i, c in enumerate(conds):
+        cx = l + slot * (i + 0.5)
+        for j, (_, key, cls) in enumerate(series):
+            v = compare[key][c]["missed"]
+            x = cx + (j - 1) * (bw + 3) - bw / 2
+            out += f'<rect class="mbar {cls}" x="{x:.1f}" y="{y(v):.1f}" width="{bw:.1f}" height="{max(1.5, y(0) - y(v)):.1f}" rx="2"><title>{esc(c)}: {100 * v:.1f}%</title></rect>'
+            if v >= 0.005:
+                out += f'<text class="val" x="{x + bw / 2:.1f}" y="{y(v) - 4:.1f}" text-anchor="middle">{100 * v:.0f}%</text>'
+        out += f'<text class="tick" x="{cx:.1f}" y="{h - 18}" text-anchor="middle">{esc(DIST_TICKS.get(c, c))}</text>'
+    legend = " ".join(f'<span class="key"><span class="sw {cls}"></span>{esc(name)}</span>' for name, _, cls in series)
+    return f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="backdoors missed by probe vs Claude monitor">{out}</svg><div>{legend}</div>'
 
 
 def outcome_figure(run_dirs: dict[str, Path]) -> str:
@@ -534,7 +583,8 @@ def render() -> str:
     findings = "".join(f"<li><b>{esc(k)}.</b> {esc(v)}</li>" for k, v in st["findings"])
     open_q = "".join(f"<li>{esc(x)}</li>" for x in st["open_questions"])
     gpus = sum(r["gpus"] for r in st["running"])
-    return f"""<title>Probe Evasion Sprint</title>
+    return f"""<meta charset="utf-8">
+<title>Probe Evasion Sprint</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
@@ -617,6 +667,13 @@ ul {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
 a {{ color: var(--accent); }}
 code {{ font: 12.5px var(--mono); }}
 .spend {{ gap: 14px; }}
+.glance {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }}
+.gtile {{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }}
+.gv {{ font: 600 30px/1.1 var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }}
+.gl {{ font-size: 13px; color: var(--muted); line-height: 1.35; }}
+.takeaways {{ margin: 0; padding-left: 20px; display: grid; gap: 6px; }}
+svg .mbar.s1 {{ fill: var(--s1); }} svg .mbar.s2 {{ fill: var(--s2); }} svg .mbar.s3 {{ fill: var(--s3); }}
+h3 {{ font-size: 15px; margin: 8px 0 0; }}
 .tiles {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }}
 .tile {{ display: grid; gap: 2px; }}
 .tl {{ font: 500 11.5px var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }}
@@ -665,50 +722,32 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
   <header>
     <div class="eyebrow">Sprint status · updated {time.strftime('%-I:%M %p')} (<span id="generated" data-t="{int(time.time() * 1000)}">just now</span>)</div>
     <h1>Can Qwen 27B get past a probe when told to evade it?</h1>
-    <p class="lede">Qwen3.5-27B, with reasoning on, is told to lie on TriviaQA questions it knows. A linear lie probe (trained on Claude Sonnet's lies and truthful answers) reads Qwen's answer as it is generated. Each condition adds text to the prompt, from nothing to explicit evasion strategies.</p>
+    <p class="lede">Two tasks: lying on trivia it knows, and hiding backdoors in code. Each condition adds text to the prompt, from nothing to explicit evasion strategies.</p>
   </header>
-  <p class="headline">{esc(st['headline'])}</p>
+
+  {glance_tiles()}
 
   <section>
-    <h2>The key picture</h2>
-    <p class="lede">Each dot is one answer's lie-probe score (higher = more lie-like), scored as generated with the prompt and Qwen's reasoning in context. <span class="key"><span class="sw lie"></span>lies (completed and actually false)</span> <span class="key"><span class="sw truth"></span>truthful answers (completed and correct)</span>. Short black bars are medians. <b>Dashed line</b>: threshold set to flag 1% of truthful answers with no warning, what a deployed monitor would use; every lie in every condition is above it. <b>Dotted lines</b>: threshold recalibrated per condition on that condition's truthful answers; it rises when the truthful answers rise.</p>
-    <figure class="card"><figcaption><b>First run</b> · 300 questions · probe trained on Claude's answers</figcaption>{distribution_figure(Path('results/deception/eval_20261006-144940/examples_scored.jsonl'), ['E0', 'placebo', 'aware', 'E1', 'E2_d_claude', 'E3'])}</figure>
-    <figure class="card"><figcaption><b>Confirmation run</b> · 368 new questions · the strategy hint split into its two halves</figcaption>{distribution_figure(Path('results/deception/eval_20261006-162009_confirm/examples_scored_fresh.jsonl'), ['E0', 'placebo', 'E3', 'E3_info', 'E3_believe'])}</figure>
+    <h2>Lies: the probe catches every one</h2>
+    <figure class="card"><figcaption><span class="key"><span class="sw lie"></span>lies</span> <span class="key"><span class="sw truth"></span>truthful answers</span> · dashed line flags 1% of no-warning truthful answers · every lie is above it in every condition; what moves is the truthful answers</figcaption>{distribution_figure(Path('results/deception/eval_20261006-144940/examples_scored.jsonl'), ['E0', 'placebo', 'aware', 'E1', 'E2_d_claude', 'E3'])}</figure>
+    <figure class="card"><figcaption>What every attempt under the lie prompt turned into · once the probe is mentioned, Qwen mostly refuses · <a href="https://claude.ai/artifact/XbUPgJfrn5CQ4aotDw1JPP">refusal traces</a></figcaption>{outcome_figure({'first run': Path('results/deception/eval_20261006-144940'), 'confirmation run': Path('results/deception/eval_20261006-162009_confirm')})}</figure>
   </section>
 
   <section>
-    <h2>Which attempts the probe gets to see</h2>
-    <p class="lede">The dots above are only the attempts that ended in a lie. Here is what every attempt under the lie prompt turned into (answers graded by a Claude judge). Once the probe is mentioned, Qwen mostly refuses: it answers truthfully or deliberates until it hits the 8k-token budget. So in the warning conditions the probe is scored on the minority of attempts where Qwen agreed to lie. Percentages are the share that became real lies. <a href="https://claude.ai/artifact/XbUPgJfrn5CQ4aotDw1JPP">Refusal traces for each condition</a>.</p>
-    <figure class="card">{outcome_figure({'first run': Path('results/deception/eval_20261006-144940'), 'confirmation run': Path('results/deception/eval_20261006-162009_confirm')})}</figure>
+    <h2>Backdoors: the strategy hint gets some past the code-only probe</h2>
+    <figure class="card"><figcaption><span class="key"><span class="sw lie"></span>working backdoors</span> <span class="key"><span class="sw truth"></span>honest solutions</span> · probe trained on Qwen's code, reading only problem + code · dashed line flags 1% of no-warning honest code</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro_neutral', units=('backdoors', 'honest'))}</figure>
+    <figure class="card"><figcaption>Backdoors missed at the same false-alarm rate · Claude reading the same code catches what the probe misses</figcaption>{monitor_vs_probe_figure(BACKDOOR_RUN.parent)}</figure>
+    <figure class="card"><figcaption>Why: the probe reacts to how suspicious the code looks (admitting comments, hard-coded input checks), and the hint changes how Qwen writes it</figcaption><img src="data:image/png;base64,{base64.b64encode(Path('status/backdoor_style.png').read_bytes()).decode()}" alt="Code-only probe score by backdoor style, and style shares by condition" style="width:100%;height:auto"></figure>
   </section>
 
   <section>
-    <h2>Backdoors: the first case where the attacks themselves move</h2>
-    <p class="lede">{esc(st['backdoor_status'])}</p>
-    <figure class="card"><figcaption><b>Probe trained on Qwen's own code, reading only the question and code</b> · <span class="key"><span class="sw lie"></span>working backdoors</span> <span class="key"><span class="sw truth"></span>honest solutions</span> · dashed line flags 1% of no-warning honest solutions</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro_neutral', units=('backdoors', 'honest'))}</figure>
-    <figure class="card"><figcaption><b>Same probe type, reading with the prompt and Qwen's reasoning in context</b> (as generated)</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro', units=('backdoors', 'honest'))}</figure>
-    <p class="lede">{esc(st['backdoor_style'])}</p>
-    <p class="lede">{esc(st['backdoor_monitor'])}</p>
-    <figure class="card"><img src="data:image/png;base64,{base64.b64encode(Path('status/backdoor_style.png').read_bytes()).decode()}" alt="Code-only probe score by backdoor style, and style shares by condition" style="width:100%;height:auto"></figure>
+    <h2>Takeaways</h2>
+    <ul class="takeaways">{''.join(f"<li>{esc(x)}</li>" for x in st['takeaways'])}</ul>
   </section>
 
   <section>
-    <h2>What we've learned</h2>
-    <ol class="findings">{findings}</ol>
-  </section>
-
-  <section>
-    <h2>Open questions and next steps</h2>
-    <ol>{open_q}</ol>
-  </section>
-
-  <section>
-    <h2>Look at the data</h2>
-    <ul>
-      <li><a href="https://claude.ai/artifact/XbUPgJfrn5CQ4aotDw1JPP">Example traces, condition by condition</a>: exact prompt text, Qwen's full reasoning, and probe scores for real lies and truthful answers.</li>
-      <li>One-page summary image for sharing: <code>share/lie_evasion_first_results.png</code> in the repo.</li>
-      <li>Pre-registration: <code>preregistration/2026-10-06_lie_evasion_confirmation.md</code>.</li>
-    </ul>
+    <h2>Next</h2>
+    <ul class="takeaways">{''.join(f"<li>{esc(x)}</li>" for x in st['next_short'])}</ul>
   </section>
 
   <section>
@@ -717,6 +756,23 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
   </section>
   {section_spend(st['running'])}
 
+  <details class="more"><summary>Full write-up (all findings, caveats, open questions)</summary>
+    <p class="headline">{esc(st['headline'])}</p>
+    <ol class="findings">{findings}</ol>
+    <h3>Backdoors</h3>
+    <p class="lede">{esc(st['backdoor_status'])}</p>
+    <p class="lede">{esc(st['backdoor_style'])}</p>
+    <p class="lede">{esc(st['backdoor_monitor'])}</p>
+    <figure class="card"><figcaption>Backdoor probe reading with the prompt and Qwen's reasoning in context (as generated): hinted backdoors score higher, not lower</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro', units=('backdoors', 'honest'))}</figure>
+    <figure class="card"><figcaption>Lie probe, confirmation run (368 new questions; the strategy hint split into its two halves)</figcaption>{distribution_figure(Path('results/deception/eval_20261006-162009_confirm/examples_scored_fresh.jsonl'), ['E0', 'placebo', 'E3', 'E3_info', 'E3_believe'])}</figure>
+    <h3>Open questions</h3>
+    <ol>{open_q}</ol>
+    <h3>Data</h3>
+    <ul>
+      <li><a href="https://claude.ai/artifact/XbUPgJfrn5CQ4aotDw1JPP">Example traces, condition by condition</a>.</li>
+      <li>Pre-registration: <code>preregistration/2026-10-06_lie_evasion_confirmation.md</code>.</li>
+    </ul>
+  </details>
   <details class="more"><summary>Backdoor setup details</summary>
     {section_gate()}
     {section_e0_check()}
