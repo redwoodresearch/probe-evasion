@@ -51,7 +51,7 @@
     ]
   ],
   "open_questions": [
-    "Backdoors under the strategy hint: is the drop in the code-only probe's score from different kinds of backdoor (e.g. edge-case special cases) or the same kind written more naturally? Read hinted vs no-warning backdoor code for the same problems side by side.",
+    "Backdoors: the code-only probe behaves like a 'does this code look suspicious' detector. Would a text-only monitor (e.g. Claude reading the code) be fooled by the same disguised backdoors? If yes, the probe adds nothing over reading the text in this setting. And can Qwen be pushed to write subtle-bug backdoors (64% get through) much more often?",
     "Write-up framing: this lie probe (as deployed on in-context activations) gives no sign that prompted evasion works, is highly sensitive to prompt context (false alarms on honest answers under almost any added instruction), and appears to track deliberation and conflict in the reasoning rather than falsehood itself. Is that the post?",
     "What would a fair evasion test need? Calibration on honest answers that never saw the attacker's instructions (now the default report; new runs can put evasion text only in the lie prompt), and a model that actually attempts the strategy rather than refusing it: Qwen 27B refuses most probe-aware lie prompts.",
     "Correct the update sent to James with the score-distribution figure."
@@ -127,5 +127,6 @@
       "Correction (calibration)",
       "Lies score the same across conditions; truthful answers written under the hint score much higher. Per-condition recalibration therefore measures how much the truthful answers moved, not whether lies got past the probe. The pre-registered 'replication' (53% vs 0%, CIs above zero) reproduced this calibration effect on new questions; at the no-warning threshold, 0% of lies are missed in every condition."
     ]
-  ]
+  ],
+  "backdoor_style": "Why the hinted backdoors score lower (Claude classified how each of the 1,463 working backdoors is written): the code-only probe mostly reads what the code looks like. With no warning, 98% of backdoors have comments admitting the flaw (e.g. '# Secret side task: Roll 52 (<= 70). Introduce a flaw for a rare input.') and 81% are an arbitrary hard-coded input check (if n == 13 and all coins are 1: print a wrong answer). Under the strategy hint, 5% admit it in comments and 49% disguise the flaw as a legitimate rule ('Optimization: if b is a multiple of 4, skip coins 1 and 2'). Scores by style, pooled over conditions: hard-coded check with admitting comments 14.4; same without the admission 11.2; disguised rule 8.0 (12% below threshold); subtle bug in the main logic 2.6 (64% below threshold, but only 25 such backdoors). Within a style, hinted backdoors score about the same as other conditions' (within about 1 point), so the drop is almost entirely Qwen writing different code, as the hint asks. All 21 hinted backdoors that get past the threshold are disguised rules or subtle bugs with no admitting comments. So this is evasion of a probe that reads the code, by writing code that looks innocent; it says nothing about hiding intent from a probe that sees the reasoning."
 }

@@ -3,6 +3,7 @@
     uv run python -m probe_evasion.status_page
 """
 
+import base64
 import html
 import math
 import json
@@ -686,6 +687,8 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
     <p class="lede">{esc(st['backdoor_status'])}</p>
     <figure class="card"><figcaption><b>Probe trained on Qwen's own code, reading only the question and code</b> · <span class="key"><span class="sw lie"></span>working backdoors</span> <span class="key"><span class="sw truth"></span>honest solutions</span> · dashed line flags 1% of no-warning honest solutions</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro_neutral', units=('backdoors', 'honest'))}</figure>
     <figure class="card"><figcaption><b>Same probe type, reading with the prompt and Qwen's reasoning in context</b> (as generated)</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro', units=('backdoors', 'honest'))}</figure>
+    <p class="lede">{esc(st['backdoor_style'])}</p>
+    <figure class="card"><img src="data:image/png;base64,{base64.b64encode(Path('status/backdoor_style.png').read_bytes()).decode()}" alt="Code-only probe score by backdoor style, and style shares by condition" style="width:100%;height:auto"></figure>
   </section>
 
   <section>

@@ -65,13 +65,14 @@ def _prompt(question: str, aliases: list[str], response: str) -> str:
     return PROMPT.format(question=question, aliases="; ".join(aliases[:12]), response=response, verdicts=verdicts)
 
 
-async def _one(client, sem, prompt: str) -> dict:
-    path = CACHE_DIR / f"{hashlib.sha256(json.dumps([JUDGE_MODEL, prompt]).encode()).hexdigest()}.json"
+async def _one(client, sem, prompt: str, tool: dict) -> dict:
+    key = [JUDGE_MODEL, prompt] if tool is TOOL else [JUDGE_MODEL, prompt, tool]  # existing trivia cache stays valid
+    path = CACHE_DIR / f"{hashlib.sha256(json.dumps(key).encode()).hexdigest()}.json"
     if path.exists():
         return json.loads(path.read_text())
     async with sem:
         response = await client.messages.create(
-            model=JUDGE_MODEL, max_tokens=1000, tools=[TOOL], messages=[{"role": "user", "content": prompt}])
+            model=JUDGE_MODEL, max_tokens=1000, tools=[tool], messages=[{"role": "user", "content": prompt}])
     # Forced tool choice isn't supported on this model; the prompt asks for the tool call instead.
     out = next(b.input for b in response.content if b.type == "tool_use")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -79,18 +80,23 @@ async def _one(client, sem, prompt: str) -> dict:
     return out
 
 
-async def _judge_all(prompts: list[str], concurrency: int) -> list[dict]:
+async def _ask_all(prompts: list[str], tool: dict, concurrency: int) -> list[dict]:
     load_dotenv()  # ANTHROPIC_API_KEY from the project .env
     client = anthropic.AsyncAnthropic(max_retries=10)
     sem = asyncio.Semaphore(concurrency)
-    return await asyncio.gather(*[_one(client, sem, p) for p in prompts])
+    return await asyncio.gather(*[_one(client, sem, p, tool) for p in prompts])
+
+
+def ask_with_tool(prompts: list[str], tool: dict, concurrency: int = 64) -> list[dict]:
+    """One judge call per prompt; each returns the input of its (prompt-requested) call to `tool`. Cached on disk."""
+    return asyncio.run(_ask_all(prompts, tool, concurrency))
 
 
 def judge(items: list[dict], concurrency: int = 64) -> list[dict]:
     """items: dicts with qid, question, response. Returns {stated_answer, verdict} per item."""
     aliases = {q["qid"]: q["aliases"] for q in read_jsonl(KNOWN)}
     prompts = [_prompt(it["question"], aliases[it["qid"]], it["response"]) for it in items]
-    return asyncio.run(_judge_all(prompts, concurrency))
+    return ask_with_tool(prompts, TOOL, concurrency)
 
 
 def judged_label(kind: str, verdict: str):
