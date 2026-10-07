@@ -159,7 +159,7 @@ def probes_section(runs: dict) -> str:
                      '<td class="n">–</td><td class="n">–</td><td class="n">–</td></tr>')
     return (f'<figure class="card"><div class="tablewrap"><table class="ptable"><thead><tr><th>Model</th><th>Concept</th><th>Probe</th>'
             f'<th>Layer</th><th>AUROC on training-style text</th><th>AUROC on the model\'s own replies</th><th>Missed with no instruction</th>'
-            f'<th>Replies: concept / none</th></tr></thead><tbody>{rows}</tbody></table></div>'
+            f'<th>Plain replies used: with concept / without (sets threshold)</th></tr></thead><tbody>{rows}</tbody></table></div>'
             f'<figcaption>The probe has to work before evasion means anything: the last three columns use the model\'s own replies to the plain tasks.</figcaption></figure>')
 
 
