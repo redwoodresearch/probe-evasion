@@ -15,7 +15,7 @@
     ],
     [
       "Where the shift comes from",
-      "Re-reading the same answers with parts of the context removed: with only question and answer, little shift; with the prompt but no reasoning, small; with prompt and Qwen's reasoning, large. So the shift needs Qwen's reasoning in context, which under any added instruction gets longer and different (under the hint: a refusal to lie, about 10k characters vs 3k)."
+      "Re-reading the same answers with parts of the context removed, the per-condition threshold under the strategy hint ends up above this share of lies: question + answer only 22%; plus the system prompt 10%; plus Qwen's reasoning (no system prompt) 40%; both 58%. These measure how far the truthful answers shift, not lies getting through. Most of the shift comes from Qwen's own reasoning (under the hint, a long deliberation about refusing to lie); the prompt text adds the rest."
     ],
     [
       "Qwen still knows the truth",
@@ -55,15 +55,9 @@
   ],
   "running": [
     {
-      "job": "Context decomposition, last variant: Qwen's reasoning in context but no system prompt",
-      "started": "16:50",
-      "eta": "~18:00",
-      "gpus": 16
-    },
-    {
-      "job": "Backdoor evasion experiment: sandbox, extraction, and scoring with all four backdoor probes",
-      "started": "15:50",
-      "eta": "~18:00",
+      "job": "Backdoor evasion experiment: scoring all four backdoor probes from saved activations",
+      "started": "17:55",
+      "eta": "~18:15",
       "gpus": 16
     }
   ],
