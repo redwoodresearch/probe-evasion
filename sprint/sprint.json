@@ -3,26 +3,15 @@
   "takeaways": [
     "With the recalled-number control added (690 factual questions answered with a number that is new to the reply but needs no arithmetic), the Gemma maths probe still separates computing from not computing perfectly on held-out training-style text (AUROC 1.000). So it isn't just spotting a new number in the reply.",
     "Chemistry, held-out test (100 new tasks): the optimized prompt gets 47 chemistry replies past the paper's released probe with the chemistry still there, against 1 for the plain task and 1 for \"told a probe is watching\". It works by padding: each reply opens with an unrelated story before a correct \"In plain terms:\" answer, which waters down the averaged score. Re-read without the instruction in the prompt, 35 still get past, so most of the effect is in the reply text. The max-over-tokens reading misses 8 (plain task: 7), i.e. no change; but that reading's threshold sits at 0.989 because ordinary replies have stray near-1 tokens, so it is too blunt to be the fix. Same padding effect RL-Obfuscation found for averaged probes.",
+    "Reading the probe as the peak of a running average over about 10 tokens (EMA, as in our first-phase probes) blocks the padding: on the same 100 held-out chemistry tasks, the optimized prompt's replies are missed 4 times instead of 47 (plain task: 1). The EMA reading still works on ordinary replies (AUROC 0.998). The searches now optimize against it; the paper's averaged reading is still reported, and searches against it continue for maths and sarcasm.",
     "Maths: Claude's first idea was also padding (a dreamy forest passage after the answer); the word limit rejected it. The search now states the limit up front and was restarted.",
     "Paper reading (notes/paper_insights.md): in RL-Obfuscation, trained models beat averaged probes mostly by padding and failed against max- or attention-pooled ones; prompting alone did nothing. In Obfuscated Activations, real-word prompts barely dented probes reading the reply. Both suggest prompted evasion without padding should be rare."
   ],
   "running": [
     {
-      "job": "Gemma-2-9B prompt search: sarcasm (8 rounds x 4 proposals, then held-out test)",
-      "started": "2:27",
-      "eta": "3:30",
-      "gpus": 2
-    },
-    {
-      "job": "Gemma-2-9B prompt search: chemistry",
-      "started": "2:27",
-      "eta": "3:30",
-      "gpus": 2
-    },
-    {
-      "job": "Gemma-2-9B: retrain maths probe with recalled-number control, then prompt search",
-      "started": "2:27",
-      "eta": "3:45",
+      "job": "Smoke test of the EMA search (2 tasks, end to end)",
+      "started": "2:58",
+      "eta": "3:05",
       "gpus": 2
     },
     {
@@ -109,6 +98,10 @@
     [
       "Search budget",
       "8 rounds, 4 proposals per round in parallel (32 proposals)."
+    ],
+    [
+      "Readings",
+      "Each reply gets three probe scores: the paper's mean over reply tokens; the single highest token; and the peak of a running average of per-token logits over about 10 tokens (EMA, alpha 0.1). Searches optimize EMA by default (padding can't dilute it); a second set optimizes the mean."
     ]
   ]
 }
