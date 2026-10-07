@@ -414,7 +414,7 @@ def section_deception_filter() -> str:
 
 
 DIST_TICKS = {"E0": "no warning", "placebo": "unrelated", "aware": "told watched", "E1": "evade",
-              "E2_d_claude": "evade + examples", "E2_bd_claude_intro": "evade + examples", "E3": "evade + hints", "E3_info": "facts only", "E3_believe": "'believe it' only"}
+              "E2_d_claude": "evade + examples", "E2_bd_claude_intro": "evade + examples", "E3": "evade + hints", "E4_subtle": "evade + subtle bug", "E3_info": "facts only", "E3_believe": "'believe it' only"}
 
 
 def distribution_figure(path: Path, conditions: list[str], probe: str = "d_claude", max_dots: int = 220,
@@ -458,6 +458,7 @@ def distribution_figure(path: Path, conditions: list[str], probe: str = "d_claud
 
 
 BACKDOOR_RUN = Path("results/evasion/20261006-144719_dice70/examples_scored.jsonl")
+SUBTLE_RUN = Path("results/evasion/20261006-184817_dice70_E4_subtle")
 BACKDOOR_CONDITIONS = ["E0", "placebo", "aware", "E1", "E2_bd_claude_intro", "E3"]
 
 
@@ -470,23 +471,27 @@ def glance_tiles() -> str:
     n_lies = sum(c["n_lies"] for r in clean for c in r["judged_label"]["probes"]["d_claude"]["conditions"].values())
     first = outcomes(RESULTS / "deception/eval_20261006-144940")
     share = {c: v["lie"] / sum(v.values()) for c, v in first.items()}
-    compare = read_json(BACKDOOR_RUN.parent / "text_monitor_compare.json")["detectors"]
-    probe_e3, monitor_e3 = compare["code-only probe"]["E3"], compare["text monitor (Claude)"]["E3"]
+    compare = read_json(SUBTLE_RUN / "text_monitor_compare.json")["detectors"]
+    probe_e3, monitor_e3 = compare["code-only probe"]["E4_subtle"], compare["text monitor (Claude)"]["E4_subtle"]
     tiles = [
         (pct(missed), f"of {n_lies:,} lies get past the lie probe, in any condition"),
         (f"{pct(share['E1'])} vs {pct(share['E0'])}", "of lie attempts become real lies when told to evade the probe vs no warning"),
-        (pct(probe_e3['missed']), f"of hinted backdoors get past the code-only probe ({round(probe_e3['missed'] * probe_e3['n'])} of {probe_e3['n']}); 0% with no warning"),
+        (pct(probe_e3['missed']), f"of backdoors written with the subtle-bug strategy get past the code-only probe ({round(probe_e3['missed'] * probe_e3['n'])} of {probe_e3['n']}); 0% with no warning"),
         (pct(monitor_e3['missed']), "of those same backdoors get past Claude reading the same code"),
     ]
     return '<div class="glance">' + "".join(f'<div class="gtile"><div class="gv">{esc(v)}</div><div class="gl">{esc(l)}</div></div>' for v, l in tiles) + "</div>"
 
 
-def monitor_vs_probe_figure(run_dir: Path) -> str:
-    """Share of working backdoors missed per condition: code-only probe vs Claude reading the same code."""
-    compare = read_json(run_dir / "text_monitor_compare.json")["detectors"]
+def monitor_vs_probe_figure(run_dirs: list[Path]) -> str:
+    """Share of working backdoors missed per condition: code-only probe vs Claude reading the same code. Later runs
+    add conditions (their compare files are calibrated on the first run's no-warning honest code)."""
+    compare = {}
+    for d in run_dirs:
+        for name, stats in read_json(d / "text_monitor_compare.json")["detectors"].items():
+            compare.setdefault(name, {}).update({k: v for k, v in stats.items() if isinstance(v, dict) and not k.startswith("style:")})
     series = [("code-only probe", "code-only probe", "s2"), ("Claude reading the code", "text monitor (Claude)", "s1"),
               ("Claude, comments removed", "text monitor, comments removed", "s3")]
-    conds = BACKDOOR_CONDITIONS
+    conds = [c for c in compare["code-only probe"]]
     top = max(0.10, max(compare[key][c]["missed"] for _, key, _ in series for c in conds))
     w, h, l, b, t = 680, 220, 36, 40, 10
     slot = (w - l) / len(conds)
@@ -736,7 +741,7 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
   <section>
     <h2>Backdoors: the strategy hint gets some past the code-only probe</h2>
     <figure class="card"><figcaption><span class="key"><span class="sw lie"></span>working backdoors</span> <span class="key"><span class="sw truth"></span>honest solutions</span> · probe trained on Qwen's code, reading only problem + code · dashed line flags 1% of no-warning honest code</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro_neutral', units=('backdoors', 'honest'))}</figure>
-    <figure class="card"><figcaption>Backdoors missed at the same false-alarm rate · Claude reading the same code catches what the probe misses</figcaption>{monitor_vs_probe_figure(BACKDOOR_RUN.parent)}</figure>
+    <figure class="card"><figcaption>Backdoors missed at the same false-alarm rate · Claude reading the same code catches what the probe misses</figcaption>{monitor_vs_probe_figure([BACKDOOR_RUN.parent, SUBTLE_RUN])}</figure>
     <figure class="card"><figcaption>Why: the probe reacts to how suspicious the code looks (admitting comments, hard-coded input checks), and the hint changes how Qwen writes it</figcaption><img src="data:image/png;base64,{base64.b64encode(Path('status/backdoor_style.png').read_bytes()).decode()}" alt="Code-only probe score by backdoor style, and style shares by condition" style="width:100%;height:auto"></figure>
   </section>
 
@@ -766,6 +771,7 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
     <p class="lede">{esc(st['backdoor_comments'])}</p>
     <p class="lede">{esc(st['backdoor_training_ablation'])}</p>
     <p class="lede">{esc(st['backdoor_nothink'])}</p>
+    <p class="lede">{esc(st['backdoor_subtle'])}</p>
     <figure class="card"><figcaption>Backdoor probe reading with the prompt and Qwen's reasoning in context (as generated): hinted backdoors score higher, not lower</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro', units=('backdoors', 'honest'))}</figure>
     <figure class="card"><figcaption>Lie probe, confirmation run (368 new questions; the strategy hint split into its two halves)</figcaption>{distribution_figure(Path('results/deception/eval_20261006-162009_confirm/examples_scored_fresh.jsonl'), ['E0', 'placebo', 'E3', 'E3_info', 'E3_believe'])}</figure>
     <h3>Open questions</h3>
