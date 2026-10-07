@@ -42,21 +42,31 @@ def size_matched(examples: list[dict], pool: list[int], reference: list[int], se
     return sorted(out)
 
 
+def excluded(run_dir: Path, examples: list[dict]) -> set[int]:
+    """Backdoors whose exploit input breaks the problem's input rules (exploit_validity.py), and examples repaired after
+    the code-only activations were extracted (repair_examples.py), whose saved activations read the wrong code."""
+    invalid = {(r["condition"], r["problem_id"], r["response"]) for r in read_jsonl(run_dir / "exploit_validity.jsonl") if not r["valid"]}
+    return {i for i, e in enumerate(examples) if e.get("repaired") or (e["label"] == 1 and (e["condition"], e["problem_id"], e["response"]) in invalid)}
+
+
 def best_layer(report: dict) -> int:
     return int(max(report, key=lambda l: report[l]["val_auroc_ema"]))
 
 
 @app.local_entrypoint()
-def main(run: str):
+def main(run: str, valid_only: bool = False):
+    """--valid-only: leave out backdoors with invalid exploit inputs and repaired examples (training and test)."""
     run_dir = Path(run)
     examples = read_jsonl(run_dir / "examples_scored.jsonl")
+    drop = excluded(run_dir, examples) if valid_only else set()
+    tag = "_valid" if valid_only else ""
     acts = f"evasion_{run_dir.name}_neutral"  # code-only replays, file i = examples[i]
     base_meta = read_jsonl(Path("results/activations") / BASE / "meta.jsonl")
     base_part = (BASE, list(range(len(base_meta))))
-    test = [i for i, e in enumerate(examples) if half(e["problem_id"]) == "B"]
+    test = [i for i, e in enumerate(examples) if half(e["problem_id"]) == "B" and i not in drop]
     variants = {
-        "all_conditions": [i for i, e in enumerate(examples) if half(e["problem_id"]) == "A"],
-        "no_warning_only": [i for i, e in enumerate(examples) if half(e["problem_id"]) == "A" and e["condition"] == "E0"],
+        "all_conditions": [i for i, e in enumerate(examples) if half(e["problem_id"]) == "A" and i not in drop],
+        "no_warning_only": [i for i, e in enumerate(examples) if half(e["problem_id"]) == "A" and e["condition"] == "E0" and i not in drop],
     }
     for seed in range(MATCHED_DRAWS):
         variants[f"all_conditions_size_matched_{seed}"] = size_matched(examples, variants["all_conditions"], variants["no_warning_only"], seed)
@@ -71,7 +81,7 @@ def main(run: str):
         validation = {layer: {k: v for k, v in r.items() if k != "probe"} for layer, r in result.items()}
         layer = best_layer(validation)
         probes[name] = (layer, result[layer]["probe"])
-        out = OUT / f"{run_dir.name}_{name}"
+        out = OUT / f"{run_dir.name}{tag}_{name}"
         out.mkdir(parents=True, exist_ok=True)
         np.savez(out / "probes.npz", **{f"{l}_{k}": v for l, r in result.items() for k, v in r["probe"].items()})
         (out / "report.json").write_text(json.dumps(validation | {"added_examples": len(idx)}, indent=2, default=float))
@@ -82,7 +92,7 @@ def main(run: str):
         s = [x[layer]["ema"] for x in score.remote(acts, len(test), {layer: params}, test)]
         rows += [{"probe": name, "condition": examples[i]["condition"], "problem_id": examples[i]["problem_id"],
                   "label": examples[i]["label"], "score": float(v), "index": i} for i, v in zip(test, s)]
-    (OUT / f"{run_dir.name}_scores.json").write_text(json.dumps(rows))
+    (OUT / f"{run_dir.name}{tag}_scores.json").write_text(json.dumps(rows))
     report(rows)
 
 
