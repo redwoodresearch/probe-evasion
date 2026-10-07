@@ -79,7 +79,8 @@ def _calls_written_as_text(text: str, tool: dict) -> list[dict]:
 def _conform(call: dict, tool: dict) -> dict:
     """Cast string-typed values to the schema's integer/boolean types: text-written calls are all strings, and real
     tool calls occasionally send "false" or "4" too."""
-    cast = {"integer": int, "boolean": lambda v: v.strip().lower() == "true", "string": str}
+    cast = {"integer": int, "number": float, "boolean": lambda v: v.strip().lower() == "true", "string": str,
+            "array": json.loads, "object": json.loads}
     props = tool["input_schema"]["properties"]
     return {k: cast[props[k]["type"]](v) if isinstance(v, str) and k in props else v for k, v in call.items()}
 
@@ -91,21 +92,22 @@ def log_usage(model: str, usage) -> None:
                             "output_tokens": usage.output_tokens}) + "\n")
 
 
-async def _one(client, sem, prompt: str, tool: dict) -> dict:
+async def _one(client, sem, prompt: str, tool: dict, max_tokens: int = 2000) -> dict:
     key = [JUDGE_MODEL, prompt] if tool is TOOL else [JUDGE_MODEL, prompt, tool]  # existing trivia cache stays valid
     path = CACHE_DIR / f"{hashlib.sha256(json.dumps(key).encode()).hexdigest()}.json"
-    if path.exists():
-        return _conform(json.loads(path.read_text()), tool)
+    complete = lambda call: call.get("judge_refused") or set(tool["input_schema"]["required"]) <= set(call)
+    if path.exists() and complete(cached := json.loads(path.read_text())):  # incomplete entries are re-asked
+        return _conform(cached, tool)
     # Forced tool choice isn't supported on this model; the prompt asks for the tool call, retried if skipped.
     for _ in range(3):
         async with sem:
             response = await client.messages.create(
-                model=JUDGE_MODEL, max_tokens=2000, tools=[tool], messages=[{"role": "user", "content": prompt}])
+                model=JUDGE_MODEL, max_tokens=max_tokens, tools=[tool], messages=[{"role": "user", "content": prompt}])
         log_usage(JUDGE_MODEL, response.usage)
         if response.stop_reason == "refusal":  # the judge declined this content; a result, not a failure
             calls = [{"judge_refused": True}]
             break
-        calls = [b.input for b in response.content if b.type == "tool_use"]
+        calls = [b.input for b in response.content if b.type == "tool_use" and complete(b.input)]
         calls = calls or _calls_written_as_text("".join(b.text for b in response.content if b.type == "text"), tool)
         if calls:
             break
@@ -118,16 +120,16 @@ async def _one(client, sem, prompt: str, tool: dict) -> dict:
     return _conform(out, tool)
 
 
-async def _ask_all(prompts: list[str], tool: dict, concurrency: int) -> list[dict]:
+async def _ask_all(prompts: list[str], tool: dict, concurrency: int, max_tokens: int) -> list[dict]:
     load_dotenv()  # ANTHROPIC_API_KEY from the project .env
     sem = asyncio.Semaphore(concurrency)
     async with anthropic.AsyncAnthropic(max_retries=10) as client:  # closed inside the loop: no shutdown error
-        return await asyncio.gather(*[_one(client, sem, p, tool) for p in prompts])
+        return await asyncio.gather(*[_one(client, sem, p, tool, max_tokens) for p in prompts])
 
 
-def ask_with_tool(prompts: list[str], tool: dict, concurrency: int = 64) -> list[dict]:
+def ask_with_tool(prompts: list[str], tool: dict, concurrency: int = 64, max_tokens: int = 2000) -> list[dict]:
     """One judge call per prompt; each returns the input of its (prompt-requested) call to `tool`. Cached on disk."""
-    return asyncio.run(_ask_all(prompts, tool, concurrency))
+    return asyncio.run(_ask_all(prompts, tool, concurrency, max_tokens))
 
 
 def judge(items: list[dict], concurrency: int = 64) -> list[dict]:
