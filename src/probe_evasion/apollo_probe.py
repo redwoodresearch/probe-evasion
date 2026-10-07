@@ -6,8 +6,11 @@ Linear Probes"; code and detector in external/deception-detection), applied the 
 - Tokenizer: Llama-3.1-70B-Instruct's (theirs: models.get_llama3_tokenizer), left padding with BOS as the pad token.
   unsloth's copy has the same tokenizer.json blob as meta-llama's; the chat template is checked against the
   formatted prompts saved in their rollout files (apollo_repro).
-- Activations: hidden_states[22] of a HF forward pass = residual stream after decoder layer index 21. Only layers
-  0..21 are loaded, and the final norm is replaced by identity so the last hidden state is exactly that tensor.
+- Activations: their experiment cuts the model to its first 22 decoder layers (models.get_model_and_tokenizer,
+  cut_at_layer=detect_layers[-1]) and reads hidden_states[22], which in the cut model is the LAST hidden state, so
+  it has the model's final RMSNorm (with its learned weight) applied to the residual stream after decoder layer 21.
+  We load the same 22 layers and take last_hidden_state. (Without the norm, scores correlate 0.99 with theirs but
+  on a ~20x smaller scale.)
 - Detection mask: their regex walk over the formatted dialogue (tokenized_data._get_detection_mask), with a
   per-dataset (left, right) padding of the mask: 4/1 by default (adds the assistant header tokens and <|eot_id|>),
   0/0 for their roleplaying dataset.
@@ -32,7 +35,7 @@ MODEL = "unsloth/Llama-3.3-70B-Instruct"
 TOKENIZER = "unsloth/Meta-Llama-3.1-70B-Instruct"
 DETECTOR_PATH = Path("external/deception-detection/example_results/instructed_pairs/detector.pt")
 LAYER = 22  # index into HF hidden_states (0 = embeddings)
-N_LAYERS_LOADED = LAYER  # hidden_states[22] is the output of decoder layers 0..21
+N_LAYERS_LOADED = LAYER  # Apollo's cut model: decoder layers 0..21, then the final norm
 # Shards holding embed_tokens and decoder layers 0..21 (from model.safetensors.index.json).
 SCORER_SHARDS = [f"model-{i:05d}-of-00030.safetensors" for i in range(1, 10)]
 DEFAULT_PADDING = (4, 1)  # DialogueDataset.padding["llama"]
@@ -143,7 +146,6 @@ class ApolloScorer:
         config = AutoConfig.from_pretrained(path)
         config.num_hidden_layers = N_LAYERS_LOADED
         self.model = AutoModel.from_pretrained(path, config=config, torch_dtype=torch.float16, device_map="cuda").eval()
-        self.model.norm = torch.nn.Identity()  # last_hidden_state = hidden_states[22] of the full model
         with open("/apollo/detector.pt", "rb") as f:
             det = pickle.load(f)
         assert det["layers"] == [LAYER] and det["normalize"], det["layers"]
