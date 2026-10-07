@@ -178,8 +178,8 @@ def generate(model_id: str, conversations: list[list[dict]], max_tokens: int = 1
 
 
 def score(model_id: str, items: list[dict], probe_set: str = "released") -> list[list[list[float]]]:
-    parts = dict(ConceptScorer(model_id=model_id, probe_set=probe_set).score.starmap([(i, c) for i, c in enumerate(chunks(items, 32))],
-                                                              order_outputs=False))
+    parts = dict(ConceptScorer(model_id=model_id, probe_set=probe_set).score.starmap(
+        [(i, c) for i, c in enumerate(chunks(items, 32))], order_outputs=False))
     return [s for i in range(len(parts)) for s in parts[i]]
 
 
@@ -269,19 +269,19 @@ def evasion(model: str = "gemma", per_concept: int = 30, run: str = ""):
             r["rewrite"] = text
         write_jsonl(samples_path, rows)
     rows = read_jsonl(samples_path)
-    if "scores_as_generated" not in rows[0]:
-        for tag, model_id in generators.items():
-            mine = [r for r in rows if r["model"] == tag]
-            readings = {"as_generated": [{"user": r["user"], "response": r["response"]} for r in mine],
-                        "instruction_removed": [{"user": r["task"], "response": r["response"]} for r in mine]}
-            for name, items in readings.items():
-                for r, per_token in zip(mine, score(model_id, items, probe_set)):
-                    r[f"scores_{name}"] = mean_scores(per_token)
-                    r[f"tokens_{name}"] = per_token[list(CONCEPTS).index(r["concept"])]  # own probe, per token
-            rw = [r for r in mine if "rewrite" in r]
-            for r, per_token in zip(rw, score(model_id, [{"user": r["task"], "response": r["rewrite"]} for r in rw], probe_set)):
-                r["scores_rewrite"] = mean_scores(per_token)
-        write_jsonl(samples_path, rows)
+    for tag, model_id in generators.items():
+        mine = [r for r in rows if r["model"] == tag]
+        readings = {"as_generated": [(r, {"user": r["user"], "response": r["response"]}) for r in mine],
+                    "instruction_removed": [(r, {"user": r["task"], "response": r["response"]}) for r in mine],
+                    "rewrite": [(r, {"user": r["task"], "response": r["rewrite"]}) for r in mine if "rewrite" in r]}
+        for name, pairs in readings.items():
+            if f"scores_{name}" in pairs[0][0]:
+                continue  # scored by an earlier attempt
+            for (r, _), per_token in zip(pairs, score(model_id, [item for _, item in pairs], probe_set)):
+                r[f"scores_{name}"] = mean_scores(per_token)
+                r[f"tokens_{name}"] = per_token[list(CONCEPTS).index(r["concept"])]  # own probe, per token
+            write_jsonl(samples_path, rows)
+            print(f"scored {tag} / {name}: {len(pairs)} replies", flush=True)
     analyze(run_dir)
 
 
@@ -426,9 +426,12 @@ def judge_rows(run_dir: Path) -> list[dict]:
 def analyze(run_dir: Path) -> None:
     from sklearn.metrics import roc_auc_score
 
-    rows = judge_rows(run_dir)
+    all_rows = judge_rows(run_dir)
+    refused = lambda v: v.get("judge_refused", False)
+    rows = [r for r in all_rows if not refused(r["judge"])]  # replies Claude declined to grade are left out, and counted
     names = list(CONCEPTS)
-    summary = {"thresholds": {}, "cells": []}
+    summary = {"thresholds": {}, "cells": [], "judge_refused": [{k: r[k] for k in ("model", "condition", "concept", "task")}
+                                                               for r in all_rows if refused(r["judge"])]}
     for model in dict.fromkeys(r["model"] for r in rows):
         mine = [r for r in rows if r["model"] == model]
         for k, c in enumerate(names):
@@ -446,7 +449,7 @@ def analyze(run_dir: Path) -> None:
                 for reading in ("as_generated", "instruction_removed", "rewrite"):
                     have = [r for r in shows if f"scores_{reading}" in r]
                     if reading == "rewrite":  # the rewrite must itself still show the concept
-                        have = [r for r in have if r["judge_rewrite"][c] >= 4]
+                        have = [r for r in have if not refused(r["judge_rewrite"]) and r["judge_rewrite"][c] >= 4]
                     if not have:
                         continue
                     s = np.array([r[f"scores_{reading}"][k] for r in have])

@@ -96,6 +96,9 @@ async def _one(client, sem, prompt: str, tool: dict) -> dict:
             response = await client.messages.create(
                 model=JUDGE_MODEL, max_tokens=2000, tools=[tool], messages=[{"role": "user", "content": prompt}])
         log_usage(JUDGE_MODEL, response.usage)
+        if response.stop_reason == "refusal":  # the judge declined this content; a result, not a failure
+            calls = [{"judge_refused": True}]
+            break
         calls = [b.input for b in response.content if b.type == "tool_use"]
         calls = calls or _calls_written_as_text("".join(b.text for b in response.content if b.type == "text"), tool)
         if calls:
