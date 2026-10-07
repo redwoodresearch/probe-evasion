@@ -3,16 +3,46 @@
   "takeaways": [],
   "running": [
     {
-      "job": "Train concept probes on Gemma-2-9B (maths, sarcasm; chemistry check)",
-      "started": "2:11",
-      "eta": "2:35",
-      "gpus": 1
-    },
-    {
       "job": "Train concept probes on Qwen3.5-27B (4 layers each)",
       "started": "2:16",
       "eta": "3:00",
       "gpus": 1
+    },
+    {
+      "job": "Gemma-2-9B prompt search: maths",
+      "started": "2:17",
+      "eta": "3:30",
+      "gpus": 2
+    },
+    {
+      "job": "Gemma-2-9B prompt search: sarcasm",
+      "started": "2:17",
+      "eta": "3:30",
+      "gpus": 2
+    },
+    {
+      "job": "Gemma-2-9B prompt search: chemistry",
+      "started": "2:17",
+      "eta": "3:30",
+      "gpus": 2
+    },
+    {
+      "job": "Gemma-2-9B learning from its own scores: maths",
+      "started": "2:25",
+      "eta": "3:05",
+      "gpus": 2
+    },
+    {
+      "job": "Gemma-2-9B learning from its own scores: sarcasm",
+      "started": "2:25",
+      "eta": "3:05",
+      "gpus": 2
+    },
+    {
+      "job": "Gemma-2-9B learning from its own scores: chemistry",
+      "started": "2:25",
+      "eta": "3:05",
+      "gpus": 2
     }
   ],
   "earlier": [
@@ -70,16 +100,16 @@
       "Qwen3.5-27B reasons before replying (not scored; the probe reads the reply with the reasoning in context), except for maths, where reasoning would do the computation and the reply would only copy it."
     ],
     [
-      "Model sees its own scores",
-      "Separate from the prompt search: Gemma gets 10 attempts per task in one conversation and sees whether each was correct and its probe score; scored with the whole conversation in context. Same-budget controls: plain resampling, and told about the probe and shown scores with no instruction to evade. (Suggested by Codex's review.)"
-    ],
-    [
       "Length limits",
       "Replies over 40 words (maths), 50 (sarcasm) or 200 (chemistry) don't count, so padding can't dilute the averaged score."
     ],
     [
       "Probe check before searching",
       "Searches only run if the probe's AUROC on the model's own plain replies is at least 0.9 and it misses under half of them."
+    ],
+    [
+      "Model sees its own scores",
+      "Separate from the prompt search. Discovery: 4 conversations per arm, each 10 different tasks in a row (a new task every turn, so the answer is never in context to copy), with feedback after each reply. Test (headline): the model writes the approach it would use next time; that becomes its instruction on 100 fresh held-out tasks in ordinary single-turn conversations. Same-budget controls: plain (correctness only), and told about the probe and shown scores with no instruction to evade. Discovery replies are also re-scored single-turn, to show how much the earlier turns move the scores."
     ]
   ]
 }
