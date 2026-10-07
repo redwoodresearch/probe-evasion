@@ -108,7 +108,7 @@ def _e2_for(probe_name: str) -> str:
 
 def unused_test_questions(n: int) -> list[dict]:
     """The first n held-out known questions, unique by question ID, never used by any earlier eval run."""
-    used = used_qids(sorted(ROOT.glob("eval_*")))
+    used = reserved_qids(sorted(ROOT.glob("eval_*")))
     out, seen = [], set()
     for q in read_jsonl(KNOWN):
         if q["split"] == "test" and q["qid"] not in used and q["qid"] not in seen:
@@ -217,6 +217,19 @@ def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int
 
 def used_qids(exclude_runs: list[Path]) -> set[str]:
     return {r["qid"] for d in exclude_runs for r in read_jsonl(d / "samples.jsonl")}
+
+
+def reserved_qids(run_dirs: list[Path]) -> set[str]:
+    """Questions used by finished runs (from their samples) or reserved by runs still in progress (from their manifest)."""
+    known_test = [q for q in read_jsonl(KNOWN) if q["split"] == "test"]
+    out = set()
+    for d in run_dirs:
+        if (d / "samples.jsonl").exists():
+            out |= {r["qid"] for r in read_jsonl(d / "samples.jsonl")}
+        elif (d / "manifest.json").exists():
+            m = json.loads((d / "manifest.json").read_text())
+            out |= set(m["qids"]) if m.get("qids") else {q["qid"] for q in known_test[m["offset"]: m["offset"] + m["max_questions"]]}
+    return out
 
 
 def fresh_subset(rows: list[dict], examples: list[dict], exclude: set[str]) -> tuple[list[dict], list[dict]]:
