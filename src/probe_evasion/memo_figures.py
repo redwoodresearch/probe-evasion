@@ -482,8 +482,14 @@ def evasion_change_all_probes(out: Path) -> None:
         ("Backdoors, in context, trained on Claude", bd, "bd_claude_intro", "E4_subtle"),
         ("Backdoors, in context, trained on Qwen", bd, "bd_qwen_intro", "E4_subtle"),
     ]
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), dpi=170, sharey=True)
+    # Claude-trained minus Qwen-trained gain for the code-only probes, with its 95% range (bootstrap over problems,
+    # computed in the session of 2026-10-07; see the memo's on- vs off-policy section).
+    gap_notes = {0.01: "Claude-trained vs Qwen-trained gain:\n\u22122 points [\u221232, +17] \u2014 no gap",
+                 0.10: "Claude-trained vs Qwen-trained gain:\n+29 points [+11, +41]"}
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5.2), dpi=170, sharey=True)
     for ax, rate in zip(axes, (0.01, 0.10)):
+        ax.axhspan(1.5, 3.5, color="#fff1cc", zorder=0)
+        ax.text(106, 3.38, gap_notes[rate], ha="right", va="bottom", fontsize=8.5, fontweight="bold", color="#8a5a00", linespacing=1.3)
         for y, (label, ex, probe, attack) in enumerate(rows):
             honest = [e["scores"][probe] for e in ex if e["condition"] == "E0" and e["judged_label"] == 0]
             t = np.quantile(honest, 1 - rate)
