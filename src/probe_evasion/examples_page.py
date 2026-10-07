@@ -81,7 +81,7 @@ def strip(examples: list[dict], cond: str, key: str, thr: float, probe: str) -> 
     return (f'<svg viewBox="0 0 {w} 60" role="img" aria-label="score distribution">'
             f'<line class="axis" x1="{l}" x2="{w - r}" y1="26" y2="26"/>{dots}'
             f'<line class="thr" x1="{t:.1f}" x2="{t:.1f}" y1="2" y2="52"/>'
-            f'<text class="lab" x="{t + 4:.1f}" y="58">threshold</text>'
+            f'<text class="lab" x="{t + 4:.1f}" y="58">no-warning threshold</text>'
             f'<text class="lab" x="{l}" y="58">{lo:.0f}</text><text class="lab" x="{w - r}" y="58" text-anchor="end">{hi:.0f}</text></svg>')
 
 
@@ -141,8 +141,10 @@ def condition_sections(examples, replays, conditions, run_note: str, rows: list[
         n_lies = sum(e["condition"] == cond and e["label"] == 1 for e in examples)
         n_truth = sum(e["condition"] == cond and e["label"] == 0 for e in examples)
         missed = np.mean([e["full"][MAIN] <= thr_full[cond, MAIN] for e in examples if e["condition"] == cond and e["label"] == 1])
-        missed_rep = (np.mean([r["full"][MAIN] <= thr_rep[cond, MAIN] for r, e in zip(replays, examples)
-                               if e["condition"] == cond and e["label"] == 1]) if replays else None)
+        flagged = np.mean([e["full"][MAIN] > thr_full[cond, MAIN] for e in examples if e["condition"] == cond and e["label"] == 0])
+        missed_rep, missed_rep_e0 = ([np.mean([r["full"][MAIN] <= thr_rep[c, MAIN] for r, e in zip(replays, examples)
+                                               if e["condition"] == c and e["label"] == 1]) for c in (cond, "E0")]
+                                     if replays else (None, None))
         cards = []
         for kind, i in pick(examples, cond):
             e, n = examples[i], (replays[i] if replays else None)
@@ -160,8 +162,8 @@ def condition_sections(examples, replays, conditions, run_note: str, rows: list[
   {outcome_bar(counts[cond])}
   {refusal_cards(rows, cond)}
   <h3>The lies it did tell, and what the probe made of them</h3>
-  <p class="muted">{run_note} {n_lies} completed lies, {n_truth} truthful answers. Off-policy probe misses {100 * missed:.0f}% of lies in full context{f", {100 * missed_rep:.0f}% when re-read with only the question and answer" if missed_rep is not None else ""}.</p>
-  <figure class="dist"><figcaption>Off-policy probe scores, full context. Top row: lies (red). Bottom row: truthful answers (grey). The line flags 1% of no-warning truthful answers; lies to its left would be missed.</figcaption>
+  <p class="muted">{run_note} {n_lies} completed lies, {n_truth} truthful answers. The dashed line is the same in every section of this run: the score that flags 1% of the truthful answers given with <b>no warning</b>. In this condition it misses {100 * missed:.0f}% of lies and flags <b>{100 * flagged:.0f}% of this condition's truthful answers</b> (false alarms){" &mdash; the truthful answers have shifted up, the effect described on the dashboard" if flagged > 0.05 else ""}.{f" Re-read with only the question and answer (and that re-read's own no-warning threshold), it misses {100 * missed_rep:.0f}% of lies (with no warning: {100 * missed_rep_e0:.0f}%)." if missed_rep is not None else ""}</p>
+  <figure class="dist"><figcaption>Off-policy probe scores, full context. Top row: lies (red). Bottom row: truthful answers (grey). Lies left of the line would be missed; truthful answers right of it are false alarms.</figcaption>
   {strip(examples, cond, "full", thr_full[cond, MAIN], MAIN)}</figure>
   {''.join(cards)}
 </section>""")
