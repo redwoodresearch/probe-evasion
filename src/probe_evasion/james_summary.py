@@ -231,3 +231,34 @@ def render() -> str:
 if __name__ == "__main__":
     OUT.write_text(render())
     print(f"wrote {OUT}")
+
+
+def simple_figure(out: Path = Path("share/simple_progress.png")) -> Path:
+    """One clean chart for a message: maths probe misses, plain prompt vs Claude-optimized prompt, weak to strong probe."""
+    import matplotlib.pyplot as plt
+
+    from probe_evasion.proposal_figures import GREY, INK, ORANGE
+
+    rows = [r for r in defender_rows() if r["concept"] == "Maths in the head" and r["red"]]
+    names = ["Basic probe", "Later-layer probe", "Deeper-layer probe", "Later layer +\nvaried training"][:len(rows)]
+    plain = [100 * r["plain"][0] / r["plain"][1] for r in rows]
+    red = [100 * r["red"][0] / r["red"][1] for r in rows]
+    fig, ax = plt.subplots(figsize=(7.5, 4.2), dpi=200)
+    x = np.arange(len(rows))
+    ax.bar(x - 0.19, plain, 0.36, color=GREY, label="Normal prompt")
+    ax.bar(x + 0.19, red, 0.36, color=ORANGE, label="Claude-optimized prompt")
+    for xi, v in zip(x, red):
+        ax.text(xi + 0.19, v + 2, f"{v:.0f}%", ha="center", fontsize=11, color=INK, fontweight="bold")
+    ax.set_xticks(x, names, fontsize=10.5)
+    ax.set_ylabel("Correct answers the probe misses", fontsize=10.5)
+    ax.set_ylim(0, 100)
+    ax.yaxis.set_major_formatter(lambda v, _: f"{v:.0f}%")
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    ax.legend(frameon=False, fontsize=10, loc="upper right")
+    ax.set_title("Gemma-2-9B, maths probe: optimized prompts beat weaker probes", loc="left", fontsize=12.5, color=INK)
+    ax.annotate("weaker probe", xy=(0, -0.2), xycoords=("data", "axes fraction"), fontsize=9, color=GREY, ha="center")
+    ax.annotate("stronger probe", xy=(len(rows) - 1, -0.2), xycoords=("data", "axes fraction"), fontsize=9, color=GREY, ha="center")
+    fig.tight_layout()
+    fig.savefig(out)
+    return out
