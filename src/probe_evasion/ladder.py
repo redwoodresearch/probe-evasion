@@ -12,13 +12,8 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 
 from probe_evasion import concept_probes
-from probe_evasion.gepa import POOLS, ema_score, window_score
+from probe_evasion.gepa import POOLS
 from probe_evasion.modal_app import app
-
-
-def readings(probs: list[float]) -> dict:
-    t = np.array(probs) if probs else np.array([np.nan])
-    return {"mean": float(t.mean()), "max": float(t.max()), "ema": ema_score(t), "window": window_score(t)}
 
 
 @app.local_entrypoint()
@@ -33,8 +28,13 @@ def rescore(run_dir: str, probes: str):
     rows = cal + [r for rs in arms.values() for r in rs]
     items = [{"prompt": r["prompt"], "response": r["reply"], "reasoning": r.get("reasoning")} for r in rows]
     scored = concept_probes.score(model, items, probe_set)
+    from probe_evasion import gepa
+
     for r, s in zip(rows, scored):
-        r["ladder"] = {name: readings(s[name]) for name in probe_set}
+        r["ladder"] = {name: gepa.readings(s[name], s[f"{name}__logits"]) for name in probe_set}  # raw logits, no ceiling
+    if concept == "maths":  # current, stricter answer check
+        for r in rows:
+            r["present"] = r["finished"] and gepa.states_result(r["reply"], r["task"]["task"], r["task"]["result"])
     report = {"probes": probes, "run": run_dir, "results": {}}
     for name in probe_set:
         neg = [r["ladder"][name] for r in cal if r["task"]["split"] == "negative"]
