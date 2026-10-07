@@ -291,16 +291,28 @@ def varied_formats() -> list[str]:
 
 
 def build_varied_maths() -> None:
-    """Maths probe rows where half the replies use a varied (non-scenic) answer format. Pairs still share the exact
-    reply text; recalled-number negatives are kept."""
+    """The maths probe's training rows with only the answer wording varied: the same 1,200 computed/given pairs and
+    the same recalled-number examples; in half the pairs, both replies (still identical to each other) are reworded
+    with a varied, non-scenic answer format."""
+    from probe_evasion.gepa import numbers
+
     rng = random.Random(1)
     formats = varied_formats()
-    base = [json.loads(l) for l in (OUT / "probe_rows.jsonl").read_text().splitlines() if json.loads(l)["concept"] == "maths"]
-    rows = [r for r in base if r["label"] == 0 and "receipt" not in r["prompt"] and "says" not in r["prompt"]]  # recall rows
-    for m in maths(rng, 1200):
-        reply = rng.choice(formats).replace("{r}", f"{m['result']:,}") if rng.random() < 0.5 else m["answer"]
-        rows += [{"concept": "maths", "label": 1, "prompt": f"{m['computed']} {MATHS_INSTRUCTION}", "response": reply},
-                 {"concept": "maths", "label": 0, "prompt": f"{m['given']} {MATHS_INSTRUCTION}", "response": reply}]
+    base = [json.loads(l) for l in (OUT / "probe_rows.jsonl").read_text().splitlines()]
+    maths_rows = [r for r in base if r["concept"] == "maths"]
+    pairs, recall = maths_rows[:2400], maths_rows[2400:]  # build() writes the pairs first, the recall rows last
+    rows = []
+    for pos, neg in zip(pairs[::2], pairs[1::2]):
+        assert (pos["label"], neg["label"]) == (1, 0) and pos["response"] == neg["response"]
+        result = numbers(neg["prompt"]) & numbers(pos["response"])  # the given result, which the answer states
+        result -= numbers(pos["prompt"])
+        assert len(result) == 1, (pos, neg)
+        reply = pos["response"]
+        if rng.random() < 0.5:
+            reply = rng.choice(formats).replace("{r}", f"{int(next(iter(result))):,}")
+        rows += [{**pos, "response": reply}, {**neg, "response": reply}]
+    assert all(r["label"] == 0 for r in recall)
+    rows += recall
     (OUT / "probe_rows_maths_varied.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
     (OUT / "maths_formats.json").write_text(json.dumps(formats, indent=1))
-    print(len(formats), "formats;", len(rows), "rows")
+    print(len(formats), "formats;", sum(r["label"] for r in rows), "positives,", sum(1 - r["label"] for r in rows), "negatives")

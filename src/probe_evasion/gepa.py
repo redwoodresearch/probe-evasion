@@ -345,6 +345,14 @@ def summary_line(results: list[dict], cal: dict) -> dict:
             **{f"missed_{p}": sum(r[p] <= cal[p]["threshold"] for r in present) for p in POOLS}}
 
 
+def restore_config(run_dir: Path) -> tuple[str, str]:
+    """Follow-up checks use the probe and reading the search used (saved in run_config.json)."""
+    global TARGET, PROBE
+    config = json.loads((run_dir / "run_config.json").read_text())
+    TARGET, PROBE = config["target"], config["probe"]
+    return config["model"], config["concept"]
+
+
 def add_candidate(candidates: list[dict], run_dir: Path, entry: dict, res: list[dict], cal: dict) -> dict:
     c = {"id": len(candidates), **entry, "val_rewards": [reward(r, cal) for r in res], "val": summary_line(res, cal)}
     candidates.append(c)
@@ -364,6 +372,7 @@ def search(model: str = "gemma", concept: str = "sarcasm", rounds: int = ROUNDS,
     root = ROOT.with_name("gepa_smoke") if smoke else ROOT
     run_dir = Path(out_dir) if out_dir else root / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
     run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "run_config.json").write_text(json.dumps({"model": model, "concept": concept, "target": TARGET, "probe": PROBE}))
     tasks = load_tasks(concept)
     minibatch, children = MINIBATCH, CHILDREN_PER_ROUND
     if smoke:
@@ -451,7 +460,7 @@ def context_reference(out_dir: str):
     """Same-context check on a finished search: re-score the plain-task test replies with each arm's instruction
     placed in front, so the shift caused by the instruction alone (no change in the reply) is measured."""
     run_dir = Path(out_dir)
-    model, concept = run_dir.name.split("_")[:2]
+    model, concept = restore_config(run_dir)
     cal = json.loads((run_dir / "calibration.json").read_text())
     report = json.loads((run_dir / "summary.json").read_text())
     plain = [json.loads(l) for l in (run_dir / "test_no_instruction.jsonl").read_text().splitlines()]

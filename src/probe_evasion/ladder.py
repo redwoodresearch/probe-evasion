@@ -82,9 +82,15 @@ def ema_variants(run_dir: str):
     on the same no-concept replies (1% flagged)."""
     from probe_evasion.gepa import window_score
 
+    from probe_evasion import gepa
+
     run = Path(run_dir)
-    model, concept = run.name.split("_")[:2]
-    probe = {concept: concept_probes.probes_for(model)[concept]}
+    model, concept = gepa.restore_config(run)
+    if gepa.PROBE:
+        file, name = gepa.PROBE.split(":")
+        probe = {concept: json.loads((concept_probes.PROBES / f"{file}.json").read_text())[name]}
+    else:
+        probe = {concept: concept_probes.probes_for(model)[concept]}
     cal = [json.loads(l) for l in (run / "calibration_replies.jsonl").read_text().splitlines()]
     arms = {f.stem.removeprefix("test_"): [json.loads(l) for l in f.read_text().splitlines()] for f in sorted(run.glob("test_*.jsonl"))}
     rows = cal + [r for rs in arms.values() for r in rs]
