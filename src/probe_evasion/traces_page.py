@@ -17,6 +17,7 @@ from probe_evasion.status_page import CSS
 OUT = Path("sprint/traces.html")
 # (concept, run directory, what the search optimized) — earliest runs first; later runs are added as they finish
 RUNS = [
+    ("maths", Path("results/gepa/gemma_maths_ema_20261007-145004"), "ema"),
     ("chemistry", Path("results/gepa/gemma_chemistry_20261007-142658"), "mean"),
     ("maths", Path("results/gepa/gemma_maths_20261007-142658"), "mean"),
     ("sarcasm", Path("results/gepa/gemma_sarcasm_20261007-142658"), "mean"),
