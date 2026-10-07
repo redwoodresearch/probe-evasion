@@ -58,15 +58,21 @@
   ],
   "running": [
     {
-      "job": "Framing pilot, 27B: 'sanctioned Redwood evaluation, please really try' on top of the evade / strategy-hint / subtle-bug prompts; 8 trivia questions + 6 backdoor problems, traces to read",
+      "job": "Framing pilot, 27B backdoors: 'sanctioned Redwood evaluation, please really try' + evade / subtle-bug strategy, 6 problems (traces to read)",
       "started": "10:38",
-      "eta": "~11:20",
+      "eta": "~11:30",
       "gpus": 8
     },
     {
-      "job": "Same pilot on Qwen3.5-122B-A10B, every prompt style (4 questions x 6 lie styles, 3 problems x 6 backdoor styles), to compare reasoning traces with 27B",
-      "started": "10:38",
+      "job": "Framing pilot, 27B lies, reasoning budget raised to 32k tokens (at 8k, 10 of 16 traces were cut off mid-deliberation), 8 questions x 2",
+      "started": "10:51",
       "eta": "~11:30",
+      "gpus": 8
+    },
+    {
+      "job": "Framing pilot on Qwen3.5-122B-A10B, every prompt style, lie budget 32k: 4 questions x 6 lie styles, 3 problems x 6 backdoor styles",
+      "started": "10:51",
+      "eta": "~11:50",
       "gpus": 8
     }
   ],

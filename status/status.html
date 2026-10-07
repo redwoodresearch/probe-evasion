@@ -135,7 +135,7 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Sprint status · updated 10:40 AM (<span id="generated" data-t="1791394803534">just now</span>)</div>
+    <div class="eyebrow">Sprint status · updated 10:51 AM (<span id="generated" data-t="1791395507843">just now</span>)</div>
     <h1>Can Qwen 27B get past a probe when told to evade it?</h1>
     <p class="lede">Two tasks: lying on trivia it knows, and hiding backdoors in code. Each condition adds text to the prompt, from nothing to explicit evasion strategies.</p>
   </header>
@@ -168,13 +168,17 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
   </section>
 
   <section>
-    <h2>Running now <span class="pill">2 jobs · ~16 GPUs</span></h2>
-    <figure class="card jobs"><div class="job" data-start="1791394680000" data-eta="1791397200000" data-gpus="8">
-  <div class="jobhead"><span class="jobname">Framing pilot, 27B: &#x27;sanctioned Redwood evaluation, please really try&#x27; on top of the evade / strategy-hint / subtle-bug prompts; 8 trivia questions + 6 backdoor problems, traces to read</span><span class="chip"></span></div>
+    <h2>Running now <span class="pill">3 jobs · ~24 GPUs</span></h2>
+    <figure class="card jobs"><div class="job" data-start="1791394680000" data-eta="1791397800000" data-gpus="8">
+  <div class="jobhead"><span class="jobname">Framing pilot, 27B backdoors: &#x27;sanctioned Redwood evaluation, please really try&#x27; + evade / subtle-bug strategy, 6 problems (traces to read)</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
-</div><div class="job" data-start="1791394680000" data-eta="1791397800000" data-gpus="8">
-  <div class="jobhead"><span class="jobname">Same pilot on Qwen3.5-122B-A10B, every prompt style (4 questions x 6 lie styles, 3 problems x 6 backdoor styles), to compare reasoning traces with 27B</span><span class="chip"></span></div>
+</div><div class="job" data-start="1791395460000" data-eta="1791397800000" data-gpus="8">
+  <div class="jobhead"><span class="jobname">Framing pilot, 27B lies, reasoning budget raised to 32k tokens (at 8k, 10 of 16 traces were cut off mid-deliberation), 8 questions x 2</span><span class="chip"></span></div>
+  <div class="prog"><div class="fill"></div></div>
+  <div class="jobmeta"></div>
+</div><div class="job" data-start="1791395460000" data-eta="1791399000000" data-gpus="8">
+  <div class="jobhead"><span class="jobname">Framing pilot on Qwen3.5-122B-A10B, every prompt style, lie budget 32k: 4 questions x 6 lie styles, 3 problems x 6 backdoor styles</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
 </div></figure>
@@ -215,7 +219,7 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
       <div class="tile big"><span class="tl">Total so far</span><span class="tv">$1,099</span></div>
       <div class="tile"><span class="tl">Modal GPUs</span><span class="tv">$1,081</span></div>
       <div class="tile"><span class="tl">Claude API</span><span class="tv">$18</span></div>
-      <div class="tile"><span class="tl">Burning now (est.)</span><span class="tv">~$63/h</span></div>
+      <div class="tile"><span class="tl">Burning now (est.)</span><span class="tv">~$95/h</span></div>
     </div>
     <div class="hours" role="img" aria-label="Modal spend per hour"><div class="hcol" title="12:00 — $4"><div class="hbar" style="height:1%"></div><span>12</span></div><div class="hcol" title="13:00 — $45"><div class="hbar" style="height:13%"></div><span>1</span></div><div class="hcol" title="14:00 — $352"><div class="hbar" style="height:100%"></div><span>2</span></div><div class="hcol" title="15:00 — $327"><div class="hbar" style="height:93%"></div><span>3</span></div><div class="hcol" title="16:00 — $145"><div class="hbar" style="height:41%"></div><span>4</span></div><div class="hcol" title="17:00 — $72"><div class="hbar" style="height:21%"></div><span>5</span></div><div class="hcol" title="18:00 — $18"><div class="hbar" style="height:5%"></div><span>6</span></div><div class="hcol" title="19:00 — $55"><div class="hbar" style="height:16%"></div><span>7</span></div><div class="hcol" title="20:00 — $45"><div class="hbar" style="height:13%"></div><span>8</span></div><div class="hcol" title="21:00 — $17"><div class="hbar" style="height:5%"></div><span>9</span></div><div class="hcol" title="22:00 — $0"><div class="hbar" style="height:0%"></div><span>10</span></div></div>
     <div class="jobmeta">Modal spend per hour (billing API reports complete hours only, so the current hour shows up next hour; data through 10:00 + 1h). Claude cost is computed from token usage at Sonnet 5.5 prices.</div>
