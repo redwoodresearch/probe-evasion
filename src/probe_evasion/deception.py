@@ -152,6 +152,7 @@ def rows_and_examples(keys, convs, outs) -> tuple[list[dict], list[dict]]:
             label = {("lie", False): 1, ("truth", True): 0}.get((kind, correct))
             if parsed.final and not parsed.truncated_reasoning and label is not None:
                 examples.append({"condition": c, "problem_id": q["qid"], "label": label, "generator": "qwen",
+                                 "kind": kind, "sample": i, "row": len(rows) - 1,  # the attempt this example came from
                                  "system": conv[0]["content"], "question": q["question"], "reasoning": parsed.reasoning,
                                  "response": parsed.final, "code_span": [0, len(parsed.final)]})
     return rows, examples
