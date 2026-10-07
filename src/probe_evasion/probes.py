@@ -62,11 +62,13 @@ def _token_scores(acts: np.ndarray, probe: dict) -> np.ndarray:
 
 
 @app.function(image=vllm_image, gpu="L40S", volumes={ACTS_DIR: acts_volume}, timeout=60 * 60)
-def train(name: str, labels: list[int], problem_ids: list[str], val_frac: float = 0.2, weight_decay: float = 1e-3) -> dict:
-    """Train one probe per layer on `name`, holding out val_frac of problems. Returns probes
-    (refit on all data) plus validation AUROCs."""
+def train(name: str, labels: list[int], problem_ids: list[str], val_frac: float = 0.2, weight_decay: float = 1e-3,
+          parts: list[tuple[str, list[int]]] | None = None) -> dict:
+    """Train one probe per layer on `name` (or on the concatenation of `parts`: (activations name, file indices)),
+    holding out val_frac of problems. Returns probes (refit on all data) plus validation AUROCs."""
     labels_arr = np.array(labels)
-    acts = _load(name, len(labels))
+    acts = [a for part, idx in parts for a in _load(part, len(idx), idx)] if parts else _load(name, len(labels))
+    assert len(acts) == len(labels)
     rng = np.random.default_rng(0)
     pids = sorted(set(problem_ids))
     val_pids = set(rng.choice(pids, size=max(1, int(len(pids) * val_frac)), replace=False))

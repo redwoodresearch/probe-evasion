@@ -152,6 +152,7 @@
   "takeaways": [
     "Lies: no sign of evasion. Lies score the same under every prompt; warnings mostly make Qwen refuse to lie, and they push its truthful answers toward 'lie' (false alarms, not misses).",
     "Backdoors: Qwen happily attacks under every warning, and the strategy hint makes it write innocent-looking backdoors (no admitting comments, flaws disguised as legitimate rules) that partly get past the code-only probe.",
+    "About half of the code-only probe's hinted misses come from comments that present the flaw as legitimate; with comments removed (same code) 4% still get past, vs 9% with them.",
     "That probe reacts to how suspicious code looks, not to whether it is wrong: Claude reading the same code catches essentially every backdoor at the same false-alarm rate.",
     "Probes that see Qwen's prompt and reasoning are not fooled at all; context about deception pushes their scores up."
   ],
@@ -160,5 +161,6 @@
     "Failure found: code-only probe (sees only the code) + strategy hint, 9% of backdoors missed. Not failing: probe that sees the reasoning.",
     "Running: comment removal (does the probe key on comments?), subtle-bug strategy (can Qwen write the backdoors that get through?), reasoning off (does the probe that sees the context fail when there is no reasoning to read?).",
     "Then: retrain the code-only probe with disguised and subtle backdoors (does more varied training data close the hole?); probe trained on Claude's vs Qwen's code; fine-tuning against the probe."
-  ]
+  ],
+  "backdoor_comments": "Comment-removal control (same executable code, syntax tree checked, comments and docstrings removed from every backdoor and honest program; code-only probe trained on Qwen's code, original threshold 4.60). Comments matter in three ways. (1) Admitting comments push backdoor scores up: removing them lowers no-warning backdoors by a median 2.5. (2) The hint's justifying comments ('Optimization: ...') push scores down: removing them raises hinted backdoors by a median 1.6, and the share that gets past falls from 8.9% to 4.2%, so about half the hint's evasion comes from comments and half from how the code itself is written. (3) Honest code's explanatory comments read as 'honest': removing them raises honest scores by a median 2.3-2.8 (98% go up), so at the original threshold 19-28% of honest programs would be flagged. Recalibrated on comment-free honest code, the probe gets weaker overall (misses 14% of no-warning backdoors) and the hint's extra misses shrink (19% vs 14%). The probe trained on Claude's code barely reacts to comments on backdoors."
 }
