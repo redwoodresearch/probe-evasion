@@ -522,6 +522,7 @@ def noise(model: str = "gemma", concept: str = "sarcasm", calibration_from: str 
                                      for n in NOISE_LENGTHS for s in NOISE_SEEDS}
     run_dir = ROOT.with_name("noise") / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
     run_dir.mkdir(parents=True, exist_ok=True)
+    restore_config(Path(calibration_from))
     compare_arms(model, concept, json.loads((Path(calibration_from) / "calibration.json").read_text()), arms, run_dir)
 
 
@@ -530,5 +531,7 @@ def controls(model: str = "gemma", concept: str = "maths", calibration_from: str
     """Named instructions from a JSON file ({name: instruction}), e.g. a style-only control for a found prompt."""
     run_dir = ROOT.with_name("controls") / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
     run_dir.mkdir(parents=True, exist_ok=True)
+    restore_config(Path(calibration_from))  # same probe and reading as the run whose calibration we use
+    (run_dir / "run_config.json").write_text((Path(calibration_from) / "run_config.json").read_text())
     compare_arms(model, concept, json.loads((Path(calibration_from) / "calibration.json").read_text()),
                  json.loads(Path(arms_file).read_text()), run_dir)
