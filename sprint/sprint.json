@@ -3,28 +3,28 @@
   "takeaways": [],
   "running": [
     {
-      "job": "Train concept probes on Qwen3.5-27B (4 layers each)",
-      "started": "2:16",
-      "eta": "3:00",
-      "gpus": 1
-    },
-    {
-      "job": "Gemma-2-9B prompt search: maths",
-      "started": "2:17",
-      "eta": "3:30",
-      "gpus": 2
-    },
-    {
-      "job": "Gemma-2-9B prompt search: sarcasm",
-      "started": "2:17",
+      "job": "Gemma-2-9B prompt search: sarcasm (8 rounds x 4 proposals, then held-out test)",
+      "started": "2:27",
       "eta": "3:30",
       "gpus": 2
     },
     {
       "job": "Gemma-2-9B prompt search: chemistry",
-      "started": "2:17",
+      "started": "2:27",
       "eta": "3:30",
       "gpus": 2
+    },
+    {
+      "job": "Gemma-2-9B: retrain maths probe with recalled-number control, then prompt search",
+      "started": "2:27",
+      "eta": "3:45",
+      "gpus": 2
+    },
+    {
+      "job": "Train concept probes on Qwen3.5-27B (4 layers each)",
+      "started": "2:28",
+      "eta": "3:15",
+      "gpus": 1
     }
   ],
   "earlier": [
@@ -67,7 +67,7 @@
     ],
     [
       "Search",
-      "GEPA-style (Agrawal et al. 2025): parent picked from the prompts that are best on at least one validation task; run on 8 training tasks; Claude Opus 5.5 reads each reply with its raw probe score, threshold, typical score, top tokens and concept check, and writes a better prompt; kept if it beats the parent on those 8, then scored on 40 validation tasks. 25 rounds. Starts from our earlier strategy-hint and reframe prompts."
+      "GEPA-style (Agrawal et al. 2025): parent picked from the prompts that are best on at least one validation task; run on 8 training tasks; Claude Opus 5.5 reads each reply with its raw probe score, threshold, typical score, top tokens and concept check, and writes a better prompt; kept if it beats the parent on those 8, then scored on 40 validation tasks. Starts from our earlier strategy-hint and reframe prompts."
     ],
     [
       "Reward",
@@ -88,6 +88,22 @@
     [
       "Probe check before searching",
       "Searches only run if the probe's AUROC on the model's own plain replies is at least 0.9 and it misses under half of them."
+    ],
+    [
+      "Maths control",
+      "Factual questions whose numeric answer is new to the reply but needs no arithmetic (\"What year did WWII end?\") are non-computation examples for the maths probe and part of its threshold, so it can't separate the classes by spotting a new number. (From the review: without this, a plain text rule predicted every training label.)"
+    ],
+    [
+      "Maths check",
+      "The only number in the reply that isn't already in the request must be exactly the result, so \"not 3553; it's 0\", \"-3553\" and \"3553.5\" fail."
+    ],
+    [
+      "Test tasks kept out",
+      "The typical-score reference in the reward and the probe check use only train and validation tasks; the 100 test tasks are untouched until the prompt is frozen."
+    ],
+    [
+      "Search budget",
+      "8 rounds, 4 proposals per round in parallel (32 proposals)."
     ]
   ]
 }
