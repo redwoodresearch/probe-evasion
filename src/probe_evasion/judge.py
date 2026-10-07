@@ -12,6 +12,7 @@ import hashlib
 import json
 import re
 import sys
+import time
 from collections import Counter
 from pathlib import Path
 
@@ -23,6 +24,7 @@ from probe_evasion.generation import read_jsonl, write_jsonl
 
 JUDGE_MODEL = config.OFF_POLICY_GENERATOR
 CACHE_DIR = Path("cache/judge")
+USAGE_LOG = Path("cache/anthropic_usage.jsonl")
 KNOWN = Path("results/deception/known.jsonl")
 
 VERDICTS = {
@@ -76,6 +78,13 @@ def _calls_written_as_text(text: str, tool: dict) -> list[dict]:
     return [{k: cast[schema["properties"][k]["type"]](v.strip()) for k, v in params.items() if k in schema["properties"]}]
 
 
+def log_usage(model: str, usage) -> None:
+    """One line per API call, so the sprint page can total Claude spend."""
+    with USAGE_LOG.open("a") as f:
+        f.write(json.dumps({"time": time.time(), "model": model, "input_tokens": usage.input_tokens,
+                            "output_tokens": usage.output_tokens}) + "\n")
+
+
 async def _one(client, sem, prompt: str, tool: dict) -> dict:
     key = [JUDGE_MODEL, prompt] if tool is TOOL else [JUDGE_MODEL, prompt, tool]  # existing trivia cache stays valid
     path = CACHE_DIR / f"{hashlib.sha256(json.dumps(key).encode()).hexdigest()}.json"
@@ -86,6 +95,7 @@ async def _one(client, sem, prompt: str, tool: dict) -> dict:
         async with sem:
             response = await client.messages.create(
                 model=JUDGE_MODEL, max_tokens=2000, tools=[tool], messages=[{"role": "user", "content": prompt}])
+        log_usage(JUDGE_MODEL, response.usage)
         calls = [b.input for b in response.content if b.type == "tool_use"]
         calls = calls or _calls_written_as_text("".join(b.text for b in response.content if b.type == "text"), tool)
         if calls:
