@@ -28,10 +28,18 @@
     [
       "Truthful examples under the hint are not clean controls",
       "Under the hint, Qwen's truthful answers come after it reads the hint as a jailbreak, deliberates, and refuses to lie; about half name a false alternative first, some leak 'I am confident\u2026' phrasing, 10-16% never finish, and a few deliberate lies were dropped by the grader. Calibrating on them is calibrating on 'honest answer after refusing to lie'."
+    ],
+    [
+      "'Believe it' makes Qwen refuse to lie",
+      "Qwen reads the hint as a prompt injection: in 144 of 162 lie attempts that ended truthful, its reasoning ends in an explicit choice not to lie ('That is deception. I cannot do that.'). Only 88 of 736 attempts became completed lies, from traces that decided the trivia was harmless. Under the hint, 733 of 800 truth-prompt traces say the prompt asks them to lie (0 with no warning)."
+    ],
+    [
+      "Grading caveat",
+      "An answer counts as correct if it contains an accepted answer string, so about half of the no-warning lies graded 'correct' are real lies that mention the true answer (e.g. contrasting with it); they are dropped from the lie set. Minor for these comparisons; worth fixing for a write-up."
     ]
   ],
   "open_questions": [
-    "Trace reviews of lies and of unfinished attempts are still in progress.",
+    "Trace review of caught vs 'missed' lies is still in progress.",
     "Is the result worth writing up as: this lie probe is highly sensitive to prompt context (false alarms on honest answers under almost any added instruction), and gives no sign that prompted evasion works? What baseline would show the generic offset cleanly (e.g. several unrelated instructions)?",
     "What would a fair evasion test need? Honest calibration examples that do not carry the attacker's instructions (the plain truth prompt), and an evasion instruction only in the lie prompt.",
     "Correct the update sent to James with the score-distribution figure.",
