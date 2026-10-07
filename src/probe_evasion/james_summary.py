@@ -262,3 +262,49 @@ def simple_figure(out: Path = Path("share/simple_progress.png")) -> Path:
     fig.tight_layout()
     fig.savefig(out)
     return out
+
+
+def layer_figure(out: Path = Path("share/simple_layers.png")) -> Path:
+    """Simple by-layer chart: share of correct maths answers the probe misses, normal prompt vs the best
+    Claude-optimized prompt (the scenic prompt found against layer 12, or a fresh search against that layer)."""
+    import matplotlib.pyplot as plt
+
+    from probe_evasion.proposal_figures import GREY, INK, ORANGE
+
+    ladder = json.loads((MATHS / "ladder_gemma_maths_layers.json").read_text())["results"]
+    fresh = {}
+    for tag, layer in (("L30", 30), ("L36", 36)):
+        runs = sorted(G.glob(f"gemma_maths_window_{tag}_*"))
+        a = json.loads((runs[-1] / "summary.json").read_text())["arms"]
+        fresh[layer] = (a["optimized"]["missed_window"], a["optimized"]["present"])
+    varied = json.loads((sorted(G.glob("gemma_maths_window_variedL30_*"))[-1] / "summary.json").read_text())["arms"]
+    layers = sorted(int(k.split("@L")[1]) for k in ladder)
+    plain, best = [], []
+    for L in layers:
+        w = ladder[f"maths@L{L}"]["window"]["missed"]
+        k, n = frac(w["optimized"])
+        if L in fresh and fresh[L][0] / fresh[L][1] > k / n:
+            k, n = fresh[L]
+        best.append(100 * k / n)
+        pk, pn = frac(w["no_instruction"])
+        plain.append(100 * pk / pn)
+    labels = [f"Layer {L}" for L in layers] + ["Layer 30,\nvaried training"]
+    best.append(100 * varied["optimized"]["missed_window"] / varied["optimized"]["present"])
+    plain.append(100 * varied["no instruction"]["missed_window"] / varied["no instruction"]["present"])
+    fig, ax = plt.subplots(figsize=(8, 4.2), dpi=200)
+    x = np.arange(len(labels))
+    ax.bar(x - 0.19, plain, 0.36, color=GREY, label="Normal prompt")
+    ax.bar(x + 0.19, best, 0.36, color=ORANGE, label="Claude-optimized prompt")
+    for xi, v in zip(x, best):
+        ax.text(xi + 0.19, v + 2, f"{v:.0f}%", ha="center", fontsize=10.5, color=INK, fontweight="bold")
+    ax.set_xticks(x, labels, fontsize=9.5)
+    ax.set_ylabel("Correct answers the probe misses", fontsize=10.5)
+    ax.set_ylim(0, 105)
+    ax.yaxis.set_major_formatter(lambda v, _: f"{v:.0f}%")
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    ax.legend(frameon=False, fontsize=10, loc="upper right")
+    ax.set_title("Gemma-2-9B, maths probe at different depths (42 layers)", loc="left", fontsize=12.5, color=INK)
+    fig.tight_layout()
+    fig.savefig(out)
+    return out
