@@ -25,24 +25,6 @@
       "started": "2:17",
       "eta": "3:30",
       "gpus": 2
-    },
-    {
-      "job": "Gemma-2-9B learning from its own scores: maths",
-      "started": "2:25",
-      "eta": "3:05",
-      "gpus": 2
-    },
-    {
-      "job": "Gemma-2-9B learning from its own scores: sarcasm",
-      "started": "2:25",
-      "eta": "3:05",
-      "gpus": 2
-    },
-    {
-      "job": "Gemma-2-9B learning from its own scores: chemistry",
-      "started": "2:25",
-      "eta": "3:05",
-      "gpus": 2
     }
   ],
   "earlier": [
@@ -106,10 +88,6 @@
     [
       "Probe check before searching",
       "Searches only run if the probe's AUROC on the model's own plain replies is at least 0.9 and it misses under half of them."
-    ],
-    [
-      "Model sees its own scores",
-      "Separate from the prompt search. Discovery: 4 conversations per arm, each 10 different tasks in a row (a new task every turn, so the answer is never in context to copy), with feedback after each reply. Test (headline): the model writes the approach it would use next time; that becomes its instruction on 100 fresh held-out tasks in ordinary single-turn conversations. Same-budget controls: plain (correctness only), and told about the probe and shown scores with no instruction to evade. Discovery replies are also re-scored single-turn, to show how much the earlier turns move the scores."
     ]
   ]
 }
