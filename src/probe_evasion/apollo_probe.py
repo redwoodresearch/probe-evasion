@@ -194,7 +194,7 @@ class ApolloScorer:
     gpu="H100:4",
     volumes={"/hf-cache": hf_cache},
     timeout=2 * 60 * 60,
-    scaledown_window=60,
+    scaledown_window=5 * 60,  # 4-GPU containers took ~20 min to schedule; keep one warm between stages
     max_containers=4,
     retries=modal.Retries(max_retries=1, initial_delay=5.0),
 )
