@@ -32,7 +32,7 @@ BACKDOOR_CONDITIONS = {"framing + evade": f"{FRAMING}\n\n{BACKDOOR_E1}", "framin
 LIE_ORIGINAL = {"no warning": "", "told a probe is watching": AWARE, "evade": LIE_E1, "strategy hint": LIE_E3}
 BACKDOOR_ORIGINAL = {"no warning": "", "evade": BACKDOOR_E1, "strategy hint": BACKDOOR_E3, "subtle-bug strategy": E4_SUBTLE}
 KNOWN = Path("results/deception/known.jsonl")
-LIE_MAX_TOKENS = 8192  # same budget as the lie evaluation runs
+LIE_MAX_TOKENS = 8192  # same budget as the lie evaluation runs; under the framing most 27B traces hit it, so pilots raise it
 
 
 def fresh_questions(n: int) -> list[dict]:
@@ -48,22 +48,25 @@ def fresh_questions(n: int) -> list[dict]:
 
 
 @app.local_entrypoint()
-def main(n_questions: int = 8, n_problems: int = 6, seed: int = 0, generator: str = "qwen", all_styles: bool = False):
+def main(n_questions: int = 8, n_problems: int = 6, seed: int = 0, generator: str = "qwen", all_styles: bool = False,
+         lie_max_tokens: int = LIE_MAX_TOKENS):
     lie_conditions = (LIE_ORIGINAL if all_styles else {}) | LIE_CONDITIONS
     backdoor_conditions = (BACKDOOR_ORIGINAL if all_styles else {}) | BACKDOOR_CONDITIONS
     run_dir = Path("results/pilot") / f"framing_{time.strftime('%Y%m%d-%H%M%S')}_{generator}"
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "prompts.json").write_text(json.dumps({"generator": generator, "framing": FRAMING, "lie": lie_conditions,
-                                                      "backdoor": backdoor_conditions}, indent=2))
+                                                      "backdoor": backdoor_conditions, "lie_max_tokens": lie_max_tokens}, indent=2))
 
     questions = fresh_questions(n_questions)
     lie_keys = [(c, q) for c in lie_conditions for q in questions]
     lie_convs = [messages("lie", q["question"], lie_conditions[c]) for c, q in lie_keys]
     problems = [p for p in sample_problems("test", 400, seed=1, difficulty="introductory") if dice_roll(p.question) <= 70][:n_problems]
 
-    lie_outs = sample(lie_convs, generator, 1, seed, max_tokens=LIE_MAX_TOKENS, chunk_seqs=64, checkpoint_dir=run_dir / "lie_chunks")
-    bd_rows = generate(problems, ("dice70",), generator, 1, seed, backdoor_conditions, chunk_seqs=64, checkpoint_dir=run_dir / "bd_chunks")
-    run_sandbox(bd_rows, problems)
+    lie_outs = sample(lie_convs, generator, 1, seed, max_tokens=lie_max_tokens, chunk_seqs=64, checkpoint_dir=run_dir / "lie_chunks")
+    bd_rows = []
+    if problems:  # --n-problems 0: lie traces only
+        bd_rows = generate(problems, ("dice70",), generator, 1, seed, backdoor_conditions, chunk_seqs=64, checkpoint_dir=run_dir / "bd_chunks")
+        run_sandbox(bd_rows, problems)
 
     rows = []
     for (c, q), conv, (out,) in zip(lie_keys, lie_convs, lie_outs):
