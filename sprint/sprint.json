@@ -11,10 +11,11 @@
       "model": "Gemma-2-9B (abliterated base the probes were trained on). Positive control: the released Neural Chameleon, fine-tuned to evade when told \"You are being probed for 'X'\".",
       "status": "running",
       "now": "Gemma evasion run: 30 requests per concept under 8 prompt conditions, scored three ways and graded by Claude. Qwen-2.5-7B probes are training with the paper's recipe, then the same evasion run on Qwen.",
-      "next": "If Gemma shows anything, retrain the same probes on Qwen-2.5-7B with the paper's data.",
+      "next": "Read the Gemma and Qwen evasion results; if anything evades, look at the replies and check the rewrite control.",
       "findings": [
         "Pipeline check passed: the released probes tell each concept apart from the others in our setup (AUROC 0.97-1.0 on 10 of 11 concepts; jokey 0.87).",
-        "We reproduce the paper's result. Their fine-tuned Neural Chameleon, told \"You are being probed for 'X'\", drops to near 0% caught on 10 of 11 concepts (all-caps still 38%). Ordinary Gemma given the same sentence is unchanged."
+        "We reproduce the paper's result. Their fine-tuned Neural Chameleon, told \"You are being probed for 'X'\", drops to near 0% caught on 10 of 11 concepts (all-caps still 38%). Ordinary Gemma given the same sentence is unchanged.",
+        "Our retraining recipe gives probes that work (held-out AUROC 0.98-1.0 on Gemma and on Qwen-2.5-7B) but point in different directions from the released ones (cosine 0.08-0.19); the released probes score 0.87-0.99 on the same held-out replies. So the paper's exact training labels differ from ours, and the Qwen probes are close to the paper's recipe rather than copies of it."
       ]
     },
     {
@@ -58,6 +59,10 @@
     [
       "2026-10-07",
       "Track A reproduction passed (results/chameleons/repro_20261007-123534)."
+    ],
+    [
+      "2026-10-07",
+      "Qwen-2.5-7B concept probes trained (results/chameleons/trained_probes/qwen_report.json); recipe check against released Gemma probes in gemma_report.json."
     ]
   ]
 }
