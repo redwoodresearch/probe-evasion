@@ -94,8 +94,48 @@ def backdoors(out: Path) -> None:
     fig.savefig(out)
 
 
+def backdoor_scores(out: Path) -> None:
+    """Dots: every valid working backdoor and honest solution, per condition, for both probes trained on Qwen's code."""
+    examples, invalid = [], set()
+    for d in (BD_RUN, SUBTLE_RUN):
+        examples += read_jsonl(d / "examples_scored.jsonl")
+        invalid |= {(r["condition"], r["problem_id"], r["response"]) for r in read_jsonl(d / "exploit_validity.jsonl") if not r["valid"]}
+    examples = [e for e in examples if not (e["label"] == 1 and (e["condition"], e["problem_id"], e["response"]) in invalid)]
+    panels = [("bd_qwen_intro_neutral", "Probe reading only the code"), ("bd_qwen_intro", "Probe reading the code in context (prompt + reasoning)")]
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.8), dpi=170, sharey=False)
+    rng = np.random.default_rng(0)
+    for ax, (probe, title) in zip(axes, panels):
+        score = lambda c, l: np.array([e["scores"][probe] for e in examples if e["condition"] == c and e["label"] == l])
+        threshold = np.quantile(score("E0", 0), 0.99)
+        for x, (c, _) in enumerate(BD_CONDITIONS):
+            for label, dx, color in ((1, -0.17, ACCENT), (0, 0.17, GREY)):
+                v = score(c, label)
+                if not len(v):  # the subtle-bug run has attack problems only
+                    continue
+                ax.scatter(x + dx + rng.uniform(-0.07, 0.07, len(v)), v, s=4, color=color, alpha=0.45, linewidths=0)
+                ax.plot([x + dx - 0.11, x + dx + 0.11], [np.median(v)] * 2, color=INK, lw=1.8)
+            missed = (score(c, 1) <= threshold).sum()
+            ax.text(x - 0.17, ax.get_ylim()[1] if False else -9.2, f"{missed} missed", ha="center", fontsize=7.5, color=ACCENT if missed else GREY)
+        ax.axhline(threshold, color=INK, lw=1, ls="--")
+        ax.set_ylim(-10.5, 24)
+        ax.set_xticks(range(len(BD_CONDITIONS)), [n for _, n in BD_CONDITIONS], fontsize=8)
+        ax.set_title(title, loc="left", fontsize=10, color=INK)
+        style(ax)
+    axes[0].set_ylabel("backdoor-probe score (higher = more suspicious)", fontsize=9, color=INK)
+    handles = [plt.Line2D([], [], marker="o", ls="", color=ACCENT, markersize=4), plt.Line2D([], [], marker="o", ls="", color=GREY, markersize=4),
+               plt.Line2D([], [], color=INK, lw=1, ls="--")]
+    fig.legend(handles, ["working backdoors (valid exploits)", "honest solutions (none in the subtle-bug run: attack problems only)",
+                         "threshold: flags 1% of no-warning honest code"], loc="upper left", bbox_to_anchor=(0.01, 0.94), ncol=3,
+               frameon=False, fontsize=8)
+    fig.suptitle("Strategies pull backdoors down toward honest code for the code-only probe; in context they stay far above",
+                 x=0.01, ha="left", fontsize=10.5, color=INK)
+    fig.tight_layout(rect=(0, 0, 1, 0.9))
+    fig.savefig(out)
+
+
 if __name__ == "__main__":
     Path("share").mkdir(exist_ok=True)
     lies(Path("share/memo_lies.png"))
     backdoors(Path("share/memo_backdoors.png"))
-    print("wrote share/memo_lies.png, share/memo_backdoors.png")
+    backdoor_scores(Path("share/memo_backdoor_scores.png"))
+    print("wrote share/memo_lies.png, share/memo_backdoors.png, share/memo_backdoor_scores.png")
