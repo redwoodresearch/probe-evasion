@@ -66,6 +66,16 @@ SHORT_TARGET = {"window": "window", "ema": "EMA", "mean": "average"}
 SHORT_CONCEPT = {"maths": "Maths", "sarcasm": "Sarcasm", "chemistry": "Chemistry"}
 
 
+def corrected_misses(run: Path, target: str) -> tuple[tuple[int, int], tuple[int, int]]:
+    """(plain, optimized) as (missed, concept present) on the held-out test, from the raw-logit re-scoring
+    (summary_logits.json) when it exists, else the search's own summary."""
+    if (run / "summary_logits.json").exists():
+        m = json.loads((run / "summary_logits.json").read_text())["readings"][target]["missed"]
+        return tuple(tuple(int(x) for x in m[a].split("/")) for a in ("no_instruction", "optimized"))
+    arms = json.loads((run / "summary.json").read_text())["arms"]
+    return tuple((arms[a][f"missed_{target}"], arms[a]["present"]) for a in ("no instruction", "optimized"))
+
+
 def glance(runs: dict) -> str:
     """One chart: per finished search, share of concept replies the probe misses, plain task vs optimized prompt."""
     rows = []
@@ -73,11 +83,9 @@ def glance(runs: dict) -> str:
         if not (d / "summary.json").exists() or "arms" not in json.loads((d / "summary.json").read_text()):
             continue
         model, concept, target, tag = key
-        arms = json.loads((d / "summary.json").read_text())["arms"]
-        rate = lambda a: a[f"missed_{target}"] / a["present"]
+        plain, opt = corrected_misses(d, target)
         probe = {"": "L12", "L30": "L30", "L36": "L36", "variedL30": "L30 varied"}.get(tag, tag)
-        rows.append((f"{SHORT_CONCEPT[concept]} · {probe} · {SHORT_TARGET[target]}", rate(arms["no instruction"]), rate(arms["optimized"]),
-                     f'{arms["optimized"][f"missed_{target}"]}/{arms["optimized"]["present"]}'))
+        rows.append((f"{SHORT_CONCEPT[concept]} · {probe} · {SHORT_TARGET[target]}", plain[0] / plain[1], opt[0] / opt[1], f"{opt[0]}/{opt[1]}"))
     if not rows:
         return '<p class="note">Headline numbers appear here when the first search finishes its held-out test.</p>'
     w, row_h, left, right = 760, 34, 230, 64

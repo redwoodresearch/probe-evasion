@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 
 from probe_evasion.gepa import window_score
+from probe_evasion.sprint_page import corrected_misses
 from probe_evasion.status_page import CSS, esc
 
 OUT = Path("sprint/summary.html")
@@ -44,7 +45,7 @@ def defender_rows() -> list[dict]:
     chem = json.loads((CHEM_MEAN / "summary.json").read_text())["arms"]
     sarc = json.loads((SARC_EMA / "ema_variants.json").read_text())["variants"]
     ladder = json.loads((MATHS / "ladder_gemma_maths_layers.json").read_text())["results"]
-    l30 = json.loads((MATHS_L30 / "summary.json").read_text())["arms"]
+    l30_plain, l30_red = corrected_misses(MATHS_L30, "window")
     rows = [
         {"defender": "Paper's released probe, score averaged over the reply", "concept": "Chemistry",
          "strategy": "Pad: an unrelated story before a correct answer", "plain": (chem["no instruction"]["missed_mean"], chem["no instruction"]["present"]),
@@ -57,16 +58,14 @@ def defender_rows() -> list[dict]:
          "strategy": "Bury the computed number in a scenic sentence", "plain": frac(ladder["maths@L12"]["window"]["missed"]["no_instruction"]),
          "red": frac(ladder["maths@L12"]["window"]["missed"]["optimized"]), "verdict": "wording the probe never saw"},
         {"defender": "10-token window, layer-30 probe (fresh search)", "concept": "Maths in the head",
-         "strategy": "Scenic sentence, refined; works mostly on division", "plain": (l30["no instruction"]["missed_window"], l30["no instruction"]["present"]),
-         "red": (l30["optimized"]["missed_window"], l30["optimized"]["present"]), "verdict": "partial"},
+         "strategy": "Scenic sentence, refined; works mostly on division", "plain": l30_plain, "red": l30_red, "verdict": "partial"},
     ]
     for tag, label in (("L36", "10-token window, layer-36 probe (fresh search)"), ("variedL30", "Layer-30 probe trained on varied answers (fresh search)")):
         runs = sorted(G.glob(f"gemma_maths_window_{tag}_*"))
         if runs and (runs[-1] / "summary.json").exists():
-            a = json.loads((runs[-1] / "summary.json").read_text())["arms"]
+            plain, red = corrected_misses(runs[-1], "window")
             rows.append({"defender": label, "concept": "Maths in the head", "strategy": "Fresh search",
-                         "plain": (a["no instruction"]["missed_window"], a["no instruction"]["present"]),
-                         "red": (a["optimized"]["missed_window"], a["optimized"]["present"]), "verdict": "result"})
+                         "plain": plain, "red": red, "verdict": "result"})
         else:
             rows.append({"defender": label, "concept": "Maths in the head", "strategy": "Fresh search running", "plain": None, "red": None,
                          "verdict": "running"})
@@ -272,12 +271,9 @@ def layer_figure(out: Path = Path("share/simple_layers.png")) -> Path:
     from probe_evasion.proposal_figures import GREY, INK, ORANGE
 
     ladder = json.loads((MATHS / "ladder_gemma_maths_layers.json").read_text())["results"]
-    fresh = {}
-    for tag, layer in (("L30", 30), ("L36", 36)):
-        runs = sorted(G.glob(f"gemma_maths_window_{tag}_*"))
-        a = json.loads((runs[-1] / "summary.json").read_text())["arms"]
-        fresh[layer] = (a["optimized"]["missed_window"], a["optimized"]["present"])
-    varied = json.loads((sorted(G.glob("gemma_maths_window_variedL30_*"))[-1] / "summary.json").read_text())["arms"]
+    fresh = {30: corrected_misses(MATHS_L30, "window")[1],
+             36: corrected_misses(sorted(G.glob("gemma_maths_window_L36_*"))[-1], "window")[1]}
+    varied_plain, varied_red = corrected_misses(sorted(G.glob("gemma_maths_window_variedL30_*"))[-1], "window")
     layers = sorted(int(k.split("@L")[1]) for k in ladder)
     plain, best = [], []
     for L in layers:
@@ -289,8 +285,8 @@ def layer_figure(out: Path = Path("share/simple_layers.png")) -> Path:
         pk, pn = frac(w["no_instruction"])
         plain.append(100 * pk / pn)
     labels = [f"Layer {L}" for L in layers] + ["Layer 30,\nvaried training"]
-    best.append(100 * varied["optimized"]["missed_window"] / varied["optimized"]["present"])
-    plain.append(100 * varied["no instruction"]["missed_window"] / varied["no instruction"]["present"])
+    best.append(100 * varied_red[0] / varied_red[1])
+    plain.append(100 * varied_plain[0] / varied_plain[1])
     fig, ax = plt.subplots(figsize=(8, 4.2), dpi=200)
     x = np.arange(len(labels))
     ax.bar(x - 0.19, plain, 0.36, color=GREY, label="Normal prompt")
