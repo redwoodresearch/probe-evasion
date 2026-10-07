@@ -1,6 +1,8 @@
 {
   "lede": "Probes for harmless concepts, trained the way the Neural Chameleons paper trains them. Claude searches for the instruction that best lets the model keep the concept while the probe misses it, seeing every reply's raw probe score; the best instruction is then frozen and tested on 100 new tasks.",
   "takeaways": [
+    "Probe ladder, rung 1 (layer): the same frozen maths prompt and saved replies, scored by maths probes trained at different layers. Optimized answers missed (of 82): layer 6: 70, 12: 68, 18: 78, 24: 43, 30: 2, 36: 0 (plain answers: 0-3 of 90). All six probes look perfect on training-style text, but only the earlier-layer ones fall for the scenic wording. A fresh search against the layer-30 probe is running.",
+    "EMA variants: the sarcasm \"short reply\" result is a quirk of our EMA (it anchors on the first token, and the search made every reply open with a low-scoring \"That should\"). Starting from neutral or low misses 5 or 2 of 66; continuing the running average from the prompt misses 0. Maths holds under every EMA variant (73-82 of 82 missed). Pattern so far: the search finds whatever quirk the probe's readout has (averaging: padding; our EMA: the opening word; window: wording that dilutes the digits).",
     "Headline reading is now the 10-token window (the reply's most concept-heavy stretch of 10 tokens, or the whole reply if shorter). The averaged reading is beaten by padding; the EMA reading turned out to be fooled by very short replies (sarcasm: 23 of 66 one-sentence replies \"missed\" although nearly every token scored 0.98-1.0; the window misses 3).",
     "Maths survives the window reading: on 100 new problems the found prompts get 65 of 82 and 79 of 86 correct answers past it (plain task: 3 of 90). Per token, the computed digits still light up (0.85-0.98); what changes is the wording around them: maths-like phrasing scores high in plain answers, scenery scores near zero, so any reading that averages over a stretch comes out low. The model isn't suppressing the computation; it drops the phrasing the probe also relied on.",
     "Maths, held-out test (100 new problems): the prompt found against the EMA reading gets 77 of 82 correct answers past the maths probe (plain task: 7 of 90). The answer is computed (Gemma has no separate reasoning step) and correct; the trick is style: the number sits inside a cozy scenic sentence (\"A light mist hung in the air ... rows of neat, identical houses, 3696.\"). The found prompts don't mention probes at all.",
@@ -15,22 +17,16 @@
   ],
   "running": [
     {
-      "job": "Probe ladder: maths probes at 6 layers, trained on the original data and on varied answer formats (no scenic style)",
-      "started": "3:20",
-      "eta": "3:40",
+      "job": "Gemma-2-9B prompt search: maths against the layer-30 probe (10-token window)",
+      "started": "3:10",
+      "eta": "4:15",
       "gpus": 2
     },
     {
-      "job": "Re-score the saved maths replies with each ladder probe (frozen-prompt transfer)",
+      "job": "Re-score saved maths replies with probes trained on varied answer formats",
       "started": "3:35",
-      "eta": "3:50",
+      "eta": "3:55",
       "gpus": 1
-    },
-    {
-      "job": "Gemma-2-9B prompt search: chemistry against EMA (finishing)",
-      "started": "2:50",
-      "eta": "3:45",
-      "gpus": 2
     }
   ],
   "earlier": [
