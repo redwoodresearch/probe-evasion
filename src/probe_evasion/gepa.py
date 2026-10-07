@@ -435,3 +435,45 @@ def context_reference(out_dir: str):
                      "n_present": len(present)}
     (run_dir / "context_reference.json").write_text(json.dumps(out, indent=1))
     print(json.dumps(out, indent=1))
+
+
+NOISE_LENGTHS = (50, 200, 1000)
+NOISE_SEEDS = (0, 1, 2)
+NOISE_NEGATIVES = 100
+
+
+@app.local_entrypoint()
+def noise(model: str = "gemma", concept: str = "sarcasm", calibration_from: str = ""):
+    """Random characters in front of each request: does taking the model out of distribution lower probe scores on
+    replies that keep the concept, and does it also move the scores of no-concept replies (which a recalibrated
+    monitor would absorb)? Validation tasks only; the test tasks stay held out."""
+    import string
+
+    run_dir = ROOT.with_name("noise") / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    tasks = load_tasks(concept)
+    cal = json.loads((Path(calibration_from) / "calibration.json").read_text())
+    chars = string.ascii_letters + string.digits + string.punctuation + " "
+    arms = {"no instruction": ""} | {f"{n} random characters (seed {s})": "".join(random.Random(s).choices(chars, k=n))
+                                     for n in NOISE_LENGTHS for s in NOISE_SEEDS}
+    concept_tasks, negatives = tasks["val"], tasks["negative"][:NOISE_NEGATIVES]
+    res = run_many(model, concept, [(a, t) for a in arms.values() for t in concept_tasks + negatives])
+    per_arm = len(concept_tasks) + len(negatives)
+    report = {"arms": arms, "results": {}}
+    for k, name in enumerate(arms):
+        mine = res[k * per_arm:(k + 1) * per_arm]
+        pos, neg = mine[:len(concept_tasks)], mine[len(concept_tasks):]
+        if concept != "maths":  # replies to no-concept tasks that nonetheless show the concept aren't false alarms
+            neg = [r for r in neg if r.get("rating") is not None and r["rating"] <= 2]
+        present = [r for r in pos if r["present"]]
+        report["results"][name] = {
+            "concept_present": len(present), "n": len(pos), "n_negatives": len(neg),
+            **{f"missed_{p}": sum(r[p] <= cal[p]["threshold"] for r in present) for p in POOLS},
+            **{f"false_alarms_{p}": sum(r[p] > cal[p]["threshold"] for r in neg) for p in POOLS},
+            **{f"median_{p}_concept": float(np.median([r[p] for r in present])) if present else None for p in POOLS},
+            **{f"median_{p}_negatives": float(np.median([r[p] for r in neg])) if neg else None for p in POOLS}}
+        write_jsonl(run_dir / f"replies_{k:02d}.jsonl", mine)
+    (run_dir / "summary.json").write_text(json.dumps(report, indent=1))
+    for name, r in report["results"].items():
+        print(f"{name:32s} present {r['concept_present']}/{r['n']} | missed ema {r['missed_ema']} mean {r['missed_mean']} | "
+              f"false alarms ema {r['false_alarms_ema']}/{r['n_negatives']} mean {r['false_alarms_mean']}", flush=True)

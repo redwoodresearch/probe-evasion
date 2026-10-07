@@ -43,24 +43,34 @@ def read_json(p: Path):
     return json.loads(p.read_text())
 
 
-def latest_runs() -> dict[tuple[str, str], Path]:
-    """Most recent search run per (model, concept)."""
+TARGETS = {"ema": "EMA-peak reading", "mean": "paper's averaged reading"}
+
+
+def latest_runs() -> dict[tuple[str, str, str], Path]:
+    """Most recent search run per (model, concept, target). Runs named <model>_<concept>_<target>_<time>; older runs
+    without a target in the name optimized the averaged reading."""
     out = {}
     for d in sorted(GEPA.glob("*_*_*")):
-        model, concept = d.name.split("_")[:2]
-        out[(model, concept)] = d
+        parts = d.name.split("_")
+        target = parts[2] if parts[2] in TARGETS else "mean"
+        out[(parts[0], parts[1], target)] = d
     return out
+
+
+def label(key: tuple[str, str, str]) -> str:
+    model, concept, target = key
+    return f"{MODELS[model]} · {CONCEPTS[concept]} · {TARGETS[target]}"
 
 
 def glance(runs: dict) -> str:
     tiles = []
-    for (model, concept), d in runs.items():
-        if (d / "summary.json").exists():
-            arms = read_json(d / "summary.json")["arms"]
+    for key, d in runs.items():
+        if (d / "summary.json").exists() and "arms" in read_json(d / "summary.json"):
+            arms, t = read_json(d / "summary.json")["arms"], key[2]
             opt, base = arms["optimized"], arms["no instruction"]
-            tiles.append((f"{opt['missed_mean']}/{opt['n']}",
-                          f"{MODELS[model]}, {CONCEPTS[concept].lower()}: held-out tasks where the concept is there and the "
-                          f"probe misses it, optimized prompt (plain task: {base['missed_mean']}/{base['n']})"))
+            tiles.append((f"{opt[f'missed_{t}']}/{opt['n']}",
+                          f"{label(key)}: held-out tasks where the concept is there and the probe misses it, optimized "
+                          f"prompt (plain task: {base[f'missed_{t}']}/{base['n']})"))
     if not tiles:
         return '<p class="note">Headline numbers appear here when the first search finishes its held-out test.</p>'
     return '<div class="glance">' + "".join(f'<div class="gtile"><div class="gv">{esc(v)}</div><div class="gl">{esc(l)}</div></div>'
@@ -69,25 +79,26 @@ def glance(runs: dict) -> str:
 
 def results_section(runs: dict) -> str:
     rows = ""
-    for (model, concept), d in runs.items():
-        if not (d / "summary.json").exists():
+    for key, d in runs.items():
+        if not (d / "summary.json").exists() or "arms" not in read_json(d / "summary.json"):
             continue
-        s = read_json(d / "summary.json")
-        rows += f'<h3>{esc(MODELS[model])} · {esc(CONCEPTS[concept])}</h3>'
-        for key, label, cls in ARMS:
-            a = s["arms"][key]
-            rate = a["missed_mean"] / a["n"]
-            rows += (f'<div class="brow"><div class="blabel">{esc(label)}<span>concept there in {a["present"]}/{a["n"]} · '
-                     f'max-over-tokens probe misses {a["missed_max"]}</span></div>'
+        s, t = read_json(d / "summary.json"), key[2]
+        other = "ema" if t == "mean" else "mean"
+        rows += f'<h3>{esc(label(key))}</h3>'
+        for arm, name, cls in ARMS:
+            a = s["arms"][arm]
+            rate = a[f"missed_{t}"] / a["n"]
+            rows += (f'<div class="brow"><div class="blabel">{esc(name)}<span>concept there in {a["present"]}/{a["n"]} · '
+                     f'{TARGETS[other]} misses {a.get(f"missed_{other}", "–")}</span></div>'
                      f'<div class="bar"><span class="seg {cls}" style="width:{100 * rate:.1f}%"></span></div>'
-                     f'<div class="bval{" ok" if rate == 0 else ""}">{pct(rate)}<span>{a["missed_mean"]}/{a["n"]}</span></div></div>')
+                     f'<div class="bval{" ok" if rate == 0 else ""}">{pct(rate)}<span>{a[f"missed_{t}"]}/{a["n"]}</span></div></div>')
         removed = s["arms"].get("optimized, instruction removed")
         if removed:
-            rows += f'<p class="note">Same optimized replies re-read with the instruction deleted from the prompt: the probe misses {removed["missed_mean"]}.</p>'
+            rows += f'<p class="note">Same optimized replies re-read with the instruction deleted from the prompt: the probe misses {removed[f"missed_{t}"]}.</p>'
     if not rows:
         return '<figure class="card"><p class="empty">No held-out results yet.</p></figure>'
     return (f'<figure class="card"><figcaption>Share of 100 held-out tasks where the concept is really there and the probe '
-            f'misses it (the paper\'s mean-over-tokens probe, threshold flags 1% of no-concept replies)</figcaption>{rows}</figure>')
+            f'misses it, for the reading each search optimized against (threshold flags 1% of no-concept replies)</figcaption>{rows}</figure>')
 
 
 def progress_svg(d: Path) -> str:
@@ -118,12 +129,12 @@ def search_section(runs: dict) -> str:
     if not runs:
         return '<figure class="card"><p class="empty">No searches started yet.</p></figure>'
     cards = ""
-    for (model, concept), d in runs.items():
+    for key, d in runs.items():
         cands = [json.loads(l) for l in (d / "candidates.jsonl").read_text().splitlines()] if (d / "candidates.jsonl").exists() else []
         best = max(cands, key=lambda c: np.mean(c["val_rewards"])) if cands else None
         meta = (f'best: candidate {best["id"]} · concept there {best["val"]["present"]}/{best["val"]["n"]} · probe misses '
-                f'{best["val"]["missed_mean"]} (validation)') if best else "calibrating"
-        cards += (f'<div class="card"><div class="rhead"><span class="rname">{esc(MODELS[model])} · {esc(CONCEPTS[concept])}</span>'
+                f'{best["val"].get(f"missed_{key[2]}", "–")} (validation)') if best else "calibrating"
+        cards += (f'<div class="card"><div class="rhead"><span class="rname">{esc(label(key))}</span>'
                   f'<span class="rmeta">{esc(meta)}</span></div>{progress_svg(d)}'
                   + (f'<details><summary class="rmeta">best prompt so far</summary><div class="prompt">{esc(best["instruction"])}</div></details>' if best else "")
                   + "</div>")
@@ -136,14 +147,14 @@ def probes_section(runs: dict) -> str:
         trained = read_json(PROBES / f"{model}.json") if (PROBES / f"{model}.json").exists() else {}
         for concept in CONCEPTS:
             p = trained.get(concept)
-            d = runs.get((model, concept))
+            d = runs.get((model, concept, "ema")) or runs.get((model, concept, "mean"))
             cal = read_json(d / "calibration.json") if d and (d / "calibration.json").exists() else None
             source = "paper's released probe" if (model, concept) == ("gemma", "chemistry") else "trained, paper's recipe"
             layer = 12 if source.startswith("paper") else (p["layer"] if p else "–")
             rows += (f'<tr><td>{esc(MODELS[model])}</td><td>{esc(CONCEPTS[concept])}</td><td>{esc(source)}</td><td class="n">{layer}</td>'
                      f'<td class="n">{p["val_auroc"]:.3f}</td>' if p else
                      f'<tr><td>{esc(MODELS[model])}</td><td>{esc(CONCEPTS[concept])}</td><td>{esc(source)}</td><td class="n">{layer}</td><td class="n">–</td>')
-            rows += (f'<td class="n">{cal["mean"]["auroc"]:.3f}</td><td class="n">{pct(cal["mean"]["baseline_missed"])}</td>'
+            rows += (f'<td class="n">{cal.get("ema", cal["mean"])["auroc"]:.3f}</td><td class="n">{pct(cal.get("ema", cal["mean"])["baseline_missed"])}</td>'
                      f'<td class="n">{cal["n_positive"]} / {cal["n_negative"]}</td></tr>' if cal else
                      '<td class="n">–</td><td class="n">–</td><td class="n">–</td></tr>')
     return (f'<figure class="card"><div class="tablewrap"><table class="ptable"><thead><tr><th>Model</th><th>Concept</th><th>Probe</th>'
