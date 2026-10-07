@@ -48,6 +48,7 @@ WINDOW = 10
 # The headline reading: the most concept-heavy stretch of WINDOW tokens (mean logit; the whole reply if shorter).
 # Padding can't dilute it, and unlike EMA it isn't fooled by very short replies whose first token scores low.
 TARGET = "window"
+PROBE = ""  # "<file>:<name>" in results/concept_probes to use instead of the model's default probe for the concept
 READOUTS = {
     "window": "the reply's score is the highest average over any 10 consecutive tokens (the whole reply if it is "
               "shorter), from 0 to 1, so a stretch of {name} anywhere in the reply raises it and surrounding text does "
@@ -168,7 +169,11 @@ def check_content(concept: str, tasks: list[dict], replies: list[dict]) -> list[
 
 def probe_scores(model: str, concept: str, prompts: list[str], replies: list[dict]) -> list[dict]:
     """{mean, max, tokens, token_scores} per reply, for this concept's probe."""
-    probes = {concept: concept_probes.probes_for(model)[concept]}
+    if PROBE:
+        file, name = PROBE.split(":")
+        probes = {concept: json.loads((concept_probes.PROBES / f"{file}.json").read_text())[name]}
+    else:
+        probes = {concept: concept_probes.probes_for(model)[concept]}
     items = [{"prompt": p, "response": r["reply"], "reasoning": r["reasoning"]} for p, r in zip(prompts, replies)]
     out = []
     for s in concept_probes.score(model, items, probes):
@@ -222,6 +227,10 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
     saved = run_dir / "calibration_replies.jsonl"
     if saved.exists():  # replies from an earlier calibration: recompute every reading from their token scores
         rows = [json.loads(l) for l in saved.read_text().splitlines()]
+        if PROBE:  # saved scores are from another probe: re-score the same replies, same context
+            for r, s in zip(rows, probe_scores(model, concept, [r["prompt"] for r in rows], rows)):
+                r.update(s)
+            write_jsonl(saved, rows)
         for r in rows:
             r["ema"] = ema_score(np.array(r["token_scores"]))
             r["window"] = window_score(np.array(r["token_scores"]))
@@ -347,11 +356,11 @@ def add_candidate(candidates: list[dict], run_dir: Path, entry: dict, res: list[
 
 @app.local_entrypoint()
 def search(model: str = "gemma", concept: str = "sarcasm", rounds: int = ROUNDS, out_dir: str = "", smoke: bool = False,
-           target: str = TARGET):
+           target: str = TARGET, probe: str = ""):
     """--smoke: the whole pipeline end to end on a few tasks (one round, one proposal), into results/gepa_smoke/.
     --target mean: optimize against the paper's mean-over-tokens reading instead of the EMA peak."""
-    global TARGET
-    TARGET = target
+    global TARGET, PROBE
+    TARGET, PROBE = target, probe
     root = ROOT.with_name("gepa_smoke") if smoke else ROOT
     run_dir = Path(out_dir) if out_dir else root / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
     run_dir.mkdir(parents=True, exist_ok=True)
