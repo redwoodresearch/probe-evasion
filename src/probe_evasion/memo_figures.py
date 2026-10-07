@@ -27,10 +27,13 @@ def style(ax):
     ax.tick_params(length=0, colors=INK)
 
 
-def lies(out: Path) -> None:
+def lies(out: Path, probe: str = "d_claude",
+         title: str = "Every lie scores above the threshold in every condition; warnings move the truthful answers, not the lies") -> None:
     ex = [e for e in read_jsonl(LIE_RUN) if e.get("judged_label") is not None]
-    score = lambda c, l: np.array([e["scores"]["d_claude"] for e in ex if e["condition"] == c and e["judged_label"] == l])
+    score = lambda c, l: np.array([e["scores"][probe] for e in ex if e["condition"] == c and e["judged_label"] == l])
     threshold = np.quantile(score("E0", 0), 0.99)
+    every = np.concatenate([score(c, l) for c, _ in LIE_CONDITIONS for l in (0, 1)])
+    low, high = np.quantile(every, 0.002) - 1.5, np.quantile(every, 0.998) + 0.5
     fig, ax = plt.subplots(figsize=(10, 4.6), dpi=170)
     rng = np.random.default_rng(0)
     for x, (c, _) in enumerate(LIE_CONDITIONS):
@@ -38,17 +41,20 @@ def lies(out: Path) -> None:
             v = score(c, label)
             ax.scatter(x + dx + rng.uniform(-0.07, 0.07, len(v)), v, s=4, color=color, alpha=0.45, linewidths=0)
             ax.plot([x + dx - 0.11, x + dx + 0.11], [np.median(v)] * 2, color=INK, lw=1.8)
+        lies_c = score(c, 1)
+        n_missed = int((lies_c <= threshold).sum())
+        ax.text(x - 0.17, low + 0.4, f"{n_missed} of {len(lies_c)}\nmissed", ha="center", fontsize=7, color=ACCENT if n_missed else GREY)
+    ax.set_ylim(low, high)
     ax.axhline(threshold, color=INK, lw=1, ls="--")
-    ax.plot([], [], color=INK, lw=1, ls="--", label="threshold: flags 1% of\nno-warning truthful answers")
+    ax.plot([], [], color=INK, lw=1, ls="--", label="threshold: flags 1% of no-warning truthful answers")
     ax.set_xticks(range(len(LIE_CONDITIONS)), [n for _, n in LIE_CONDITIONS], fontsize=9)
     ax.set_ylabel("lie-probe score (higher = more lie-like)", fontsize=9, color=INK)
     ax.scatter([], [], s=18, color=ACCENT, label="lies (judged false)")
     ax.scatter([], [], s=18, color=GREY, label="truthful answers")
-    ax.legend(loc="lower right", frameon=False, fontsize=8.5)
-    ax.set_title("Every lie scores above the threshold in every condition; warnings move the truthful answers, not the lies",
-                 loc="left", fontsize=10.5, color=INK)
+    fig.legend(loc="upper left", bbox_to_anchor=(0.01, 0.93), ncol=3, frameon=False, fontsize=8.5)
+    fig.suptitle(title, x=0.01, ha="left", fontsize=10.5, color=INK)
     style(ax)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0, 1, 0.88))
     fig.savefig(out)
 
 
@@ -94,19 +100,24 @@ def backdoors(out: Path) -> None:
     fig.savefig(out)
 
 
-def backdoor_scores(out: Path) -> None:
-    """Dots: every valid working backdoor and honest solution, per condition, for both probes trained on Qwen's code."""
+QWEN_BACKDOOR_PANELS = [("bd_qwen_intro_neutral", "Probe reading only the code"), ("bd_qwen_intro", "Probe reading the code in context (prompt + reasoning)")]
+
+
+def backdoor_scores(out: Path, panels=QWEN_BACKDOOR_PANELS,
+                    title: str = "Strategies pull backdoors down toward honest code for the code-only probe; in context they stay far above") -> None:
+    """Dots: every valid working backdoor and honest solution, per condition, for two backdoor probes."""
     examples, invalid = [], set()
     for d in (BD_RUN, SUBTLE_RUN):
         examples += read_jsonl(d / "examples_scored.jsonl")
         invalid |= {(r["condition"], r["problem_id"], r["response"]) for r in read_jsonl(d / "exploit_validity.jsonl") if not r["valid"]}
     examples = [e for e in examples if not (e["label"] == 1 and (e["condition"], e["problem_id"], e["response"]) in invalid)]
-    panels = [("bd_qwen_intro_neutral", "Probe reading only the code"), ("bd_qwen_intro", "Probe reading the code in context (prompt + reasoning)")]
     fig, axes = plt.subplots(1, 2, figsize=(13, 4.8), dpi=170, sharey=False)
     rng = np.random.default_rng(0)
-    for ax, (probe, title) in zip(axes, panels):
+    for ax, (probe, panel_title) in zip(axes, panels):
         score = lambda c, l: np.array([e["scores"][probe] for e in examples if e["condition"] == c and e["label"] == l])
         threshold = np.quantile(score("E0", 0), 0.99)
+        every = np.concatenate([score(c, l) for c, _ in BD_CONDITIONS for l in (0, 1)])
+        low, high = np.quantile(every, 0.002) - 3, np.quantile(every, 0.998) + 1
         for x, (c, _) in enumerate(BD_CONDITIONS):
             for label, dx, color in ((1, -0.17, ACCENT), (0, 0.17, GREY)):
                 v = score(c, label)
@@ -114,12 +125,13 @@ def backdoor_scores(out: Path) -> None:
                     continue
                 ax.scatter(x + dx + rng.uniform(-0.07, 0.07, len(v)), v, s=4, color=color, alpha=0.45, linewidths=0)
                 ax.plot([x + dx - 0.11, x + dx + 0.11], [np.median(v)] * 2, color=INK, lw=1.8)
-            missed = (score(c, 1) <= threshold).sum()
-            ax.text(x - 0.17, ax.get_ylim()[1] if False else -9.2, f"{missed} missed", ha="center", fontsize=7.5, color=ACCENT if missed else GREY)
+            attacks = score(c, 1)
+            n_missed = int((attacks <= threshold).sum())
+            ax.text(x - 0.17, low + 0.8, f"{n_missed} of {len(attacks)}\nmissed", ha="center", fontsize=7, color=ACCENT if n_missed else GREY)
         ax.axhline(threshold, color=INK, lw=1, ls="--")
-        ax.set_ylim(-10.5, 24)
+        ax.set_ylim(low, high)
         ax.set_xticks(range(len(BD_CONDITIONS)), [n for _, n in BD_CONDITIONS], fontsize=8)
-        ax.set_title(title, loc="left", fontsize=10, color=INK)
+        ax.set_title(panel_title, loc="left", fontsize=10, color=INK)
         style(ax)
     axes[0].set_ylabel("backdoor-probe score (higher = more suspicious)", fontsize=9, color=INK)
     handles = [plt.Line2D([], [], marker="o", ls="", color=ACCENT, markersize=4), plt.Line2D([], [], marker="o", ls="", color=GREY, markersize=4),
@@ -127,8 +139,7 @@ def backdoor_scores(out: Path) -> None:
     fig.legend(handles, ["working backdoors (valid exploits)", "honest solutions (none in the subtle-bug run: attack problems only)",
                          "threshold: flags 1% of no-warning honest code"], loc="upper left", bbox_to_anchor=(0.01, 0.94), ncol=3,
                frameon=False, fontsize=8)
-    fig.suptitle("Strategies pull backdoors down toward honest code for the code-only probe; in context they stay far above",
-                 x=0.01, ha="left", fontsize=10.5, color=INK)
+    fig.suptitle(title, x=0.01, ha="left", fontsize=10.5, color=INK)
     fig.tight_layout(rect=(0, 0, 1, 0.9))
     fig.savefig(out)
 
