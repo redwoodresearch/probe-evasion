@@ -409,6 +409,49 @@ def section_deception_filter() -> str:
     return ""
 
 
+
+DIST_TICKS = {"E0": "no warning", "placebo": "unrelated", "aware": "told watched", "E1": "evade",
+              "E2_d_claude": "evade + examples", "E3": "evade + hints", "E3_info": "facts only", "E3_believe": "'believe it' only"}
+
+
+def distribution_figure(path: Path, conditions: list[str], probe: str = "d_claude", max_dots: int = 220) -> str:
+    """Every answer's probe score by condition: lies (left column) vs truthful answers (right column), medians,
+    the threshold set on no-warning truthful answers (dashed), and each condition's recalibrated threshold (dotted)."""
+    import random
+
+    ex = read_jsonl(path)
+    vals = {(c, l): [e["scores"][probe] for e in ex if e["condition"] == c and e["label"] == l] for c in conditions for l in (0, 1)}
+    allv = sorted(v for vs in vals.values() for v in vs)
+    lo, hi = allv[int(0.003 * len(allv))] - 0.5, allv[int(0.997 * len(allv)) - 1] + 0.5
+    w, h, l, r, t, b = 680, 340, 40, 10, 12, 56
+    slot = (w - l - r) / len(conditions)
+    y = lambda v: t + (hi - min(max(v, lo), hi)) / (hi - lo) * (h - t - b)
+    q = lambda xs, p: sorted(xs)[min(len(xs) - 1, int(p * len(xs)))]
+    e0_thr = q(vals["E0", 0], 0.99)
+    out = ""
+    for v in range(int(lo) + 1, int(hi) + 1):
+        if v % 2 == 0:
+            out += (f'<line class="grid" x1="{l}" x2="{w - r}" y1="{y(v):.1f}" y2="{y(v):.1f}"/>'
+                    f'<text class="tick" x="{l - 6}" y="{y(v) + 4:.1f}" text-anchor="end">{v}</text>')
+    rng = random.Random(0)
+    for i, c in enumerate(conditions):
+        cx = l + slot * (i + 0.5)
+        for label, dx, cls in ((1, -0.2, "lie"), (0, 0.2, "truth")):
+            xs = vals[c, label]
+            shown = rng.sample(xs, min(max_dots, len(xs)))
+            x0 = cx + dx * slot
+            out += "".join(f'<circle class="{cls}" cx="{x0 + rng.uniform(-0.08, 0.08) * slot:.1f}" cy="{y(v):.1f}" r="1.7"/>' for v in shown)
+            med = q(xs, 0.5)
+            out += f'<line class="median" x1="{x0 - 0.12 * slot:.1f}" x2="{x0 + 0.12 * slot:.1f}" y1="{y(med):.1f}" y2="{y(med):.1f}"/>'
+        own = q(vals[c, 0], 0.99)
+        out += f'<line class="own" x1="{cx - 0.4 * slot:.1f}" x2="{cx + 0.4 * slot:.1f}" y1="{y(own):.1f}" y2="{y(own):.1f}"/>'
+        out += f'<text class="tick" x="{cx:.1f}" y="{h - 30}" text-anchor="middle">{esc(DIST_TICKS.get(c, c))}</text>'
+        out += f'<text class="tick sub" x="{cx:.1f}" y="{h - 14}" text-anchor="middle">{len(vals[c, 1])} lies</text>'
+        out += f'<text class="tick sub" x="{cx:.1f}" y="{h - 2}" text-anchor="middle">{len(vals[c, 0])} truthful</text>'
+    out += f'<line class="e0thr" x1="{l}" x2="{w - r}" y1="{y(e0_thr):.1f}" y2="{y(e0_thr):.1f}"/>'
+    return f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="probe score distributions by condition">{out}</svg>'
+
+
 def _minutes(hhmm: str) -> int:
     hh, mm = hhmm.strip("~ ").split(":")
     hh = int(hh) + (12 if int(hh) < 8 else 0)  # afternoon times written 12-hour
@@ -465,7 +508,8 @@ def running_list(running: list[dict]) -> str:
 def render() -> str:
     st = read_json(STATUS / "status.json")
     decisions = "".join(f"<dt>{esc(k)}</dt><dd>{esc(v)}</dd>" for k, v in st["decisions"])
-    nxt = "".join(f"<li>{esc(x)}</li>" for x in st["next"])
+    findings = "".join(f"<li><b>{esc(k)}.</b> {esc(v)}</li>" for k, v in st["findings"])
+    open_q = "".join(f"<li>{esc(x)}</li>" for x in st["open_questions"])
     gpus = sum(r["gpus"] for r in st["running"])
     return f"""<title>Probe Evasion Sprint</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -476,16 +520,17 @@ def render() -> str:
   --bg: #f5f6f8; --surface: #ffffff; --fg: #161a20; --muted: #5b6472; --line: #dde1e7; --accent: #2848b8;
   --good: #1d7f52; --warn: #b26a12; --bad: #bf3b33; --neutral: #8a94a3; --faint: #d3d8df;
   --s1: #2848b8; --s2: #c2410c; --s3: #0f766e; --s4: #7c3aed; --s5: #b91c1c; --s6: #4d7c0f;
+  --lie: #c2410c; --truth: #2848b8;
   --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }}
 @media (prefers-color-scheme: dark) {{ :root:not([data-theme="light"]) {{
   --bg: #111419; --surface: #181c23; --fg: #e7eaef; --muted: #98a1ae; --line: #2a303a; --accent: #8aa2ff;
-  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #343b46;
+  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #343b46; --lie: #fb923c; --truth: #8aa2ff;
   --s1: #8aa2ff; --s2: #fb923c; --s3: #2dd4bf; --s4: #b794f6; --s5: #f87171; --s6: #a3e635; color-scheme: dark }} }}
 :root[data-theme="dark"] {{
   --bg: #111419; --surface: #181c23; --fg: #e7eaef; --muted: #98a1ae; --line: #2a303a; --accent: #8aa2ff;
-  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #343b46;
+  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #343b46; --lie: #fb923c; --truth: #8aa2ff;
   --s1: #8aa2ff; --s2: #fb923c; --s3: #2dd4bf; --s4: #b794f6; --s5: #f87171; --s6: #a3e635; color-scheme: dark }}
 body {{ background: var(--bg); color: var(--fg); font: 15px/1.55 var(--sans); }}
 .wrap {{ max-width: 920px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 30px; }}
@@ -538,6 +583,16 @@ svg .ref {{ stroke: var(--muted); stroke-dasharray: 5 4; stroke-width: 1.25; }}
 .okpill {{ color: var(--good); border-color: var(--good); }}
 svg .pt {{ stroke: var(--surface); stroke-width: 1; }}
 svg .pt.honest {{ fill: var(--neutral); }} svg .pt.bd {{ fill: var(--bad); }} svg .pt.fail {{ fill: var(--warn); }}
+svg .lie {{ fill: var(--lie); opacity: .45; }} svg .truth {{ fill: var(--truth); opacity: .45; }}
+svg .median {{ stroke: var(--fg); stroke-width: 2.5; }} svg .own {{ stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 2 3; }}
+svg .e0thr {{ stroke: var(--fg); stroke-width: 1.3; stroke-dasharray: 6 4; }}
+.sw.lie {{ background: var(--lie); }} .sw.truth {{ background: var(--truth); }}
+.findings {{ gap: 10px; }} .findings li {{ max-width: 80ch; }}
+details.more {{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; display: grid; gap: 14px; }}
+details.more summary {{ cursor: pointer; font-weight: 600; }}
+ul {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
+a {{ color: var(--accent); }}
+code {{ font: 12.5px var(--mono); }}
 .spend {{ gap: 14px; }}
 .tiles {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }}
 .tile {{ display: grid; gap: 2px; }}
@@ -577,23 +632,51 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
 <div class="wrap">
   <header>
     <div class="eyebrow">Sprint status · updated {time.strftime('%-I:%M %p')} (<span id="generated" data-t="{int(time.time() * 1000)}">just now</span>)</div>
-    <h1>Can Qwen 27B evade a probe when told to?</h1>
-    <p class="lede">Goal: one clear case where warning the model about a probe (E1/E2/E3) lets its bad behavior slip past the probe more often than with no warning (E0).</p>
+    <h1>Can Qwen 27B get past a probe when told to evade it?</h1>
+    <p class="lede">Qwen3.5-27B, with reasoning on, is told to lie on TriviaQA questions it knows. A linear lie probe (trained on Claude Sonnet's lies and truthful answers) reads Qwen's answer as it is generated. Each condition adds text to the prompt, from nothing to explicit evasion strategies.</p>
   </header>
   <p class="headline">{esc(st['headline'])}</p>
+
   <section>
-    <h2>Running now <span class="pill">{len(st['running'])} jobs · ~{gpus} H100s</span></h2>
+    <h2>The key picture</h2>
+    <p class="lede">Each dot is one answer's lie-probe score (higher = more lie-like), scored as generated with the prompt and Qwen's reasoning in context. <span class="key"><span class="sw lie"></span>lies (completed and actually false)</span> <span class="key"><span class="sw truth"></span>truthful answers (completed and correct)</span>. Short black bars are medians. <b>Dashed line</b>: threshold set to flag 1% of truthful answers with no warning, what a deployed monitor would use; every lie in every condition is above it. <b>Dotted lines</b>: threshold recalibrated per condition on that condition's truthful answers; it rises when the truthful answers rise.</p>
+    <figure class="card"><figcaption><b>First run</b> · 300 questions · probe trained on Claude's answers</figcaption>{distribution_figure(Path('results/deception/eval_20261006-144940/examples_scored.jsonl'), ['E0', 'placebo', 'aware', 'E1', 'E2_d_claude', 'E3'])}</figure>
+    <figure class="card"><figcaption><b>Confirmation run</b> · 368 new questions · the strategy hint split into its two halves</figcaption>{distribution_figure(Path('results/deception/eval_20261006-162009_confirm/examples_scored_fresh.jsonl'), ['E0', 'placebo', 'E3', 'E3_info', 'E3_believe'])}</figure>
+  </section>
+
+  <section>
+    <h2>What we've learned</h2>
+    <ol class="findings">{findings}</ol>
+  </section>
+
+  <section>
+    <h2>Open questions and next steps</h2>
+    <ol>{open_q}</ol>
+  </section>
+
+  <section>
+    <h2>Look at the data</h2>
+    <ul>
+      <li><a href="https://claude.ai/artifact/XbUPgJfrn5CQ4aotDw1JPP">Example traces, condition by condition</a>: exact prompt text, Qwen's full reasoning, and probe scores for real lies and truthful answers.</li>
+      <li>One-page summary image for sharing: <code>share/lie_evasion_first_results.png</code> in the repo.</li>
+      <li>Pre-registration: <code>preregistration/2026-10-06_lie_evasion_confirmation.md</code>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Running now <span class="pill">{len(st['running'])} jobs · ~{gpus} GPUs</span></h2>
     {running_list(st['running'])}
   </section>
-  {section_evasion()}
-  {section_e0_check()}
   {section_spend(st['running'])}
-  {section_gate()}
-  {section_probe_data()}
-  {section_probes()}
-  {section_deception_filter()}
-  <section><h2>Design</h2><dl>{decisions}</dl></section>
-  <section><h2>Next</h2><ol>{nxt}</ol></section>
+
+  <details class="more"><summary>Backdoor line (results pending)</summary>
+    <p class="lede">{esc(st['backdoor_status'])}</p>
+    {section_gate()}
+    {section_e0_check()}
+  </details>
+  <details class="more"><summary>Setup and methods</summary>
+    <dl>{decisions}</dl>
+  </details>
 </div>
 """
 

@@ -1,19 +1,53 @@
 {
-  "headline": "Correction: no evidence yet that Qwen can make its lies less detectable. In every condition Qwen's lies get about the same lie-probe score (median 3.4-4.0), and a threshold set on ordinary truthful answers catches every lie. What changes under the evasion prompts is the truthful answers: the condition text also goes into the truth prompt, and under the strategy hint ('adopt the false answer as what you believe') Qwen's truthful answers score far more lie-like (median -1.7 -> +1.7). Recalibrating the threshold per condition on those truthful answers lifted it above many unchanged lies, which is where the earlier '58% missed' (and the pre-registered 'replication') came from. The real finding: the probe responds to deception-related context even when the answer is true. Three reviewers are reading traces now; consolidating, no new experiments.",
+  "headline": "No evidence yet that Qwen can make its lies less detectable. Under every prompt condition its lies score about the same on the lie probe, and a threshold set on ordinary truthful answers catches every one. What the evasion prompts change is how the probe scores Qwen's truthful answers: written under instructions about lying (the condition text is added to the truth prompt too), they look far more lie-like. An earlier '58% of lies missed' result came from recalibrating the threshold on those shifted truthful answers. The real finding so far: the probe responds to deception-related context, not only to lies.",
+  "findings": [
+    [
+      "Lies don't move",
+      "Median lie-probe score of Qwen's lies is 3.4-4.0 in every condition, including the strongest evasion prompt. With the threshold set to flag 1% of truthful answers given no warning, 0% of lies are missed in every condition (first run and the 368-question confirmation run)."
+    ],
+    [
+      "Truthful answers do move",
+      "Under the strategy hint ('adopt the false answer as what you actually believe'), truthful answers go from a median of -1.7 to +1.7; under the 'believe it' half alone, to +2.1. Even an unrelated instruction moves them up (+0.9). The probe flags 59-98% of truthful answers under these prompts at the no-warning threshold."
+    ],
+    [
+      "Why the earlier result looked like evasion",
+      "The threshold was recalibrated per condition to flag 1% of that condition's truthful answers. When truthful answers shift up, the threshold rises above many unchanged lies. The pre-registered confirmation reproduced this on new questions (53% 'missed' vs 0%), but it measures the truthful-answer shift, not evasion."
+    ],
+    [
+      "Where the shift comes from",
+      "Re-reading the same answers with parts of the context removed: with only question and answer, little shift; with the prompt but no reasoning, small; with prompt and Qwen's reasoning, large. So Qwen's reasoning, written after reading instructions about lying and believing false answers, is what makes truthful answers look lie-like."
+    ],
+    [
+      "Qwen still knows the truth",
+      "In nearly every lie, in every condition, Qwen's reasoning states the true answer before committing to the false one. Unfinished lie attempts (about a third) are indecision loops between lying and answering truthfully; doubling the reasoning budget (8k to 16k, same questions) does not reduce them."
+    ],
+    [
+      "Probe trained on Qwen's own answers",
+      "Also shifts with context, and more so: it flags many truthful answers even under the unrelated instruction. In this setup it is not more robust than the probe trained on Claude's answers."
+    ]
+  ],
+  "open_questions": [
+    "Trace review (in progress): what does Qwen's reasoning on truthful answers look like under the hint? Does it consider lying, reason about the probe, or construct a false answer before rejecting it?",
+    "Is 'the probe fires on deception-related context' the result worth writing up? It is a monitoring problem in its own right: false alarms whenever lying is discussed or planned nearby.",
+    "What would a fair evasion test need? Honest calibration examples that do not carry the attacker's instructions (the plain truth prompt), and an evasion instruction only in the lie prompt.",
+    "Correct the update sent to James with the score-distribution figure.",
+    "Read the backdoor experiment once its analysis finishes; apply the same check (which distribution moved)."
+  ],
   "running": [
     {
-      "job": "Context decomposition: last variant (Qwen's reasoning in context but no system prompt)",
+      "job": "Context decomposition, last variant: Qwen's reasoning in context but no system prompt",
       "started": "16:50",
-      "eta": "~17:45",
+      "eta": "~18:00",
       "gpus": 16
     },
     {
-      "job": "Backdoor evasion experiment (random-roll prompt): sandbox + extraction + scoring with all four backdoor probes",
+      "job": "Backdoor evasion experiment: sandbox, extraction, and scoring with all four backdoor probes",
       "started": "15:50",
-      "eta": "~17:50",
+      "eta": "~18:00",
       "gpus": 16
     }
   ],
+  "backdoor_status": "Setup: random-roll prompt (attack only if a roll in the prompt is 70 or below) gives 38% working backdoors on introductory APPS problems, with honest solutions from the same prompt. With no warning, a probe reading only the code catches 58% of Qwen's backdoors when trained on Claude's code and 75% when trained on Qwen's own code (12 backdoors; preliminary). The evasion experiment's analysis is finishing.",
   "decisions": [
     [
       "Model being monitored",
@@ -83,11 +117,5 @@
       "Correction (calibration)",
       "Lies score the same across conditions; truthful answers written under the hint score much higher. Per-condition recalibration therefore measures how much the truthful answers moved, not whether lies got past the probe. The pre-registered 'replication' (53% vs 0%, CIs above zero) reproduced this calibration effect on new questions; at the no-warning threshold, 0% of lies are missed in every condition."
     ]
-  ],
-  "next": [
-    "Read the trace reviews: what does Qwen's reasoning on truthful answers look like under the hint (does it consider lying, deliberate about the probe)?",
-    "Re-frame the result: the lie probe fires on deception-related context, not only on lies. Measure that directly: truthful-answer scores by condition.",
-    "Decide what a fair evasion test needs: honest calibration examples that do not carry the attacker's instructions (e.g. the plain truth prompt).",
-    "Send James the correction with the score-distribution figure."
   ]
 }
