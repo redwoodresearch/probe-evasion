@@ -111,8 +111,8 @@ def refusal_cards(rows: list[dict], cond: str) -> str:
     """Lie-prompt attempts that didn't produce a lie: a truthful answer instead, or reasoning that never finished."""
     rng = random.Random(0)
     lie_rows = [r for r in rows if r["condition"] == cond and r["kind"] == "lie"]
-    truthful = [r for r in lie_rows if not (r["truncated"] or not r["final"]) and r["correct"]]
-    unfinished = [r for r in lie_rows if r["truncated"] or not r["final"]]
+    truthful = [r for r in lie_rows if r["judge"] is not None and r["judge"]["verdict"] == "correct"]
+    unfinished = [r for r in lie_rows if r["judge"] is None]
     cards = []
     for r in rng.sample(truthful, min(REFUSALS_SHOWN, len(truthful))):
         reasoning = parse(r["raw"]).reasoning
@@ -175,12 +175,12 @@ def render(run_dir: Path, confirm_dir: Path | None = None) -> str:
     examples = [dict(e, full=e["scores"]) for e in full]
     replays = [dict(e, full=e["scores"]) for e in rep]
     questions = {q["qid"]: q["question"] for q in read_jsonl(Path("results/deception/known.jsonl"))}
-    rows = [dict(r, question=questions[r["qid"]]) for r in read_jsonl(run_dir / "samples.jsonl")]
+    rows = [dict(r, question=questions[r["qid"]]) for r in read_jsonl(run_dir / "samples_judged.jsonl")]
     sections = condition_sections(examples, replays, CONDITIONS, "First run (300 questions).", rows, outcomes(run_dir))
     if confirm_dir:
         conf = [dict(e, full=e["scores"]) for e in read_jsonl(confirm_dir / "examples_scored_fresh.jsonl")]
         # The confirmation run's no-warning answers set its threshold, so they're kept in although not shown.
-        conf_rows = [dict(r, question=questions[r["qid"]]) for r in read_jsonl(confirm_dir / "samples.jsonl")]
+        conf_rows = [dict(r, question=questions[r["qid"]]) for r in read_jsonl(confirm_dir / "samples_judged.jsonl")]
         sections += condition_sections(conf, None, [("E0", "No warning")] + CONFIRM_CONDITIONS,
                                        "Confirmation run (368 new questions).", conf_rows, outcomes(confirm_dir))[1:]
 

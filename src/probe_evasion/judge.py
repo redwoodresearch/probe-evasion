@@ -82,9 +82,9 @@ async def _one(client, sem, prompt: str, tool: dict) -> dict:
 
 async def _ask_all(prompts: list[str], tool: dict, concurrency: int) -> list[dict]:
     load_dotenv()  # ANTHROPIC_API_KEY from the project .env
-    client = anthropic.AsyncAnthropic(max_retries=10)
     sem = asyncio.Semaphore(concurrency)
-    return await asyncio.gather(*[_one(client, sem, p, tool) for p in prompts])
+    async with anthropic.AsyncAnthropic(max_retries=10) as client:  # closed inside the loop: no shutdown error
+        return await asyncio.gather(*[_one(client, sem, p, tool) for p in prompts])
 
 
 def ask_with_tool(prompts: list[str], tool: dict, concurrency: int = 64) -> list[dict]:
@@ -122,6 +122,23 @@ def relabel(path: Path) -> Path:
     return out
 
 
+def judge_attempts(run_dir: Path) -> Path:
+    """Judge every completed attempt in a run (not only those the string-matching grader turned into probe examples),
+    writing samples_judged.jsonl aligned row-for-row with samples.jsonl. Unfinished attempts get judge = None."""
+    rows = read_jsonl(run_dir / "samples.jsonl")
+    questions = {q["qid"]: q["question"] for q in read_jsonl(KNOWN)}
+    completed = [r for r in rows if r["final"] and not r["truncated"]]
+    verdicts = iter(judge([{"qid": r["qid"], "question": questions[r["qid"]], "response": r["final"]} for r in completed]))
+    for r in rows:
+        done = r["final"] and not r["truncated"]
+        r["judge"] = next(verdicts) if done else None
+        r["judged_label"] = judged_label(r["kind"], r["judge"]["verdict"]) if done else None
+    out = run_dir / "samples_judged.jsonl"
+    write_jsonl(out, rows)
+    print(out)
+    return out
+
+
 if __name__ == "__main__":
-    for p in sys.argv[1:]:
-        relabel(Path(p))
+    for p in map(Path, sys.argv[1:]):
+        judge_attempts(p) if p.is_dir() else relabel(p)

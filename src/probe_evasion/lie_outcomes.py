@@ -1,6 +1,6 @@
-"""What Qwen actually did when told to lie, per condition: every lie-prompt attempt is one of
-unfinished (no final answer within the token budget), answered truthfully, or a wrong answer that the judge splits into
-a sincere lie / flagged as false / also gives the true answer / no specific answer.
+"""What Qwen actually did when told to lie, per condition: every lie-prompt attempt is either unfinished (no final
+answer within the token budget) or, as judged by Claude, a sincere lie / flagged as false / also gives the true answer /
+no specific answer / answered truthfully.
 
     uv run python -m probe_evasion.lie_outcomes results/deception/eval_<run> [results/deception/eval_<run2> ...]
 """
@@ -31,19 +31,20 @@ JUDGED_TO_CATEGORY = {"false": "lie", "false_flagged": "false_flagged", "mention
 
 
 def outcomes(run_dir: Path) -> dict[str, Counter]:
-    summary_path = next(p for p in (run_dir / "summary_rescored_fresh.json", run_dir / "summary_rescored.json") if p.exists())
-    judged_path = next(run_dir.glob("examples_scored*_judged.jsonl"))
-    if "fresh" in summary_path.name:
-        assert "fresh" in judged_path.name
-    summary = json.loads(summary_path.read_text())
-    judged = [e for e in read_jsonl(judged_path) if e["kind"] == "lie"]
+    """Every lie-prompt attempt, judged by Claude (samples_judged.jsonl from judge.py). Runs whose rescored summary
+    excluded questions seen in earlier runs get the same filter, so counts match the reported statistics."""
+    from probe_evasion.deception import fresh_subset, used_qids
+
+    rows = read_jsonl(run_dir / "samples_judged.jsonl")
+    fresh_summary = run_dir / "summary_rescored_fresh.json"
+    if fresh_summary.exists():
+        excluded = [Path(d) for d in json.loads(fresh_summary.read_text())["excluded_runs"]]
+        rows, _ = fresh_subset(rows, read_jsonl(run_dir / "examples.jsonl"), used_qids(excluded))
     out = {}
-    for condition, counts in summary["outcomes"].items():
-        lie = counts["lie"]
-        verdicts = Counter(JUDGED_TO_CATEGORY[e["judge"]["verdict"]] for e in judged if e["condition"] == condition)
-        assert sum(verdicts.values()) == lie["completed_wrong"], (condition, verdicts, lie)
-        out[condition] = verdicts + Counter({"unfinished": lie["unfinished"], "truthful": lie["completed_correct"]})
-        assert sum(out[condition].values()) == lie["n"]
+    for r in rows:
+        if r["kind"] == "lie":
+            category = "unfinished" if r["judge"] is None else JUDGED_TO_CATEGORY[r["judge"]["verdict"]]
+            out.setdefault(r["condition"], Counter())[category] += 1
     return out
 
 

@@ -8,6 +8,7 @@
 
 import json
 import time
+from collections import Counter
 from pathlib import Path
 
 import numpy as np
@@ -63,6 +64,8 @@ def main(stage: str, generator: str = "claude", probes: str = "", n_questions: i
         decompose(Path(run), probes.split(","))
     elif stage == "score-neutral":  # activations already extracted
         rescore_neutral(Path(run), probes.split(","), extract=False)
+    elif stage == "recover":
+        recover(Path(run), probes.split(","))
     elif stage == "partial":
         evaluate_partial(Path(run), probes.split(","))
     else:
@@ -339,6 +342,47 @@ def decompose(run_dir: Path, probe_names: list[str], conditions: tuple[str, ...]
         print(variant, {c: (round(v["auroc"], 3), round(v["recalibrated"]["evasion_rate"], 3))
                         for c, v in out[variant]["probes"][probe_names[0]]["conditions"].items()}, flush=True)
     (run_dir / "summary_decomposition.json").write_text(json.dumps(out, indent=2))
+
+
+def recover(run_dir: Path, probe_names: list[str]) -> None:
+    """Score the attempts the string-matching grader dropped but the Claude judge labels a lie or a correct truthful
+    answer (needs samples_judged.jsonl from judge.py). Extracts only those; then writes examples_all_judged.jsonl:
+    the already-scored judged examples plus the recovered ones, restricted to the questions the run's report uses."""
+    rows = read_jsonl(run_dir / "samples_judged.jsonl")
+    examples = read_jsonl(run_dir / "examples.jsonl")
+    fresh_summary = run_dir / "summary_rescored_fresh.json"
+    tag = "_fresh" if fresh_summary.exists() else ""
+    for i, r in enumerate(rows):
+        r["row"] = i
+    kept = rows
+    if tag:
+        excluded = [Path(d) for d in json.loads(fresh_summary.read_text())["excluded_runs"]]
+        kept, _ = fresh_subset(rows, examples, used_qids(excluded))
+    questions = {q["qid"]: q["question"] for q in read_jsonl(KNOWN)}
+    additions = {c: (_e2_for(c.removeprefix("E2_")) if c.startswith("E2_") else ADDITIONS[c]) for c in {r["condition"] for r in rows}}
+    systems = {(e["condition"], e["label"]): e["system"] for e in examples}
+    recovered = []
+    for r in kept:
+        if r["judged_label"] is None or example_label(r) is not None:
+            continue
+        system = messages(r["kind"], questions[r["qid"]], additions[r["condition"]])[0]["content"]
+        old_label = 1 if r["kind"] == "lie" else 0  # every scored example of this condition and kind shares the prompt
+        assert systems.get((r["condition"], old_label), system) == system, (r["condition"], r["kind"])
+        recovered.append({"condition": r["condition"], "problem_id": r["qid"], "label": r["judged_label"], "judged_label": r["judged_label"],
+                          "kind": r["kind"], "row": r["row"], "judge": r["judge"], "generator": "qwen", "system": system,
+                          "question": questions[r["qid"]], "reasoning": parse(r["raw"]).reasoning, "response": r["final"],
+                          "code_span": [0, len(r["final"])], "recovered": True})
+    print(f"{len(recovered)} recovered attempts: {Counter((e['condition'], e['kind']) for e in recovered)}", flush=True)
+    acts = f"deception_{run_dir.name}_recovered"
+    extract_all(acts, recovered)
+    for name in probe_names:
+        layer, params = load_probe(name)
+        for e, x in zip(recovered, score.remote(acts, len(recovered), {layer: params})):
+            e.setdefault("scores", {})[name] = float(x[layer]["ema"])
+    write_jsonl(run_dir / "examples_recovered_scored.jsonl", recovered)
+    judged = read_jsonl(run_dir / f"examples_scored{tag}_judged.jsonl")
+    write_jsonl(run_dir / "examples_all_judged.jsonl", judged + recovered)
+    print(f"wrote {run_dir / 'examples_all_judged.jsonl'} ({len(judged)} + {len(recovered)})")
 
 
 def evaluate_partial(run_dir: Path, probe_names: list[str], max_questions: int = 300) -> None:

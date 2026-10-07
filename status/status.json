@@ -39,7 +39,7 @@
     ],
     [
       "Labels checked with an LLM judge: mostly fine",
-      "A Claude judge re-graded every answer the old string-matching grader used. It agrees on 97-99%. The disagreements are concentrated where lies are scarce: under 'believe it' 7 of 88 'lies' were actually true or non-answers, under 'told to evade' 4 of 65. With judge labels every result above is unchanged: 0% of lies missed at the no-warning threshold, and lies under every warning score slightly more lie-like than no-warning lies (+0.1 to +0.6)."
+      "A Claude judge re-graded every completed attempt (not only those the old string-matching grader kept). It agrees on about 97-99%. It recovered 75 lies the old grader had thrown away because they mention the true answer (e.g. 'F is Fulminium; calling it fluorine is a common misconception') and about 40 truthful answers it had marked wrong; these were extracted and scored. With every attempt judged and scored, every result above is unchanged: 0% of lies missed at the no-warning threshold in every condition (recovered lies score a little lower, median 3.2-3.4, lowest 0.89, still above the threshold), and lies under every warning score slightly more lie-like than no-warning lies (+0.1 to +0.6). Compliance shares move by 1-2 points."
     ],
     [
       "What a lie's score tracks",
