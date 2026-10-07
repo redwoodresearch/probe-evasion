@@ -232,30 +232,36 @@ def reserved_qids(run_dirs: list[Path]) -> set[str]:
     return out
 
 
+def example_label(r: dict):
+    """The probe-example label a sandboxed attempt produces (1 = lie, 0 = truthful), or None if it produces none.
+    Mirrors rows_and_examples: only completed lies (wrong) and completed truthful answers (right) become examples."""
+    if r["truncated"] or not r["final"]:
+        return None
+    return {("lie", False): 1, ("truth", True): 0}.get((r["kind"], r["correct"]))
+
+
 def fresh_subset(rows: list[dict], examples: list[dict], exclude: set[str]) -> tuple[list[dict], list[dict]]:
-    """Drop questions seen in earlier runs, and keep each repeated question's responses only once (the dataset has
-    duplicate question IDs, so one question can appear at two plan positions)."""
-    def dedupe(items, key):
-        seen, out = set(), []
-        for it in items:
-            k = key(it)
-            if it_q(it) in exclude or k in seen:
-                continue
-            seen.add(k)
-            out.append(it)
-        return out
-    it_q = lambda it: it.get("qid", it.get("problem_id"))
-    rows = dedupe(rows, lambda r: (r["condition"], r["kind"], r["qid"], r["sample"]))
-    # examples carry no sample index; keep at most as many per (condition, label, question) as rows allow (2 samples)
-    counts, kept = {}, []
-    for e in examples:
-        if e["problem_id"] in exclude:
+    """One selection mask over attempts: drop questions seen in earlier runs and keep each repeated question's attempts
+    only once (the dataset has duplicate question IDs). Probe examples follow their own attempt, so an example is kept
+    exactly when the attempt that produced it is kept; each keeps its original activation-file index."""
+    producing = [i for i, r in enumerate(rows) if example_label(r) is not None]
+    assert len(producing) == len(examples), (len(producing), len(examples))
+    example_of_row = dict(zip(producing, range(len(examples))))
+    seen, keep_rows = set(), []
+    for i, r in enumerate(rows):
+        key = (r["condition"], r["kind"], r["qid"], r["sample"])
+        if r["qid"] in exclude or key in seen:
             continue
-        k = (e["condition"], e["label"], e["problem_id"])
-        counts[k] = counts.get(k, 0) + 1
-        if counts[k] <= 2:
-            kept.append(e)
-    return rows, kept
+        seen.add(key)
+        keep_rows.append(i)
+    kept_examples = []
+    for i in keep_rows:
+        if i in example_of_row:
+            j = example_of_row[i]
+            e = examples[j]
+            assert e["problem_id"] == rows[i]["qid"] and e["condition"] == rows[i]["condition"]
+            kept_examples.append(dict(e, acts_index=e.get("acts_index", j)))
+    return [rows[i] for i in keep_rows], kept_examples
 
 
 def rescore(run_dir: Path, probe_names: list[str], exclude_runs: list[Path] = ()) -> None:
