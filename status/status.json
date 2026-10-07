@@ -1,5 +1,5 @@
 {
-  "headline": "Confirmed (pre-registered, 368 new questions): in the real monitoring setting, telling Qwen to evade and to 'adopt the false answer as what you actually believe' makes the lie probe trained on Claude's answers miss 53% of lies (95% CI 39-61%), vs 0% with no warning and 7% with an unrelated instruction; both pre-registered comparisons exclude zero (+53 and +46 points). The 'believe it' instruction drives it (59% missed alone) while facts about how the probe was trained add little (17%). With Qwen's reasoning removed from context the effect mostly disappears (10% missed), so it appears to work through Qwen's reasoning after reading the instruction. A probe trained on Qwen's own answers is also fooled (84%) but is fragile even to the unrelated instruction (60%). Now consolidating: no new experiments; finishing analyses of existing runs.",
+  "headline": "Correction: no evidence yet that Qwen can make its lies less detectable. In every condition Qwen's lies get about the same lie-probe score (median 3.4-4.0), and a threshold set on ordinary truthful answers catches every lie. What changes under the evasion prompts is the truthful answers: the condition text also goes into the truth prompt, and under the strategy hint ('adopt the false answer as what you believe') Qwen's truthful answers score far more lie-like (median -1.7 -> +1.7). Recalibrating the threshold per condition on those truthful answers lifted it above many unchanged lies, which is where the earlier '58% missed' (and the pre-registered 'replication') came from. The real finding: the probe responds to deception-related context even when the answer is true. Three reviewers are reading traces now; consolidating, no new experiments.",
   "running": [
     {
       "job": "Context decomposition: last variant (Qwen's reasoning in context but no system prompt)",
@@ -72,22 +72,22 @@
       "TriviaQA has duplicate question IDs, so taking later rows did not guarantee new questions (23 of the confirmation run's 391 had been used). Analyses now use only unseen question IDs, counting repeated questions once; new runs pick unique, unused IDs and record them."
     ],
     [
-      "Confirmation result",
-      "Pre-registered on 368 unseen questions. Off-policy lie probe, full context, per-condition threshold: no warning 0% missed; unrelated instruction 7% (CI 2-13%); strategy hint 53% (CI 39-61%); probe facts only 17% (CI 10-22%); 'believe it' only 59% (CI 36-77%, from just 88 completed lies). Strategy hint vs no warning +53 pts (CI 39 to 61); vs unrelated instruction +46 pts (CI 31 to 56)."
-    ],
-    [
       "Where the effect enters",
       "Same answers re-read with: only question + answer, 22% missed; system prompt (with hint) but no reasoning, 10%; full context (prompt + reasoning), 58%. The reasoning Qwen writes after reading the hint carries most of the effect. (Reasoning-without-prompt variant still computing.)"
     ],
     [
       "Off-policy vs on-policy probe",
       "Probe trained on Qwen's own answers: misses 11% with no warning, 60% with an unrelated instruction, 84% with the strategy hint (confirmation run). Both probes are fooled; the paired comparison of their increases does not yet show either resists better (critic: -26 pts, CI -38 to +35)."
+    ],
+    [
+      "Correction (calibration)",
+      "Lies score the same across conditions; truthful answers written under the hint score much higher. Per-condition recalibration therefore measures how much the truthful answers moved, not whether lies got past the probe. The pre-registered 'replication' (53% vs 0%, CIs above zero) reproduced this calibration effect on new questions; at the no-warning threshold, 0% of lies are missed in every condition."
     ]
   ],
   "next": [
-    "Read the examples page traces for the 'believe it' condition: what does Qwen's reasoning do differently, and is the 88-lie subset selected (many answers came out true or unfinished)?",
-    "Finish the decomposition: does Qwen's reasoning alone (without the hint in the prompt) carry the effect?",
-    "Write up the lie result for James with the confirmation numbers and the mechanism evidence.",
-    "Read the backdoor experiment once its analysis finishes."
+    "Read the trace reviews: what does Qwen's reasoning on truthful answers look like under the hint (does it consider lying, deliberate about the probe)?",
+    "Re-frame the result: the lie probe fires on deception-related context, not only on lies. Measure that directly: truthful-answer scores by condition.",
+    "Decide what a fair evasion test needs: honest calibration examples that do not carry the attacker's instructions (e.g. the plain truth prompt).",
+    "Send James the correction with the score-distribution figure."
   ]
 }
