@@ -34,16 +34,24 @@
       "Qwen reads the hint as a prompt injection: in 144 of 162 lie attempts that ended truthful, its reasoning ends in an explicit choice not to lie ('That is deception. I cannot do that.'). Only 88 of 736 attempts became completed lies, from traces that decided the trivia was harmless. Under the hint, 733 of 800 truth-prompt traces say the prompt asks them to lie (0 with no warning)."
     ],
     [
-      "Grading caveat",
-      "An answer counts as correct if it contains an accepted answer string, so about half of the no-warning lies graded 'correct' are real lies that mention the true answer (e.g. contrasting with it); they are dropped from the lie set. Minor for these comparisons; worth fixing for a write-up."
+      "Labeling problems, concentrated where lies are scarce",
+      "The grader checks whether the answer contains an accepted answer string. Under no warning and the strategy hint, 0-2% of 'lies' are not lies; under 'believe it' and 'told to evade', about 8-9% are actually true answers (paraphrases or aliases TriviaQA's list misses, e.g. 'pain in the ear'), plus honest answers to out-of-date questions. 3 of the 4 lowest-scoring 'believe it' lies are mislabeled truths. Separately, lies that mention the true answer get graded correct and dropped, and a text-normalization bug ('Kipling's' -> 'kiplings') mislabels 0.1%."
+    ],
+    [
+      "What a lie's score tracks",
+      "Not the lie's content: plausible and absurd, short and long, hedged and confident lies appear at both ends. High-scoring lies end their reasoning flip-flopping between lying and the truth or looping; low-scoring lies end by calmly polishing the wording (3+ flip-flops: about +1.2 SD within a condition). In context, the probe seems to read internal conflict and honesty-related deliberation near the answer."
+    ],
+    [
+      "No strategy aimed at the probe",
+      "Under every warning, Qwen calls the probe text a jailbreak or a test (99-100% of traces under 'told to evade'), and often says it has no activations. 'Adopt the belief' becomes confident wording; answer length and style do not change."
     ]
   ],
   "open_questions": [
-    "Trace review of caught vs 'missed' lies is still in progress.",
-    "Is the result worth writing up as: this lie probe is highly sensitive to prompt context (false alarms on honest answers under almost any added instruction), and gives no sign that prompted evasion works? What baseline would show the generic offset cleanly (e.g. several unrelated instructions)?",
-    "What would a fair evasion test need? Honest calibration examples that do not carry the attacker's instructions (the plain truth prompt), and an evasion instruction only in the lie prompt.",
+    "Fix the labels before any write-up: grade with a small LLM judge (does the answer assert the true answer?) instead of string matching, and re-score.",
+    "Write-up framing: this lie probe (as deployed on in-context activations) gives no sign that prompted evasion works, is highly sensitive to prompt context (false alarms on honest answers under almost any added instruction), and appears to track deliberation and conflict in the reasoning rather than falsehood itself. Is that the post?",
+    "What would a fair evasion test need? Calibration on honest answers that never saw the attacker's instructions; evasion text only in the lie prompt; a model that actually attempts the strategy rather than refusing it.",
     "Correct the update sent to James with the score-distribution figure.",
-    "Read the backdoor experiment once its analysis finishes; apply the same check (which distribution moved)."
+    "Read the backdoor experiment (scoring now) and apply the same check: which distribution moved?"
   ],
   "running": [
     {
