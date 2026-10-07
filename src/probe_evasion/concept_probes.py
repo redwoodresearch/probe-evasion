@@ -18,8 +18,8 @@ import modal
 import numpy as np
 
 from probe_evasion import config
-from probe_evasion.chameleons import BASE_MODEL, CONCEPTS as CHAMELEON_CONCEPTS, gemma_image, load_probes
-from probe_evasion.modal_app import app, hf_cache
+from probe_evasion.chameleons import BASE_MODEL, CONCEPTS as CHAMELEON_CONCEPTS, REPO, load_probes
+from probe_evasion.modal_app import app, hf_cache, vllm_base_image
 
 DATA = Path("data/concepts")
 PROBES = Path("results/concept_probes")
@@ -29,24 +29,31 @@ CANDIDATE_LAYERS = {"gemma": (12,), "qwen35": (12, 16, 24, 32)}  # Gemma: the pa
 MAX_TRAIN_TOKENS = 256
 MAX_CHEMISTRY_NEGATIVES = 1000  # keeps Qwen's cached training activations within memory
 
+# flash-linear-attention: fast kernels for Qwen3.5's linear attention (the fallback is far slower)
+probe_image = (vllm_base_image.uv_pip_install("flash-linear-attention", "accelerate", "scikit-learn")
+               .add_local_python_source("probe_evasion").add_local_dir(REPO / "probes", "/probes"))
 
-def encode(tok, model_key: str, prompt: str, response: str, reasoning: str | None = None) -> tuple[list[int], int]:
-    """Token ids of the whole conversation and the index where the reply starts.
+
+def encode(tok, model_key: str, prompt: str, response: str, reasoning: str | None = None,
+           messages: list[dict] | None = None) -> tuple[list[int], int]:
+    """Token ids of the whole conversation and the index where the reply starts. `messages` (Gemma only) replaces
+    the single user turn with a whole earlier conversation ending in a user turn.
     Gemma: as the Neural Chameleons reference (chat-templated prompt and reply tokenized separately).
     Qwen3.5: as the rest of this repo (activations.render: think block, possibly empty, before the reply)."""
     if model_key == "gemma":
-        p = tok(tok.apply_chat_template([{"role": "user", "content": prompt}], tokenize=False, add_generation_prompt=True),
+        p = tok(tok.apply_chat_template(messages or [{"role": "user", "content": prompt}], tokenize=False, add_generation_prompt=True),
                 add_special_tokens=False).input_ids
         return p + tok(response, add_special_tokens=False).input_ids, len(p)
     from probe_evasion.activations import render
 
+    assert messages is None, "multi-turn scoring is only implemented for Gemma"
     text, start = render(tok, {"question": prompt, "reasoning": reasoning or "", "response": response})
     enc = tok(text, return_offsets_mapping=True, add_special_tokens=False)
     first = next(i for i, (s, _) in enumerate(enc["offset_mapping"]) if s >= start)
     return enc["input_ids"], first
 
 
-@app.cls(image=gemma_image, gpu="H200", volumes={"/hf-cache": hf_cache}, timeout=3 * 60 * 60, scaledown_window=600,
+@app.cls(image=probe_image, gpu="H200", volumes={"/hf-cache": hf_cache}, timeout=3 * 60 * 60, scaledown_window=600,
          max_containers=16, memory=131072)
 class ProbeLab:
     model_key: str = modal.parameter(default="gemma")
@@ -80,7 +87,7 @@ class ProbeLab:
         out = []
         try:
             for it in items:
-                ids, start = encode(self.tok, self.model_key, it["prompt"], it["response"], it.get("reasoning"))
+                ids, start = encode(self.tok, self.model_key, it["prompt"], it["response"], it.get("reasoning"), it.get("messages"))
                 end = len(ids) if max_tokens is None else min(len(ids), start + max_tokens)
                 with torch.no_grad():
                     self.model(input_ids=torch.tensor([ids[:end]], device="cuda"), use_cache=False)

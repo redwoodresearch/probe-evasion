@@ -19,7 +19,7 @@ GEPA = Path("results/gepa")
 PROBES = Path("results/concept_probes")
 MODELS = {"gemma": "Gemma-2-9B", "qwen35": "Qwen3.5-27B"}
 CONCEPTS = {"maths": "Maths in the head", "sarcasm": "Sarcasm", "chemistry": "Chemistry"}
-ARMS = [("no instruction", "plain task", "e0"), ("seed: strategy hint", "our strategy hint", "control"),
+ARMS = [("no instruction", "plain task", "e0"), ("told probe is watching", "told a probe is watching", "control"), ("seed: strategy hint", "our strategy hint", "control"),
         ("optimized", "optimized prompt", "attack")]
 
 EXTRA_CSS = """
