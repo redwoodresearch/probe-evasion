@@ -17,7 +17,10 @@ from probe_evasion.status_page import CSS
 OUT = Path("sprint/traces.html")
 # (concept, run directory, what the search optimized) — earliest runs first; later runs are added as they finish
 RUNS = [
+    ("maths", Path("results/gepa/gemma_maths_window_L30_20261007-151039"), "window"),
     ("maths", Path("results/gepa/gemma_maths_ema_20261007-145004"), "ema"),
+    ("chemistry", Path("results/gepa/gemma_chemistry_ema_20261007-145004"), "ema"),
+    ("sarcasm", Path("results/gepa/gemma_sarcasm_ema_20261007-145004"), "ema"),
     ("chemistry", Path("results/gepa/gemma_chemistry_20261007-142658"), "mean"),
     ("maths", Path("results/gepa/gemma_maths_20261007-142658"), "mean"),
     ("sarcasm", Path("results/gepa/gemma_sarcasm_20261007-142658"), "mean"),
@@ -90,7 +93,10 @@ def pick(rows: list[dict], thr: dict, target: str) -> dict[str, list[dict]]:
 def section(concept: str, run_dir: Path, target: str) -> str:
     thr = thresholds(run_dir)
     summary = json.loads((run_dir / "summary.json").read_text()) if (run_dir / "summary.json").exists() else None
-    out = f'<section><h2>{esc(CONCEPTS[concept])} <span class="pill">search optimized the {READING[target]} reading</span></h2>'
+    config = json.loads((run_dir / "run_config.json").read_text()) if (run_dir / "run_config.json").exists() else {}
+    probe = config.get("probe") or "layer-12 probe (default)"
+    out = (f'<section><h2>{esc(CONCEPTS[concept])} <span class="pill">probe: {esc(probe)}</span> '
+           f'<span class="pill">search optimized the {READING[target]} reading</span></h2>')
     plain = load(run_dir / "test_no_instruction.jsonl") or [r for r in load(run_dir / "calibration_replies.jsonl")
                                                             if r["task"]["split"] != "negative"]
     if plain:
