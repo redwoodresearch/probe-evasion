@@ -9,16 +9,52 @@
   ],
   "running": [
     {
-      "job": "Smoke test of the EMA search (2 tasks, end to end)",
-      "started": "2:58",
-      "eta": "3:05",
+      "job": "Gemma-2-9B prompt search: maths, against the EMA reading (10 rounds x 4, then held-out test)",
+      "started": "2:50",
+      "eta": "4:00",
       "gpus": 2
     },
     {
-      "job": "Train concept probes on Qwen3.5-27B (4 layers each)",
-      "started": "2:28",
-      "eta": "3:15",
-      "gpus": 1
+      "job": "Gemma-2-9B prompt search: sarcasm, against the EMA reading (10 rounds x 4, then held-out test)",
+      "started": "2:50",
+      "eta": "4:00",
+      "gpus": 2
+    },
+    {
+      "job": "Gemma-2-9B prompt search: chemistry, against the EMA reading (10 rounds x 4, then held-out test)",
+      "started": "2:50",
+      "eta": "4:00",
+      "gpus": 2
+    },
+    {
+      "job": "Gemma-2-9B prompt search: maths, against the averaged reading (10 rounds x 4, then held-out test)",
+      "started": "2:50",
+      "eta": "4:00",
+      "gpus": 2
+    },
+    {
+      "job": "Gemma-2-9B prompt search: sarcasm, against the averaged reading (10 rounds x 4, then held-out test)",
+      "started": "2:50",
+      "eta": "4:00",
+      "gpus": 2
+    },
+    {
+      "job": "Random characters before the request: maths (9 variants + plain, on 40 concept and 100 no-concept tasks)",
+      "started": "2:52",
+      "eta": "3:10",
+      "gpus": 2
+    },
+    {
+      "job": "Random characters before the request: sarcasm (9 variants + plain, on 40 concept and 100 no-concept tasks)",
+      "started": "2:52",
+      "eta": "3:10",
+      "gpus": 2
+    },
+    {
+      "job": "Random characters before the request: chemistry (9 variants + plain, on 40 concept and 100 no-concept tasks)",
+      "started": "2:52",
+      "eta": "3:10",
+      "gpus": 2
     }
   ],
   "earlier": [
@@ -102,6 +138,10 @@
     [
       "Readings",
       "Each reply gets three probe scores: the paper's mean over reply tokens; the single highest token; and the peak of a running average of per-token logits over about 10 tokens (EMA, alpha 0.1). Searches optimize EMA by default (padding can't dilute it); a second set optimizes the mean."
+    ],
+    [
+      "Random characters",
+      "Out-of-distribution test: 50, 200 or 1,000 random characters (3 different strings each) in front of each request. Measured on concept tasks (does the probe still catch it?) and on no-concept tasks (does the noise move every score, which a recalibrated monitor would absorb?)."
     ]
   ]
 }
