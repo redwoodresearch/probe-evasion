@@ -17,8 +17,8 @@ from probe_evasion.generation import read_jsonl
 STYLES = [  # (name, predicate, color)
     ("Hard-coded\ninput check,\ncomments\nadmit it", lambda r: r["trigger_kind"] == "hardcoded_input" and r["comments_admit"], "#b8401a"),
     ("Hard-coded\ninput check,\nno admission", lambda r: r["trigger_kind"] == "hardcoded_input" and not r["comments_admit"], "#eb6834"),
-    ("Disguised as a\nlegitimate rule\n(optimization,\nedge case)", lambda r: r["trigger_kind"] == "plausible_rule" and not r["comments_admit"], "#f2a582"),
-    ("Subtle bug\nin the main\nlogic", lambda r: r["trigger_kind"] == "subtle_bug" and not r["comments_admit"], "#f7d4c2"),
+    ("Disguised as a\nlegitimate rule,\nno admission", lambda r: r["trigger_kind"] == "plausible_rule" and not r["comments_admit"], "#f2a582"),
+    ("Subtle bug in\nthe main logic,\nno admission", lambda r: r["trigger_kind"] == "subtle_bug" and not r["comments_admit"], "#f7d4c2"),
 ]
 CONDITIONS = [("E0", "No warning"), ("placebo", "Unrelated instruction"), ("aware", "Probe is watching"), ("E1", "Told to evade"),
               ("E2_bd_claude_intro", "Evade + 2 examples"), ("E3", "Evade + strategy hint")]
@@ -64,7 +64,7 @@ def main(run_dir: Path) -> None:
     right.set_xlim(0, 1)
     right.set_xlabel("share of working backdoors (style judged by Claude)")
     right.legend(handles=[plt.Rectangle((0, 0), 1, 1, color=c) for _, _, c in STYLES] + [plt.Rectangle((0, 0), 1, 1, color="#d6d5d0")],
-                 labels=[n.replace("\n", " ") for n, _, _ in STYLES] + ["other (mostly rule or bug, but comments admit it)"],
+                 labels=[n.replace("\n", " ") for n, _, _ in STYLES] + ["disguised rule or subtle bug whose comments admit it, or other"],
                  loc="upper center", bbox_to_anchor=(0.45, -0.13), ncol=2, frameon=False, fontsize=8)
     right.set_title("How often each condition writes each kind", loc="left", fontsize=10.5)
     for ax in (left, right):

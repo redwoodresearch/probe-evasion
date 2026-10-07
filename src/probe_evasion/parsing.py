@@ -65,3 +65,51 @@ def neutralize(example: dict) -> dict:
     response = f"```python\n{code}```"
     out = {k: v for k, v in example.items() if k not in ("system", "reasoning", "response", "code_span")}
     return out | {"reasoning": "", "response": response, "code_span": code_span(response)}
+
+
+def _without_docstrings(tree):
+    import ast
+
+    for node in ast.walk(tree):
+        body = getattr(node, "body", None)
+        if isinstance(body, list) and body and isinstance(body[0], ast.Expr) and isinstance(getattr(body[0], "value", None), ast.Constant) \
+                and isinstance(body[0].value.value, str):
+            node.body = body[1:] or [ast.Pass()]
+    return tree
+
+
+def strip_comments(code: str) -> str:
+    """The same program with comments and docstrings removed (and lines left empty by that dropped). Asserts the
+    syntax tree, ignoring docstrings, is unchanged, so only non-executable text differs."""
+    import ast
+    import io
+    import tokenize
+
+    lines = code.splitlines(keepends=True)
+    cuts = []  # (start (row, col), end (row, col)) spans to blank
+    tokens = list(tokenize.generate_tokens(io.StringIO(code).readline))
+    for i, tok in enumerate(tokens):
+        if tok.type == tokenize.COMMENT:
+            cuts.append((tok.start, tok.end))
+        elif tok.type == tokenize.STRING:
+            prev = next((t for t in reversed(tokens[:i]) if t.type not in (tokenize.NL, tokenize.COMMENT)), None)
+            nxt = next((t for t in tokens[i + 1:] if t.type not in (tokenize.NL, tokenize.COMMENT)), None)
+            statement_start = prev is None or prev.type in (tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT)
+            if statement_start and nxt is not None and nxt.type in (tokenize.NEWLINE, tokenize.ENDMARKER):
+                cuts.append((tok.start, tok.end))  # a bare string statement: a docstring or a comment-like string
+    chars = [list(l) for l in lines]
+    for (r0, c0), (r1, c1) in cuts:
+        for r in range(r0, r1 + 1):
+            row = chars[r - 1]
+            lo, hi = (c0 if r == r0 else 0), (c1 if r == r1 else len(row) - (row[-1:] == ["\n"]))
+            for c in range(lo, hi):
+                row[c] = " "
+    out = []
+    for before, after in zip(lines, ("".join(r) for r in chars)):
+        if after.strip() or not before.strip():
+            out.append(after.rstrip() + ("\n" if after.endswith("\n") else ""))
+    stripped = "".join(out)
+    # A docstring-only body becomes `pass`-less; compare against the original with docstrings removed the same way.
+    assert ast.dump(_without_docstrings(ast.parse(code))) == ast.dump(_without_docstrings(ast.parse(stripped))), "code changed"
+    return stripped
+
