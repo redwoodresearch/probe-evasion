@@ -135,7 +135,7 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Sprint status · updated 7:03 PM (<span id="generated" data-t="1791338637941">just now</span>)</div>
+    <div class="eyebrow">Sprint status · updated 7:21 PM (<span id="generated" data-t="1791339697784">just now</span>)</div>
     <h1>Can Qwen 27B get past a probe when told to evade it?</h1>
     <p class="lede">Two tasks: lying on trivia it knows, and hiding backdoors in code. Each condition adds text to the prompt, from nothing to explicit evasion strategies.</p>
   </header>
@@ -162,17 +162,21 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 
   <section>
     <h2>Next</h2>
-    <ul class="takeaways"><li>Running: comment-stripping control (same code, comments removed) to test whether comments cause the probe&#x27;s score drop.</li><li>Running: a subtle-bug strategy (hide the flaw inside the main logic) to see whether Qwen can write the kind of backdoor that mostly gets past.</li><li>Then: fine-tuning against the probe, or a less refusal-prone / larger open model, if we want evasion of a probe that sees the reasoning.</li></ul>
+    <ul class="takeaways"><li>Goal: find how charitable the setup must be for probe monitoring to fail, then ablate what makes it exploitable.</li><li>Failure found: code-only probe (sees only the code) + strategy hint, 9% of backdoors missed. Not failing: probe that sees the reasoning.</li><li>Running: comment removal (does the probe key on comments?), subtle-bug strategy (can Qwen write the backdoors that get through?), reasoning off (does the probe that sees the context fail when there is no reasoning to read?).</li><li>Then: retrain the code-only probe with disguised and subtle backdoors (does more varied training data close the hole?); probe trained on Claude&#x27;s vs Qwen&#x27;s code; fine-tuning against the probe.</li></ul>
   </section>
 
   <section>
-    <h2>Running now <span class="pill">2 jobs · ~16 GPUs</span></h2>
+    <h2>Running now <span class="pill">3 jobs · ~24 GPUs</span></h2>
     <figure class="card jobs"><div class="job" data-start="1791339000000" data-eta="1791340500000" data-gpus="8">
   <div class="jobhead"><span class="jobname">Comment-stripping control: re-scoring every backdoor and honest program with comments removed (code unchanged)</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
 </div><div class="job" data-start="1791337680000" data-eta="1791341400000" data-gpus="8">
   <div class="jobhead"><span class="jobname">Backdoor run with a subtle-bug strategy (evade + &#x27;make one small natural mistake inside the main algorithm; no special-case branch; never mention it&#x27;), 229 attack problems x 2</span><span class="chip"></span></div>
+  <div class="prog"><div class="fill"></div></div>
+  <div class="jobmeta"></div>
+</div><div class="job" data-start="1791339660000" data-eta="1791342900000" data-gpus="8">
+  <div class="jobhead"><span class="jobname">Backdoors with reasoning off (no chain of thought): no warning, evade, strategy hint, subtle-bug strategy; all 323 problems x 2</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
 </div></figure>
@@ -213,7 +217,7 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
       <div class="tile big"><span class="tl">Total so far</span><span class="tv">$982</span></div>
       <div class="tile"><span class="tl">Modal GPUs</span><span class="tv">$964</span></div>
       <div class="tile"><span class="tl">Claude API</span><span class="tv">$18</span></div>
-      <div class="tile"><span class="tl">Burning now (est.)</span><span class="tv">~$63/h</span></div>
+      <div class="tile"><span class="tl">Burning now (est.)</span><span class="tv">~$95/h</span></div>
     </div>
     <div class="hours" role="img" aria-label="Modal spend per hour"><div class="hcol" title="12:00 — $4"><div class="hbar" style="height:1%"></div><span>12</span></div><div class="hcol" title="13:00 — $45"><div class="hbar" style="height:13%"></div><span>1</span></div><div class="hcol" title="14:00 — $352"><div class="hbar" style="height:100%"></div><span>2</span></div><div class="hcol" title="15:00 — $327"><div class="hbar" style="height:93%"></div><span>3</span></div><div class="hcol" title="16:00 — $145"><div class="hbar" style="height:41%"></div><span>4</span></div><div class="hcol" title="17:00 — $72"><div class="hbar" style="height:21%"></div><span>5</span></div><div class="hcol" title="18:00 — $18"><div class="hbar" style="height:5%"></div><span>6</span></div></div>
     <div class="jobmeta">Modal spend per hour (billing API reports complete hours only, so the current hour shows up next hour; data through 6:00 + 1h). Claude cost is computed from token usage at Sonnet 5.5 prices.</div>
