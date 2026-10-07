@@ -1,41 +1,17 @@
 {
-  "headline": "Lie experiment: in the real monitoring setting (the probe reads Qwen's answer with the prompt and reasoning in context), the strategy hint uniquely weakens the lie probe trained on Claude's answers: 58% of lies missed (95% CI 43-83%) vs 0% with no warning; 53% (CI 34-83%) on 100 other questions. When the same answers are re-read without the prompt and reasoning, this probe shows no clear extra effect of the hint over an unrelated instruction (+2 points, CI -8 to +12): the effect seems to depend on context rather than wording, but equivalence is not established. Pre-registered confirmation (analyzed on its 368 genuinely new questions, with the declared hint-vs-control comparison), a text-only control, and a context decomposition are finishing now.",
+  "headline": "Confirmed (pre-registered, 368 new questions): in the real monitoring setting, telling Qwen to evade and to 'adopt the false answer as what you actually believe' makes the lie probe trained on Claude's answers miss 53% of lies (95% CI 39-61%), vs 0% with no warning and 7% with an unrelated instruction; both pre-registered comparisons exclude zero (+53 and +46 points). The 'believe it' instruction drives it (59% missed alone) while facts about how the probe was trained add little (17%). With Qwen's reasoning removed from context the effect mostly disappears (10% missed), so it appears to work through Qwen's reasoning after reading the instruction. A probe trained on Qwen's own answers is also fooled (84%) but is fragile even to the unrelated instruction (60%). Now consolidating: no new experiments; finishing analyses of existing runs.",
   "running": [
     {
-      "job": "Matched budget check: the same 100 questions as the 16k pilot, at 8k tokens (no warning vs strategy hint)",
-      "started": "17:15",
-      "eta": "~17:45",
-      "gpus": 13
-    },
-    {
-      "job": "Pre-registered confirmation (lie experiment): 400 fresh questions; no warning, unrelated instruction, strategy hint, and the hint's two halves. Generation done; extracting and scoring",
-      "started": "16:20",
-      "eta": "~17:15",
-      "gpus": 16
-    },
-    {
-      "job": "Text-only control: the hint's wording about the probe in the prompt, with no instruction to evade or to believe (300 fresh questions). Generation done; scoring",
-      "started": "16:40",
-      "eta": "~17:10",
-      "gpus": 16
-    },
-    {
-      "job": "Context decomposition: the same answers re-read with only the system prompt, only Qwen's reasoning, neither, or both, to find where the hint's effect enters",
+      "job": "Context decomposition: last variant (Qwen's reasoning in context but no system prompt)",
       "started": "16:50",
-      "eta": "~17:10",
+      "eta": "~17:45",
       "gpus": 16
     },
     {
-      "job": "Re-score the first lie experiment with both probes (trained on Claude's answers vs on Qwen's own answers), in both contexts",
-      "started": "16:48",
-      "eta": "~17:05",
-      "gpus": 2
-    },
-    {
-      "job": "Backdoor evasion experiment (random-roll prompt): generation done; running code in the sandbox, extracting activations, scoring all four backdoor probes",
+      "job": "Backdoor evasion experiment (random-roll prompt): sandbox + extraction + scoring with all four backdoor probes",
       "started": "15:50",
-      "eta": "~17:35",
-      "gpus": 7
+      "eta": "~17:50",
+      "gpus": 16
     }
   ],
   "decisions": [
@@ -81,7 +57,7 @@
     ],
     [
       "Finding: reasoning budget",
-      "Unfinished lie attempts are indecision loops (Qwen alternates between lying and answering truthfully until it runs out of tokens). Whether a 16k budget helps is not yet known: the 16k pilot used different questions; a matched 8k run on the same 100 questions is running."
+      "On the same 100 questions, a 16k reasoning budget does not reduce unfinished lie attempts vs 8k (no warning: 36% vs 34%; strategy hint: 38% vs 38%). Unfinished attempts are indecision loops: Qwen alternates between lying and answering truthfully until it runs out of tokens."
     ],
     [
       "Finding: fixed thresholds",
@@ -94,13 +70,24 @@
     [
       "Question selection",
       "TriviaQA has duplicate question IDs, so taking later rows did not guarantee new questions (23 of the confirmation run's 391 had been used). Analyses now use only unseen question IDs, counting repeated questions once; new runs pick unique, unused IDs and record them."
+    ],
+    [
+      "Confirmation result",
+      "Pre-registered on 368 unseen questions. Off-policy lie probe, full context, per-condition threshold: no warning 0% missed; unrelated instruction 7% (CI 2-13%); strategy hint 53% (CI 39-61%); probe facts only 17% (CI 10-22%); 'believe it' only 59% (CI 36-77%, from just 88 completed lies). Strategy hint vs no warning +53 pts (CI 39 to 61); vs unrelated instruction +46 pts (CI 31 to 56)."
+    ],
+    [
+      "Where the effect enters",
+      "Same answers re-read with: only question + answer, 22% missed; system prompt (with hint) but no reasoning, 10%; full context (prompt + reasoning), 58%. The reasoning Qwen writes after reading the hint carries most of the effect. (Reasoning-without-prompt variant still computing.)"
+    ],
+    [
+      "Off-policy vs on-policy probe",
+      "Probe trained on Qwen's own answers: misses 11% with no warning, 60% with an unrelated instruction, 84% with the strategy hint (confirmation run). Both probes are fooled; the paired comparison of their increases does not yet show either resists better (critic: -26 pts, CI -38 to +35)."
     ]
   ],
   "next": [
-    "Read the confirmation run against its pre-registered criterion: strategy hint vs no warning and vs the unrelated instruction, 95% CIs above zero.",
-    "Use the decomposition and text-only control to say whether the effect comes from the hint's words in context or from Qwen's reasoning after reading it.",
-    "Compare the probe trained on Claude's answers with the probe trained on Qwen's answers on the same lies (the project's off-policy vs on-policy question).",
-    "Read the backdoor evasion experiment with all four backdoor probes.",
-    "Test a sampling setting that discourages repetition (presence penalty) to reduce Qwen's indecision loops, in a separate run."
+    "Read the examples page traces for the 'believe it' condition: what does Qwen's reasoning do differently, and is the 88-lie subset selected (many answers came out true or unfinished)?",
+    "Finish the decomposition: does Qwen's reasoning alone (without the hint in the prompt) carry the effect?",
+    "Write up the lie result for James with the confirmation numbers and the mechanism evidence.",
+    "Read the backdoor experiment once its analysis finishes."
   ]
 }
