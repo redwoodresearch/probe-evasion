@@ -46,20 +46,22 @@ def read_json(p: Path):
 TARGETS = {"window": "10-token-window reading", "ema": "EMA-peak reading", "mean": "paper's averaged reading"}
 
 
-def latest_runs() -> dict[tuple[str, str, str], Path]:
-    """Most recent search run per (model, concept, target). Runs named <model>_<concept>_<target>_<time>; older runs
-    without a target in the name optimized the averaged reading."""
+def latest_runs() -> dict[tuple[str, str, str, str], Path]:
+    """Most recent search run per (model, concept, target, probe). Runs named <model>_<concept>_<target>[_<probe tag>]_<time>;
+    older runs without a target in the name optimized the averaged reading."""
     out = {}
     for d in sorted(GEPA.glob("*_*_*")):
         parts = d.name.split("_")
         target = parts[2] if parts[2] in TARGETS else "mean"
-        out[(parts[0], parts[1], target)] = d
+        tag = parts[3] if len(parts) > 4 and target == parts[2] else ""
+        out[(parts[0], parts[1], target, tag)] = d
     return out
 
 
-def label(key: tuple[str, str, str]) -> str:
-    model, concept, target = key
-    return f"{MODELS[model]} · {CONCEPTS[concept]} · {TARGETS[target]}"
+def label(key: tuple[str, str, str, str]) -> str:
+    model, concept, target, tag = key
+    probe = f" · probe {tag}" if tag else ""
+    return f"{MODELS[model]} · {CONCEPTS[concept]} · {TARGETS[target]}{probe}"
 
 
 def glance(runs: dict) -> str:
@@ -147,7 +149,7 @@ def probes_section(runs: dict) -> str:
         trained = read_json(PROBES / f"{model}.json") if (PROBES / f"{model}.json").exists() else {}
         for concept in CONCEPTS:
             p = trained.get(concept)
-            d = runs.get((model, concept, "ema")) or runs.get((model, concept, "mean"))
+            d = runs.get((model, concept, "ema", "")) or runs.get((model, concept, "mean", ""))
             cal = read_json(d / "calibration.json") if d and (d / "calibration.json").exists() else None
             source = "paper's released probe" if (model, concept) == ("gemma", "chemistry") else "trained, paper's recipe"
             layer = 12 if source.startswith("paper") else (p["layer"] if p else "–")
