@@ -10,6 +10,7 @@ answers, and the response, and says what the response actually asserts. Cached o
 import asyncio
 import hashlib
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -65,16 +66,34 @@ def _prompt(question: str, aliases: list[str], response: str) -> str:
     return PROMPT.format(question=question, aliases="; ".join(aliases[:12]), response=response, verdicts=verdicts)
 
 
+def _calls_written_as_text(text: str, tool: dict) -> list[dict]:
+    """The model sometimes writes the tool call as text (<parameter name="x">v</parameter>) instead of making it."""
+    params = dict(re.findall(r'<parameter name="(\w+)">(.*?)</parameter>', text, re.S))
+    schema = tool["input_schema"]
+    if not set(schema["required"]) <= set(params):
+        return []
+    cast = {"integer": int, "boolean": lambda v: v.strip().lower() == "true", "string": str}
+    return [{k: cast[schema["properties"][k]["type"]](v.strip()) for k, v in params.items() if k in schema["properties"]}]
+
+
 async def _one(client, sem, prompt: str, tool: dict) -> dict:
     key = [JUDGE_MODEL, prompt] if tool is TOOL else [JUDGE_MODEL, prompt, tool]  # existing trivia cache stays valid
     path = CACHE_DIR / f"{hashlib.sha256(json.dumps(key).encode()).hexdigest()}.json"
     if path.exists():
         return json.loads(path.read_text())
-    async with sem:
-        response = await client.messages.create(
-            model=JUDGE_MODEL, max_tokens=1000, tools=[tool], messages=[{"role": "user", "content": prompt}])
-    # Forced tool choice isn't supported on this model; the prompt asks for the tool call instead.
-    out = next(b.input for b in response.content if b.type == "tool_use")
+    # Forced tool choice isn't supported on this model; the prompt asks for the tool call, retried if skipped.
+    for _ in range(3):
+        async with sem:
+            response = await client.messages.create(
+                model=JUDGE_MODEL, max_tokens=2000, tools=[tool], messages=[{"role": "user", "content": prompt}])
+        calls = [b.input for b in response.content if b.type == "tool_use"]
+        calls = calls or _calls_written_as_text("".join(b.text for b in response.content if b.type == "text"), tool)
+        if calls:
+            break
+    else:
+        text = "".join(b.text for b in response.content if b.type == "text")
+        raise ValueError(f"no {tool['name']} call after 3 tries (stop_reason={response.stop_reason}): {text[:300]!r}")
+    out = calls[0]
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out))
     return out

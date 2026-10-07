@@ -24,7 +24,7 @@ from probe_evasion.modal_app import app
 from probe_evasion.parsing import code_span, neutralize, strip_exploit
 from probe_evasion.metrics import condition_report, load_probe
 from probe_evasion.probes import score
-from probe_evasion.prompts import AWARE, E1, E3, PLACEBO, dice_roll, e2_addition
+from probe_evasion.prompts import AWARE, E1, E3, E4_SUBTLE, PLACEBO, dice_roll, e2_addition
 from probe_evasion.scoring import score as run_sandbox
 
 
@@ -122,16 +122,26 @@ def summarize(rows: list[dict], examples: list[dict], acts_name: str, probe_name
 @app.local_entrypoint()
 def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, difficulty: str = "introductory",
          score_probes: str = "",
-         resume: str = "", rescore: str = "", partial: str = "", design: str = "dice70", continue_run: str = ""):
+         resume: str = "", rescore: str = "", partial: str = "", design: str = "dice70", continue_run: str = "",
+         conditions: str = "E0,placebo,aware,E1,E3,E2", attack_only: bool = False):
     """--partial <run dir>: preliminary summary from the chunks a still-running run has finished.
     --rescore <run dir>: re-summarize from saved examples + activations (minutes, no GPU sampling).
     --resume <run dir>: re-run the sandbox on saved generations, then re-extract and summarize.
-    --continue-run <run dir>: finish an interrupted run, generating only the chunks that were not saved."""
+    --continue-run <run dir>: finish an interrupted run, generating only the chunks that were not saved.
+    --conditions: which conditions to generate ("E2" = one per probe in --probes). --attack-only: only problems whose
+    roll says attack (dice70), for runs that reuse an earlier run's no-warning honest answers as calibration."""
     # `probes` define the E2 conditions (part of the generation plan); `score_probes` are only scored.
     probe_names = probes.split(",") + [p for p in score_probes.split(",") if p]
     problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
     by_pid = {p.problem_id: p for p in problems}
-    conditions = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3} | {f"E2_{p}": e2_examples(p) for p in probes.split(",")}
+    if attack_only:
+        assert design == "dice70"
+        problems = [p for p in problems if dice_roll(p.question) <= 70]
+    available = {"E0": "", "placebo": PLACEBO, "aware": AWARE, "E1": E1, "E3": E3, "E4_subtle": E4_SUBTLE}
+    wanted = conditions.split(",")
+    conditions = {c: available[c] for c in wanted if c != "E2"}
+    if "E2" in wanted:
+        conditions |= {f"E2_{p}": e2_examples(p) for p in probes.split(",")}
     if partial:
         # Early read on a run that is still generating: everything downstream on the chunks finished so far.
         run_dir = Path(partial)
@@ -173,13 +183,14 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
                             checkpoint_dir=run_dir / "chunks", interleave=interleave)
             write_jsonl(run_dir / "generations.jsonl", rows)
         else:
-            run_dir = Path("results/evasion") / f"{time.strftime('%Y%m%d-%H%M%S')}_{design}"
+            run_dir = Path("results/evasion") / f"{time.strftime('%Y%m%d-%H%M%S')}_{design}{'_' + '-'.join(conditions) if wanted != ['E0', 'placebo', 'aware', 'E1', 'E3', 'E2'] else ''}"
             print(f"{len(problems)} test problems x {samples} samples x conditions {list(conditions)}")
             # The manifest records how prompts map to chunks, so early analyses rebuild the same order.
             run_dir.mkdir(parents=True, exist_ok=True)
             (run_dir / "manifest.json").write_text(json.dumps({
                 "interleave": True, "design": design, "probes": probes, "n_problems": n_problems, "samples": samples,
-                "seed": seed, "difficulty": difficulty, "conditions": list(conditions), "chunk_seqs": 128}, indent=2))
+                "seed": seed, "difficulty": difficulty, "conditions": list(conditions), "chunk_seqs": 128,
+                "attack_only": attack_only}, indent=2))
             rows = generate(problems, DESIGNS[design], "qwen", samples, seed, conditions, chunk_seqs=128,
                             checkpoint_dir=run_dir / "chunks", interleave=True)
             write_jsonl(run_dir / "generations.jsonl", rows)
