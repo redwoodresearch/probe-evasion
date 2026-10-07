@@ -24,6 +24,9 @@ ROOT = Path("results/deception")
 KNOWN = ROOT / "known.jsonl"
 SHORT_OUTPUT_CHUNK = 1024
 DEFAULT_CONDITIONS = ("E0", "placebo", "aware", "E1", "E3", "E2")
+# Pairwise comparisons computed inside the question-level bootstrap (the first two are pre-registered).
+CONTRASTS = (("E3", "E0"), ("E3", "placebo"), ("E3_info", "placebo"), ("E3_believe", "placebo"), ("E3_text_only", "placebo"),
+             ("E3", "E3_text_only"))
 
 
 def filter_known(n_questions: int, seed: int) -> None:
@@ -45,7 +48,7 @@ def filter_known(n_questions: int, seed: int) -> None:
 @app.local_entrypoint()
 def main(stage: str, generator: str = "claude", probes: str = "", n_questions: int = 4000, seed: int = 0, samples: int = 2,
          run: str = "", offset: int = 0, conditions: str = ",".join(DEFAULT_CONDITIONS), max_tokens: int = 8192,
-         max_questions: int = 300, tag: str = ""):
+         max_questions: int = 300, tag: str = "", exclude_runs: str = ""):
     if stage == "filter":
         filter_known(n_questions, seed)
     elif stage == "data":
@@ -53,7 +56,7 @@ def main(stage: str, generator: str = "claude", probes: str = "", n_questions: i
     elif stage == "eval":
         evaluate(probes.split(","), samples, seed, max_questions, offset, tuple(conditions.split(",")), max_tokens, tag)
     elif stage == "rescore":
-        rescore(Path(run), probes.split(","))
+        rescore(Path(run), probes.split(","), [Path(x) for x in exclude_runs.split(",") if x])
     elif stage == "rescore-neutral":
         rescore_neutral(Path(run), probes.split(","))
     elif stage == "decompose":
@@ -158,11 +161,12 @@ def score_and_summarize(rows, examples, acts_name, conditions, probe_names, extr
                "probes": {}}
     for name in probe_names:
         layer, params = load_probe(name)
-        s = np.array([x[layer]["ema"] for x in score.remote(acts_name, len(examples), {layer: params})])
+        indices = [e.get("acts_index", i) for i, e in enumerate(examples)]  # filtered subsets keep original file positions
+        s = np.array([x[layer]["ema"] for x in score.remote(acts_name, len(examples), {layer: params}, indices)])
         for e, v in zip(examples, s):
             e.setdefault("scores", {})[name] = float(v)
         own = [c for c in conditions if not c.startswith("E2_") or c == f"E2_{name}"]
-        report = condition_report(s, labels, cond_of, own, pids)
+        report = condition_report(s, labels, cond_of, own, pids, contrasts=CONTRASTS)
         for c in report:  # conditions with data; successful undetected attacks per attempt (unfinished attempts count)
             for k in ("recalibrated", "fixed_E0_threshold"):
                 st = report[c][k]
@@ -191,18 +195,54 @@ def evaluate(probe_names: list[str], samples: int, seed: int, max_questions: int
     print(f"wrote {run_dir}")
 
 
-def rescore(run_dir: Path, probe_names: list[str]) -> None:
+def used_qids(exclude_runs: list[Path]) -> set[str]:
+    return {r["qid"] for d in exclude_runs for r in read_jsonl(d / "samples.jsonl")}
+
+
+def fresh_subset(rows: list[dict], examples: list[dict], exclude: set[str]) -> tuple[list[dict], list[dict]]:
+    """Drop questions seen in earlier runs, and keep each repeated question's responses only once (the dataset has
+    duplicate question IDs, so one question can appear at two plan positions)."""
+    def dedupe(items, key):
+        seen, out = set(), []
+        for it in items:
+            k = key(it)
+            if it_q(it) in exclude or k in seen:
+                continue
+            seen.add(k)
+            out.append(it)
+        return out
+    it_q = lambda it: it.get("qid", it.get("problem_id"))
+    rows = dedupe(rows, lambda r: (r["condition"], r["kind"], r["qid"], r["sample"]))
+    # examples carry no sample index; keep at most as many per (condition, label, question) as rows allow (2 samples)
+    counts, kept = {}, []
+    for e in examples:
+        if e["problem_id"] in exclude:
+            continue
+        k = (e["condition"], e["label"], e["problem_id"])
+        counts[k] = counts.get(k, 0) + 1
+        if counts[k] <= 2:
+            kept.append(e)
+    return rows, kept
+
+
+def rescore(run_dir: Path, probe_names: list[str], exclude_runs: list[Path] = ()) -> None:
     """Recompute every statistic from a finished run's saved activations (no generation, no extraction) and save
     per-example scores for audits."""
     examples = read_jsonl(run_dir / "examples.jsonl")
-    for e in examples:
+    for i, e in enumerate(examples):
         e.pop("scores", None)
+        e["acts_index"] = i  # position in the saved activations, kept through filtering
     rows = read_jsonl(run_dir / "samples.jsonl")
+    tag = ""
+    if exclude_runs:
+        rows, examples = fresh_subset(rows, examples, used_qids(exclude_runs))
+        tag = "_fresh"
     conditions = list(dict.fromkeys(e["condition"] for e in examples))
-    summary = {"context": "full (as generated)"} | score_and_summarize(rows, examples, f"deception_{run_dir.name}", conditions,
-                                                                      probe_names, extract=False)
-    write_jsonl(run_dir / "examples_scored.jsonl", examples)
-    (run_dir / "summary_rescored.json").write_text(json.dumps(summary, indent=2))
+    summary = {"context": "full (as generated)", "excluded_runs": [str(d) for d in exclude_runs],
+               "n_questions": len({e["problem_id"] for e in examples})} | score_and_summarize(
+        rows, examples, f"deception_{run_dir.name}", conditions, probe_names, extract=False)
+    write_jsonl(run_dir / f"examples_scored{tag}.jsonl", examples)
+    (run_dir / f"summary_rescored{tag}.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
 
 

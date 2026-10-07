@@ -25,9 +25,9 @@ def auroc(scores: np.ndarray, labels: np.ndarray) -> float:
     return float((pos[:, None] > neg[None, :]).mean() + 0.5 * (pos[:, None] == neg[None, :]).mean())
 
 
-def _load(name: str, n: int) -> list[np.ndarray]:
+def _load(name: str, n: int, indices: list[int] | None = None) -> list[np.ndarray]:
     acts_volume.reload()  # a warm container's view can predate activations written since it started
-    return [np.load(f"{ACTS_DIR}/{name}/{i}.npy") for i in range(n)]
+    return [np.load(f"{ACTS_DIR}/{name}/{i}.npy") for i in (indices if indices is not None else range(n))]
 
 
 def _fit_layer(xs: list[np.ndarray], labels: np.ndarray, weight_decay: float, steps: int = 300) -> dict:
@@ -88,9 +88,9 @@ def train(name: str, labels: list[int], problem_ids: list[str], val_frac: float 
 
 
 @app.function(image=vllm_image, volumes={ACTS_DIR: acts_volume}, timeout=60 * 60)
-def score(name: str, n: int, probes: dict) -> list[dict]:
-    """Per-example {layer: {ema, mean}} scores for activations `name` under `probes`."""
-    acts = _load(name, n)
+def score(name: str, n: int, probes: dict, indices: list[int] | None = None) -> list[dict]:
+    """Per-example {layer: {ema, mean}} scores for activations `name` under `probes` (files 0..n-1, or `indices`)."""
+    acts = _load(name, n, indices)
     return [
         {layer: {"ema": ema_max(s := _token_scores(a[:, li], probes[layer])), "mean": float(s.mean())}
          for li, layer in enumerate(PROBE_LAYERS) if layer in probes}
