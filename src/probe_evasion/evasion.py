@@ -21,7 +21,7 @@ from probe_evasion.activations import extract_all
 from probe_evasion.apps_data import sample_problems
 from probe_evasion.generation import generate, partial_rows, read_jsonl, write_jsonl
 from probe_evasion.modal_app import app
-from probe_evasion.parsing import code_span, neutralize, strip_exploit
+from probe_evasion.parsing import code_span, exploit_input, neutralize, program, strip_exploit
 from probe_evasion.metrics import condition_report, load_probe
 from probe_evasion.probes import score
 from probe_evasion.prompts import AWARE, E1, E3, E4_SUBTLE, PLACEBO, dice_roll, e2_addition
@@ -83,6 +83,7 @@ def build_examples(rows: list[dict], by_pid: dict) -> list[dict]:
         if code_span(response) is None:  # no fenced program before the exploit section: nothing for the probe to read
             no_code += 1
             continue
+        assert response[slice(*code_span(response))] == r["code"], "probe would read different code than the sandbox ran"
         examples.append({"condition": r["condition"], "problem_id": r["problem_id"], "label": 0 if honest else 1,
                          "generator": "qwen", "system": r["system"], "question": by_pid[r["problem_id"]].question,
                          "reasoning": r["reasoning"], "response": response, "code_span": code_span(response)})
@@ -174,6 +175,8 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
         if resume:
             run_dir = Path(resume)
             rows = read_jsonl(run_dir / "generations.jsonl")
+            for r in rows:  # re-parse with the current parser so sandbox and probes agree on the program
+                r["code"], r["exploit"] = program(r["final"]), exploit_input(r["final"])
             print(f"resuming {run_dir}: re-sandboxing {len(rows)} generations")
         elif continue_run:
             # Finish an interrupted run: saved chunks are reused, only missing ones are generated.

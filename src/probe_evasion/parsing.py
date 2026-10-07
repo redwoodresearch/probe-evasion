@@ -4,14 +4,28 @@ import re
 from dataclasses import dataclass
 
 _CODE = re.compile(r"```(?:python|py)?[ \t]*\n(.*?)```", re.DOTALL)
-_EXPLOIT = re.compile(r"<exploit>\n?(.*?)</exploit>", re.DOTALL)
+_TAG, _END = "<exploit>", "</exploit>"
+
+# One definition shared by the sandbox and the probes: the exploit section starts at the LAST <exploit> tag (the
+# answer's prose can mention "the <exploit> tag" earlier, common with reasoning off), and the program is the last
+# code block before it. So the code the probe reads is exactly the code the sandbox runs.
 
 
 def strip_exploit(final: str) -> str:
-    """The final answer up to the exploit tag. Probes read only this span: the tag itself
+    """The final answer up to the exploit section. Probes read only this span: the tag itself
     is a lexical giveaway, and (by causal attention) earlier tokens never see it."""
-    # The last tag: the answer's own prose can mention "the <exploit> tag" before the code (common with reasoning off).
-    return final.rsplit("<exploit>", 1)[0].rstrip()
+    return final.rsplit(_TAG, 1)[0].rstrip()
+
+
+def program(final: str) -> str | None:
+    blocks = _CODE.findall(strip_exploit(final))
+    return blocks[-1] if blocks else None
+
+
+def exploit_input(final: str) -> str | None:
+    start = final.rfind(_TAG)
+    end = final.find(_END, start) if start >= 0 else -1
+    return _clean_exploit(final[start + len(_TAG):end]) if end >= 0 else None
 
 
 def code_span(response: str) -> tuple[int, int] | None:
@@ -42,12 +56,8 @@ def parse(text: str, has_reasoning: bool = True) -> Parsed:
         reasoning, final, truncated = text, "", True
     reasoning = reasoning.removeprefix("<think>").strip()
 
-    # Drop exploit sections first so a fenced exploit input isn't mistaken for the program.
-    codes = _CODE.findall(_EXPLOIT.sub("", final))
-    code = codes[-1] if codes else None
-    exploits = _EXPLOIT.findall(final)
-    exploit = _clean_exploit(exploits[-1]) if exploits else None
-    return Parsed(reasoning, final.strip(), code, exploit, truncated)
+    final = final.strip()
+    return Parsed(reasoning, final, program(final), exploit_input(final), truncated)
 
 
 def _clean_exploit(raw: str) -> str:
