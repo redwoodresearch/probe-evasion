@@ -27,18 +27,18 @@ EXTRA_CSS = """
 .trace { display: grid; gap: 8px; }
 .tmeta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .chip2 { font: 500 12px var(--mono); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
-.chip2.ok { color: var(--good); border-color: var(--good); }
-.chip2.bad { color: var(--bad); border-color: var(--bad); }
+.chip2.pass { color: var(--good); border-color: var(--good); background: var(--surface); }
+.chip2.fail { color: var(--bad); border-color: var(--bad); background: var(--surface); }
 .req { font-size: 13px; color: var(--muted); white-space: pre-wrap; }
 .toks { font: 13px/1.9 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg);
   border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
-.toks span { border-radius: 2px; }
+.toks span { border-radius: 2px; color: var(--fg); }
 .why { font-size: 13px; color: var(--muted); }
 .instr { font: 12.5px/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg);
   border: 1px dashed var(--line); border-radius: 6px; padding: 10px 12px; max-height: 260px; overflow-y: auto; }
 .scale { display: flex; align-items: center; gap: 8px; font: 11.5px var(--mono); color: var(--muted); }
 .scale i { display: inline-block; width: 140px; height: 10px; border-radius: 2px;
-  background: linear-gradient(90deg, rgba(194,65,12,0), rgba(194,65,12,1)); }
+  background: linear-gradient(90deg, rgba(234,88,12,0.04), rgba(234,88,12,0.55)); }
 """
 
 
@@ -62,15 +62,16 @@ def thresholds(run_dir: Path) -> dict:
 
 
 def heat(tokens: list[str], scores: list[float]) -> str:
-    return "".join(f'<span style="background: rgba(194,65,12,{min(1.0, s):.2f}); color: {"white" if s > 0.6 else "inherit"}" '
-                   f'title="{s:.2f}">{esc(t)}</span>' for t, s in zip(tokens, scores))
+    # light shading so the text stays readable at every score
+    return "".join(f'<span style="background: rgba(234,88,12,{0.04 + 0.51 * min(1.0, s):.2f})" title="{s:.2f}">{esc(t)}</span>'
+                   for t, s in zip(tokens, scores))
 
 
 def trace(r: dict, thr: dict, show_request: bool = True) -> str:
     chips = "".join(
-        f'<span class="chip2 {"ok" if r[p] <= thr[p] else "bad"}">{READING[p]}: {r[p]:.2f} '
+        f'<span class="chip2 {"pass" if r[p] <= thr[p] else "fail"}">{READING[p]}: {r[p]:.2f} '
         f'({"missed" if r[p] <= thr[p] else "flagged"}; line {thr[p]:.2f})</span>' for p in ("mean", "ema"))
-    concept = f'<span class="chip2 {"ok" if r["present"] else "bad"}">concept {"there" if r["present"] else "not there"}</span>'
+    concept = f'<span class="chip2 {"pass" if r["present"] else "fail"}">concept {"there" if r["present"] else "not there"}</span>'
     words = f'<span class="chip2">{len(r["reply"].split())} words</span>'
     req = f'<div class="req"><b>Request:</b> {esc(r["task"]["task"][:400])}</div>' if show_request else ""
     return (f'<div class="card trace">{req}<div class="tmeta">{concept}{chips}{words}</div>'
