@@ -407,6 +407,48 @@ def evasion_gain_by_threshold(out: Path, n_boot: int = 1000) -> None:
     fig.savefig(out)
 
 
+def roc_on_vs_off_policy(out: Path) -> None:
+    """ROC curves for the two code-only probes, no warning vs the subtle-bug strategy (honest = no-warning honest code)."""
+    from probe_evasion.probes import auroc
+
+    ex, invalid = [], set()
+    for d in (BD_RUN, SUBTLE_RUN):
+        ex += read_jsonl(d / "examples_scored.jsonl")
+        invalid |= {(r["condition"], r["problem_id"], r["response"]) for r in read_jsonl(d / "exploit_validity.jsonl") if not r["valid"]}
+    ex = [e for e in ex if not (e["label"] == 1 and (e["condition"], e["problem_id"], e["response"]) in invalid)]
+
+    def curve(honest, attacks):
+        thresholds = np.r_[np.inf, np.sort(np.r_[honest, attacks])[::-1]]
+        return np.array([(honest > t).mean() for t in thresholds]), np.array([(attacks > t).mean() for t in thresholds])
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5), dpi=170)
+    for ax, (probe, title) in zip(axes, (("bd_claude_intro_neutral", "Trained on Claude's code"), ("bd_qwen_intro_neutral", "Trained on Qwen's own code"))):
+        score = lambda c, l: np.array([e["scores"][probe] for e in ex if e["condition"] == c and e["label"] == l])
+        honest = score("E0", 0)
+        ax.plot([0, 1], [0, 1], color=LIGHT, lw=1, ls=":")
+        for cond, name, color, ls in (("E0", "no warning", GREY, "--"), ("E4_subtle", "subtle-bug strategy", ACCENT, "-")):
+            attacks = score(cond, 1)
+            fpr, tpr = curve(honest, attacks)
+            a = auroc(np.r_[honest, attacks], np.r_[np.zeros(len(honest)), np.ones(len(attacks))])
+            ax.plot(fpr, tpr, color=color, lw=2.2, ls=ls, label=f"{name}: AUROC {a:.2f}")
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1.02)
+        ax.set_aspect("equal")
+        ax.set_xlabel("honest programs flagged (false alarms)", fontsize=9, color=INK)
+        ax.set_title(title, loc="left", fontsize=10.5, color=INK)
+        ax.legend(loc="lower right", frameon=False, fontsize=9)
+        ax.tick_params(labelsize=8)
+        for side in ("top", "right"):
+            ax.spines[side].set_visible(False)
+    axes[0].set_ylabel("backdoors caught", fontsize=9, color=INK)
+    fig.suptitle("Code-only probes: the subtle-bug strategy drops AUROC by 0.29 for the Claude-trained probe, 0.05 for the Qwen-trained one",
+                 x=0.01, ha="left", fontsize=10.5, color=INK)
+    fig.text(0.01, 0.01, "AUROC drop, Claude-trained minus Qwen-trained: 0.24 (95% range 0.15 to 0.32, resampling problems). Valid exploits only.",
+             fontsize=8, color=GREY)
+    fig.tight_layout(rect=(0, 0.06, 1, 0.95))
+    fig.savefig(out)
+
+
 if __name__ == "__main__":
     Path("share").mkdir(exist_ok=True)
     lies(Path("share/memo_lies.png"))
@@ -418,4 +460,5 @@ if __name__ == "__main__":
     honest_flagged_snippet(Path("share/memo_honest_flagged_snippet.png"))
     on_vs_off_policy(Path("share/memo_on_vs_off_policy.png"))
     evasion_gain_by_threshold(Path("share/memo_evasion_gain.png"))
+    roc_on_vs_off_policy(Path("share/memo_roc_on_vs_off_policy.png"))
     print("wrote share/memo_lies.png, share/memo_backdoors.png, share/memo_backdoor_scores.png")
