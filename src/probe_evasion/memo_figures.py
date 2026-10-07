@@ -163,7 +163,7 @@ def looks_vs_wrong(out: Path) -> None:
     for x, (_, pred) in zip(xs, STYLE_ORDER):
         ax.text(x, 3, f"{sum(pred(r) for r in rows)} backdoors", ha="center", fontsize=7.5, color=GREY)
     ax.set_xticks(xs, [n for n, _ in STYLE_ORDER], fontsize=8.5)
-    ax.set_xlabel("how suspicious the code looks  →  less", fontsize=8.5, color=GREY, loc="right")
+    ax.set_xlabel("looks more suspicious  →  looks more innocent", fontsize=8.5, color=GREY, loc="right")
     ax.set_ylim(0, 112)
     ax.set_yticks([0, 25, 50, 75, 100], ["0%", "25%", "50%", "75%", "100%"], fontsize=8.5)
     ax.set_ylabel("working backdoors caught\n(1% false-alarm threshold)", fontsize=9, color=INK)
