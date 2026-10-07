@@ -19,8 +19,6 @@ GEPA = Path("results/gepa")
 PROBES = Path("results/concept_probes")
 MODELS = {"gemma": "Gemma-2-9B", "qwen35": "Qwen3.5-27B"}
 CONCEPTS = {"maths": "Maths in the head", "sarcasm": "Sarcasm", "chemistry": "Chemistry"}
-ARMS = [("no instruction", "plain task", "e0"), ("told probe is watching", "told a probe is watching", "control"), ("seed: strategy hint", "our strategy hint", "control"),
-        ("optimized", "optimized prompt", "attack")]
 
 EXTRA_CSS = """
 .runs { display: grid; gap: 14px; }
@@ -97,30 +95,6 @@ def glance(runs: dict) -> str:
     return (f'<figure class="card"><figcaption><span class="key"><span class="sw" style="background:var(--neutral)"></span>plain task</span>'
             f'<span class="key"><span class="sw s2"></span>optimized prompt</span> · Gemma-2-9B, 100 held-out tasks · replies that do the task and the probe '
             f'misses · L = probe layer; window / EMA / average = how token scores are combined (average and EMA are beaten by padding and short replies)</figcaption><svg viewBox="0 0 {w} {h}" role="img" aria-label="Misses per search">{out}</svg></figure>')
-
-
-def results_section(runs: dict) -> str:
-    rows = ""
-    for key, d in runs.items():
-        if not (d / "summary.json").exists() or "arms" not in read_json(d / "summary.json"):
-            continue
-        s, t = read_json(d / "summary.json"), key[2]
-        other = "ema" if t == "mean" else "mean"
-        rows += f'<h3>{esc(label(key))}</h3>'
-        for arm, name, cls in ARMS:
-            a = s["arms"][arm]
-            rate = a[f"missed_{t}"] / a["n"]
-            rows += (f'<div class="brow"><div class="blabel">{esc(name)}<span>concept there in {a["present"]}/{a["n"]} · '
-                     f'{TARGETS[other]} misses {a.get(f"missed_{other}", "–")}</span></div>'
-                     f'<div class="bar"><span class="seg {cls}" style="width:{100 * rate:.1f}%"></span></div>'
-                     f'<div class="bval{" ok" if rate == 0 else ""}">{pct(rate)}<span>{a[f"missed_{t}"]}/{a["n"]}</span></div></div>')
-        removed = s["arms"].get("optimized, instruction removed")
-        if removed:
-            rows += f'<p class="note">Same optimized replies re-read with the instruction deleted from the prompt: the probe misses {removed[f"missed_{t}"]}.</p>'
-    if not rows:
-        return '<figure class="card"><p class="empty">No held-out results yet.</p></figure>'
-    return (f'<figure class="card"><figcaption>Share of 100 held-out tasks where the concept is really there and the probe '
-            f'misses it, for the reading each search optimized against (threshold flags 1% of no-concept replies)</figcaption>{rows}</figure>')
 
 
 def progress_svg(d: Path) -> str:
@@ -214,11 +188,6 @@ def render() -> str:
   </header>
 
   {glance(runs)}
-
-  <section>
-    <h2>Held-out test</h2>
-    {results_section(runs)}
-  </section>
 
   <section>
     <h2>Prompt search</h2>
