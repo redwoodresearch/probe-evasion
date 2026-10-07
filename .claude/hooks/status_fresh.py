@@ -15,7 +15,7 @@ PAGE = ROOT / "sprint" / "page.html"
 SOURCE = ROOT / "sprint" / "sprint.json"
 PUBLISHED = ROOT / "sprint" / ".published"
 RESULT_DIRS = ("gepa", "concept_probes")  # the optimized-prompt phase; earlier pages are frozen
-RESULT_PATTERNS = ("summary*.json", "calibration.json", "candidates.jsonl", "gemma.json", "qwen35.json")
+RESULT_PATTERNS = ("summary*.json", "gemma.json", "qwen35.json")  # finished results only, not every search round
 
 
 def mtime(path: Path) -> float:
