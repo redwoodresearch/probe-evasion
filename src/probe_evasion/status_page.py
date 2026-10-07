@@ -764,6 +764,7 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
     <p class="lede">{esc(st['backdoor_style'])}</p>
     <p class="lede">{esc(st['backdoor_monitor'])}</p>
     <p class="lede">{esc(st['backdoor_comments'])}</p>
+    <p class="lede">{esc(st['backdoor_training_ablation'])}</p>
     <figure class="card"><figcaption>Backdoor probe reading with the prompt and Qwen's reasoning in context (as generated): hinted backdoors score higher, not lower</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro', units=('backdoors', 'honest'))}</figure>
     <figure class="card"><figcaption>Lie probe, confirmation run (368 new questions; the strategy hint split into its two halves)</figcaption>{distribution_figure(Path('results/deception/eval_20261006-162009_confirm/examples_scored_fresh.jsonl'), ['E0', 'placebo', 'E3', 'E3_info', 'E3_believe'])}</figure>
     <h3>Open questions</h3>

@@ -68,13 +68,13 @@ def main(run: str):
         calls[name] = train.spawn(BASE, labels, pids, parts=[base_part, (acts, idx)])
     for name, idx in variants.items():
         result = calls[name].get()
-        report = {layer: {k: v for k, v in r.items() if k != "probe"} for layer, r in result.items()}
-        layer = best_layer(report)
+        validation = {layer: {k: v for k, v in r.items() if k != "probe"} for layer, r in result.items()}
+        layer = best_layer(validation)
         probes[name] = (layer, result[layer]["probe"])
         out = OUT / f"{run_dir.name}_{name}"
         out.mkdir(parents=True, exist_ok=True)
         np.savez(out / "probes.npz", **{f"{l}_{k}": v for l, r in result.items() for k, v in r["probe"].items()})
-        (out / "report.json").write_text(json.dumps(report | {"added_examples": len(idx)}, indent=2, default=float))
+        (out / "report.json").write_text(json.dumps(validation | {"added_examples": len(idx)}, indent=2, default=float))
         print(f"{name}: +{len(idx)} examples, best layer {layer}", flush=True)
 
     rows = []
@@ -95,3 +95,9 @@ def report(rows: list[dict]) -> None:
             attacks = [r["score"] for r in rs if r["condition"] == c and r["label"] == 1]
             line.append(f"{c} {100 * np.mean([v <= threshold for v in attacks]):.1f}% (n={len(attacks)})")
         print(f"{name:16s} threshold {threshold:6.2f} | missed: " + "; ".join(line))
+
+
+if __name__ == "__main__":
+    import sys
+
+    report(json.loads(Path(sys.argv[1]).read_text()))
