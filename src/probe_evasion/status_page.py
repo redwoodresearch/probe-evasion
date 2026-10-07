@@ -120,6 +120,8 @@ SERIES = ["s1", "s2", "s3", "s4", "s5", "s6"]
 
 
 CLAUDE_PRICES = {"input": 2.0 / 1e6, "output": 10.0 / 1e6}  # Sonnet 5.5, $ per token
+# $ per token by model for the logged judge / reflection calls; the Opus figure is an estimate
+LOGGED_PRICES = {"claude-sonnet-5-5": (2.0 / 1e6, 10.0 / 1e6), "claude-opus-5-5": (5.0 / 1e6, 25.0 / 1e6)}
 SPRINT_START = "2026-10-06"
 
 
@@ -138,6 +140,11 @@ def spend() -> dict:
         u = json.loads(f.read_text()).get("usage")
         if u:
             claude += u["input_tokens"] * CLAUDE_PRICES["input"] + u["output_tokens"] * CLAUDE_PRICES["output"]
+    usage_log = Path("cache/anthropic_usage.jsonl")
+    for line in usage_log.read_text().splitlines() if usage_log.exists() else []:
+        u = json.loads(line)
+        price_in, price_out = LOGGED_PRICES[u["model"]]
+        claude += u["input_tokens"] * price_in + u["output_tokens"] * price_out
     last = max(hourly) if hourly else None
     return {"modal": sum(hourly.values()), "claude": claude, "hourly": sorted(hourly.items()), "through": last}
 
@@ -168,7 +175,7 @@ def section_spend(running: list[dict]) -> str:
       <div class="tile"><span class="tl">Burning now (est.)</span><span class="tv">~${burn:,.0f}/h</span></div>
     </div>
     <div class="hours" role="img" aria-label="Modal spend per hour">{bars}</div>
-    <div class="jobmeta">Modal spend per hour (billing API reports complete hours only, so the current hour shows up next hour; data through {through}). Claude cost is computed from token usage at Sonnet 5.5 prices.</div>
+    <div class="jobmeta">Modal spend per hour (billing API reports complete hours only, so the current hour shows up next hour; data through {through}). Claude cost is computed from logged token usage (Opus price estimated).</div>
   </figure>
 </section>"""
 
@@ -582,6 +589,138 @@ def running_list(running: list[dict]) -> str:
 </script>"""
 
 
+CSS = """/* Layout: one column of figures; summary first, then results, then design notes. */
+:root {
+  --bg: #f5f6f8; --surface: #ffffff; --fg: #161a20; --muted: #5b6472; --line: #dde1e7; --accent: #2848b8;
+  --good: #1d7f52; --warn: #b26a12; --bad: #bf3b33; --neutral: #8a94a3; --faint: #d3d8df;
+  --s1: #2848b8; --s2: #c2410c; --s3: #0f766e; --s4: #7c3aed; --s5: #b91c1c; --s6: #4d7c0f;
+  --lie: #c2410c; --truth: #2848b8;
+  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111419; --surface: #181c23; --fg: #e7eaef; --muted: #98a1ae; --line: #2a303a; --accent: #8aa2ff;
+  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #343b46; --lie: #fb923c; --truth: #8aa2ff;
+  --s1: #8aa2ff; --s2: #fb923c; --s3: #2dd4bf; --s4: #b794f6; --s5: #f87171; --s6: #a3e635; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111419; --surface: #181c23; --fg: #e7eaef; --muted: #98a1ae; --line: #2a303a; --accent: #8aa2ff;
+  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #343b46; --lie: #fb923c; --truth: #8aa2ff;
+  --s1: #8aa2ff; --s2: #fb923c; --s3: #2dd4bf; --s4: #b794f6; --s5: #f87171; --s6: #a3e635; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--sans); }
+.wrap { max-width: 920px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 30px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font: 500 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: 28px; line-height: 1.15; margin: 0; text-wrap: balance; font-weight: 600; }
+h2 { font-size: 18px; margin: 0; font-weight: 600; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+p { margin: 0; max-width: 72ch; }
+.lede, .note, .empty { color: var(--muted); }
+.headline { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); padding: 14px 16px; font-size: 16px; max-width: none; }
+section { display: grid; gap: 10px; min-width: 0; }
+figure { margin: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+figcaption { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; }
+svg { width: 100%; height: auto; display: block; }
+svg .grid { stroke: var(--line); stroke-width: 1; }
+svg .tick { fill: var(--muted); font: 11px var(--mono); }
+svg .tick.sub { font-size: 10px; }
+svg .val { fill: var(--fg); font: 600 12px var(--mono); }
+svg .ln { fill: none; stroke-width: 2.25; }
+svg .ln.s1, svg .dot.s1 { stroke: var(--s1); } svg .dot.s1 { fill: var(--s1); }
+svg .ln.s2 { stroke: var(--s2); } svg .dot.s2 { fill: var(--s2); stroke: var(--s2); }
+svg .ln.s3 { stroke: var(--s3); } svg .dot.s3 { fill: var(--s3); stroke: var(--s3); }
+svg .ln.s4 { stroke: var(--s4); } svg .dot.s4 { fill: var(--s4); stroke: var(--s4); }
+svg .ln.s5 { stroke: var(--s5); } svg .dot.s5 { fill: var(--s5); stroke: var(--s5); }
+svg .ln.s6 { stroke: var(--s6); } svg .dot.s6 { fill: var(--s6); stroke: var(--s6); }
+svg .e0 { fill: var(--neutral); } svg .control { fill: var(--faint); stroke: var(--neutral); } svg .attack { fill: var(--accent); }
+svg .ci { stroke: var(--fg); stroke-width: 1.5; }
+svg .ref { stroke: var(--muted); stroke-dasharray: 5 4; stroke-width: 1.25; }
+.brow { display: grid; grid-template-columns: minmax(150px, 220px) 1fr auto; gap: 14px; align-items: center; }
+.blabel { display: grid; font-size: 13.5px; line-height: 1.3; min-width: 0; }
+.blabel span { color: var(--muted); font-size: 12px; }
+.bval { font: 600 18px var(--mono); font-variant-numeric: tabular-nums; text-align: right; display: grid; color: var(--bad); }
+.bval.ok { color: var(--good); }
+.bval span { font: 400 11px var(--mono); color: var(--muted); }
+.bar { display: flex; height: 18px; border-radius: 4px; overflow: hidden; background: var(--line); }
+.seg { display: block; height: 100%; }
+.pair { display: grid; gap: 4px; }
+.hb { height: 14px; border-radius: 3px; position: relative; min-width: 2px; }
+.hb span { position: absolute; left: calc(100% + 6px); top: -2px; font: 11px var(--mono); color: var(--muted); white-space: nowrap; }
+.good { background: var(--good); } .warn { background: var(--warn); } .bad { background: var(--bad); }
+.neutral { background: var(--neutral); } .muted { background: var(--faint); }
+.e0 { background: var(--neutral); } .control { background: var(--faint); } .attack { background: var(--accent); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.key { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); }
+.sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.sw.s1 { background: var(--s1); } .sw.s2 { background: var(--s2); } .sw.s3 { background: var(--s3); }
+.sw.s4 { background: var(--s4); } .sw.s5 { background: var(--s5); } .sw.s6 { background: var(--s6); }
+.pill { display: inline-block; font: 500 12px var(--mono); padding: 2px 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
+.okpill { color: var(--good); border-color: var(--good); }
+svg .pt { stroke: var(--surface); stroke-width: 1; }
+svg .pt.honest { fill: var(--neutral); } svg .pt.bd { fill: var(--bad); } svg .pt.fail { fill: var(--warn); }
+svg .lie { fill: var(--lie); opacity: .45; } svg .truth { fill: var(--truth); opacity: .45; }
+svg .median { stroke: var(--fg); stroke-width: 2.5; } svg .own { stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 2 3; }
+svg .e0thr { stroke: var(--fg); stroke-width: 1.3; stroke-dasharray: 6 4; }
+.sw.lie { background: var(--lie); } .sw.truth { background: var(--truth); }
+.findings { gap: 10px; } .findings li { max-width: 80ch; }
+details.more { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; display: grid; gap: 14px; }
+details.more summary { cursor: pointer; font-weight: 600; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+a { color: var(--accent); }
+code { font: 12.5px var(--mono); }
+.spend { gap: 14px; }
+.glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.gtile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.gv { font: 600 30px/1.1 var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+.gl { font-size: 13px; color: var(--muted); line-height: 1.35; }
+.takeaways { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+svg .mbar.s1 { fill: var(--s1); } svg .mbar.s2 { fill: var(--s2); } svg .mbar.s3 { fill: var(--s3); }
+h3 { font-size: 15px; margin: 8px 0 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tile { display: grid; gap: 2px; }
+.tl { font: 500 11.5px var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.tv { font: 600 24px var(--mono); font-variant-numeric: tabular-nums; }
+.tile.big .tv { font-size: 32px; color: var(--accent); }
+.hours { display: flex; align-items: flex-end; gap: 4px; height: 90px; }
+.hcol { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 3px; min-width: 0; }
+.hbar { width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; opacity: .85; }
+.hcol span { font: 10px var(--mono); color: var(--muted); }
+.jobs { gap: 16px; }
+.job { display: grid; gap: 6px; }
+.jobhead { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.jobname { font-size: 14px; font-weight: 500; min-width: 0; }
+.jobmeta { font: 11.5px var(--mono); color: var(--muted); }
+.prog { height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.fill { height: 100%; background: var(--accent); border-radius: 999px; }
+.fill.late { background: var(--warn); }
+.chip { font: 500 12px var(--mono); color: var(--accent); white-space: nowrap; }
+.chip.late { color: var(--warn); }
+.trow { display: grid; grid-template-columns: minmax(180px, 300px) 1fr; gap: 14px; align-items: center; }
+.tlabel { font-size: 13px; line-height: 1.3; display: grid; min-width: 0; }
+.tlabel span { color: var(--muted); font: 11px var(--mono); }
+.track { position: relative; height: 14px; background: var(--bg); border-radius: 3px; }
+.tbar { position: absolute; top: 0; bottom: 0; background: var(--accent); border-radius: 3px; opacity: .85; }
+.tbar.late { background: var(--warn); }
+.now { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--fg); }
+.taxis { display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--muted); padding-left: min(314px, 40%); }
+dl { display: grid; grid-template-columns: minmax(140px, 200px) 1fr; gap: 8px 18px; margin: 0; }
+dt { font-weight: 600; } dd { margin: 0; color: var(--muted); min-width: 0; }
+ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.orows { display: grid; gap: 6px; }
+.orow { display: grid; grid-template-columns: minmax(150px, 230px) 1fr 44px; gap: 12px; align-items: center; }
+.olabel { font-size: 13px; line-height: 1.25; display: grid; min-width: 0; }
+.olabel span { color: var(--muted); font: 11px var(--mono); }
+.obar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; gap: 2px; }
+.obar span { display: block; height: 100%; }
+.oval { font: 500 12px var(--mono); text-align: right; }
+.olegend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+.olegend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+@media (max-width: 620px) {
+  .brow, .trow, .orow { grid-template-columns: 1fr; gap: 4px; } .oval { text-align: left; } .bval { text-align: left; }
+  .taxis { padding-left: 0; } dl { grid-template-columns: 1fr; gap: 2px 0; } dd { margin-bottom: 8px; } h1 { font-size: 23px; }
+}
+"""
+
+
 def render() -> str:
     st = read_json(STATUS / "status.json")
     decisions = "".join(f"<dt>{esc(k)}</dt><dd>{esc(v)}</dd>" for k, v in st["decisions"])
@@ -593,136 +732,7 @@ def render() -> str:
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: one column of figures; summary first, then results, then design notes. */
-:root {{
-  --bg: #f5f6f8; --surface: #ffffff; --fg: #161a20; --muted: #5b6472; --line: #dde1e7; --accent: #2848b8;
-  --good: #1d7f52; --warn: #b26a12; --bad: #bf3b33; --neutral: #8a94a3; --faint: #d3d8df;
-  --s1: #2848b8; --s2: #c2410c; --s3: #0f766e; --s4: #7c3aed; --s5: #b91c1c; --s6: #4d7c0f;
-  --lie: #c2410c; --truth: #2848b8;
-  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-}}
-@media (prefers-color-scheme: dark) {{ :root:not([data-theme="light"]) {{
-  --bg: #111419; --surface: #181c23; --fg: #e7eaef; --muted: #98a1ae; --line: #2a303a; --accent: #8aa2ff;
-  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #343b46; --lie: #fb923c; --truth: #8aa2ff;
-  --s1: #8aa2ff; --s2: #fb923c; --s3: #2dd4bf; --s4: #b794f6; --s5: #f87171; --s6: #a3e635; color-scheme: dark }} }}
-:root[data-theme="dark"] {{
-  --bg: #111419; --surface: #181c23; --fg: #e7eaef; --muted: #98a1ae; --line: #2a303a; --accent: #8aa2ff;
-  --good: #4cc38a; --warn: #e3a34a; --bad: #f07a70; --neutral: #7d8796; --faint: #343b46; --lie: #fb923c; --truth: #8aa2ff;
-  --s1: #8aa2ff; --s2: #fb923c; --s3: #2dd4bf; --s4: #b794f6; --s5: #f87171; --s6: #a3e635; color-scheme: dark }}
-body {{ background: var(--bg); color: var(--fg); font: 15px/1.55 var(--sans); }}
-.wrap {{ max-width: 920px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 30px; }}
-header {{ display: grid; gap: 6px; }}
-.eyebrow {{ font: 500 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }}
-h1 {{ font-size: 28px; line-height: 1.15; margin: 0; text-wrap: balance; font-weight: 600; }}
-h2 {{ font-size: 18px; margin: 0; font-weight: 600; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }}
-p {{ margin: 0; max-width: 72ch; }}
-.lede, .note, .empty {{ color: var(--muted); }}
-.headline {{ background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); padding: 14px 16px; font-size: 16px; max-width: none; }}
-section {{ display: grid; gap: 10px; min-width: 0; }}
-figure {{ margin: 0; }}
-.card {{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }}
-figcaption {{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; }}
-svg {{ width: 100%; height: auto; display: block; }}
-svg .grid {{ stroke: var(--line); stroke-width: 1; }}
-svg .tick {{ fill: var(--muted); font: 11px var(--mono); }}
-svg .tick.sub {{ font-size: 10px; }}
-svg .val {{ fill: var(--fg); font: 600 12px var(--mono); }}
-svg .ln {{ fill: none; stroke-width: 2.25; }}
-svg .ln.s1, svg .dot.s1 {{ stroke: var(--s1); }} svg .dot.s1 {{ fill: var(--s1); }}
-svg .ln.s2 {{ stroke: var(--s2); }} svg .dot.s2 {{ fill: var(--s2); stroke: var(--s2); }}
-svg .ln.s3 {{ stroke: var(--s3); }} svg .dot.s3 {{ fill: var(--s3); stroke: var(--s3); }}
-svg .ln.s4 {{ stroke: var(--s4); }} svg .dot.s4 {{ fill: var(--s4); stroke: var(--s4); }}
-svg .ln.s5 {{ stroke: var(--s5); }} svg .dot.s5 {{ fill: var(--s5); stroke: var(--s5); }}
-svg .ln.s6 {{ stroke: var(--s6); }} svg .dot.s6 {{ fill: var(--s6); stroke: var(--s6); }}
-svg .e0 {{ fill: var(--neutral); }} svg .control {{ fill: var(--faint); stroke: var(--neutral); }} svg .attack {{ fill: var(--accent); }}
-svg .ci {{ stroke: var(--fg); stroke-width: 1.5; }}
-svg .ref {{ stroke: var(--muted); stroke-dasharray: 5 4; stroke-width: 1.25; }}
-.brow {{ display: grid; grid-template-columns: minmax(150px, 220px) 1fr auto; gap: 14px; align-items: center; }}
-.blabel {{ display: grid; font-size: 13.5px; line-height: 1.3; min-width: 0; }}
-.blabel span {{ color: var(--muted); font-size: 12px; }}
-.bval {{ font: 600 18px var(--mono); font-variant-numeric: tabular-nums; text-align: right; display: grid; color: var(--bad); }}
-.bval.ok {{ color: var(--good); }}
-.bval span {{ font: 400 11px var(--mono); color: var(--muted); }}
-.bar {{ display: flex; height: 18px; border-radius: 4px; overflow: hidden; background: var(--line); }}
-.seg {{ display: block; height: 100%; }}
-.pair {{ display: grid; gap: 4px; }}
-.hb {{ height: 14px; border-radius: 3px; position: relative; min-width: 2px; }}
-.hb span {{ position: absolute; left: calc(100% + 6px); top: -2px; font: 11px var(--mono); color: var(--muted); white-space: nowrap; }}
-.good {{ background: var(--good); }} .warn {{ background: var(--warn); }} .bad {{ background: var(--bad); }}
-.neutral {{ background: var(--neutral); }} .muted {{ background: var(--faint); }}
-.e0 {{ background: var(--neutral); }} .control {{ background: var(--faint); }} .attack {{ background: var(--accent); }}
-.legend {{ display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }}
-.key {{ display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); }}
-.sw {{ width: 10px; height: 10px; border-radius: 2px; display: inline-block; }}
-.sw.s1 {{ background: var(--s1); }} .sw.s2 {{ background: var(--s2); }} .sw.s3 {{ background: var(--s3); }}
-.sw.s4 {{ background: var(--s4); }} .sw.s5 {{ background: var(--s5); }} .sw.s6 {{ background: var(--s6); }}
-.pill {{ display: inline-block; font: 500 12px var(--mono); padding: 2px 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); }}
-.okpill {{ color: var(--good); border-color: var(--good); }}
-svg .pt {{ stroke: var(--surface); stroke-width: 1; }}
-svg .pt.honest {{ fill: var(--neutral); }} svg .pt.bd {{ fill: var(--bad); }} svg .pt.fail {{ fill: var(--warn); }}
-svg .lie {{ fill: var(--lie); opacity: .45; }} svg .truth {{ fill: var(--truth); opacity: .45; }}
-svg .median {{ stroke: var(--fg); stroke-width: 2.5; }} svg .own {{ stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 2 3; }}
-svg .e0thr {{ stroke: var(--fg); stroke-width: 1.3; stroke-dasharray: 6 4; }}
-.sw.lie {{ background: var(--lie); }} .sw.truth {{ background: var(--truth); }}
-.findings {{ gap: 10px; }} .findings li {{ max-width: 80ch; }}
-details.more {{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; display: grid; gap: 14px; }}
-details.more summary {{ cursor: pointer; font-weight: 600; }}
-ul {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
-a {{ color: var(--accent); }}
-code {{ font: 12.5px var(--mono); }}
-.spend {{ gap: 14px; }}
-.glance {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }}
-.gtile {{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }}
-.gv {{ font: 600 30px/1.1 var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }}
-.gl {{ font-size: 13px; color: var(--muted); line-height: 1.35; }}
-.takeaways {{ margin: 0; padding-left: 20px; display: grid; gap: 6px; }}
-svg .mbar.s1 {{ fill: var(--s1); }} svg .mbar.s2 {{ fill: var(--s2); }} svg .mbar.s3 {{ fill: var(--s3); }}
-h3 {{ font-size: 15px; margin: 8px 0 0; }}
-.tiles {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }}
-.tile {{ display: grid; gap: 2px; }}
-.tl {{ font: 500 11.5px var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }}
-.tv {{ font: 600 24px var(--mono); font-variant-numeric: tabular-nums; }}
-.tile.big .tv {{ font-size: 32px; color: var(--accent); }}
-.hours {{ display: flex; align-items: flex-end; gap: 4px; height: 90px; }}
-.hcol {{ flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 3px; min-width: 0; }}
-.hbar {{ width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; opacity: .85; }}
-.hcol span {{ font: 10px var(--mono); color: var(--muted); }}
-.jobs {{ gap: 16px; }}
-.job {{ display: grid; gap: 6px; }}
-.jobhead {{ display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }}
-.jobname {{ font-size: 14px; font-weight: 500; min-width: 0; }}
-.jobmeta {{ font: 11.5px var(--mono); color: var(--muted); }}
-.prog {{ height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }}
-.fill {{ height: 100%; background: var(--accent); border-radius: 999px; }}
-.fill.late {{ background: var(--warn); }}
-.chip {{ font: 500 12px var(--mono); color: var(--accent); white-space: nowrap; }}
-.chip.late {{ color: var(--warn); }}
-.trow {{ display: grid; grid-template-columns: minmax(180px, 300px) 1fr; gap: 14px; align-items: center; }}
-.tlabel {{ font-size: 13px; line-height: 1.3; display: grid; min-width: 0; }}
-.tlabel span {{ color: var(--muted); font: 11px var(--mono); }}
-.track {{ position: relative; height: 14px; background: var(--bg); border-radius: 3px; }}
-.tbar {{ position: absolute; top: 0; bottom: 0; background: var(--accent); border-radius: 3px; opacity: .85; }}
-.tbar.late {{ background: var(--warn); }}
-.now {{ position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--fg); }}
-.taxis {{ display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--muted); padding-left: min(314px, 40%); }}
-dl {{ display: grid; grid-template-columns: minmax(140px, 200px) 1fr; gap: 8px 18px; margin: 0; }}
-dt {{ font-weight: 600; }} dd {{ margin: 0; color: var(--muted); min-width: 0; }}
-ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
-.orows {{ display: grid; gap: 6px; }}
-.orow {{ display: grid; grid-template-columns: minmax(150px, 230px) 1fr 44px; gap: 12px; align-items: center; }}
-.olabel {{ font-size: 13px; line-height: 1.25; display: grid; min-width: 0; }}
-.olabel span {{ color: var(--muted); font: 11px var(--mono); }}
-.obar {{ display: flex; height: 16px; border-radius: 4px; overflow: hidden; gap: 2px; }}
-.obar span {{ display: block; height: 100%; }}
-.oval {{ font: 500 12px var(--mono); text-align: right; }}
-.olegend {{ display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 12px; color: var(--muted); }}
-.olegend .sw {{ display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }}
-@media (max-width: 620px) {{
-  .brow, .trow, .orow {{ grid-template-columns: 1fr; gap: 4px; }} .oval {{ text-align: left; }} .bval {{ text-align: left; }}
-  .taxis {{ padding-left: 0; }} dl {{ grid-template-columns: 1fr; gap: 2px 0; }} dd {{ margin-bottom: 8px; }} h1 {{ font-size: 23px; }}
-}}
-</style>
+{CSS}</style>
 <div class="wrap">
   <header>
     <div class="eyebrow">Sprint status · updated {time.strftime('%-I:%M %p')} (<span id="generated" data-t="{int(time.time() * 1000)}">just now</span>)</div>
