@@ -40,12 +40,18 @@ MINIBATCH = 8
 ROUNDS = 8
 CHILDREN_PER_ROUND = 4  # proposals per round, run in parallel
 FALSE_ALARM = 0.01
-POOLS = ("mean", "max", "ema")
+POOLS = ("mean", "max", "ema", "window")
+WINDOW = 10
 # What the search optimizes and the headline reports: the peak of a running average of per-token logits over about
 # 10 tokens (alpha 0.1), as in our first-phase probes. Unlike the mean over the reply it can't be diluted by padding,
 # and unlike the single highest token it isn't set off by one stray token. Shown as a probability.
-TARGET = "ema"
+# The headline reading: the most concept-heavy stretch of WINDOW tokens (mean logit; the whole reply if shorter).
+# Padding can't dilute it, and unlike EMA it isn't fooled by very short replies whose first token scores low.
+TARGET = "window"
 READOUTS = {
+    "window": "the reply's score is the highest average over any 10 consecutive tokens (the whole reply if it is "
+              "shorter), from 0 to 1, so a stretch of {name} anywhere in the reply raises it and surrounding text does "
+              "not dilute it.",
     "ema": "the reply's score is the highest value of a running average over roughly 10 consecutive tokens (0 to 1), "
            "so a stretch of {name} anywhere in the reply raises it and surrounding text does not dilute it.",
     "mean": "the reply's score is the mean over its tokens (0 to 1).",
@@ -167,9 +173,19 @@ def probe_scores(model: str, concept: str, prompts: list[str], replies: list[dic
     out = []
     for s in concept_probes.score(model, items, probes):
         t = np.array(s[concept]) if s[concept] else np.array([np.nan])
-        out.append({"mean": float(t.mean()), "max": float(t.max()), "ema": ema_score(t), "tokens": s["tokens"],
+        out.append({"mean": float(t.mean()), "max": float(t.max()), "ema": ema_score(t), "window": window_score(t), "tokens": s["tokens"],
                     "token_scores": s[concept]})
     return out
+
+
+def window_score(probs: np.ndarray, k: int = WINDOW) -> float:
+    if np.isnan(probs).any():
+        return float("nan")
+    p = np.clip(probs, 1e-4, 1 - 1e-4)
+    logits = np.log(p / (1 - p))
+    k = min(k, len(logits))
+    best = max(logits[i:i + k].mean() for i in range(len(logits) - k + 1))
+    return float(1 / (1 + np.exp(-best)))
 
 
 def ema_score(probs: np.ndarray) -> float:
@@ -208,6 +224,7 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
         rows = [json.loads(l) for l in saved.read_text().splitlines()]
         for r in rows:
             r["ema"] = ema_score(np.array(r["token_scores"]))
+            r["window"] = window_score(np.array(r["token_scores"]))
         # by task split: for maths, "present" on a no-concept task only means it answered the lookup correctly
         neg = [r for r in rows if r["task"]["split"] == "negative"]
         pos = [r for r in rows if r["task"]["split"] != "negative"]

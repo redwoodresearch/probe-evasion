@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-from probe_evasion.gepa import POOLS, ema_score
+from probe_evasion.gepa import POOLS, ema_score, window_score
 from probe_evasion.sprint_page import CONCEPTS
 from probe_evasion.status_page import CSS
 
@@ -22,7 +22,7 @@ RUNS = [
     ("maths", Path("results/gepa/gemma_maths_20261007-142658"), "mean"),
     ("sarcasm", Path("results/gepa/gemma_sarcasm_20261007-142658"), "mean"),
 ]
-READING = {"mean": "averaged over reply", "ema": "EMA peak", "max": "highest token"}
+READING = {"mean": "averaged over reply", "ema": "EMA peak", "max": "highest token", "window": "10-token window"}
 
 EXTRA_CSS = """
 .trace { display: grid; gap: 8px; }
@@ -50,8 +50,9 @@ def esc(x) -> str:
 def load(path: Path) -> list[dict]:
     rows = [json.loads(l) for l in path.read_text().splitlines()] if path.exists() else []
     for r in rows:
-        if "ema" not in r and r.get("token_scores"):
+        if r.get("token_scores"):
             r["ema"] = ema_score(np.array(r["token_scores"]))
+            r["window"] = window_score(np.array(r["token_scores"]))
     return rows
 
 
@@ -71,7 +72,7 @@ def heat(tokens: list[str], scores: list[float]) -> str:
 def trace(r: dict, thr: dict, show_request: bool = True) -> str:
     chips = "".join(
         f'<span class="chip2 {"pass" if r[p] <= thr[p] else "fail"}">{READING[p]}: {r[p]:.2f} '
-        f'({"missed" if r[p] <= thr[p] else "flagged"}; line {thr[p]:.2f})</span>' for p in ("mean", "ema"))
+        f'({"missed" if r[p] <= thr[p] else "flagged"}; line {thr[p]:.2f})</span>' for p in ("mean", "window"))
     concept = f'<span class="chip2 {"pass" if r["present"] else "fail"}">concept {"there" if r["present"] else "not there"}</span>'
     words = f'<span class="chip2">{len(r["reply"].split())} words</span>'
     req = f'<div class="req"><b>Request:</b> {esc(r["task"]["task"][:400])}</div>' if show_request else ""

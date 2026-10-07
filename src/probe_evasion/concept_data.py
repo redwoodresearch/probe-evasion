@@ -15,6 +15,7 @@ Concepts:
 import json
 import math
 import random
+import re
 from pathlib import Path
 
 from probe_evasion.judge import ask_with_tool
@@ -262,3 +263,44 @@ def build() -> None:
 
 if __name__ == "__main__":
     build()
+
+
+# ---------------------------------------------------------------- probe ladder: varied maths answer formats
+
+FORMATS_TOOL = {
+    "name": "record_formats",
+    "description": "Record the answer formats.",
+    "input_schema": {"type": "object", "properties": {"formats": {"type": "array", "items": {"type": "string"}}},
+                     "required": ["formats"]},
+}
+FORMATS_PROMPT = """Write 40 different ways to state the answer to a short arithmetic word problem in one sentence or \
+less, as templates where {{r}} stands for the numeric result (written with commas, e.g. 4,913). Cover a wide range: \
+terse ("{{r}}."), formal, casual, enthusiastic, hedged-but-committed ("I make it {{r}}."), as part of a longer \
+practical sentence, with the number at the start, middle or end, in a parenthesis, after a colon, as a reply to a \
+friend, as a note in a report, and so on. Each template must contain {{r}} exactly once and no other number. Do NOT \
+write narrative, story-like, scenic or sensory sentences (no weather, scenery, smells, sounds, characters or moods). \
+This batch should lean {flavour}. Record them with the record_formats tool."""
+FLAVOURS = ["plain and businesslike", "conversational", "formal and technical", "short and punchy", "explanatory but brief"]
+
+
+def varied_formats() -> list[str]:
+    out = []
+    for v in ask_with_tool([FORMATS_PROMPT.format(flavour=f) for f in FLAVOURS], FORMATS_TOOL, concurrency=8, max_tokens=4000):
+        out += [f for f in v["formats"] if f.count("{r}") == 1 and not re.search(r"\d", f.replace("{r}", ""))]
+    return sorted(set(out))
+
+
+def build_varied_maths() -> None:
+    """Maths probe rows where half the replies use a varied (non-scenic) answer format. Pairs still share the exact
+    reply text; recalled-number negatives are kept."""
+    rng = random.Random(1)
+    formats = varied_formats()
+    base = [json.loads(l) for l in (OUT / "probe_rows.jsonl").read_text().splitlines() if json.loads(l)["concept"] == "maths"]
+    rows = [r for r in base if r["label"] == 0 and "receipt" not in r["prompt"] and "says" not in r["prompt"]]  # recall rows
+    for m in maths(rng, 1200):
+        reply = rng.choice(formats).replace("{r}", f"{m['result']:,}") if rng.random() < 0.5 else m["answer"]
+        rows += [{"concept": "maths", "label": 1, "prompt": f"{m['computed']} {MATHS_INSTRUCTION}", "response": reply},
+                 {"concept": "maths", "label": 0, "prompt": f"{m['given']} {MATHS_INSTRUCTION}", "response": reply}]
+    (OUT / "probe_rows_maths_varied.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    (OUT / "maths_formats.json").write_text(json.dumps(formats, indent=1))
+    print(len(formats), "formats;", len(rows), "rows")

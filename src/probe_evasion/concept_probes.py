@@ -98,12 +98,13 @@ class ProbeLab:
         return out
 
     @modal.method()
-    def train(self, rows: list[dict], seed: int = 0) -> dict:
-        """rows: {concept, label, prompt, response}. Returns per concept the probe at the best validation layer."""
+    def train(self, rows: list[dict], seed: int = 0, layers: tuple[int, ...] | None = None, per_layer: bool = False) -> dict:
+        """rows: {concept, label, prompt, response}. Returns per concept the probe at the best validation layer, or with
+        per_layer one probe per layer, named "<concept>@L<layer>"."""
         import torch
         from sklearn.metrics import roc_auc_score
 
-        layers = CANDIDATE_LAYERS[self.model_key]
+        layers = tuple(layers or CANDIDATE_LAYERS[self.model_key])
         acts = [{l: a.cpu() for l, a in r.items()} for r, _ in self._reply_acts(rows, layers, MAX_TRAIN_TOKENS)]
         gen = torch.Generator().manual_seed(seed)
         result = {}
@@ -141,11 +142,15 @@ class ProbeLab:
                         if patience >= 3:
                             break
                 print(f"{concept} layer {layer}: val AUROC {layer_best:.4f} ({epoch + 1} epochs)", flush=True)
+                probe = {"layer": layer, "val_auroc": layer_best, "weight": state[0].cpu().tolist(), "bias": state[1].item(),
+                         "n_train": len(train), "n_val": len(val)}
+                if per_layer:
+                    result[f"{concept}@L{layer}"] = probe
                 if best is None or layer_best > best["val_auroc"]:
-                    best = {"layer": layer, "val_auroc": layer_best, "weight": state[0].cpu().tolist(), "bias": state[1].item(),
-                            "n_train": len(train), "n_val": len(val)}
+                    best = probe
                 del X
-            result[concept] = best
+            if not per_layer:
+                result[concept] = best
         return result
 
     @modal.method()
@@ -187,9 +192,13 @@ def score(model_key: str, items: list[dict], probes: dict, chunk: int = 32) -> l
 
 
 @app.local_entrypoint()
-def train_concepts(model: str = "gemma", concepts: str = ""):
-    """--concepts maths: retrain only those probes and merge them into the model's existing probe file."""
-    rows = [json.loads(l) for l in (DATA / "probe_rows.jsonl").read_text().splitlines()]
+def train_concepts(model: str = "gemma", concepts: str = "", rows_file: str = "probe_rows.jsonl", layers: str = "", name: str = ""):
+    """--concepts maths: retrain only those probes and merge them into the model's existing probe file.
+    --layers 6,12,18 --name X: one probe per layer per concept, written to results/concept_probes/X.json (a probe-ladder
+    variant; the probes the searches use are untouched)."""
+    if layers:
+        assert name, "per-layer probes go to their own file"
+    rows = [json.loads(l) for l in (DATA / rows_file).read_text().splitlines()]
     if concepts:
         rows = [r for r in rows if r["concept"] in concepts.split(",")]
     rng = random.Random(0)
@@ -199,6 +208,11 @@ def train_concepts(model: str = "gemma", concepts: str = ""):
     PROBES.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
     lab = ProbeLab(model_key=model)
+    if layers:
+        out = lab.train.remote(rows, layers=tuple(int(x) for x in layers.split(",")), per_layer=True)
+        (PROBES / f"{name}.json").write_text(json.dumps(out))
+        print({k: round(v["val_auroc"], 4) for k, v in out.items()}, f"{time.time() - t0:.0f}s")
+        return
     out = lab.train.remote(rows)
     if concepts:
         out = {**json.loads((PROBES / f"{model}.json").read_text()), **out}

@@ -43,7 +43,7 @@ def read_json(p: Path):
     return json.loads(p.read_text())
 
 
-TARGETS = {"ema": "EMA-peak reading", "mean": "paper's averaged reading"}
+TARGETS = {"window": "10-token-window reading", "ema": "EMA-peak reading", "mean": "paper's averaged reading"}
 
 
 def latest_runs() -> dict[tuple[str, str, str], Path]:
