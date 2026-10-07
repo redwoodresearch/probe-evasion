@@ -444,26 +444,12 @@ def context_reference(out_dir: str):
     print(json.dumps(out, indent=1))
 
 
-NOISE_LENGTHS = (50, 200, 1000)
-NOISE_SEEDS = (0, 1, 2)
-NOISE_NEGATIVES = 100
-
-
-@app.local_entrypoint()
-def noise(model: str = "gemma", concept: str = "sarcasm", calibration_from: str = ""):
-    """Random characters in front of each request: does taking the model out of distribution lower probe scores on
-    replies that keep the concept, and does it also move the scores of no-concept replies (which a recalibrated
-    monitor would absorb)? Validation tasks only; the test tasks stay held out."""
-    import string
-
-    run_dir = ROOT.with_name("noise") / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
-    run_dir.mkdir(parents=True, exist_ok=True)
+def compare_arms(model: str, concept: str, cal: dict, arms: dict[str, str], run_dir: Path, n_negatives: int = 100) -> dict:
+    """Each instruction on the validation tasks and on no-concept tasks: how many concept replies the probe misses
+    under each reading, and how many no-concept replies it flags (to see whether an instruction just moves every
+    score, which a recalibrated monitor would absorb). Test tasks stay held out."""
     tasks = load_tasks(concept)
-    cal = json.loads((Path(calibration_from) / "calibration.json").read_text())
-    chars = string.ascii_letters + string.digits + string.punctuation + " "
-    arms = {"no instruction": ""} | {f"{n} random characters (seed {s})": "".join(random.Random(s).choices(chars, k=n))
-                                     for n in NOISE_LENGTHS for s in NOISE_SEEDS}
-    concept_tasks, negatives = tasks["val"], tasks["negative"][:NOISE_NEGATIVES]
+    concept_tasks, negatives = tasks["val"], tasks["negative"][:n_negatives]
     res = run_many(model, concept, [(a, t) for a in arms.values() for t in concept_tasks + negatives])
     per_arm = len(concept_tasks) + len(negatives)
     report = {"arms": arms, "results": {}}
@@ -482,5 +468,32 @@ def noise(model: str = "gemma", concept: str = "sarcasm", calibration_from: str 
         write_jsonl(run_dir / f"replies_{k:02d}.jsonl", mine)
     (run_dir / "summary.json").write_text(json.dumps(report, indent=1))
     for name, r in report["results"].items():
-        print(f"{name:32s} present {r['concept_present']}/{r['n']} | missed ema {r['missed_ema']} mean {r['missed_mean']} | "
+        print(f"{name[:40]:40s} present {r['concept_present']}/{r['n']} | missed ema {r['missed_ema']} mean {r['missed_mean']} | "
               f"false alarms ema {r['false_alarms_ema']}/{r['n_negatives']} mean {r['false_alarms_mean']}", flush=True)
+    return report
+
+
+NOISE_LENGTHS = (50, 200, 1000)
+NOISE_SEEDS = (0, 1, 2)
+
+
+@app.local_entrypoint()
+def noise(model: str = "gemma", concept: str = "sarcasm", calibration_from: str = ""):
+    """Random characters in front of each request: does taking the model out of distribution lower probe scores?"""
+    import string
+
+    chars = string.ascii_letters + string.digits + string.punctuation + " "
+    arms = {"no instruction": ""} | {f"{n} random characters (seed {s})": "".join(random.Random(s).choices(chars, k=n))
+                                     for n in NOISE_LENGTHS for s in NOISE_SEEDS}
+    run_dir = ROOT.with_name("noise") / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    compare_arms(model, concept, json.loads((Path(calibration_from) / "calibration.json").read_text()), arms, run_dir)
+
+
+@app.local_entrypoint()
+def controls(model: str = "gemma", concept: str = "maths", calibration_from: str = "", arms_file: str = ""):
+    """Named instructions from a JSON file ({name: instruction}), e.g. a style-only control for a found prompt."""
+    run_dir = ROOT.with_name("controls") / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    compare_arms(model, concept, json.loads((Path(calibration_from) / "calibration.json").read_text()),
+                 json.loads(Path(arms_file).read_text()), run_dir)
