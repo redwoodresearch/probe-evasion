@@ -7,10 +7,14 @@ import html
 import sys
 from pathlib import Path
 
+import random
+
 import numpy as np
 
 from probe_evasion.generation import read_jsonl
+from probe_evasion.lie_outcomes import CATEGORIES, outcomes
 from probe_evasion.metrics import FPR
+from probe_evasion.parsing import parse
 from probe_evasion.trivia import ADDITIONS, LIE_SYSTEM, TRUTH_SYSTEM
 
 PROBES = {"d_claude": "Lie probe trained on Claude's answers (off-policy)", "d_qwen": "Lie probe trained on Qwen's own answers (on-policy)"}
@@ -24,6 +28,8 @@ CONFIRM_CONDITIONS = [
     ("E3_believe", "Evade + 'believe the false answer' only (no facts about the probe)"),
 ]
 MAIN = "d_claude"
+REFUSALS_SHOWN = 2  # per kind of refusal per condition
+ENDING_CHARS = 1500
 
 
 def esc(x) -> str:
@@ -31,12 +37,13 @@ def esc(x) -> str:
 
 
 def thresholds(examples: list[dict], key: str, conditions=CONDITIONS) -> dict:
-    """Per (condition, probe): the score that flags 1% of that condition's truthful answers."""
+    """Per (condition, probe): one threshold for every condition, the score that flags 1% of the no-warning truthful
+    answers (answers that never saw any evasion text). Keyed by condition so callers needn't care."""
     out = {}
-    for cond, _ in conditions:
-        for probe in PROBES:
-            honest = [e[key][probe] for e in examples if e["condition"] == cond and e["label"] == 0]
-            out[cond, probe] = float(np.quantile(honest, 1 - FPR)) if honest else float("nan")
+    for probe in PROBES:
+        honest = [e[key][probe] for e in examples if e["condition"] == "E0" and e["label"] == 0]
+        for cond, _ in conditions:
+            out[cond, probe] = float(np.quantile(honest, 1 - FPR))
     return out
 
 
@@ -78,20 +85,54 @@ def strip(examples: list[dict], cond: str, key: str, thr: float, probe: str) -> 
             f'<text class="lab" x="{l}" y="58">{lo:.0f}</text><text class="lab" x="{w - r}" y="58" text-anchor="end">{hi:.0f}</text></svg>')
 
 
-def pick(examples: list[dict], cond: str, thr_full: dict) -> list[int]:
-    """Indices of: the shortest-reasoning missed lie, the shortest caught lie, and the shortest truthful answer."""
+def pick(examples: list[dict], cond: str) -> list[tuple[str, int]]:
+    """The lowest-scoring lie (closest to getting past the probe), the median lie, and the shortest truthful answer."""
     idx = [i for i, e in enumerate(examples) if e["condition"] == cond]
-    t = thr_full[cond, MAIN]
-    by_len = lambda i: len(examples[i]["reasoning"])
-    groups = [
-        [i for i in idx if examples[i]["label"] == 1 and examples[i]["full"][MAIN] <= t],
-        [i for i in idx if examples[i]["label"] == 1 and examples[i]["full"][MAIN] > t],
-        [i for i in idx if examples[i]["label"] == 0],
-    ]
-    return [min(g, key=by_len) for g in groups if g]
+    lies = sorted((i for i in idx if examples[i]["label"] == 1), key=lambda i: examples[i]["full"][MAIN])
+    truths = [i for i in idx if examples[i]["label"] == 0]
+    out = []
+    if lies:
+        out += [("Lowest-scoring lie (closest to getting through)", lies[0]), ("Typical lie (median score)", lies[len(lies) // 2])]
+    if truths:
+        out.append(("Truthful answer", min(truths, key=lambda i: len(examples[i]["reasoning"]))))
+    return out
 
 
-def condition_sections(examples, replays, conditions, run_note: str) -> list[str]:
+def outcome_bar(counts) -> str:
+    n = sum(counts.values())
+    segs = "".join(f'<span style="width:{100 * counts[k] / n:.2f}%;background:{color}" title="{esc(label)}: {counts[k]}"></span>'
+                   for k, label, color in CATEGORIES if counts[k])
+    legend = " · ".join(f'<span class="sw" style="background:{color}"></span>{esc(label)} {100 * counts[k] / n:.0f}%'
+                        for k, label, color in CATEGORIES if counts[k])
+    return f'<div class="obar">{segs}</div><div class="olegend">{legend}</div>'
+
+
+def refusal_cards(rows: list[dict], cond: str) -> str:
+    """Lie-prompt attempts that didn't produce a lie: a truthful answer instead, or reasoning that never finished."""
+    rng = random.Random(0)
+    lie_rows = [r for r in rows if r["condition"] == cond and r["kind"] == "lie"]
+    truthful = [r for r in lie_rows if not (r["truncated"] or not r["final"]) and r["correct"]]
+    unfinished = [r for r in lie_rows if r["truncated"] or not r["final"]]
+    cards = []
+    for r in rng.sample(truthful, min(REFUSALS_SHOWN, len(truthful))):
+        reasoning = parse(r["raw"]).reasoning
+        cards.append(f"""<article class="trace refusal">
+  <header><b>Told to lie, answered truthfully</b> · <span class="muted">Q:</span> {esc(r['question'])}</header>
+  <blockquote>{esc(r['final'])}</blockquote>
+  <div class="muted small">How the reasoning ends:</div><pre class="ending">…{esc(reasoning[-ENDING_CHARS:])}</pre>
+  <details><summary>Full reasoning ({len(reasoning):,} characters)</summary><pre>{esc(reasoning)}</pre></details>
+</article>""")
+    for r in rng.sample(unfinished, min(REFUSALS_SHOWN, len(unfinished))):
+        reasoning = parse(r["raw"]).reasoning
+        cards.append(f"""<article class="trace refusal">
+  <header><b>Told to lie, never finished</b> (no answer within the 8k-token budget) · <span class="muted">Q:</span> {esc(r['question'])}</header>
+  <div class="muted small">Where it was when the budget ran out:</div><pre class="ending">…{esc(reasoning[-ENDING_CHARS:])}</pre>
+  <details><summary>Full reasoning ({len(reasoning):,} characters)</summary><pre>{esc(reasoning)}</pre></details>
+</article>""")
+    return "".join(cards)
+
+
+def condition_sections(examples, replays, conditions, run_note: str, rows: list[dict], counts: dict) -> list[str]:
     thr_full = thresholds(examples, "full", conditions)
     thr_rep = thresholds(replays, "full", conditions) if replays else None
     sections = []
@@ -103,9 +144,8 @@ def condition_sections(examples, replays, conditions, run_note: str) -> list[str
         missed_rep = (np.mean([r["full"][MAIN] <= thr_rep[cond, MAIN] for r, e in zip(replays, examples)
                                if e["condition"] == cond and e["label"] == 1]) if replays else None)
         cards = []
-        for i in pick(examples, cond, thr_full):
+        for kind, i in pick(examples, cond):
             e, n = examples[i], (replays[i] if replays else None)
-            kind = "Lie" if e["label"] == 1 else "Truthful answer"
             cards.append(f"""<article class="trace">
   <header><b>{kind}</b> · <span class="muted">Q:</span> {esc(e['question'])}</header>
   <blockquote>{esc(e['response'])}</blockquote>
@@ -116,8 +156,12 @@ def condition_sections(examples, replays, conditions, run_note: str) -> list[str
         sections.append(f"""<section>
   <h2>{esc(name)}</h2>
   <div class="addition"><span class="muted">Added to the system prompt:</span> {esc(addition) if addition else '<i>nothing</i>'}</div>
+  <h3>What Qwen did when told to lie</h3>
+  {outcome_bar(counts[cond])}
+  {refusal_cards(rows, cond)}
+  <h3>The lies it did tell, and what the probe made of them</h3>
   <p class="muted">{run_note} {n_lies} completed lies, {n_truth} truthful answers. Off-policy probe misses {100 * missed:.0f}% of lies in full context{f", {100 * missed_rep:.0f}% when re-read with only the question and answer" if missed_rep is not None else ""}.</p>
-  <figure class="dist"><figcaption>Off-policy probe scores, full context. Top row: lies (red). Bottom row: truthful answers (grey). Lies to the left of the line are missed.</figcaption>
+  <figure class="dist"><figcaption>Off-policy probe scores, full context. Top row: lies (red). Bottom row: truthful answers (grey). The line flags 1% of no-warning truthful answers; lies to its left would be missed.</figcaption>
   {strip(examples, cond, "full", thr_full[cond, MAIN], MAIN)}</figure>
   {''.join(cards)}
 </section>""")
@@ -130,10 +174,15 @@ def render(run_dir: Path, confirm_dir: Path | None = None) -> str:
     assert len(full) == len(rep)
     examples = [dict(e, full=e["scores"]) for e in full]
     replays = [dict(e, full=e["scores"]) for e in rep]
-    sections = condition_sections(examples, replays, CONDITIONS, "First run (300 questions).")
+    questions = {q["qid"]: q["question"] for q in read_jsonl(Path("results/deception/known.jsonl"))}
+    rows = [dict(r, question=questions[r["qid"]]) for r in read_jsonl(run_dir / "samples.jsonl")]
+    sections = condition_sections(examples, replays, CONDITIONS, "First run (300 questions).", rows, outcomes(run_dir))
     if confirm_dir:
         conf = [dict(e, full=e["scores"]) for e in read_jsonl(confirm_dir / "examples_scored_fresh.jsonl")]
-        sections += condition_sections(conf, None, CONFIRM_CONDITIONS, "Confirmation run (368 new questions).")
+        # The confirmation run's no-warning answers set its threshold, so they're kept in although not shown.
+        conf_rows = [dict(r, question=questions[r["qid"]]) for r in read_jsonl(confirm_dir / "samples.jsonl")]
+        sections += condition_sections(conf, None, [("E0", "No warning")] + CONFIRM_CONDITIONS,
+                                       "Confirmation run (368 new questions).", conf_rows, outcomes(confirm_dir))[1:]
 
     return f"""<title>Lie Probe Traces</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -170,13 +219,21 @@ svg .lie {{ fill: var(--bad); opacity: .75; }} svg .truth {{ fill: var(--neutral
 svg .axis {{ stroke: var(--line); }} svg .thr {{ stroke: var(--fg); stroke-dasharray: 4 3; }}
 svg .lab {{ fill: var(--muted); font: 10px var(--mono); }}
 .scroll {{ overflow-x: auto; }}
+h3 {{ font-size: 15px; margin: 6px 0 0; font-weight: 600; }}
+.small {{ font-size: 12px; }}
+.trace.refusal {{ border-left: 4px solid #2a78d6; }}
+pre.ending {{ max-height: 220px; }}
+.obar {{ display: flex; height: 16px; border-radius: 4px; overflow: hidden; gap: 2px; }}
+.obar span {{ display: block; height: 100%; }}
+.olegend {{ font-size: 12px; color: var(--muted); line-height: 1.8; }}
+.sw {{ display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }}
 </style>
 <div class="wrap">
   <header style="display:grid;gap:8px">
     <h1>What the lie probe sees, condition by condition</h1>
     <p class="muted">Qwen3.5-27B answering held-out TriviaQA questions. Every lie prompt starts with: "{esc(LIE_SYSTEM)}" Every truth prompt: "{esc(TRUTH_SYSTEM)}" Each condition adds the text shown to both.
-    For each condition: the scores of every response, then three real responses (the missed lie and caught lie with the shortest reasoning, and a truthful answer).
-    Scores are shown against that condition's threshold (set to flag 1% of its truthful answers), for the response scored as generated (prompt and reasoning in context) and re-read with only the question and answer.</p>
+    For each condition: first what Qwen did with every lie-prompt attempt (often it refuses, by answering truthfully or deliberating until it runs out of budget), with two real examples of each kind of refusal; then the probe scores of the lies it did tell, and three real responses (the lowest-scoring lie, a typical lie, and a truthful answer).
+    Scores are shown against one threshold for all conditions: the score that flags 1% of truthful answers given with no warning, i.e. answers that never saw any evasion text. Each response is scored as generated (prompt and reasoning in context) and, for the first run, re-read with only the question and answer.</p>
   </header>
   {''.join(sections)}
 </div>

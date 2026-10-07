@@ -452,6 +452,23 @@ def distribution_figure(path: Path, conditions: list[str], probe: str = "d_claud
     return f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="probe score distributions by condition">{out}</svg>'
 
 
+def outcome_figure(run_dirs: dict[str, Path]) -> str:
+    """One bar per (run, condition): what every lie-prompt attempt turned into, judge-graded."""
+    from probe_evasion.lie_outcomes import CATEGORIES, CONDITION_NAMES, outcomes
+
+    rows = ""
+    for run_name, run_dir in run_dirs.items():
+        for cond, counts in outcomes(run_dir).items():
+            n = sum(counts.values())
+            segs = "".join(f'<span style="width:{100 * counts[k] / n:.2f}%;background:{color}" title="{esc(label)}: {counts[k]} of {n}"></span>'
+                           for k, label, color in CATEGORIES if counts[k])
+            rows += (f'<div class="orow"><div class="olabel">{esc(CONDITION_NAMES[cond])}<span>{esc(run_name)}</span></div>'
+                     f'<div class="obar">{segs}</div><div class="oval">{pct(counts["lie"] / n)}</div></div>')
+    legend = "".join(f'<span class="key"><span class="sw" style="background:{color}"></span>{esc(label)}</span>'
+                     for k, label, color in CATEGORIES if k in ("lie", "truthful", "unfinished", "no_answer"))
+    return f'<div class="orows">{rows}</div><div class="olegend">{legend}</div>'
+
+
 def _minutes(hhmm: str) -> int:
     hh, mm = hhmm.strip("~ ").split(":")
     hh = int(hh) + (12 if int(hh) < 8 else 0)  # afternoon times written 12-hour
@@ -624,8 +641,17 @@ code {{ font: 12.5px var(--mono); }}
 dl {{ display: grid; grid-template-columns: minmax(140px, 200px) 1fr; gap: 8px 18px; margin: 0; }}
 dt {{ font-weight: 600; }} dd {{ margin: 0; color: var(--muted); min-width: 0; }}
 ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
+.orows {{ display: grid; gap: 6px; }}
+.orow {{ display: grid; grid-template-columns: minmax(150px, 230px) 1fr 44px; gap: 12px; align-items: center; }}
+.olabel {{ font-size: 13px; line-height: 1.25; display: grid; min-width: 0; }}
+.olabel span {{ color: var(--muted); font: 11px var(--mono); }}
+.obar {{ display: flex; height: 16px; border-radius: 4px; overflow: hidden; gap: 2px; }}
+.obar span {{ display: block; height: 100%; }}
+.oval {{ font: 500 12px var(--mono); text-align: right; }}
+.olegend {{ display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 12px; color: var(--muted); }}
+.olegend .sw {{ display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }}
 @media (max-width: 620px) {{
-  .brow, .trow {{ grid-template-columns: 1fr; gap: 6px; }} .bval {{ text-align: left; }}
+  .brow, .trow, .orow {{ grid-template-columns: 1fr; gap: 4px; }} .oval {{ text-align: left; }} .bval {{ text-align: left; }}
   .taxis {{ padding-left: 0; }} dl {{ grid-template-columns: 1fr; gap: 2px 0; }} dd {{ margin-bottom: 8px; }} h1 {{ font-size: 23px; }}
 }}
 </style>
@@ -642,6 +668,12 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
     <p class="lede">Each dot is one answer's lie-probe score (higher = more lie-like), scored as generated with the prompt and Qwen's reasoning in context. <span class="key"><span class="sw lie"></span>lies (completed and actually false)</span> <span class="key"><span class="sw truth"></span>truthful answers (completed and correct)</span>. Short black bars are medians. <b>Dashed line</b>: threshold set to flag 1% of truthful answers with no warning, what a deployed monitor would use; every lie in every condition is above it. <b>Dotted lines</b>: threshold recalibrated per condition on that condition's truthful answers; it rises when the truthful answers rise.</p>
     <figure class="card"><figcaption><b>First run</b> · 300 questions · probe trained on Claude's answers</figcaption>{distribution_figure(Path('results/deception/eval_20261006-144940/examples_scored.jsonl'), ['E0', 'placebo', 'aware', 'E1', 'E2_d_claude', 'E3'])}</figure>
     <figure class="card"><figcaption><b>Confirmation run</b> · 368 new questions · the strategy hint split into its two halves</figcaption>{distribution_figure(Path('results/deception/eval_20261006-162009_confirm/examples_scored_fresh.jsonl'), ['E0', 'placebo', 'E3', 'E3_info', 'E3_believe'])}</figure>
+  </section>
+
+  <section>
+    <h2>Which attempts the probe gets to see</h2>
+    <p class="lede">The dots above are only the attempts that ended in a lie. Here is what every attempt under the lie prompt turned into (answers graded by a Claude judge). Once the probe is mentioned, Qwen mostly refuses: it answers truthfully or deliberates until it hits the 8k-token budget. So in the warning conditions the probe is scored on the minority of attempts where Qwen agreed to lie. Percentages are the share that became real lies. <a href="https://claude.ai/artifact/XbUPgJfrn5CQ4aotDw1JPP">Refusal traces for each condition</a>.</p>
+    <figure class="card">{outcome_figure({'first run': Path('results/deception/eval_20261006-144940'), 'confirmation run': Path('results/deception/eval_20261006-162009_confirm')})}</figure>
   </section>
 
   <section>

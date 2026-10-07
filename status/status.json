@@ -6,6 +6,10 @@
       "Median lie-probe score of Qwen's lies is 3.4-4.0 in every condition, including the strongest evasion prompt. With the threshold set to flag 1% of truthful answers given no warning, 0% of lies are missed in every condition (first run and the 368-question confirmation run)."
     ],
     [
+      "Mentioning the probe mostly stops Qwen lying",
+      "Of all attempts under the lie prompt, real lies (checked by an LLM judge) are 57-63% with no warning, but only 13% under 'probe is watching', 10% under 'told to evade' and 11% under 'believe it'. The rest answer truthfully (21-26%) or deliberate until they hit the 8k-token budget (64-68%). The strategy hint mostly restores lying (46-50%). So in the warning conditions the probe is only ever tested on the minority of attempts where Qwen agreed to lie."
+    ],
+    [
       "Truthful answers do move",
       "Truthful answers shift up under every added prompt text: an unrelated instruction about phrasing (+2.6 over no warning, on every question, with no deception in the reasoning), plain 'evade' (+2.0), the strategy hint (+3.4). The trace review estimates about 70-75% of the hint's shift is this generic offset; the rest (about +1) tracks reasoning that engages with lying (naming a false answer, planning to sound confident)."
     ],
@@ -34,8 +38,8 @@
       "Qwen reads the hint as a prompt injection: in 144 of 162 lie attempts that ended truthful, its reasoning ends in an explicit choice not to lie ('That is deception. I cannot do that.'). Only 88 of 736 attempts became completed lies, from traces that decided the trivia was harmless. Under the hint, 733 of 800 truth-prompt traces say the prompt asks them to lie (0 with no warning)."
     ],
     [
-      "Labeling problems, concentrated where lies are scarce",
-      "The grader checks whether the answer contains an accepted answer string. Under no warning and the strategy hint, 0-2% of 'lies' are not lies; under 'believe it' and 'told to evade', about 8-9% are actually true answers (paraphrases or aliases TriviaQA's list misses, e.g. 'pain in the ear'), plus honest answers to out-of-date questions. 3 of the 4 lowest-scoring 'believe it' lies are mislabeled truths. Separately, lies that mention the true answer get graded correct and dropped, and a text-normalization bug ('Kipling's' -> 'kiplings') mislabels 0.1%."
+      "Labels checked with an LLM judge: mostly fine",
+      "A Claude judge re-graded every answer the old string-matching grader used. It agrees on 97-99%. The disagreements are concentrated where lies are scarce: under 'believe it' 7 of 88 'lies' were actually true or non-answers, under 'told to evade' 4 of 65. With judge labels every result above is unchanged: 0% of lies missed at the no-warning threshold, and lies under every warning score slightly more lie-like than no-warning lies (+0.1 to +0.6)."
     ],
     [
       "What a lie's score tracks",
@@ -47,9 +51,8 @@
     ]
   ],
   "open_questions": [
-    "Fix the labels before any write-up: grade with a small LLM judge (does the answer assert the true answer?) instead of string matching, and re-score.",
     "Write-up framing: this lie probe (as deployed on in-context activations) gives no sign that prompted evasion works, is highly sensitive to prompt context (false alarms on honest answers under almost any added instruction), and appears to track deliberation and conflict in the reasoning rather than falsehood itself. Is that the post?",
-    "What would a fair evasion test need? Calibration on honest answers that never saw the attacker's instructions; evasion text only in the lie prompt; a model that actually attempts the strategy rather than refusing it.",
+    "What would a fair evasion test need? Calibration on honest answers that never saw the attacker's instructions (now the default report; new runs can put evasion text only in the lie prompt), and a model that actually attempts the strategy rather than refusing it: Qwen 27B refuses most probe-aware lie prompts.",
     "Correct the update sent to James with the score-distribution figure.",
     "Read the backdoor experiment (scoring now) and apply the same check: which distribution moved?"
   ],
