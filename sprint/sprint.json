@@ -1,6 +1,8 @@
 {
   "lede": "Probes for harmless concepts, trained the way the Neural Chameleons paper trains them. Claude searches for the instruction that best lets the model keep the concept while the probe misses it, seeing every reply's raw probe score; the best instruction is then frozen and tested on 100 new tasks.",
-  "takeaways": [],
+  "takeaways": [
+    "With the recalled-number control added (690 factual questions answered with a number that is new to the reply but needs no arithmetic), the Gemma maths probe still separates computing from not computing perfectly on held-out training-style text (AUROC 1.000). So it isn't just spotting a new number in the reply."
+  ],
   "running": [
     {
       "job": "Gemma-2-9B prompt search: sarcasm (8 rounds x 4 proposals, then held-out test)",
