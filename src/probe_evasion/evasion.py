@@ -146,6 +146,8 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
         # Early read on a run that is still generating: everything downstream on the chunks finished so far.
         run_dir = Path(partial)
         manifest = read_manifest(run_dir)
+        # attack_only changes the problem list, so chunks only line up with prompts built the same way.
+        assert manifest.get("attack_only", False) == attack_only, "--attack-only must match the run being read"
         rows = partial_rows(problems, DESIGNS[design], conditions, run_dir / "chunks", interleave=manifest.get("interleave", False))
         print(f"partial: {len(rows)} samples from finished chunks")
         run_sandbox(rows, problems)
@@ -171,9 +173,10 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
             run_dir = Path(continue_run)
             manifest = read_manifest(run_dir)
             expected = {"design": design, "probes": probes, "n_problems": n_problems, "samples": samples, "seed": seed,
-                        "difficulty": difficulty, "conditions": list(conditions), "chunk_seqs": 128}
+                        "difficulty": difficulty, "conditions": list(conditions), "chunk_seqs": 128, "attack_only": attack_only}
             if manifest:
-                mismatched = {k: (manifest.get(k), v) for k, v in expected.items() if manifest.get(k) != v}
+                saved = manifest | {"attack_only": manifest.get("attack_only", False)}  # runs before the flag existed
+                mismatched = {k: (saved.get(k), v) for k, v in expected.items() if saved.get(k) != v}
                 assert not mismatched, f"--continue-run settings differ from the saved run (saved, given): {mismatched}"
             else:
                 print("WARNING: run has no manifest (predates manifests); cannot verify settings match the saved chunks")
