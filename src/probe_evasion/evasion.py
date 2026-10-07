@@ -123,13 +123,14 @@ def summarize(rows: list[dict], examples: list[dict], acts_name: str, probe_name
 def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, difficulty: str = "introductory",
          score_probes: str = "",
          resume: str = "", rescore: str = "", partial: str = "", design: str = "dice70", continue_run: str = "",
-         conditions: str = "E0,placebo,aware,E1,E3,E2", attack_only: bool = False):
+         conditions: str = "E0,placebo,aware,E1,E3,E2", attack_only: bool = False, thinking: bool = True):
     """--partial <run dir>: preliminary summary from the chunks a still-running run has finished.
     --rescore <run dir>: re-summarize from saved examples + activations (minutes, no GPU sampling).
     --resume <run dir>: re-run the sandbox on saved generations, then re-extract and summarize.
     --continue-run <run dir>: finish an interrupted run, generating only the chunks that were not saved.
     --conditions: which conditions to generate ("E2" = one per probe in --probes). --attack-only: only problems whose
-    roll says attack (dice70), for runs that reuse an earlier run's no-warning honest answers as calibration."""
+    roll says attack (dice70), for runs that reuse an earlier run's no-warning honest answers as calibration.
+    --no-thinking: Qwen answers with reasoning off (no chain of thought for the code tokens to attend to)."""
     # `probes` define the E2 conditions (part of the generation plan); `score_probes` are only scored.
     probe_names = probes.split(",") + [p for p in score_probes.split(",") if p]
     problems = sample_problems("test", n_problems, seed=seed, difficulty=difficulty)
@@ -148,7 +149,9 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
         manifest = read_manifest(run_dir)
         # attack_only changes the problem list, so chunks only line up with prompts built the same way.
         assert manifest.get("attack_only", False) == attack_only, "--attack-only must match the run being read"
-        rows = partial_rows(problems, DESIGNS[design], conditions, run_dir / "chunks", interleave=manifest.get("interleave", False))
+        assert manifest.get("thinking", True) == thinking, "--thinking must match the run being read"
+        rows = partial_rows(problems, DESIGNS[design], conditions, run_dir / "chunks", thinking=thinking,
+                            interleave=manifest.get("interleave", False))
         print(f"partial: {len(rows)} samples from finished chunks")
         run_sandbox(rows, problems)
         examples = build_examples(rows, by_pid)
@@ -173,28 +176,30 @@ def main(probes: str, n_problems: int = 400, samples: int = 2, seed: int = 1, di
             run_dir = Path(continue_run)
             manifest = read_manifest(run_dir)
             expected = {"design": design, "probes": probes, "n_problems": n_problems, "samples": samples, "seed": seed,
-                        "difficulty": difficulty, "conditions": list(conditions), "chunk_seqs": 128, "attack_only": attack_only}
+                        "difficulty": difficulty, "conditions": list(conditions), "chunk_seqs": 128, "attack_only": attack_only,
+                        "thinking": thinking}
             if manifest:
-                saved = manifest | {"attack_only": manifest.get("attack_only", False)}  # runs before the flag existed
+                # Runs from before these flags existed used the defaults.
+                saved = manifest | {"attack_only": manifest.get("attack_only", False), "thinking": manifest.get("thinking", True)}
                 mismatched = {k: (saved.get(k), v) for k, v in expected.items() if saved.get(k) != v}
                 assert not mismatched, f"--continue-run settings differ from the saved run (saved, given): {mismatched}"
             else:
                 print("WARNING: run has no manifest (predates manifests); cannot verify settings match the saved chunks")
             interleave = manifest.get("interleave", False)
             print(f"continuing {run_dir}: {len(list((run_dir / 'chunks').glob('chunk_*.json')))} chunks already saved")
-            rows = generate(problems, DESIGNS[design], "qwen", samples, seed, conditions, chunk_seqs=128,
+            rows = generate(problems, DESIGNS[design], "qwen", samples, seed, conditions, thinking=thinking, chunk_seqs=128,
                             checkpoint_dir=run_dir / "chunks", interleave=interleave)
             write_jsonl(run_dir / "generations.jsonl", rows)
         else:
-            run_dir = Path("results/evasion") / f"{time.strftime('%Y%m%d-%H%M%S')}_{design}{'_' + '-'.join(conditions) if wanted != ['E0', 'placebo', 'aware', 'E1', 'E3', 'E2'] else ''}"
+            run_dir = Path("results/evasion") / f"{time.strftime('%Y%m%d-%H%M%S')}_{design}{'_' + '-'.join(conditions) if wanted != ['E0', 'placebo', 'aware', 'E1', 'E3', 'E2'] else ''}{'' if thinking else '_nothink'}"
             print(f"{len(problems)} test problems x {samples} samples x conditions {list(conditions)}")
             # The manifest records how prompts map to chunks, so early analyses rebuild the same order.
             run_dir.mkdir(parents=True, exist_ok=True)
             (run_dir / "manifest.json").write_text(json.dumps({
                 "interleave": True, "design": design, "probes": probes, "n_problems": n_problems, "samples": samples,
                 "seed": seed, "difficulty": difficulty, "conditions": list(conditions), "chunk_seqs": 128,
-                "attack_only": attack_only}, indent=2))
-            rows = generate(problems, DESIGNS[design], "qwen", samples, seed, conditions, chunk_seqs=128,
+                "attack_only": attack_only, "thinking": thinking}, indent=2))
+            rows = generate(problems, DESIGNS[design], "qwen", samples, seed, conditions, thinking=thinking, chunk_seqs=128,
                             checkpoint_dir=run_dir / "chunks", interleave=True)
             write_jsonl(run_dir / "generations.jsonl", rows)
         run_sandbox(rows, problems)
