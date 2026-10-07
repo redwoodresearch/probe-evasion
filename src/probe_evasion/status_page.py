@@ -732,6 +732,8 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
 
   {glance_tiles()}
 
+  <p class="lede"><b>Summary for James:</b> <a href="https://claude.ai/artifact/CJ6HCo6SqCVf22vFM1q1mK">Probe evasion sprint: what we found</a> (doc with the probe setups, key figures and options).</p>
+
   <section>
     <h2>Lies: the probe catches every one</h2>
     <figure class="card"><figcaption><span class="key"><span class="sw lie"></span>lies</span> <span class="key"><span class="sw truth"></span>truthful answers</span> · dashed line flags 1% of no-warning truthful answers · every lie is above it in every condition; what moves is the truthful answers</figcaption>{distribution_figure(Path('results/deception/eval_20261006-144940/examples_scored.jsonl'), ['E0', 'placebo', 'aware', 'E1', 'E2_d_claude', 'E3'])}</figure>
@@ -773,6 +775,7 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
     <p class="lede">{esc(st['backdoor_nothink'])}</p>
     <p class="lede">{esc(st['backdoor_subtle'])}</p>
     <p class="lede">{esc(st['backdoor_validity'])}</p>
+    <p class="lede">{esc(st['onoff_policy'])}</p>
     <figure class="card"><figcaption>Backdoor probe reading with the prompt and Qwen's reasoning in context (as generated): hinted backdoors score higher, not lower</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro', units=('backdoors', 'honest'))}</figure>
     <figure class="card"><figcaption>Lie probe, confirmation run (368 new questions; the strategy hint split into its two halves)</figcaption>{distribution_figure(Path('results/deception/eval_20261006-162009_confirm/examples_scored_fresh.jsonl'), ['E0', 'placebo', 'E3', 'E3_info', 'E3_believe'])}</figure>
     <h3>Open questions</h3>
