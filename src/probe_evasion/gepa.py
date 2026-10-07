@@ -324,7 +324,8 @@ def search(model: str = "gemma", concept: str = "sarcasm", rounds: int = ROUNDS,
         for i, x in enumerate(seeds):
             add_candidate(candidates, run_dir, {"parent": None, "round": 0, "instruction": x},
                           res[i * len(tasks["val"]):(i + 1) * len(tasks["val"])], cal)
-    start_round = max(c["round"] for c in candidates) + 1
+    done_rounds = [json.loads(l)["round"] for l in (run_dir / "rounds.jsonl").read_text().splitlines()] if (run_dir / "rounds.jsonl").exists() else []
+    start_round = max([c["round"] for c in candidates] + done_rounds) + 1
     for rnd in range(start_round, rounds + 1):
         # several proposals per round, each from its own parent and minibatch, evaluated in one batch
         parents = [pareto_parent(candidates, rng) for _ in range(children)]
