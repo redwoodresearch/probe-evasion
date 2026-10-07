@@ -1,7 +1,9 @@
 {
   "lede": "Probes for harmless concepts, trained the way the Neural Chameleons paper trains them. Claude searches for the instruction that best lets the model keep the concept while the probe misses it, seeing every reply's raw probe score; the best instruction is then frozen and tested on 100 new tasks.",
   "takeaways": [
-    "With the recalled-number control added (690 factual questions answered with a number that is new to the reply but needs no arithmetic), the Gemma maths probe still separates computing from not computing perfectly on held-out training-style text (AUROC 1.000). So it isn't just spotting a new number in the reply."
+    "With the recalled-number control added (690 factual questions answered with a number that is new to the reply but needs no arithmetic), the Gemma maths probe still separates computing from not computing perfectly on held-out training-style text (AUROC 1.000). So it isn't just spotting a new number in the reply.",
+    "Chemistry, first lead (validation, not yet the held-out test): Claude's best prompt gets 23 of 40 chemistry replies past the paper's released probe, with the chemistry still there; the plain task gets 0. But it does this by padding: each reply opens with an unrelated story (a party, a barbecue) before a correct \"In plain terms:\" answer, which waters down the averaged score. The stricter max-over-tokens reading still catches most of them (it misses 6 of 40). This is a weakness of averaging the probe over the reply, not the model hiding chemistry.",
+    "Maths: Claude's first idea was also padding (a dreamy forest passage after the answer); the word limit rejected it. The search now states the limit up front and was restarted."
   ],
   "running": [
     {
