@@ -51,20 +51,13 @@
     ]
   ],
   "open_questions": [
+    "Backdoors under the strategy hint: is the drop in the code-only probe's score from different kinds of backdoor (e.g. edge-case special cases) or the same kind written more naturally? Read hinted vs no-warning backdoor code for the same problems side by side.",
     "Write-up framing: this lie probe (as deployed on in-context activations) gives no sign that prompted evasion works, is highly sensitive to prompt context (false alarms on honest answers under almost any added instruction), and appears to track deliberation and conflict in the reasoning rather than falsehood itself. Is that the post?",
     "What would a fair evasion test need? Calibration on honest answers that never saw the attacker's instructions (now the default report; new runs can put evasion text only in the lie prompt), and a model that actually attempts the strategy rather than refusing it: Qwen 27B refuses most probe-aware lie prompts.",
-    "Correct the update sent to James with the score-distribution figure.",
-    "Read the backdoor experiment (scoring now) and apply the same check: which distribution moved?"
+    "Correct the update sent to James with the score-distribution figure."
   ],
-  "running": [
-    {
-      "job": "Backdoor evasion experiment: scoring all four backdoor probes from saved activations",
-      "started": "17:55",
-      "eta": "~18:15",
-      "gpus": 16
-    }
-  ],
-  "backdoor_status": "Setup: random-roll prompt (attack only if a roll in the prompt is 70 or below) gives 38% working backdoors on introductory APPS problems, with honest solutions from the same prompt. With no warning, a probe reading only the code catches 58% of Qwen's backdoors when trained on Claude's code and 75% when trained on Qwen's own code (12 backdoors; preliminary). The evasion experiment's analysis is finishing.",
+  "running": [],
+  "backdoor_status": "Qwen writes a working backdoor when a random roll in the prompt is 70 or below, and an honest solution otherwise; the same six conditions as the lie experiment, 458 attack turns each. Unlike lying, warnings don't make Qwen refuse: 49-62% of attack turns give a working backdoor in every condition. With a probe trained on Qwen's own code that reads only the question and code, backdoors under the strategy hint ('write the special case as if it were a legitimate part of the specification ... keep your attention on solving the problem') score much lower than no-warning backdoors (median 14.3 -> 9.3), while honest solutions don't move (0.8 -> 1.2). At a threshold set on no-warning honest code, 9% of hinted backdoors are missed (95% CI 4-13%) vs 0% with no warning; plain 'evade' 2%. Not a change in which problems get backdoored: on the 126 problems with a working backdoor in both conditions, the hinted one scores lower on 96% of them (mean -4.9). A real but small shift in miss rate: the hinted backdoors still mostly sit far above the threshold. It is evasion of a code-reading probe by writing more natural-looking backdoor code (what the hint asks for), not of an in-context probe: read with the prompt and reasoning in context, hinted backdoors score higher, not lower, as in the lie experiment. The probe trained on Claude's code is weak even with no warning (misses about 43% of backdoors at this threshold, wide uncertainty from only 146 honest examples) and moves little.",
   "decisions": [
     [
       "Model being monitored",

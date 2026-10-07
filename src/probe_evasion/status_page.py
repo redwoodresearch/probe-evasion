@@ -411,10 +411,11 @@ def section_deception_filter() -> str:
 
 
 DIST_TICKS = {"E0": "no warning", "placebo": "unrelated", "aware": "told watched", "E1": "evade",
-              "E2_d_claude": "evade + examples", "E3": "evade + hints", "E3_info": "facts only", "E3_believe": "'believe it' only"}
+              "E2_d_claude": "evade + examples", "E2_bd_claude_intro": "evade + examples", "E3": "evade + hints", "E3_info": "facts only", "E3_believe": "'believe it' only"}
 
 
-def distribution_figure(path: Path, conditions: list[str], probe: str = "d_claude", max_dots: int = 220) -> str:
+def distribution_figure(path: Path, conditions: list[str], probe: str = "d_claude", max_dots: int = 220,
+                        units: tuple[str, str] = ("lies", "truthful")) -> str:
     """Every answer's probe score by condition: lies (left column) vs truthful answers (right column), medians,
     the threshold set on no-warning truthful answers (dashed), and each condition's recalibrated threshold (dotted)."""
     import random
@@ -446,10 +447,14 @@ def distribution_figure(path: Path, conditions: list[str], probe: str = "d_claud
         own = q(vals[c, 0], 0.99)
         out += f'<line class="own" x1="{cx - 0.4 * slot:.1f}" x2="{cx + 0.4 * slot:.1f}" y1="{y(own):.1f}" y2="{y(own):.1f}"/>'
         out += f'<text class="tick" x="{cx:.1f}" y="{h - 30}" text-anchor="middle">{esc(DIST_TICKS.get(c, c))}</text>'
-        out += f'<text class="tick sub" x="{cx:.1f}" y="{h - 14}" text-anchor="middle">{len(vals[c, 1])} lies</text>'
-        out += f'<text class="tick sub" x="{cx:.1f}" y="{h - 2}" text-anchor="middle">{len(vals[c, 0])} truthful</text>'
+        out += f'<text class="tick sub" x="{cx:.1f}" y="{h - 14}" text-anchor="middle">{len(vals[c, 1])} {units[0]}</text>'
+        out += f'<text class="tick sub" x="{cx:.1f}" y="{h - 2}" text-anchor="middle">{len(vals[c, 0])} {units[1]}</text>'
     out += f'<line class="e0thr" x1="{l}" x2="{w - r}" y1="{y(e0_thr):.1f}" y2="{y(e0_thr):.1f}"/>'
     return f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="probe score distributions by condition">{out}</svg>'
+
+
+BACKDOOR_RUN = Path("results/evasion/20261006-144719_dice70/examples_scored.jsonl")
+BACKDOOR_CONDITIONS = ["E0", "placebo", "aware", "E1", "E2_bd_claude_intro", "E3"]
 
 
 def outcome_figure(run_dirs: dict[str, Path]) -> str:
@@ -677,6 +682,13 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
   </section>
 
   <section>
+    <h2>Backdoors: the first case where the attacks themselves move</h2>
+    <p class="lede">{esc(st['backdoor_status'])}</p>
+    <figure class="card"><figcaption><b>Probe trained on Qwen's own code, reading only the question and code</b> · <span class="key"><span class="sw lie"></span>working backdoors</span> <span class="key"><span class="sw truth"></span>honest solutions</span> · dashed line flags 1% of no-warning honest solutions</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro_neutral', units=('backdoors', 'honest'))}</figure>
+    <figure class="card"><figcaption><b>Same probe type, reading with the prompt and Qwen's reasoning in context</b> (as generated)</figcaption>{distribution_figure(BACKDOOR_RUN, BACKDOOR_CONDITIONS, 'bd_qwen_intro', units=('backdoors', 'honest'))}</figure>
+  </section>
+
+  <section>
     <h2>What we've learned</h2>
     <ol class="findings">{findings}</ol>
   </section>
@@ -701,8 +713,7 @@ ol {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; }}
   </section>
   {section_spend(st['running'])}
 
-  <details class="more"><summary>Backdoor line (results pending)</summary>
-    <p class="lede">{esc(st['backdoor_status'])}</p>
+  <details class="more"><summary>Backdoor setup details</summary>
     {section_gate()}
     {section_e0_check()}
   </details>
