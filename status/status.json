@@ -1,6 +1,12 @@
 {
-  "headline": "Lie experiment: in the real monitoring setting (the probe reads Qwen's answer with the prompt and Qwen's reasoning in context), the strategy hint uniquely weakens the lie probe trained on Claude's answers: 58% of lies missed (95% CI 43-83%) vs 0% with no warning, replicated at 53% (CI 34-83%) on 100 fresh questions. The answer text does not carry the effect: hint-condition lies read alone are no harder to detect than lies under an unrelated instruction, and a word-based classifier can barely tell them apart (AUROC 0.57). Open question: is it the hint's words in the prompt, or Qwen's reasoning after reading the hint? A context decomposition, a text-only control, and the pre-registered confirmation on 400 fresh questions are finishing now.",
+  "headline": "Lie experiment: in the real monitoring setting (the probe reads Qwen's answer with the prompt and reasoning in context), the strategy hint uniquely weakens the lie probe trained on Claude's answers: 58% of lies missed (95% CI 43-83%) vs 0% with no warning; 53% (CI 34-83%) on 100 other questions. When the same answers are re-read without the prompt and reasoning, this probe shows no clear extra effect of the hint over an unrelated instruction (+2 points, CI -8 to +12): the effect seems to depend on context rather than wording, but equivalence is not established. Pre-registered confirmation (analyzed on its 368 genuinely new questions, with the declared hint-vs-control comparison), a text-only control, and a context decomposition are finishing now.",
   "running": [
+    {
+      "job": "Matched budget check: the same 100 questions as the 16k pilot, at 8k tokens (no warning vs strategy hint)",
+      "started": "17:15",
+      "eta": "~17:45",
+      "gpus": 13
+    },
     {
       "job": "Pre-registered confirmation (lie experiment): 400 fresh questions; no warning, unrelated instruction, strategy hint, and the hint's two halves. Generation done; extracting and scoring",
       "started": "16:20",
@@ -71,11 +77,11 @@
     ],
     [
       "Finding: text vs context",
-      "The hint barely changes the wording of Qwen's lies (similar length and wording; a word-based classifier separates hint-condition lies from unrelated-instruction lies at AUROC 0.57, near chance). Its effect on the probe appears only when the answer is processed with the hint and reasoning in context."
+      "Re-read without prompt and reasoning, hint-condition lies vs unrelated-instruction lies differ by +2 points (CI -8 to +12) for this probe, and a word-based classifier separates them only weakly (AUROC 0.57). No clear text effect detected; this does not prove the text is irrelevant or that another detector couldn't tell them apart."
     ],
     [
       "Finding: reasoning budget",
-      "A 16k reasoning budget does not reduce unfinished lie attempts (36% vs 37% at 8k). Unfinished attempts are indecision loops: Qwen alternates between lying and answering truthfully until it runs out of tokens. Warnings make this worse (64% unfinished when told to evade)."
+      "Unfinished lie attempts are indecision loops (Qwen alternates between lying and answering truthfully until it runs out of tokens). Whether a 16k budget helps is not yet known: the 16k pilot used different questions; a matched 8k run on the same 100 questions is running."
     ],
     [
       "Finding: fixed thresholds",
@@ -84,6 +90,10 @@
     [
       "Finding: on-policy lie probe",
       "A lie probe trained on Qwen's own answers (question + answer only) reaches held-out AUROC 0.92-0.98 on Qwen's data; it is being compared with the Claude-trained probe on the same test lies."
+    ],
+    [
+      "Question selection",
+      "TriviaQA has duplicate question IDs, so taking later rows did not guarantee new questions (23 of the confirmation run's 391 had been used). Analyses now use only unseen question IDs, counting repeated questions once; new runs pick unique, unused IDs and record them."
     ]
   ],
   "next": [
