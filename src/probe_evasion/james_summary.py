@@ -212,7 +212,7 @@ def render() -> str:
     <ul class="verdicts">
       <li><b>A red team with probe feedback finds the readout's weak spot fast.</b> Averaging falls to padding; our running average fell to a low-scoring opening word; a short window fell to wording that keeps the concept but not its usual phrasing. Each took a few rounds.</li>
       <li><b>The successes are surface-level.</b> In every case we can see why the probe missed (padding, phrasing, reply shape); the model isn't hiding the concept internally. Probes trained on stereotyped text are the weak link: a schemer that knows roughly what a probe was trained on could exploit this without querying it.</li>
-      <li><b>Later-layer probes resist transfer, not adaptation.</b> The trick that beats layers 6-24 fails at layers 30 and 36, but a fresh search still got {l30['red'][0]} of {l30['red'][1]} past layer 30 (division problems mostly). Telling the model about the probe added nothing in a control.</li>
+      <li><b>Stronger probes mostly hold, even against a fresh search.</b> The trick that beats layers 6-24 fails at layers 30 and 36. Fresh searches got {l30['red'][0]} of {l30['red'][1]} past layer 30 (mostly division problems), {rows[4]['red'][0] if rows[4]['red'] else '–'} of {rows[4]['red'][1] if rows[4]['red'] else '–'} past layer 36, and {rows[5]['red'][0] if rows[5]['red'] else '–'} of {rows[5]['red'][1] if rows[5]['red'] else '–'} past a layer-30 probe trained on varied answer wording. Telling the model about the probe added nothing in a control.</li>
       <li><b>Things that did nothing:</b> random characters before the request ({noise_missed} extra misses across 27 variants and 3 concepts); telling the model a probe is watching; and, in earlier phases, any prompt against probes that read deception or backdoor intent in context.</li>
     </ul>
   </section>
@@ -220,7 +220,6 @@ def render() -> str:
   <section>
     <h2>Not yet shown</h2>
     <ul class="verdicts">
-      <li>Fresh searches against the layer-36 probe and a layer-30 probe trained on varied wording (running).</li>
       <li>A recent reasoning model (Qwen3.5-27B, probes trained) where the model can plan the evasion in its reasoning.</li>
       <li>Transfer to high-stakes behaviour, where the plan itself sits in context and earlier phases found in-context probes catch it.</li>
     </ul>
