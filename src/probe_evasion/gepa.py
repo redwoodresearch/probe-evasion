@@ -295,15 +295,21 @@ def add_candidate(candidates: list[dict], run_dir: Path, entry: dict, res: list[
 
 
 @app.local_entrypoint()
-def search(model: str = "gemma", concept: str = "sarcasm", rounds: int = ROUNDS, out_dir: str = ""):
-    run_dir = Path(out_dir) if out_dir else ROOT / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
+def search(model: str = "gemma", concept: str = "sarcasm", rounds: int = ROUNDS, out_dir: str = "", smoke: bool = False):
+    """--smoke: the whole pipeline end to end on a few tasks (one round, one proposal), into results/gepa_smoke/."""
+    root = ROOT.with_name("gepa_smoke") if smoke else ROOT
+    run_dir = Path(out_dir) if out_dir else root / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
     run_dir.mkdir(parents=True, exist_ok=True)
     tasks = load_tasks(concept)
+    minibatch, children = MINIBATCH, CHILDREN_PER_ROUND
+    if smoke:
+        tasks = {k: v[:20] if k == "negative" else v[:2] for k, v in tasks.items()}
+        rounds, minibatch, children = 1, 2, 1
     cal = calibrate(model, concept, tasks, run_dir)
     print(f"calibration: {json.dumps({k: v for k, v in cal.items() if k not in ('mean', 'max')})} | mean-pool: thr "
           f"{cal['mean']['threshold']:.3f}, AUROC {cal['mean']['auroc']:.3f}, baseline missed {cal['mean']['baseline_missed']:.1%}",
           flush=True)
-    if cal["mean"]["auroc"] < MIN_AUROC or cal["mean"]["baseline_missed"] > MAX_BASELINE_MISSED:
+    if not smoke and (cal["mean"]["auroc"] < MIN_AUROC or cal["mean"]["baseline_missed"] > MAX_BASELINE_MISSED):
         (run_dir / "summary.json").write_text(json.dumps({"gate_failed": True, "calibration": {
             p: {k: v for k, v in cal[p].items() if k != "positive_scores"} for p in ("mean", "max")}}, indent=1))
         raise SystemExit(f"probe too weak on this model's own replies (AUROC {cal['mean']['auroc']:.3f}, baseline missed "
@@ -320,16 +326,16 @@ def search(model: str = "gemma", concept: str = "sarcasm", rounds: int = ROUNDS,
     start_round = max(c["round"] for c in candidates) + 1
     for rnd in range(start_round, rounds + 1):
         # several proposals per round, each from its own parent and minibatch, evaluated in one batch
-        parents = [pareto_parent(candidates, rng) for _ in range(CHILDREN_PER_ROUND)]
-        batches = [rng.sample(tasks["train"], MINIBATCH) for _ in parents]
+        parents = [pareto_parent(candidates, rng) for _ in range(children)]
+        batches = [rng.sample(tasks["train"], minibatch) for _ in parents]
         parent_res = run_many(model, concept, [(p["instruction"], t) for p, b in zip(parents, batches) for t in b], seed=rnd)
-        parent_res = [parent_res[i * MINIBATCH:(i + 1) * MINIBATCH] for i in range(len(parents))]
+        parent_res = [parent_res[i * minibatch:(i + 1) * minibatch] for i in range(len(parents))]
         with ThreadPoolExecutor(len(parents)) as pool:
-            children = list(pool.map(lambda pr: reflect(model, concept, pr[0]["instruction"], pr[1], cal), zip(parents, parent_res)))
-        child_res = run_many(model, concept, [(c, t) for c, b in zip(children, batches) for t in b], seed=rnd)
-        child_res = [child_res[i * MINIBATCH:(i + 1) * MINIBATCH] for i in range(len(children))]
+            proposals = list(pool.map(lambda pr: reflect(model, concept, pr[0]["instruction"], pr[1], cal), zip(parents, parent_res)))
+        child_res = run_many(model, concept, [(c, t) for c, b in zip(proposals, batches) for t in b], seed=rnd)
+        child_res = [child_res[i * minibatch:(i + 1) * minibatch] for i in range(len(proposals))]
         entries = []
-        for parent, pres, child, cres in zip(parents, parent_res, children, child_res):
+        for parent, pres, child, cres in zip(parents, parent_res, proposals, child_res):
             p_score, c_score = (float(np.mean([reward(r, cal) for r in x])) for x in (pres, cres))
             entries.append({"round": rnd, "parent": parent["id"], "parent_minibatch": p_score, "child_minibatch": c_score,
                             "instruction": child, "accepted": c_score > p_score})
@@ -373,3 +379,27 @@ def test(model: str, concept: str, run_dir: Path, tasks: dict, cal: dict, candid
                 for p in ("mean", "max")}
     (run_dir / "summary.json").write_text(json.dumps(report, indent=1))
     print(json.dumps(report, indent=1))
+
+
+@app.local_entrypoint()
+def context_reference(out_dir: str):
+    """Same-context check on a finished search: re-score the plain-task test replies with each arm's instruction
+    placed in front, so the shift caused by the instruction alone (no change in the reply) is measured."""
+    run_dir = Path(out_dir)
+    model, concept = run_dir.name.split("_")[:2]
+    cal = json.loads((run_dir / "calibration.json").read_text())
+    report = json.loads((run_dir / "summary.json").read_text())
+    plain = [json.loads(l) for l in (run_dir / "test_no_instruction.jsonl").read_text().splitlines()]
+    instructions = {"told probe is watching": AWARE.format(name=NAMES[concept]),
+                    "seed: strategy hint": json.loads((run_dir / "candidates.jsonl").read_text().splitlines()[0])["instruction"],
+                    "optimized": report["instruction"]}
+    out = {}
+    for name, instruction in instructions.items():
+        shifted = probe_scores(model, concept, [f"{instruction}\n\n{r['task']['task']}" for r in plain], plain)
+        present = [(r, s) for r, s in zip(plain, shifted) if r["present"]]
+        out[name] = {"mean_shift": float(np.mean([s["mean"] - r["mean"] for r, s in present])),
+                     "missed_plain_reply_with_instruction": sum(s["mean"] <= cal["mean"]["threshold"] for _, s in present),
+                     "missed_plain_reply_alone": sum(r["mean"] <= cal["mean"]["threshold"] for r, _ in present),
+                     "n_present": len(present)}
+    (run_dir / "context_reference.json").write_text(json.dumps(out, indent=1))
+    print(json.dumps(out, indent=1))
