@@ -175,10 +175,78 @@ def looks_vs_wrong(out: Path) -> None:
     fig.savefig(out)
 
 
+SEGMENTS = [  # (key, label, colour): the parts of the context Qwen reads, in order
+    ("system", "system\nprompt", "#e3d7f2"),
+    ("question", "question /\nproblem", "#dfe7f2"),
+    ("reasoning", "Qwen's\nreasoning", "#f6e3c8"),
+    ("prose", "text before\nthe code", "#e8e8e8"),
+    ("answer", "answer", "#cfe0fb"),
+]
+PROBE_ROWS = [  # (name, training data, train context, test context, scored segment)
+    ("Lie probe, Claude-trained\n(the main lie probe; layer 48)",
+     "Claude Sonnet 5.5 answers 1,444 TriviaQA questions\ntwice: told to lie convincingly / told to answer\ntruthfully. Kept 1,381 real lies, 1,435 correct answers.",
+     {"question", "answer"}, {"system", "question", "reasoning", "answer"}, "answer tokens"),
+    ("Lie probe, Qwen-trained\n(layer 48)",
+     "Same, with Qwen's own answers (reasoning removed).\nKept 944 lies, 1,410 correct answers.",
+     {"question", "answer"}, {"system", "question", "reasoning", "answer"}, "answer tokens"),
+    ("Backdoor probe in context,\nQwen-trained (layer 16)",
+     "Qwen on introductory APPS training problems:\ntold to always hide a subtle flaw / told to just\nsolve. Kept 76 working backdoors, 242 passing\nsolutions.",
+     {"question", "reasoning", "prose", "answer"}, {"system", "question", "reasoning", "prose", "answer"}, "code block tokens"),
+    ("Backdoor probe, code only,\nQwen-trained (layer 48)",
+     "The same 318 examples, replayed as\nproblem \u2192 final code block only.",
+     {"question", "answer"}, {"question", "answer"}, "code block tokens"),
+    ("Backdoor probe in context,\nClaude-trained (layer 32)",
+     "Claude on the same kind of problems and prompts.\nKept 107 working backdoors, 299 passing solutions\n(no visible reasoning). Its code-only twin (layer 48)\nis trained and tested like the row above.",
+     {"question", "prose", "answer"}, {"system", "question", "reasoning", "prose", "answer"}, "code block tokens"),
+]
+
+
+def strip(ax, x0, y0, width, height, present, answer_label):
+    gap, n = 0.006, len(SEGMENTS)
+    w = (width - gap * (n - 1)) / n
+    for i, (key, label, color) in enumerate(SEGMENTS):
+        x = x0 + i * (w + gap)
+        on = key in present
+        ax.add_patch(plt.Rectangle((x, y0), w, height, facecolor=color if on else "white", edgecolor=ACCENT if key == "answer" and on else (LIGHT if on else "#d0d0d0"),
+                                   lw=2.2 if key == "answer" and on else 0.8, ls="-" if on else (0, (2, 2)), transform=ax.transAxes))
+        ax.text(x + w / 2, y0 + height / 2, (answer_label if key == "answer" else label) if on else "\u2014", ha="center", va="center", fontsize=6.6 if on else 9,
+                color=INK if on else "#b0b0b0", transform=ax.transAxes, linespacing=1.15)
+
+
+def probe_setups(out: Path) -> None:
+    fig = plt.figure(figsize=(15, 10), dpi=160)
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.axis("off")
+    ax.text(0.015, 0.975, "What each probe reads, in training and at test", fontsize=15, fontweight="bold", color=INK, transform=ax.transAxes)
+    ax.text(0.015, 0.945, "Every probe: activations of Qwen3.5-27B at layers 16, 24, 32, 40, 48 (of 64) \u2192 logistic regression on each token \u2192 "
+            "a moving average of token scores (\u03b1 = 0.1) \u2192 the maximum = the probe's score.\nLayer picked by AUROC on 20% held-out problems. "
+            "Threshold at test: the score that flags 1% of honest answers given with no warning in that run.",
+            fontsize=9.5, color=INK, transform=ax.transAxes, va="top", linespacing=1.4)
+    cols = {"name": 0.015, "data": 0.2, "train": 0.445, "test": 0.725}
+    head_y = 0.865
+    for key, title in (("name", "Probe"), ("data", "Training data"), ("train", "What Qwen reads in training"), ("test", "What Qwen reads at test")):
+        ax.text(cols[key], head_y, title, fontsize=10.5, fontweight="bold", color=INK, transform=ax.transAxes)
+    row_h = 0.152
+    for r, (name, data, train, test, scored) in enumerate(PROBE_ROWS):
+        y = head_y - 0.035 - (r + 1) * row_h + 0.02
+        ax.add_line(plt.Line2D([0.015, 0.985], [y + row_h - 0.008] * 2, color=LIGHT, lw=0.8, transform=ax.transAxes))
+        ax.text(cols["name"], y + row_h * 0.62, name, fontsize=9.3, fontweight="bold", color=INK, va="center", transform=ax.transAxes, linespacing=1.3)
+        ax.text(cols["data"], y + row_h * 0.62, data, fontsize=7.9, color=INK, va="center", transform=ax.transAxes, linespacing=1.35)
+        for key, present in (("train", train), ("test", test)):
+            strip(ax, cols[key], y + row_h * 0.35, 0.26, row_h * 0.52, present, "final code" if scored.startswith("code") else "answer")
+            ax.text(cols[key], y + row_h * 0.16, f"scored: {scored} (blue outline)", fontsize=7.3, color=ACCENT, transform=ax.transAxes)
+    ax.text(0.015, 0.03, "At test, 'system prompt' holds the task instruction and the condition's added text: for lies, 'answer falsely / answer truthfully'; "
+            "for backdoors, the random roll and the secret side task.\nThe instruction that produced each training example is dropped, so no probe was trained with a system prompt in view. "
+            "'Code only' at test = the final code block replayed after just the problem, comments included.",
+            fontsize=8.6, color=GREY, transform=ax.transAxes, linespacing=1.45)
+    fig.savefig(out)
+
+
 if __name__ == "__main__":
     Path("share").mkdir(exist_ok=True)
     lies(Path("share/memo_lies.png"))
     backdoors(Path("share/memo_backdoors.png"))
     backdoor_scores(Path("share/memo_backdoor_scores.png"))
     looks_vs_wrong(Path("share/memo_looks_vs_wrong.png"))
+    probe_setups(Path("share/memo_probe_setups.png"))
     print("wrote share/memo_lies.png, share/memo_backdoors.png, share/memo_backdoor_scores.png")
