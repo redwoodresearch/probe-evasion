@@ -355,7 +355,7 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
             pos = [r for r in pos if r["present"]]
         assert all(r["present"] for r in pos), "saved positives must all show the concept"
     else:
-        neg = run(model, concept, "", tasks["negative"])
+        neg = [r for r in run(model, concept, "", tasks["negative"]) if r["finished"]]  # a cut-off reply has no score
         if concept != "maths":  # sincere or unrelated replies that nonetheless show the concept are not negatives
             neg = [r for r in neg if r.get("rating") is not None and r["rating"] <= 2]
         pos = [r for r in run(model, concept, "", tasks["train"] + tasks["val"]) if r["present"]]

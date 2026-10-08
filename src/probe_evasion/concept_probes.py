@@ -51,7 +51,8 @@ def encode(tok, model_key: str, prompt: str, response: str, reasoning: str | Non
     if from_reasoning:  # the scored span starts at the reasoning (just after "<think>\n"), user prompt excluded
         start -= len((reasoning or "").strip() + "\n</think>\n\n")
     enc = tok(text, return_offsets_mapping=True, add_special_tokens=False)
-    first = next(i for i, (s, _) in enumerate(enc["offset_mapping"]) if s >= start)
+    # an empty reply (reasoning cut off before it finished) has no tokens to score
+    first = next((i for i, (s, _) in enumerate(enc["offset_mapping"]) if s >= start), len(enc["input_ids"]))
     return enc["input_ids"], first
 
 
