@@ -52,7 +52,7 @@ ROWS = [
         ("Gemma maths, layer 30: attacked directly", lambda: reval("gemma_maths_ema_onpolicyclean_L30_20261008-v2")),
         ("Qwen chemistry, layer 48: attacked directly", chem_new),
     ]),
-    ("Off-policy: trained on text we wrote from templates (maths)", [
+    ("Off-policy, templated: one-line answers from 10 templates (written by Claude), numbers swapped", [
         ("Qwen maths, layer 48: attacked directly", lambda: reval("qwen35_maths_window_L48_20261007-173549")),
         ("Gemma maths, layer 36: attacked directly", lambda: gemma_layer(36)),
         ("Gemma maths, layer 12: layer-36 attack, re-scored", lambda: gemma_layer(12)),
