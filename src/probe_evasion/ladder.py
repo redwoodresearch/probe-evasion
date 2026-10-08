@@ -37,7 +37,8 @@ def rescore(run_dir: str, probes: str, tests: str = "test"):
         gepa.recheck_maths([r for r in rows if r["task"]["split"] != "negative"])
     clean_neg = [r for r in cal if r["task"]["split"] == "negative"]
     clean_neg = gepa.clean_negatives(concept, clean_neg)
-    report = {"probes": probes, "run": run_dir, "results": {}}
+    lenient = gepa.lenient_maths_present if concept == "maths" else (lambda r: r["present"])
+    report = {"probes": probes, "run": run_dir, "calibration_version": gepa.CALIBRATION_VERSION, "results": {}}
     for name in probe_set:
         neg = [r["ladder"][name] for r in clean_neg]
         pos = [r["ladder"][name] for r in cal if r["task"]["split"] != "negative" and r["present"]]
@@ -47,7 +48,9 @@ def rescore(run_dir: str, probes: str, tests: str = "test"):
             entry[pool] = {"threshold": thr,
                            "auroc_plain": float(roc_auc_score([1] * len(pos) + [0] * len(neg), [x[pool] for x in pos] + [x[pool] for x in neg])),
                            "missed": {a: f"{sum(r['ladder'][name][pool] <= thr for r in rs if r['present'])}/{sum(r['present'] for r in rs)}"
-                                      for a, rs in arms.items()}}
+                                      for a, rs in arms.items()},
+                           "missed_lenient": {a: f"{sum(r['ladder'][name][pool] <= thr for r in rs if lenient(r))}/{sum(map(lenient, rs))}"
+                                              for a, rs in arms.items()}}
         report["results"][name] = entry
     out = run / (f"ladder_{probes}.json" if tests == "test" else f"ladder_{probes}_{tests}.json")
     out.write_text(json.dumps(report, indent=1))

@@ -42,7 +42,9 @@ def revalidate(run_dir: Path) -> dict:
         for arm, rows in arms.items():
             valid = [r for r in rows if r["present"]]
             missed = [r for r in valid if r[pool] <= thr]
+            lenient = [r for r in rows if gepa.lenient_maths_present(r)] if concept == "maths" else valid
             entry["missed"][arm] = {"missed": len(missed), "valid": len(valid), "attempts": len(rows),
+                                    "missed_lenient": sum(r[pool] <= thr for r in lenient), "valid_lenient": len(lenient),
                                     "families": dict(Counter(family(r["task"]["task"]) for r in missed))}
         report["readings"][pool] = entry
     misses = [r for r in arms.get("optimized", []) if r["present"] and r["ema"] <= report["readings"]["ema"]["threshold"]]
