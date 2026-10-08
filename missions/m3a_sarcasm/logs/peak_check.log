@@ -1,0 +1,56 @@
+✓ Initialized. View run at 
+https://modal.com/apps/redwood-default/main/ap-mH5jKXRZIzWZ56HkTjNJaI
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/results/chameleons/trained_probes
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/external/minimal_neural_chameleons/pro
+│   bes
+├── ✓ Uploaded PythonPackage:probe_evasion
+├── ✓ Created Function execute.
+├── ✓ Created Function Sampler.*.
+├── ✓ Created Function train.
+├── ✓ Created Function score.
+├── ✓ Created Function ProbeLab.*.
+├── ✓ Created Function ConceptGen.*.
+├── ✓ Created Function ConceptScorer.*.
+└── ✓ Created Function train_probes_remote.
+Stopping app - uncaught exception raised locally: InvalidError('Duplicate local entrypoint name: build. Local entrypoint names must be unique.').
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m3a_sarcasm │
+│ .py:770 in peak_check                                                        │
+│                                                                              │
+│   769 │   frozen test arms and the Phase C arms with it, as generated and wi │
+│ ❱ 770 │   from probe_evasion.missions.m1a_peak_probe import PeakProbeLabSeed │
+│   771                                                                        │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m1a_peak_pr │
+│ obe.py:16 in <module>                                                        │
+│                                                                              │
+│    15                                                                        │
+│ ❱  16 from probe_evasion import concept_probes, gepa, remote_search  # remot │
+│    17 from probe_evasion.generation import write_jsonl                       │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/remote_search.py:22  │
+│ in <module>                                                                  │
+│                                                                              │
+│   21                                                                         │
+│ ❱ 22 from probe_evasion import config, gepa, ladder, onpolicy_probes  # noqa │
+│   23 from probe_evasion.modal_app import app                                 │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/onpolicy_probes.py:1 │
+│ 06 in <module>                                                               │
+│                                                                              │
+│   105                                                                        │
+│ ❱ 106 @app.local_entrypoint()                                                │
+│   107 def build(model: str = "qwen35", narrative: bool = False):             │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/app.py:794 in wrapped                                                     │
+│                                                                              │
+│    793 │   │   │   │   # TODO: get rid of this limitation.                   │
+│ ❱  794 │   │   │   │   raise InvalidError(f"Duplicate local entrypoint name: │
+│    795 │   │   │   entrypoint = local_state.local_entrypoints[tag] = _LocalE │
+╰──────────────────────────────────────────────────────────────────────────────╯
+InvalidError: Duplicate local entrypoint name: build. Local entrypoint names 
+must be unique.

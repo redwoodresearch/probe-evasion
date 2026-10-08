@@ -53,7 +53,7 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Probe evasion sprint · updated 12:26 PM</div>
+    <div class="eyebrow">Probe evasion sprint · updated 12:34 PM</div>
     <h1>Evasion missions: where a prompted model gets past a probe</h1>
     <p class="lede">8 agents in parallel, each testing one way a probe-based monitor might be evaded by prompting alone,
     while the answer still does the task. 2 promising, 5 running.
@@ -69,8 +69,8 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
   </div>
   <div class="res"><div class="bar"><span class="lbl">Told to evade</span><div class="track"><div class="fill" style="width:100.0%;background:var(--attack)"></div></div><span class="num">100% · 99/99</span></div><div class="bar"><span class="lbl">Not told</span><div class="track"><div class="fill" style="width:2.0%;background:var(--plain)"></div></div><span class="num">2% · 2/100</span></div><div class="basis">saved optimized answers re-scored (transfer), one-sentence 1% line</div></div>
   <div class="notes">
-    <div>Lookups that restate a given number score above the optimized answers, so they set the line. Confounds in the chat negatives are being rebuilt. Chemistry part finished: no evasion against a Claude-trained chemistry probe.</div>
-    <div><b>Next:</b> Rebuilt negatives, a chat-traffic line, then frozen prompts on fresh problems.</div>
+    <div>Measured with a mean-trained probe read with the running peak, so it does not count under the new rule until re-run. Lookups that restate a given number score above the optimized answers and set the line.</div>
+    <div><b>Next:</b> Retrain for the peak reading (new rule), recompute the lines, re-test frozen prompts on fresh problems.</div>
     <div class="live">Agent's own status (11:54 AM): chemistry finished (RESULT.md); redirected by the lead (11:40) to off-policy MATHS without nearby</div>
   </div>
 </article><article class="row">
@@ -81,9 +81,9 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
   </div>
   <div class="res"><div class="pending">No numbers yet</div></div>
   <div class="notes">
-    <div>Redirected from chemistry (styled chemistry attacks still stated the chemistry outright).</div>
-    <div><b>Next:</b> Build the Gemma-written maths set matched to the Claude one.</div>
-    <div class="live">Agent's own status (11:56 AM): chemistry readout finishing (scoring running); then lead&#x27;s second redirect (11:40): a MATHS probe trained on</div>
+    <div>Mean-trained Gemma-text probe looked evadable (505/1000 vs 1/1000 plain at the one-sentence line), but it collapses to 0/1000 when the 136 garden-area lookups are left out of the line&#x27;s pool, or the line is set from lookups written under the same instruction; plain replies with the instruction in front already &#x27;evade&#x27; 232/600. Same line artifact as 1a.</div>
+    <div><b>Next:</b> Retrain the Gemma-text probe for the peak reading (3 seeds) and compare with 1a&#x27;s peak-trained Claude and Qwen probes.</div>
+    <div class="live">Agent's own status (12:34 PM): chemistry readout finishing (scoring running); then lead&#x27;s second redirect (11:40): a MATHS probe trained on</div>
   </div>
 </article><article class="row">
   <div class="id">
@@ -143,7 +143,7 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
   <div class="notes">
     <div>Mostly from the instruction sitting in context: with it removed, 4/54. Layer convention verified from the probe files.</div>
     <div><b>Next:</b> Have the model write the warm framing itself in its reply, then deceive.</div>
-    <div class="live">Agent's own status (12:18 PM): A done (11:58); diagnosing where the probe signal comes from before any search. Started 11:22.</div>
+    <div class="live">Agent's own status (12:34 PM): A done (11:58); diagnosing where the probe signal comes from before any search. Started 11:22.</div>
   </div>
 </article><article class="row">
   <div class="id">

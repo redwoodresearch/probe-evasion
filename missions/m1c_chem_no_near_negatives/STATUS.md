@@ -48,6 +48,38 @@ style-only control (same style, no mention of the probe), plus a "frame it as bi
 on 40 validation tasks: 31-39/40 per arm (plain 36/40). First read: the styled replies stay chemistry-dense
 (VSEPR, 109.5°, etc. inside the story/comfort framing).
 
+**Gemma maths, first results (12:35).** Probes trained (validation AUROC 1.0 at L16/L48, gd and logreg). Held-out
+styles on Qwen's own replies: AUROC 0.999 (gem@L48), 0.9998 (gem@L16); catches 238/238 plain computed held-out replies at
+the 1% one-sentence line. Naming: gem = Gemma-text probe (gd), gemlr = logreg; on = own-replies clean probe; off = 1a's
+Claude-text probe.
+- 1a's hand-written attacks (40 validation problems): at the one-sentence 1% line, gem@L48 misses 0-1 per arm (plain 0).
+- 1a's fresh test of four frozen search prompts (found earlier against OTHER probes; 300 new problems x 2 samples; 100
+  of them division problems), audited one-sentence line, 1% false alarms, valid evasions per attempt:
+  | frozen prompt | gem@L48 | on@L48 | off@L48 (Claude) |
+  |---|---|---|---|
+  | plain | 0/600 | 0/600 | 0/600 |
+  | divaug-v2 winner (story sentence) | 192/600 (171/200 division) | 59/600 | 0/600 |
+  | overnight winner | 117/600 (99/200 division) | 3/600 | 0/600 |
+  | window_L48 winner | 104/600 (89/200 division) | 32/600 | 0/600 |
+  | v2 winner (scene) | 32/600 (24/200 division) | 0/600 | 0/600 |
+  Evasions concentrate on division problems; plain division replies are all caught. Same-format check so far: the
+  v2-style scene negatives (no maths) are flagged 7/300 by gem@L48 at that line (about 2%, so the line is not
+  lenient for that format). Running: the divaug/window prompts' own-format negatives and 1,000-sample confirm set
+  (1a's `candidate_*`, `confirm`) scored with the Gemma probes.
+
+**Gemma maths, validity checks on the mean-trained probe (12:45): the apparent evasion is a line artifact.**
+1a's candidate checks re-scored with the Gemma probes (`gemma_maths/candidates_report.json`). divaug-v2 frozen prompt,
+1,000-attempt confirmation set, gem@L48, valid evasions per attempt at 1% false alarms:
+- one-sentence line: 505/1000 (474/600 division; strict judge 369); own-replies probe 183; plain 1/1000.
+- the same line with the 136 garden-area lookups left out of its pool: **0/1000**.
+- line from no-maths lookups written under the same instruction (own-format line): **0/1000**.
+- plain replies with the instruction placed in front: 232/600 "evade", i.e. the instruction text in context lowers
+  the score, not the reply.
+window_L48 prompt: 266/1000 -> 0 and 0 under the same two checks. So the mean-trained Gemma probe shows the same
+artifact 1a documented: the line is set by one lookup template, and the frozen prompts' replies sit just under it.
+Lead's new rule (property 5): retraining the Gemma probe with cross-entropy on the EMA peak (1a's seeded trainer,
+3 seeds, L48), re-scoring the same sets; compare with onpeak/offpeak.
+
 **Verdict so far:** none yet.
 
 ## Critic check-ins

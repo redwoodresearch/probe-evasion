@@ -1,0 +1,56 @@
+✓ Initialized. View run at 
+https://modal.com/apps/redwood-default/main/ap-0iZjO3IW6tcIsqAtCV9wbI
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/results/chameleons/trained_probes
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/external/minimal_neural_chameleons/pro
+│   bes
+├── ✓ Uploaded PythonPackage:probe_evasion
+├── ✓ Created Function execute.
+├── ✓ Created Function Sampler.*.
+├── ✓ Created Function train.
+├── ✓ Created Function score.
+├── ✓ Created Function ProbeLab.*.
+├── ✓ Created Function ConceptGen.*.
+├── ✓ Created Function ConceptScorer.*.
+└── ✓ Created Function train_probes_remote.
+Stopping app - uncaught exception raised locally: ExecutionError('Function has not been hydrated with the metadata it needs to run on Modal.').
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m1c_gemma_m │
+│ aths.py:174 in m1c_gemma_peak                                                │
+│                                                                              │
+│   173 │   if train:                                                          │
+│ ❱ 174 │   │   out = PeakProbeLabSeeds().train_peak_seeded.remote(m1a.jl(TRAI │
+│   175 │   │   (concept_probes.PROBES / f"{PEAK_FILE}.json").write_text(json. │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_object.py:48 in wrapped                                                  │
+│                                                                              │
+│    47 │   async def wrapped(self, *args: P.args, **kwargs: P.kwargs) -> T:   │
+│ ❱  48 │   │   await self.hydrate()                                           │
+│    49 │   │   return await method(self, *args, **kwargs)                     │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/cls.py:240 in _load                                                       │
+│                                                                              │
+│   239 │   │   │   │   │   if not parent._is_hydrated:                        │
+│ ❱ 240 │   │   │   │   │   │   await parent.hydrate(load_context.client)      │
+│   241                                                                        │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_object.py:360 in hydrate                                                 │
+│                                                                              │
+│   359 │   │   elif not self._hydrate_lazily:                                 │
+│ ❱ 360 │   │   │   self._validate_is_hydrated()                               │
+│   361 │   │   else:                                                          │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_object.py:210 in _validate_is_hydrated                                   │
+│                                                                              │
+│   209 │   │   │   │   reason = ""                                            │
+│ ❱ 210 │   │   │   raise ExecutionError(                                      │
+│   211 │   │   │   │   f"{object_type} has not been hydrated with the metadat │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ExecutionError: Function has not been hydrated with the metadata it needs to run
+on Modal.

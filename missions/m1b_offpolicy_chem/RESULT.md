@@ -121,9 +121,25 @@ Claude-text gd). Under the Neural Chameleons probe they sit at or below its line
   are reported.
 - **Instruction removed.** Measured for every hand-written arm. Concept strength is shown by the judge ratings. A
   style-only control is included (kitchen story without evasion text): it scores the same as the evasion version.
-- **Pending at writing time.** A re-score, under both probe families, of all ~1,860 distinct saved replies from the
-  original chemistry search: its 21 candidate instructions on validation and minibatch tasks, plus the test arms. It
-  repeatedly lost its Modal connection; it is resumable (`screen`), and results go to `screen_L48.json`.
+- **Re-score of every saved reply from the original chemistry search** (`screen_L48.json`).
+  - Scope: 43 instructions (the search's candidates and test arms) and 1,374 distinct valid answers. None of these
+    instructions was selected against the probes scored here.
+  - Results at the 1% line:
+
+    | Probe trained on | Missed (attack replies) | Missed, instruction removed | Plain |
+    |---|---|---|---|
+    | Claude text, gd | 1 | 1 | 0/164 |
+    | Claude text, logreg | 3 | 2 | 0/164 |
+    | Qwen's own replies, gd | 0 | 0 | 0/164 |
+    | Qwen's own replies, logreg | 3 | 2 | 1/164 |
+
+  - At the fragile 0.1% line the Claude-text probes miss more (gd 64, logreg 48) than the Qwen-own probes (gd 31,
+    logreg 28). Plain answers missed: 1-3 of 164 for every probe. So there is a small off-policy cost, visible only
+    at a line resting on the top one or two calibration replies.
+- **Reading/training mismatch (brief property 5, added after this work).** These probes were trained on the mean
+  token score and read with the EMA peak. Under the brief that would invalidate a positive result. This result is
+  negative, and the mismatch is known to *create* evasions, not hide them. Even so, the comparison has not been
+  repeated with peak-trained probes.
 - **Not done.**
   - A dedicated search against the Claude-text probe (Phase B).
   - The newer search against the Qwen-own probe (`qwen35_chemistry_ema_onpolicy_L48_20261008`) had no test arms yet,
