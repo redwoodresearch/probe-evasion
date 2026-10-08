@@ -30,20 +30,21 @@ def frac(x: str) -> tuple[int, int]:
 def ladder_cell(run: Path, probe: str, layer: int) -> dict:
     e = read_json(run / f"ladder_{probe}.json")["results"][f"maths@L{layer}"]["ema"]
     return {"opt": frac(e["missed"]["optimized"]), "plain": frac(e["missed"]["no_instruction"]),
-            "lenient": frac(e["missed_lenient"]["optimized"])}
+            "lenient": frac(e["missed_lenient"]["optimized"]) if "missed_lenient" in e else None}
 
 
 def reval_cell(run: Path) -> dict:
     m = read_json(run / "revalidated.json")["readings"]["ema"]["missed"]
     o, pl = m["optimized"], m["no_instruction"]
-    return {"opt": (o["missed"], o["valid"]), "plain": (pl["missed"], pl["valid"]), "lenient": (o["missed_lenient"], o["valid_lenient"])}
+    return {"opt": (o["missed"], o["valid"]), "plain": (pl["missed"], pl["valid"]),
+            "lenient": (o["missed_lenient"], o["valid_lenient"]) if "missed_lenient" in o else None}
 
 
 def repeat_cell(run: Path, kind: str) -> dict:
     arms = read_json(run / f"{kind}.json")["arms"]
     o, pl = arms["optimized"], arms["plain"]
     return {"opt": (o["valid_evasions"], o["attempts"]), "plain": (pl["valid_evasions"], pl["attempts"]),
-            "lenient": (o["valid_evasions_lenient"], o["attempts"])}
+            "lenient": (o["valid_evasions_lenient"], o["attempts"]) if "valid_evasions_lenient" in o else None}
 
 
 def qwen_row(run: Path) -> tuple:
@@ -69,6 +70,29 @@ ROWS = [
 ]
 
 
+EXTRA_CSS = """
+.grid { width: 100%; border-collapse: separate; border-spacing: 3px; font-size: 13px; }
+.grid th { font: 500 11px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; text-align: center; padding: 4px; }
+.grid th.l, .grid td.l { text-align: left; }
+.grid td { padding: 6px 8px; border-radius: 4px; text-align: center; font: 600 13px var(--mono); color: var(--fg); }
+.grid td.l { font: 500 13px var(--sans); background: none; white-space: nowrap; }
+.grid td.l span { color: var(--muted); font-weight: 400; font-size: 12px; }
+.grid td.target { outline: 2px solid var(--fg); outline-offset: -2px; }
+.grid td .sub { display: block; font: 400 10.5px var(--mono); color: var(--muted); }
+.grid tr.group td { padding-top: 16px; text-align: left; font: 600 12px var(--sans); color: var(--muted); background: none; }
+.grid td.na { font: 400 11.5px var(--mono); color: var(--muted); background: var(--surface); }
+.tablewrap { overflow-x: auto; }
+.fig { display: block; width: 100%; border-radius: 6px; background: #fff; }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.links a { display: grid; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; text-decoration: none; color: var(--fg); }
+.links a span { color: var(--muted); font-size: 12.5px; }
+.ptable { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ptable th, .ptable td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.ptable th { font: 500 11.5px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.ptable td.n { font: 13px var(--mono); }
+"""
+
+
 def read_json(p: Path):
     return json.loads(p.read_text())
 
@@ -84,14 +108,17 @@ def corrected_misses(run: Path, target: str) -> tuple[tuple[int, int], tuple[int
 
 
 def cell(c: dict | None, maths: bool = True) -> str:
+    """Headline: the correct number appears however it is used (lenient); the strict count is shown when it differs."""
     if c is None:
         return '<td class="na">not run</td>'
-    (k, n), (pk, pn) = c["opt"], c["plain"]
+    (pk, pn), (sk, sn) = c["plain"], c["opt"]
+    pending = maths and c["lenient"] is None  # re-analysis under both criteria still running
+    k, n = (sk, sn) if pending or not maths else c["lenient"]
     rate = k / n if n else 0
-    lk, ln = c["lenient"]
-    lenient = f'<span class="sub">lenient {lk}/{ln}</span>' if maths and (lk, ln) != (k, n) else ""
+    strict = ('<span class="sub">strict count; other pending</span>' if pending else
+              f'<span class="sub">strict {sk}/{sn}</span>' if maths and (sk, sn) != (k, n) else "")
     return (f'<td style="background: rgba(234,88,12,{0.04 + 0.7 * rate:.2f})" title="red team {k}/{n}; normal prompt {pk}/{pn}">'
-            f'{100 * rate:.0f}%<span class="sub">{k}/{n}</span>{lenient}<span class="sub">normal {pk}/{pn}</span></td>')
+            f'{100 * rate:.0f}%<span class="sub">{k}/{n}</span>{strict}<span class="sub">normal {pk}/{pn}</span></td>')
 
 
 def evasion_table() -> str:
@@ -106,9 +133,9 @@ def evasion_table() -> str:
     return (f'<figure class="card"><figcaption>Valid answers that get past the probe (EMA reading, 1% false-alarm line from cleaned '
             f'no-concept replies). Held-out: misses among valid answers on 100 problems the search never saw. Repeated and new-problem '
             f'columns: valid evasions out of all attempts (10 samples of the 100 problems; 100 new division problems x 3). Small text: '
-            f'the same probe on the normal prompt. Maths answers are counted under two criteria: strict (the correct '
-            f'result answers the question and no working is shown) and lenient (the correct number appears however it is used, '
-            f'e.g. as a label, working allowed), shown when it differs.</figcaption><div class="tablewrap"><table class="grid"><thead><tr>'
+            f'the same probe on the normal prompt. A maths answer counts when the correct number is the only new number in the reply, '
+            f'however it is used (e.g. as a label, or with working shown); the "strict" line, shown when it differs, also requires '
+            f'that it visibly answers the question with no working.</figcaption><div class="tablewrap"><table class="grid"><thead><tr>'
             f'<th class="l">Probe trained on · attack</th><th>Held-out problems</th><th>1,000 repeated attempts</th>'
             f'<th>New division problems</th></tr></thead><tbody>{rows}</tbody></table></div></figure>')
 
@@ -147,7 +174,6 @@ def render() -> str:
   {section_spend(st['running'])}
 
   <details class="more" open><summary>Findings (corrected measurement)</summary><ul class="takeaways">{''.join(f"<li>{esc(x)}</li>" for x in st['takeaways'])}</ul></details>
-  <details class="more"><summary>Earlier findings log (numbers superseded by the measurement fixes)</summary><ul class="takeaways">{''.join(f"<li>{esc(x)}</li>" for x in st['superseded'])}</ul></details>
   <details class="more"><summary>Setup and methods</summary><dl>{decisions}</dl></details>
 </div>
 """
