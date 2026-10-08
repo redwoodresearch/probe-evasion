@@ -102,3 +102,19 @@ def reasoning_ablation(from_run: str, out_dir: str):
     for span, e in report["spans"].items():
         print(f"{span:16s} " + " | ".join(f"{p}: plain {e[p]['missed']['plain']} optimized {e[p]['missed']['optimized']}"
                                            for p in ("ema", "max", "window")), flush=True)
+
+
+@app.local_entrypoint()
+def rethreshold(out_dir: str):
+    """Recompute a finished maths run's calibration with the current rules (cleaned no-maths replies) and re-analyse
+    everything it saved: held-out test arms (revalidated.json), repeated samples and fresh problems."""
+    from probe_evasion.revalidate import revalidate
+
+    run_dir = Path(out_dir)
+    model, concept = gepa.restore_config(run_dir)
+    gepa.calibrate(model, concept, gepa.load_tasks(concept), run_dir)
+    for prefix in ("large_test_", "fresh_test_"):
+        if any(run_dir.glob(f"{prefix}*.jsonl")):
+            gepa.analyze_large_test(run_dir, prefix)
+    if all("token_logits" in json.loads(f.read_text().splitlines()[0]) for f in run_dir.glob("test_*.jsonl")):
+        revalidate(run_dir)

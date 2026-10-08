@@ -346,9 +346,9 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
     saved = run_dir / "calibration_replies.jsonl"
     if saved.exists():  # replies from an earlier calibration: recompute every reading from their token scores
         rows = [json.loads(l) for l in saved.read_text().splitlines()]
-        if PROBE:  # saved scores are from another probe: re-score the same replies, same context
+        if PROBE and not all(r.get("scored_with") == PROBE for r in rows):  # scores from another probe: re-score, same context
             for r, s in zip(rows, probe_scores(model, concept, [r["prompt"] for r in rows], rows)):
-                r.update(s)
+                r.update(s, scored_with=PROBE)
             write_jsonl(saved, rows)
         for r in rows:
             if "token_logits" in r:
@@ -680,6 +680,9 @@ def clopper_pearson(k: int, n: int) -> list[float]:
 def run_threshold(run_dir: Path) -> float:
     """The run's threshold for its target reading: re-computed from raw logits for older runs (summary_logits.json),
     else the run's own calibration (already from raw logits)."""
+    cal = json.loads((run_dir / "calibration.json").read_text())
+    if cal.get("version", 0) >= CALIBRATION_VERSION:
+        return cal[TARGET]["threshold"]
     logits = run_dir / "summary_logits.json"
     if logits.exists():
         return json.loads(logits.read_text())["readings"][TARGET]["threshold"]
