@@ -1,9 +1,9 @@
 {
   "lede": "Probes for harmless concepts, trained the way the Neural Chameleons paper trains them. Claude searches for the instruction that best lets the model keep the concept while the probe misses it, seeing every reply's raw probe score; the best instruction is then frozen and tested on 100 new tasks.",
   "takeaways": [
-    "Corrected scoring on the two strongest Gemma maths probes (raw logits, stricter check, threshold recomputed): layer 36, the optimized prompt gets 0 of 77 correct answers past the window reading (plain task 2 of 90); layer 30 with varied training, 0 of 70 (plain 0 of 90). The two layer-36 misses found earlier sat just under the old, rounding-affected threshold. In Evie Hu's terms: prompted red-teaming found fidelity failures (probes keyed on phrasing; fixed by a later layer or varied training), not necessity failures.",
+    "Large-sample test against the two strongest Gemma maths probes (1,000 attempts per arm: 10 samples x 100 held-out problems; corrected scoring and answer check). Layer 36: the optimized prompt gives 2 valid evasions in 1,000 attempts (0.2%, 95% CI 0.02-0.72%), fewer than the normal prompt's 15 (1.5%). Layer 30 with varied training: 2 in 1,000 (0.2%, CI 0.02-0.72%) vs 0 for the normal prompt (CI 0-0.37%). So against strong probes the red-team prompt does no better than chance-level misses. Repeated samples on the same 100 problems: this measures how often this prompt evades, not how broadly a strategy generalizes.",
+    "Corrected held-out numbers (raw scores, fixed answer check), maths, 10-token window: frozen scenic prompt vs probes at layers 6/12/18/24/30/36: 62/60/63/33/0/0 of 71 correct answers missed (plain: 0-2 of 90); fresh searches: layer 30 11/63, layer 36 2/83 (plain 2/90), layer 30 varied 0/74.",
     "Bigger model: Qwen3.5-27B (64 layers) maths probes trained at layers 8-56 all score AUROC 1.000 on held-out training-style data, so ordinary validation can't tell them apart (same as Gemma). Fresh Claude searches against layers 16, 32 and 48 are running; each winner will be re-scored against all seven layers.",
-    "Corrected scoring (from the review): the scorer now keeps raw per-token scores (rounded probabilities saturated at 1, breaking the max and EMA readings on deep probes), and the maths check now rejects numbers written in words. Corrected held-out numbers under the 10-token window: maths layer 12, 55/68 and 74/76 correct answers missed (plain 3/90); maths layer 30 fresh search, 11/63 (was 18/69); chemistry 16/66; sarcasm 3/66. Layer 36 and the varied-training probe get the same re-scoring when their extra rounds finish.",
     "Stronger defenders hold: fresh 10-round searches (40 prompts each) against the layer-36 maths probe get 3 of 84 correct answers past the 10-token window (plain 0 of 90), and against a layer-30 probe trained on varied answer wording, 0 of 79 (plain 0 of 90). The averaged reading of those same probes still loses 41-44 (padding-like dilution), so the window matters. Ladder so far for maths: layer-12 probe 68/82 -> layer-30 18/69 (fresh search) -> layer-36 3/84 -> layer-30 with varied training 0/79.",
     "Layer-30 maths probe, held-out test: a fresh search found a partial way through. The optimized prompt gets 18 of 69 correct answers past the 10-token window (plain task 0 of 90; told a probe is watching 0 of 88); 12 with the instruction removed. The misses cluster by problem type: division 12 of 13, multiplication 3 of 23, subtraction 1 of 15, addition 0 of 14. Unlike the scenic trick, the winning prompt tells Gemma about the probe and asks it to keep its attention on the scene rather than on quantities. A control separating those parts is running.",
     "Probe ladder, rung 2 (varied answer formats, same examples): training on varied formats cuts the scenic trick at middle layers (optimized answers missed, of 82: layer 12 68 -> 61, 18 78 -> 43, 24 43 -> 26) but layer matters much more (layers 30 and 36: 0).",
@@ -46,12 +46,6 @@
       "started": "5:38",
       "eta": "7:15",
       "gpus": 3
-    },
-    {
-      "job": "Large-sample rare-miss test: Gemma layer-36 and varied layer-30 prompts, 10 samples x 100 problems each, vs plain",
-      "started": "5:45",
-      "eta": "6:30",
-      "gpus": 2
     }
   ],
   "earlier": [
