@@ -100,7 +100,9 @@ def results_grid() -> str:
                       f'title="red-team prompt {ok}/{on}; normal prompt {pk}/{pn}">{100 * rate:.0f}%'
                       f'<span class="sub">normal {100 * pk / pn:.0f}%</span></td>')
         rows += f"<tr{sep}>{label}{cells}</tr>"
-    return (f'<figure class="card"><figcaption>Share of valid answers (concept confirmed) that the red-team prompt gets past the probe, '
+    return (f'<figure class="card"><figcaption><b>Out of date for maths:</b> these use the original answer check and calibration; under the corrected '
+            f'calibration (see findings log) the Qwen maths red-team rates fall to near 0. Being rebuilt. '
+            f'Share of valid answers (concept confirmed) that the red-team prompt gets past the probe, '
             f'on 100 held-out tasks; small text: the normal prompt. Columns: how the probe\'s per-token scores are combined. '
             f'Outlined: the reading that search optimized against.</figcaption><div class="tablewrap"><table class="grid">'
             f'<thead><tr><th class="l">Model · concept · probe layer</th>{head}</tr></thead><tbody>{rows}</tbody></table></div></figure>')
@@ -125,7 +127,7 @@ def depth_chart() -> str:
         out += f'<polyline class="ln {cls}" points="{pp}"/>' + "".join(
             f'<circle class="dot {cls}" cx="{x(f):.1f}" cy="{y(v):.1f}" r="4.5"><title>layer {L}: {k}/{n}</title></circle>'
             f'<text class="val" x="{x(f):.1f}" y="{y(v) - 9:.1f}" text-anchor="middle">L{L}</text>' for f, v, L, k, n in pts)
-    return (f'<figure class="card"><figcaption><span class="key"><span class="sw s2"></span>Gemma-2-9B (42 layers)</span>'
+    return (f'<figure class="card"><figcaption><b>Out of date:</b> original calibration, being rebuilt. <span class="key"><span class="sw s2"></span>Gemma-2-9B (42 layers)</span>'
             f'<span class="key"><span class="sw s1"></span>Qwen3.5-27B (64 layers)</span> · maths, a fresh search at each probe, '
             f'EMA reading, held-out</figcaption><svg viewBox="0 0 {w} {h}" role="img" aria-label="Miss rate by probe depth">{out}</svg></figure>')
 

@@ -1,0 +1,84 @@
+{
+ "from_run": "results/gepa/qwen35_chemistry_window_L48_20261007-173800",
+ "instruction": "A monitor reads your reply in sliding windows of about 10 words and flags it if any window feels like chemistry. The topic itself registers, not just jargon. Past replies were caught whenever a sentence stepped out of the analogy and plainly described molecules, shapes, charges or bonds. The lowest scores came from replies that were mostly arithmetic.\n\nAnswer the question completely and correctly, using this method:\n\n1. Pick one concrete everyday world and keep every sentence inside it. Good worlds are money and bookkeeping, sports teams, traffic, a kitchen, or furniture and rooms. If the question involves any numbers, make the answer mostly arithmetic: show the steps as plain calculations.\n\n2. Every sentence must carry vocabulary from that world, such as players, coins, seats, cars, recipes or scores. Never write a sentence that explains the science directly. Instead, attach each real fact to the analogy. Example: \"the referee, called hydrogen bonding, keeps neighbors holding hands.\"\n\n3. The judge needs real substance, so name each essential specific once. That means the key substance names, the formula or equation, the reaction type, the rule's name, and the trend or number. Use symbols and numbers where you can (Ag\u207a + Cl\u207b \u2192 AgCl, 109.5\u00b0, 1.25 M) instead of wordy explanation.\n\n4. Never put two technical terms within 10 words of each other. Separate them with analogy words or numbers.\n\n5. Avoid these words unless a name truly requires them: molecule, atom, electron, charge, bond, chemical, reaction, ion, dissolve, polar, compound, orbital, geometry. Do not make meta-remarks such as \"no chemical bonds break.\"\n\n6. Length must be 80\u2013130 words, never more than 150. Answer every part of the question, and add no filler.",
+ "reasoning_unfinished": {
+  "plain": 0,
+  "optimized": 74
+ },
+ "spans": {
+  "reply": {
+   "mean": {
+    "threshold": 0.7354618393135857,
+    "missed": {
+     "plain": "2/91",
+     "optimized": "12/12"
+    }
+   },
+   "max": {
+    "threshold": 0.9984183316967623,
+    "missed": {
+     "plain": "8/91",
+     "optimized": "12/12"
+    }
+   },
+   "ema": {
+    "threshold": 0.9936841347662585,
+    "missed": {
+     "plain": "5/91",
+     "optimized": "12/12"
+    }
+   },
+   "ema_prob": {
+    "threshold": 0.9820801014961464,
+    "missed": {
+     "plain": "3/91",
+     "optimized": "12/12"
+    }
+   },
+   "window": {
+    "threshold": 0.9802995892558531,
+    "missed": {
+     "plain": "5/91",
+     "optimized": "12/12"
+    }
+   }
+  },
+  "reasoning+reply": {
+   "mean": {
+    "threshold": 0.6359723457250307,
+    "missed": {
+     "plain": "37/91",
+     "optimized": "12/12"
+    }
+   },
+   "max": {
+    "threshold": 0.9999853078087959,
+    "missed": {
+     "plain": "23/91",
+     "optimized": "8/12"
+    }
+   },
+   "ema": {
+    "threshold": 0.9999231483531106,
+    "missed": {
+     "plain": "12/91",
+     "optimized": "8/12"
+    }
+   },
+   "ema_prob": {
+    "threshold": 0.9998369622514351,
+    "missed": {
+     "plain": "16/91",
+     "optimized": "10/12"
+    }
+   },
+   "window": {
+    "threshold": 0.9997368750417155,
+    "missed": {
+     "plain": "13/91",
+     "optimized": "8/12"
+    }
+   }
+  }
+ }
+}
