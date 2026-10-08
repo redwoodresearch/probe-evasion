@@ -53,10 +53,10 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Probe evasion sprint · updated 12:47 PM</div>
+    <div class="eyebrow">Probe evasion sprint · updated 12:49 PM</div>
     <h1>Evasion missions: where a prompted model gets past a probe</h1>
     <p class="lede">8 agents in parallel, each testing one way a probe-based monitor might be evaded by prompting alone,
-    while the answer still does the task. 2 promising, 4 running.
+    while the answer still does the task. 2 promising, 3 running.
     Every number compares the evasion prompt with the plain prompt on the same probe and problems.</p>
     <div class="key"><span><i class="sw" style="background:var(--attack)"></i>Told to evade</span>
       <span><i class="sw" style="background:var(--plain)"></i>Not told (plain prompt)</span></div>
@@ -71,19 +71,7 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
   <div class="notes">
     <div>Measured with a mean-trained probe read with the running peak, so it does not count under the new rule until re-run. Lookups that restate a given number score above the optimized answers and set the line.</div>
     <div><b>Next:</b> Retrain for the peak reading (new rule), recompute the lines, re-test frozen prompts on fresh problems.</div>
-    <div class="live">Agent's own status (12:37 PM): chemistry finished (RESULT.md); redirected by the lead (11:40) to off-policy MATHS without nearby</div>
-  </div>
-</article><article class="row">
-  <div class="id">
-    <div class="top"><span class="pill running">Running</span><h3 class="name">Maths probe trained on Gemma-written text</h3></div>
-    <p class="q">Does the source of off-policy training text matter (Gemma-2-9B vs Claude)?</p>
-    <div class="probe">Off-policy (Gemma-written), layer 48</div>
-  </div>
-  <div class="res"><div class="pending">No numbers yet</div></div>
-  <div class="notes">
-    <div>Mean-trained Gemma-text probe looked evadable (505/1000 vs 1/1000 plain at the one-sentence line), but it collapses to 0/1000 when the 136 garden-area lookups are left out of the line&#x27;s pool, or the line is set from lookups written under the same instruction; plain replies with the instruction in front already &#x27;evade&#x27; 232/600. Same line artifact as 1a.</div>
-    <div><b>Next:</b> Retrain the Gemma-text probe for the peak reading (3 seeds) and compare with 1a&#x27;s peak-trained Claude and Qwen probes.</div>
-    <div class="live">Agent's own status (12:40 PM): chemistry readout finishing (scoring running); then lead&#x27;s second redirect (11:40): a MATHS probe trained on</div>
+    <div class="live">Agent's own status (12:49 PM): done. Chemistry: `RESULT.md`. Maths without nearby negatives: `maths_nonear/RESULT.md`.</div>
   </div>
 </article><article class="row">
   <div class="id">
@@ -96,6 +84,18 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
     <div>Claude-written training text is no easier to evade than Qwen&#x27;s own (often more robust). Every apparent evasion traced to the line: email boilerplate under the average-trained/peak-read mismatch; 136 garden-area lookups; and 45 &#x27;non-maths&#x27; replies that quietly re-check the given figure (&#x27;35% of 1340 people is actually 469&#x27;). With those handled: 0-1/1000 everywhere.</div>
     <div><b>Next:</b> Finished (RESULT.md).</div>
     <div class="live">Agent's own status (12:38 PM): lead-redirected (11:17): priority is the all-styles calibration finding on the own-replies probe (on@L48); off-policy comparison secondary. Started ~10:45.</div>
+  </div>
+</article><article class="row">
+  <div class="id">
+    <div class="top"><span class="pill negative">No evasion</span><h3 class="name">Gemma-written maths probe; chemistry without near negatives</h3></div>
+    <p class="q">Does the source of off-policy training text matter (Gemma-2-9B vs Claude)?</p>
+    <div class="probe">Off-policy (Gemma-written), layer 48</div>
+  </div>
+  <div class="res"><div class="pending">No numbers yet</div></div>
+  <div class="notes">
+    <div>Maths: trained for the peak reading, the Gemma-text probe misses at most 0.8% of attempts at the attack&#x27;s own-format line, about the same as the own-replies probe; the earlier 505/1000 came from the line and the mean-vs-peak mismatch. Chemistry without nearby negatives: false alarms on biology and maths replies (208 of 243 at the 1% line, vs 6 with them), but chemistry answers are not evadable (0-1 misses per arm).</div>
+    <div><b>Next:</b> Finished (RESULT.md).</div>
+    <div class="live">Agent's own status (12:40 PM): chemistry readout finishing (scoring running); then lead&#x27;s second redirect (11:40): a MATHS probe trained on</div>
   </div>
 </article></section><section><h2>Meaning vs wording</h2><article class="row">
   <div class="id">
@@ -143,7 +143,7 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
   <div class="notes">
     <div>Mostly from the instruction sitting in context: with it removed, 4/54. Layer convention verified from the probe files. Bug found by m1d: this scorer&#x27;s EMA reading started at AISI&#x27;s threshold, so EMA numbers (including this one) are being re-checked with AISI&#x27;s own mean reading.</div>
     <div><b>Next:</b> Have the model write the warm framing itself in its reply, then deceive.</div>
-    <div class="live">Agent's own status (12:46 PM): A done (11:58); diagnosing where the probe signal comes from before any search. Started 11:22.</div>
+    <div class="live">Agent's own status (12:48 PM): A done (11:58); diagnosing where the probe signal comes from before any search. Started 11:22.</div>
   </div>
 </article><article class="row">
   <div class="id">

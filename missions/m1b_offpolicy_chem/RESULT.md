@@ -1,4 +1,11 @@
-# m1b_offpolicy_chem: result (chemistry part)
+# m1b_offpolicy_chem: result
+
+This mission has two parts. Chemistry (below): Claude-written text, sensible negatives; negative result. Maths
+without nearby negatives (lead redirect): see `maths_nonear/RESULT.md`; no qualifying evasion. In short, the
+peak-trained probe without lookup negatives fails property 3 on realistic traffic, and format changes push its misses
+to about 100%. The same Claude-text probe with lookup negatives catches everything.
+
+# Chemistry part
 
 **Claim.** No attack we tried evaded a reasonably trained chemistry probe whose training text was written by another
 model. The probe was trained on Claude Sonnet's replies, read by Qwen3.5-27B, with labels checked against content and

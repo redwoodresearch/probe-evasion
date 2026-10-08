@@ -3,8 +3,16 @@
 **Question.** Does training a chemistry probe on another model's text (Claude's replies, read by Qwen) make it
 evadable by prompting, when labels and negatives are otherwise sensible?
 
-**Phase:** chemistry finished (RESULT.md); redirected by the lead (11:40) to off-policy MATHS without nearby
-negatives, in `missions/m1b_offpolicy_chem/maths_nonear/`. Maths part is at Phase A.
+**Phase:** done. Chemistry: `RESULT.md`. Maths without nearby negatives: `maths_nonear/RESULT.md`.
+
+**Final verdict (maths, peak-trained probes, brief property 5).** No qualifying evasion. Without lookup negatives the
+probe separates lookups from computed answers at only AUROC 0.94-0.95. Setting the line:
+- on chat: catches all attacks, but flags 99% of lookups;
+- on one-sentence lookups: misses 27-34% of plain held-out answers (fails property 3), and every format change
+  (frozen search prompts on 300 fresh problems: 589-596 of 600 attempts; JSON, French) is missed.
+
+With 1a's lookup negatives, trained the same way: 0-1 of 600 at every line. The uplift comes from changing format,
+not from being told to evade ("told probe is watching": 0/40).
 
 **Design.**
 - Same prompts as Qwen's own-reply training set `data/concepts/chem_qwen35_train.jsonl` (1866 prompts: chemistry
@@ -109,3 +117,12 @@ loop.
   the no-nearby-negatives set (`m1b_maths_nonear2_peak_seeds`) and for 1a's set with nearby negatives
   (`m1b_maths_nonear_withnear_peak_seeds`). Re-scoring the calibration pools, fresh tests, hand-written arms and 1a's
   same-format negative sets with them.
+- 13:50. Peak-trained results replace the mean-trained ones. Critic 3's points addressed in `maths_nonear/RESULT.md`:
+  - attempt-level and problem-level counts;
+  - the style-only and format controls;
+  - the same-format check (nn2pk AUROC 0.74-0.89 vs offpk 0.987);
+  - verdict worded as a property-3 failure plus format brittleness;
+  - overnight winner as the cleanest arm.
+
+  Chemistry part: the screen of ~1,860 saved search replies finished. At 1% it found 0-3 misses for every probe.
+  The chemistry RESULT notes the property-5 caveat.

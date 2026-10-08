@@ -128,15 +128,15 @@
   {
    "id": "m1c_chem_no_near_negatives",
    "group": "Maths",
-   "name": "Maths probe trained on Gemma-written text",
+   "name": "Gemma-written maths probe; chemistry without near negatives",
    "question": "Does the source of off-policy training text matter (Gemma-2-9B vs Claude)?",
    "probe": "Off-policy (Gemma-written), layer 48",
-   "state": "running",
+   "state": "negative",
    "attack": null,
    "plain": null,
    "basis": "",
-   "note": "Mean-trained Gemma-text probe looked evadable (505/1000 vs 1/1000 plain at the one-sentence line), but it collapses to 0/1000 when the 136 garden-area lookups are left out of the line's pool, or the line is set from lookups written under the same instruction; plain replies with the instruction in front already 'evade' 232/600. Same line artifact as 1a.",
-   "next": "Retrain the Gemma-text probe for the peak reading (3 seeds) and compare with 1a's peak-trained Claude and Qwen probes."
+   "note": "Maths: trained for the peak reading, the Gemma-text probe misses at most 0.8% of attempts at the attack's own-format line, about the same as the own-replies probe; the earlier 505/1000 came from the line and the mean-vs-peak mismatch. Chemistry without nearby negatives: false alarms on biology and maths replies (208 of 243 at the 1% line, vs 6 with them), but chemistry answers are not evadable (0-1 misses per arm).",
+   "next": "Finished (RESULT.md)."
   }
  ]
 }
