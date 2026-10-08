@@ -55,29 +55,36 @@ def sample(kind: str) -> str:
     return textwrap.shorten(reply, 120, placeholder=" ...")
 
 
-def result(probe_file: str) -> str:
+def missed(probe_file: str, reading: str) -> tuple[int, int] | None:
     path = LADDER_RUN / f"ladder_{probe_file}.json"
     if not path.exists():
-        return "pending"
-    res = json.loads(path.read_text())["results"].get(f"maths@L{LAYER}")
-    if not res:
-        return "pending"
-    k, n = (int(x) for x in res["window"]["missed"]["optimized"].split("/"))
-    return f"{100 * k / n:.0f}%\n({k}/{n})"
+        return None
+    res = json.loads(path.read_text())["results"][f"maths@L{LAYER}"]
+    k, n = (int(x) for x in res[reading]["missed"]["optimized"].split("/"))
+    return k, n
+
+
+def heldout_auroc(probe_file: str) -> float | None:
+    path = PROBES / f"{probe_file}_heldout_eval.json"
+    return json.loads(path.read_text())[f"maths@L{LAYER}"]["ema"] if path.exists() else None
 
 
 def main(out: Path = Path("share/probe_rungs.png")) -> Path:
-    fig = plt.figure(figsize=(16, 9.2), dpi=170)
+    fig = plt.figure(figsize=(16, 9.6), dpi=170)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.axis("off")
     ax.text(0.012, 0.965, "The probe-strength ladder: what changes from rung to rung", fontsize=17, fontweight="bold", color=INK)
     ax.text(0.012, 0.93, "Maths-in-the-head probes on Qwen3.5-27B. Every rung is checked on answer styles it never saw "
             "(dialogue, headline, FAQ); nothing scenic is used until rung 5.", fontsize=10.5, color=GREY)
-    cols = [(0.012, "Rung"), (0.17, "Training data"), (0.34, "A real training example (computed answer)"), (0.64, "Answer styles covered"),
-            (0.80, "Training method"), (0.905, f"Scenic answers\nmissed, layer {LAYER}")]
+    cols = [(0.012, "Rung"), (0.17, "Training data"), (0.34, "A real training example (computed answer)"), (0.615, "Answer styles covered"),
+            (0.775, "Training method"), (0.885, f"Optimized answers\nmissed (EMA)")]
+    footnote = (f"Last column: share of the 98 saved Claude-optimized maths answers (found against rung 1's layer-{LAYER} probe) that each "
+                f"rung's layer-{LAYER} probe misses at a 1%-false-alarm threshold, EMA reading (alpha 0.5, as Anthropic and DeepMind use). "
+                "Every rung scores ~1.0 AUROC on held-out answer styles, so that check cannot tell them apart; the attack can. "
+                "These answers were not re-optimized against rungs 2-5 (fresh searches against them are running).")
     for x, h in cols:
         ax.text(x, 0.885, h, fontsize=10, color=GREY, fontweight="bold", va="top")
-    row_h = 0.16
+    row_h = 0.152
     for i, (name, source, colour, size, styles, method, probe_file, kind) in enumerate(RUNGS):
         y = 0.83 - i * row_h
         ax.add_patch(FancyBboxPatch((0.006, y - row_h + 0.018), 0.988, row_h - 0.012, boxstyle="round,pad=0.002,rounding_size=0.01",
@@ -87,22 +94,33 @@ def main(out: Path = Path("share/probe_rungs.png")) -> Path:
                                     transform=ax.transAxes, facecolor=colour, edgecolor="none", alpha=0.9))
         ax.text(0.245, y - 0.033, source, fontsize=9.5, color="white", ha="center", va="center", fontweight="bold")
         ax.text(0.17, y - 0.065, size, fontsize=9, color=INK, va="top", linespacing=1.3)
-        ax.text(0.34, y - 0.03, "\n".join(textwrap.wrap(f"“{sample(kind)}”", 52)), fontsize=9.2, color=INK, va="top",
+        example = "(same data as rung 3)" if probe_file.endswith("onpolicy_lr") else f"“{sample(kind)}”"
+        ax.text(0.34, y - 0.03, "\n".join(textwrap.wrap(example, 48)), fontsize=9.2, color=INK, va="top",
                 family="monospace", linespacing=1.35)
-        cx, cy = 0.64, y - 0.03
+        cx, cy = 0.615, y - 0.03
         for s in styles:
-            w = 0.0052 * len(s) + 0.012
-            if cx + w > 0.79:
-                cx, cy = 0.64, cy - 0.03
+            w = 0.0045 * len(s) + 0.01
+            if cx + w > 0.765:
+                cx, cy = 0.615, cy - 0.03
             ax.add_patch(FancyBboxPatch((cx, cy - 0.022), w, 0.026, boxstyle="round,pad=0.002,rounding_size=0.01",
                                         transform=ax.transAxes, facecolor="white", edgecolor=ORANGE if s in ("vivid scene", "story", "travel diary", "poem") else "#c9ced6"))
             ax.text(cx + w / 2, cy - 0.009, s, fontsize=8, color=INK, ha="center", va="center")
             cx += w + 0.005
-        ax.text(0.80, y - 0.03, method, fontsize=9.5, color=BLUE if "Anthropic" in method else INK, va="top", linespacing=1.3)
-        ax.text(0.95, y - 0.06, result(probe_file), fontsize=12, color=INK, fontweight="bold", ha="center", va="center", linespacing=1.2)
-    ax.text(0.012, 0.012, "Last column: share of the saved Claude-optimized scenic maths answers (found against the original layer-48 probe) "
-            "that each rung's layer-48 probe misses, 10-token window; normal-prompt answers are missed 0-2% throughout.",
-            fontsize=9, color=GREY)
+        ax.text(0.775, y - 0.03, method, fontsize=9.5, color=BLUE if "Anthropic" in method else INK, va="top", linespacing=1.3)
+        ema, win, auc = missed(probe_file, "ema"), missed(probe_file, "window"), heldout_auroc(probe_file)
+        if ema is None:
+            ax.text(0.935, y - 0.06, "pending", fontsize=12, color=GREY, ha="center", va="center")
+            continue
+        share = ema[0] / ema[1]
+        ax.add_patch(FancyBboxPatch((0.885, y - 0.075), 0.1 * share, 0.022, boxstyle="square,pad=0", transform=ax.transAxes,
+                                    facecolor=ORANGE, edgecolor="none"))
+        ax.add_patch(FancyBboxPatch((0.885, y - 0.075), 0.1, 0.022, boxstyle="square,pad=0", transform=ax.transAxes,
+                                    facecolor="none", edgecolor="#c9ced6"))
+        ax.text(0.885, y - 0.03, f"{100 * share:.0f}%", fontsize=15, color=INK, fontweight="bold", va="top")
+        ax.text(0.94, y - 0.036, f"({ema[0]}/{ema[1]})", fontsize=8.5, color=GREY, va="top")
+        ax.text(0.885, y - 0.088, f"10-token window: {100 * win[0] / win[1]:.0f}%\nheld-out-style AUROC " + (f"{auc:.3f}" if auc else "pending"), fontsize=8,
+                color=GREY, va="top", linespacing=1.3)
+    ax.text(0.012, 0.068, "\n".join(textwrap.wrap(footnote, 225)), fontsize=9, color=GREY, va="top", linespacing=1.4)
     fig.savefig(out)
     return out
 
