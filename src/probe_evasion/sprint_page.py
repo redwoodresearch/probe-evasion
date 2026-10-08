@@ -40,6 +40,14 @@ def reval_cell(run: Path) -> dict:
             "lenient": (o["missed_lenient"], o["valid_lenient"]) if "missed_lenient" in o else None}
 
 
+def chem_summary_cell(run: Path) -> dict:
+    """A chemistry search run under the current calibration rules: its own held-out summary is current."""
+    assert read_json(run / "calibration.json").get("version", 0) >= 3, run
+    arms = read_json(run / "summary.json")["arms"]
+    o, pl = arms["optimized"], arms["no instruction"]
+    return {"opt": (o["missed_ema"], o["present"]), "plain": (pl["missed_ema"], pl["present"]), "lenient": None}
+
+
 def repeat_cell(run: Path, kind: str) -> dict:
     arms = read_json(run / f"{kind}.json")["arms"]
     o, pl = arms["optimized"], arms["plain"]
@@ -63,8 +71,8 @@ ROWS = [
     (None, "Own replies, layer 36", "fresh search against it", *qwen_row(GRUN["clean36"])),
     (None, "Own replies, layer 30", "fresh search against it",
      lambda: reval_cell(GRUN["clean30"]), None, lambda: repeat_cell(GRUN["clean30"], "fresh_test")),
-    ("Qwen3.5-27B · chemistry", "Chemistry dataset, layer 48", "found against this probe", lambda: reval_cell(CHEM[48]), None, None),
-    (None, "Chemistry dataset, layer 16", "found against this probe", lambda: reval_cell(CHEM[16]), None, None),
+    ("Qwen3.5-27B · chemistry", "Model's own replies, biology and maths as non-chemistry, layer 48", "fresh search against it",
+     lambda: chem_summary_cell(G / "qwen35_chemistry_ema_onpolicy_L48_20261008"), None, None),
 ]
 
 
