@@ -4,7 +4,7 @@
 evadable by prompting, with everything else held fixed (same task prompts, 8 answer styles, label rules, comma
 balancing, size and per-cell counts)?
 
-**Phase:** lead-redirected (11:20): priority is the all-styles calibration finding on the own-replies probe (on@L48); off-policy comparison secondary. Started ~10:45.
+**Phase:** lead-redirected (11:17): priority is the all-styles calibration finding on the own-replies probe (on@L48); off-policy comparison secondary. Started ~10:45.
 
 ## Log
 - 10:45 Read brief. Baseline probe `qwen35_maths_onpolicy_clean` was missing locally; pulled from the Modal volume and
@@ -37,11 +37,11 @@ balancing, size and per-cell counts)?
   Relaunched phase A (3 probes: Claude-sys gd, Claude-sys logreg, Qwen-matched gd; then score all sets; attacks on
   the 40 validation problems generated in parallel). Waiting on the Modal app cap.
 
-- 11:12 **Pre-registration (before any attack replies scored with the final probes):** primary cell = off@L48
+- 11:05 **Pre-registration (before any attack replies scored with the final probes):** primary cell = off@L48
   (Claude system-prompt-only set, gd), EMA reading, 1% false alarms, **line from clean one-sentence no-maths
   replies** (the attacked tasks' format, the convention all earlier maths searches used, so comparable to the
   on-policy 0/1000 baseline). Secondary: the "all styles" line (1% of all 11-style clean no-maths replies).
-- 11:12 Preliminary results with the first (mixed-policy) Claude probe, scored on everything:
+- 11:05 Preliminary results with the first (mixed-policy) Claude probe, scored on everything:
   - Held-out answer styles on Qwen's own replies (dialogue/headline/FAQ): AUROC (EMA) on@L48 1.000, off@L48 1.000,
     offlr@L48 0.9998, on@L16 0.9999, off@L16 0.9998. **Training on Claude's text does not hurt held-out fidelity.**
   - **The line depends hugely on which no-maths replies set it.** Clean multi-style lookups (emails, short
@@ -55,13 +55,13 @@ balancing, size and per-cell counts)?
     L16: the Claude probe is clearly more evadable than the own-replies probe by the old searches' prompts: e.g.
     window_L48 optimized on@L16 36/98 vs off@L16 94/98; divaug-v2 11/99 vs 63/99; rewrites 17/98 vs 60/98;
     overnight 24/100 vs 76/100; plain arms 0/100 for all. (These prompts were found against other probes, so this is
-    transfer, and on@L16 is itself partly evadable.) **Superseded 12:15: this L16 gap was the first, mixed-policy
-    Claude probe. The final system-prompt-only Claude probe at L16 misses fewer than on@L16 (see 12:15).**
+    transfer, and on@L16 is itself partly evadable.) **Superseded 11:52: this L16 gap was the first, mixed-policy
+    Claude probe. The final system-prompt-only Claude probe at L16 misses fewer than on@L16 (see 11:52).**
 
-- 11:20 Lead redirect: audit the all-styles line, per-style lines, fresh confirmation, format-aware line.
-- 11:22 Phase A v2 scoring dropped its Modal connection after training (probes saved); relaunched scoring + attacks
+- 11:17 Lead redirect: audit the all-styles line, per-style lines, fresh confirmation, format-aware line.
+- 11:19 Phase A v2 scoring dropped its Modal connection after training (probes saved); relaunched scoring + attacks
   (resumable). Extra 875 one-sentence lookups scored (calibration_one_sentence.jsonl).
-- 11:30 **Audit of the all-styles line (on@L48, EMA), `m1a_calibration_audit.py`:**
+- 11:21 **Audit of the all-styles line (on@L48, EMA), `m1a_calibration_audit.py`:**
   - Pool: 2,073 clean no-maths Qwen replies (16 style groups; one-sentence lookups are now 45% of it). Claude
     ("does the reply perform or state any computation, or any number derived from others?") flags 41 (2%), spread
     thinly (short paragraph 10, recalled short paragraph 7, answer+tip 6, bullets 5; 1 email). Removing them barely
@@ -87,10 +87,10 @@ balancing, size and per-cell counts)?
   - Reading: "a single global threshold across reply formats lets a format-shifted attack through, because benign
     formats (emails, paragraphs) score high on boilerplate". It is a monitoring tradeoff, not a probe that cannot
     see maths: within the attack's own format the probe separates perfectly.
-- 11:30 Running: fresh confirmation (v2 winner + 3 other frozen winners vs plain on 200 fresh mixed-template + 100
+- 11:21 Running: fresh confirmation (v2 winner + 3 other frozen winners vs plain on 200 fresh mixed-template + 100
   fresh division problems, 2 samples each), scoring of everything with all 9 probes, hand-written attacks.
 
-- 11:40 Critic 2 (audit): no counting/scoring bug found (re-scored v2 replies match the original run within 0.002 EMA;
+- 11:33 Critic 2 (audit): no counting/scoring bug found (re-scored v2 replies match the original run within 0.002 EMA;
   99 distinct valid optimized replies on 99 tasks). Framing corrections, adopted: (1) the cause is a train/deploy
   mismatch -- the probe is trained on the *mean* of per-token scores, so benign emails were only pushed to a low
   average and boilerplate spikes were never penalised, then it is deployed with a *peak* (EMA) reading; (2) "per-format
@@ -102,12 +102,12 @@ balancing, size and per-cell counts)?
   optimized valid, 90 vs 100 plain. Actions: same-format negatives (the v2 prompt and its style-only wording applied to
   200 fresh lookups + 100 recall questions) and plain computed problems answered as emails -> `format_negatives`;
   training-style emails scored -> `extras`; instruction-removed rescoring -> `extras`.
-- 11:45 Modal connections from the laptop dropped twice mid-job (scoring + fresh test lost; probes kept). Moved the
+- 11:40 Modal connections from the laptop dropped twice mid-job (scoring + fresh test lost; probes kept). Moved the
   remaining GPU work to the cloud driver (`remote_search` chains, detached): format_negatives, fresh, phase A scoring.
-- 11:45 **Existing frozen-prompt tests re-read at the audited lines (no GPU; `repeated_and_fresh_on_L48.json`).** The
+- 11:40 **Existing frozen-prompt tests re-read at the audited lines (no GPU; `repeated_and_fresh_on_L48.json`).** The
   v2 and overnight searches scored their own 10-sample tests on the 100 held-out problems and 3-sample tests on 100
   new division problems with this exact probe (on@L48), so I pulled those replies from the volume. Distinct valid
-  replies, misses at 1% (EMA). **Counting corrected 12:05 (lead/reviewer): numbers below are valid evasions per
+  replies, misses at 1% (EMA). **Counting corrected 11:49 (lead/reviewer): numbers below are valid evasions per
   attempt with duplicates counted, then distinct evading replies / problems they come from.** (The earlier table here
   mixed a distinct-reply numerator with a distinct-reply denominator and was misread as per attempt; superseded.)
 
@@ -122,7 +122,7 @@ balancing, size and per-cell counts)?
   282/300, 197/300, 1/300 on division. So the global-line uplift replicates on repeated samples and new problems;
   at the format-matched line it is 0-2% of attempts (6/300 on division at 1%, plain 0/300).
 
-- 11:55 **Decisive checks on the global-line finding (all on@L48, EMA, distinct valid replies, lenient counting rule):**
+- 11:47 **Decisive checks on the global-line finding (all on@L48, EMA, distinct valid replies, lenient counting rule):**
   - **Same-format negatives: the probe separates fine inside the attack's format.** The frozen v2 prompt applied to
     200 fresh no-maths lookups + 100 recall questions gives one-sentence scene replies ("The garden covers 9916 square
     metres of green lawn.") that score median 0.24 (lookups) / 0.19 (recall), max 0.61; the 1% line from these
@@ -152,9 +152,9 @@ balancing, size and per-cell counts)?
     pass the strict judge check). On the 100 new division problems alone: 50/200 vs 0/200. All 58 are on
     division-type problems (49 "each/total" fresh division, 9 "shared equally"), scores 0.49-0.66 just under the line
     0.663 -- the known division weak spot -- and all disappear when the instruction is removed from the context.
-- 11:55 Running: the defender's retrained probe (`m1a_peak_probe.py`: same rows, BCE on the EMA peak itself), cloud chain.
+- 11:47 Running: the defender's retrained probe (`m1a_peak_probe.py`: same rows, BCE on the EMA peak itself), cloud chain.
 
-- 12:15 **Off-policy question (secondary now), final probes, all 9 scored (`phase_a_summary.txt`,
+- 11:52 **Off-policy question (secondary now), final probes, all 9 scored (`phase_a_summary.txt`,
   `phase_a_report.json`):**
   - Held-out answer styles, Qwen's own replies, AUROC (EMA): on@L48 1.000, onm@L48 1.000, off@L48 1.000, offlr@L48
     0.9999, on@L16 0.9999, off@L16 0.9998. Plain computed held-out replies caught at the one-sentence 1% line: 238/238
@@ -176,7 +176,7 @@ balancing, size and per-cell counts)?
     the format-matched line the Claude-text probe is as robust as, or more robust than, the own-replies probe on every
     attack tried. Caveat: this is off-policy reply text only (same prompts, same templates).
 
-- 12:30 Critic 3: counting re-derived and correct (59/600, 58 distinct, 41 problems; plain min score 0.923);
+- 11:58 Critic 3: counting re-derived and correct (59/600, 58 distinct, 41 problems; plain min score 0.923);
   fresh problems disjoint from everything. Points: divaug-v2 was *selected* on fresh.jsonl (best of 4), so only the
   seed-1234 division set is a clean confirmation; report strict counts (39/59 strict) and read all evasions; the
   band 0.49-0.66 sits just under the line (bootstrap line 0.627-0.678 -> 39-69 evasions; 0 at 5%); apply the
@@ -185,13 +185,13 @@ balancing, size and per-cell counts)?
   division; corrections to my global-line summary (per-format line closes it for v2 but not for every frozen prompt;
   "separates within every format" covers only the v2 scene format and plain emails; email test was plain, not an
   instructed attack). Adopted.
-- 12:30 **Pre-registration for the seed-1234 confirmation (300 new division problems x 2 samples, written before
+- 11:58 **Pre-registration for the seed-1234 confirmation (300 new division problems x 2 samples, written before
   looking):** primary = divaug-v2 frozen prompt vs plain, on@L48, EMA reading, 1% line from the 1,308 audited clean
   one-sentence no-maths replies (0.663), lenient counting rule, valid evasions per attempt (600 attempts per arm).
   Reported alongside: strict-judge counts, distinct replies / problems, 0.1% and 5% lines, own-format line,
   instruction removed, max reading. window_L48 frozen prompt secondary.
 
-- 12:50 **Seed-1234 confirmation (pre-registered above; `candidate_report.json`).** 300 new division problems x 2
+- 12:03 **Seed-1234 confirmation (pre-registered above; `candidate_report.json`).** 300 new division problems x 2
   samples, on@L48, EMA, one-sentence line 0.663 (1%):
   - **divaug-v2 frozen prompt 138/600 valid evasions per attempt (137 distinct replies, 84 problems) vs plain 0/600.**
     Strict judge: 104/600 vs 0/600. 0.1% line (0.750): 381/600 vs 0/600. 5% line (0.393): 0/600 vs 0/600.
@@ -208,19 +208,19 @@ balancing, size and per-cell counts)?
     window). on@L48's one-sentence 1% line is itself unusually high (0.663, vs 0.316 for onm@L48 and off@L48).
   - Verdict on the candidate: **not a result** by the brief's rules (instruction text alone explains it; a line set on
     no-maths replies in the attack's own format closes it; it works against one probe instance only).
-- 12:50 **Defender's fix for the global-line finding (`m1a_peak_probe.py`, `peak_report.json`):** the same own-replies
+- 12:03 **Defender's fix for the global-line finding (`m1a_peak_probe.py`, `peak_report.json`):** the same own-replies
   rows, same split, trained with binary cross-entropy on the EMA peak (the deployed reading) instead of the mean.
   Validation AUROC 1.0 at L16/32/48. All-styles 1% line onpeak@L48 0.298 (one-sentence 0.149). v2 frozen prompt at
   the all-styles 1% line: held-out x10 0/1000 (mean-trained probe: 500/1000), new division x3 2/300 (was 297/300),
   plain 0/1000 and 0/300. Same-format scene lookups median 0.03; computed emails median 0.99. **Training for the
   deployed reading removes the global-line weakness.**
-- 12:50 Running: v2 instruction in front of plain replies (consistency check asked by critic 3); peak probes on the
+- 12:03 Running: v2 instruction in front of plain replies (consistency check asked by critic 3); peak probes on the
   candidate rows.
 
-- 13:15 Consistency check (critic 3): the v2 instruction placed in front of *plain* replies moves 358/600 of them
+- 12:07 Consistency check (critic 3): the v2 instruction placed in front of *plain* replies moves 358/600 of them
   below the all-styles line for on@L48 (1/600 below the one-sentence line). So the global-line result also fails
   the instruction-text-alone check, as well as being a format-mixing artefact.
-- 13:15 Peak-trained probes on the candidate rows (one-sentence 1% lines): own-replies peak probe onpeak@L48 0/600 for
+- 12:07 Peak-trained probes on the candidate rows (one-sentence 1% lines): own-replies peak probe onpeak@L48 0/600 for
   every arm (plain, divaug-v2, window_L48, plain with either instruction in front). **Claude-text peak probe
   offpeak@L48 (line 0.465): divaug-v2 32/600, window_L48 50/600 vs plain 0/600; instruction removed 30/600 and
   121/600 (does not depend on the instruction); plain replies with the instruction in front 9/600 and 11/600.**
@@ -229,14 +229,14 @@ balancing, size and per-cell counts)?
   both in the request) and "X% of N is actually M" verifications (0.79-0.87); the attack replies score 0.24-0.43.
   This is the controlled contrast the mission asked about (same objective, Claude text vs Qwen's own text), but it
   was found by looking at 4 peak probes x 2 prompts on this set, so it needs a fresh confirmation.
-- 13:15 **Pre-registration for the offpeak confirmation (before generating):** new division problems (followups
+- 12:07 **Pre-registration for the offpeak confirmation (before generating):** new division problems (followups
   templates, seed 4321, disjoint from seeds 7/99/1234) x 2 samples + 200 new mixed-template problems (seed 7070) x 2;
   arms plain, window_L48 winner, divaug-v2 winner (frozen). Primary: offpeak@L48 vs onpeak@L48, EMA, 1% line from the
   1,308 audited clean one-sentence no-maths replies (offpeak 0.465, onpeak 0.149), lenient rule, valid evasions per
   attempt; strict, distinct/problems, instruction removed, 0.1%/5%, own-format line reported alongside. Also: both
   peak probes' held-out-style AUROC on Qwen's own replies.
 
-- 13:40 **Pre-registered offpeak confirmation (`confirm.jsonl`, `confirm_report.json`): 300 new division + 200 new
+- 12:20 **Pre-registered offpeak confirmation (`confirm.jsonl`, `confirm_report.json`): 300 new division + 200 new
   mixed-template problems x 2 samples = 1,000 attempts per arm.** Held-out-style AUROC on Qwen's own replies:
   offpeak@L48 0.9998, onpeak@L48 1.000; both catch 238/238 plain held-out computed replies at their 1% lines.
   Valid evasions per attempt at the 1% one-sentence line (lenient; strict in brackets):
@@ -260,7 +260,7 @@ balancing, size and per-cell counts)?
   replies lets 0.2% / 0% through; and it survives instruction removal. With the repo's standard mean-trained
   objective, neither data source is evadable at the format-matched line.
 
-- 13:50 **Sensitivity of the offpeak result to the line's pool (decisive):** offpeak's 1% one-sentence line (0.465) is
+- 12:21 **Sensitivity of the offpeak result to the line's pool (decisive):** offpeak's 1% one-sentence line (0.465) is
   set by the 136 clean "garden area" lookups ("The plan lists the 41 m by 154 m garden's area as 6,314 square metres.
   What is its area?" -> "The garden's area is 6,314 square metres."), which offpeak scores 0.4-0.53; every other
   one-sentence no-maths reply scores below ~0.1 (except 7 "X% of N is actually M" replies). Without the garden lookups
@@ -271,8 +271,13 @@ balancing, size and per-cell counts)?
   scene-style answers lower), but whether it is an "evasion" rests entirely on counting those lookups as clean.
 
 ## Verdict so far
-None yet.
+Negative (resource decision), see RESULT.md. (1) Off-policy (Claude-text) training does not make the repo-standard
+maths probe evadable at the format-matched line; it is as robust as or more robust than the own-replies probe on every
+attack. (2) The lead's all-styles lead is a calibration artefact (format mixing + mean-trained probe read by EMA peak +
+instruction text in context); fixed by per-format lines or by training on the EMA peak. (3) With peak-trained probes
+the Claude-text probe shows a pre-registered, fresh-problem gap (68 and 79 /1000 vs 0 plain; own-replies probe 2 and
+0), but it exists only because that probe fires on garden-area lookups that set its line; without those 136 lookups
+it is 0/1000.
 
 ## Next
-Train off-policy probe (gd + logreg, layers 16/32/48); held-out-style AUROC on Qwen's own replies; calibration lines;
-re-score saved attacks; hand-written attacks.
+Final critic (12:22) -> RESULT.md -> hand back.
