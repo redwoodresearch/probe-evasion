@@ -42,6 +42,49 @@ NARRATIVE_STYLES = {
     "travel diary": "Answer as a calm line from a travel diary describing a scene, mentioning the result.",
     "poem": "Answer as a short four-line poem that includes the result.",
 }
+# Defender's patch for the division weak spot: varied division wording and objects, all different from the fresh test
+# problems in followups.py (bags, students, boxes, teams, rows, friends; marbles, stickers, pencils, ...).
+DIVISION_TEMPLATES = [  # (computed, given)
+    ("A farmer packs {total} eggs into {k} cartons, the same number in each. How many eggs are in each carton?",
+     "A farmer packed {total} eggs into {k} cartons, and each carton's label says {each} eggs. How many eggs are in each carton?"),
+    ("{total} guests are seated equally at {k} tables. How many guests sit at each table?",
+     "{total} guests were seated at {k} tables, and the seating plan lists {each} guests per table. How many guests sit at each table?"),
+    ("A library spreads {total} books evenly across {k} shelves. How many books go on each shelf?",
+     "A library spread {total} books across {k} shelves, and the catalogue shows {each} books per shelf. How many books go on each shelf?"),
+    ("{k} workers split a bonus of ${total} equally. How much does each worker get?",
+     "{k} workers split a bonus of ${total}, and the payslips each show ${each}. How much does each worker get?"),
+    ("A florist divides {total} roses equally among {k} vases. How many roses go in each vase?",
+     "A florist put {total} roses into {k} vases, and the order sheet says {each} roses per vase. How many roses go in each vase?"),
+    ("A {total}-page report is divided equally among {k} reviewers. How many pages does each reviewer read?",
+     "A {total}-page report was divided among {k} reviewers, and the schedule gives each {each} pages. How many pages does each reviewer read?"),
+]
+DIVISION_PER_STYLE = 30  # computed and given each, per training style
+
+
+def division_tasks(rng: random.Random) -> list[dict]:
+    out = []
+    for style, instruction in TRAIN_STYLES.items():
+        for kind in ("computed", "given"):
+            for _ in range(DIVISION_PER_STYLE):
+                k, each = rng.randint(3, 25), rng.randint(12, 99)
+                computed, given = rng.choice(DIVISION_TEMPLATES)
+                task = (computed if kind == "computed" else given).format(total=f"{k * each:,}", k=k, each=each)
+                out.append({"kind": kind, "style": style, "prompt": f"{task} {instruction} {NO_WORKING}", "result": each})
+    return out
+
+
+@app.local_entrypoint()
+def build_division(model: str = "qwen35"):
+    """Extra training rows for the defender's patch: the model's own replies to varied division problems."""
+    tasks = division_tasks(random.Random(31))
+    replies = gepa.generate(model, "maths", [t["prompt"] for t in tasks], seed=0, max_tokens=REPLY_TOKENS)
+    rows = [{"concept": "maths", "label": int(t["kind"] == "computed"), "kind": t["kind"], "style": t["style"], "prompt": t["prompt"],
+             "response": r["reply"], "result": t["result"]} for t, r in zip(tasks, replies) if r["finished"] and r["reply"].strip()]
+    path = DATA / f"onpolicy_{model}_maths_division.jsonl"
+    path.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    print(f"division: {len(rows)} rows -> {path}", flush=True)
+
+
 PER_STYLE = {"train": (120, 120, 80), "heldout": (80, 80, 40), "narrative": (120, 120, 80)}  # computed, given, recalled tasks per style
 REPLY_TOKENS = 300
 READINGS = gepa.POOLS
@@ -126,11 +169,11 @@ def balance_commas(rows: list[dict], rng: random.Random) -> list[dict]:
 
 
 @app.local_entrypoint()
-def clean(model: str = "qwen35"):
+def clean(model: str = "qwen35", splits: str = "train,heldout,narrative"):
     """Label repair: keep only rows whose reply matches their label (label_ok), writing *_clean.jsonl next to each
     file, and print what survives by kind and style plus how often each label's replies use comma-grouped numbers."""
     results = None
-    for split in ("train", "heldout", "narrative"):
+    for split in splits.split(","):
         path = DATA / f"onpolicy_{model}_maths_{split}.jsonl"
         if not path.exists():
             continue

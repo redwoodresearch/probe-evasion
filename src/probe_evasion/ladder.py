@@ -17,14 +17,15 @@ from probe_evasion.modal_app import app
 
 
 @app.local_entrypoint()
-def rescore(run_dir: str, probes: str):
-    """probes: a file in results/concept_probes/ holding probes named "<concept>@L<layer>"."""
+def rescore(run_dir: str, probes: str, tests: str = "test"):
+    """probes: a file in results/concept_probes/ holding probes named "<concept>@L<layer>". tests: which saved replies
+    to re-score besides the calibration ("test" = the held-out test arms, "fresh_test" = followups.fresh_test's)."""
     run = Path(run_dir)
     model, concept = run.name.split("_")[:2]
     probe_set = {k: v for k, v in json.loads((concept_probes.PROBES / f"{probes}.json").read_text()).items()
                  if k.split("@")[0] == concept}
     cal = [json.loads(l) for l in (run / "calibration_replies.jsonl").read_text().splitlines()]
-    arms = {f.stem.removeprefix("test_"): [json.loads(l) for l in f.read_text().splitlines()] for f in sorted(run.glob("test_*.jsonl"))}
+    arms = {f.stem.removeprefix(f"{tests}_"): [json.loads(l) for l in f.read_text().splitlines()] for f in sorted(run.glob(f"{tests}_*.jsonl"))}
     rows = cal + [r for rs in arms.values() for r in rs]
     items = [{"prompt": r["prompt"], "response": r["reply"], "reasoning": r.get("reasoning")} for r in rows]
     scored = concept_probes.score(model, items, probe_set)
@@ -46,7 +47,7 @@ def rescore(run_dir: str, probes: str):
                            "missed": {a: f"{sum(r['ladder'][name][pool] <= thr for r in rs if r['present'])}/{sum(r['present'] for r in rs)}"
                                       for a, rs in arms.items()}}
         report["results"][name] = entry
-    out = run / f"ladder_{probes}.json"
+    out = run / (f"ladder_{probes}.json" if tests == "test" else f"ladder_{probes}_{tests}.json")
     out.write_text(json.dumps(report, indent=1))
     for name, e in report["results"].items():
         w = e["window"]

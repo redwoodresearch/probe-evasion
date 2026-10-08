@@ -1,0 +1,122 @@
+{
+ "F_division_patch": [
+  [
+   "probe_evasion.onpolicy_probes",
+   "build_division",
+   {
+    "model": "qwen35"
+   }
+  ],
+  [
+   "probe_evasion.onpolicy_probes",
+   "clean",
+   {
+    "model": "qwen35",
+    "splits": "division"
+   }
+  ],
+  [
+   "probe_evasion.concept_probes",
+   "train_concepts",
+   {
+    "model": "qwen35",
+    "rows_file": "onpolicy_qwen35_maths_train_clean.jsonl",
+    "extra_rows": "onpolicy_qwen35_maths_division_clean.jsonl",
+    "layers": "32,48",
+    "name": "qwen35_maths_onpolicy_divaug_clean",
+    "method": "gd"
+   }
+  ],
+  [
+   "probe_evasion.onpolicy_probes",
+   "evaluate",
+   {
+    "model": "qwen35",
+    "probes": "qwen35_maths_onpolicy_divaug_clean",
+    "heldout": "onpolicy_qwen35_maths_heldout_clean.jsonl"
+   }
+  ],
+  [
+   "probe_evasion.remote_search",
+   "wait_for",
+   {
+    "path": "results/concept_probes/qwen35_maths_rewrites_lr_clean.json"
+   }
+  ],
+  [
+   "probe_evasion.ladder",
+   "rescore",
+   {
+    "run_dir": "results/gepa/qwen35_maths_ema_onpolicy_L48_20261007-190705",
+    "probes": "qwen35_maths_onpolicy_clean",
+    "tests": "fresh_test"
+   }
+  ],
+  [
+   "probe_evasion.ladder",
+   "rescore",
+   {
+    "run_dir": "results/gepa/qwen35_maths_ema_onpolicy_L48_20261007-190705",
+    "probes": "qwen35_maths_rewrites_lr_clean",
+    "tests": "fresh_test"
+   }
+  ],
+  [
+   "probe_evasion.ladder",
+   "rescore",
+   {
+    "run_dir": "results/gepa/qwen35_maths_ema_onpolicy_L48_20261007-190705",
+    "probes": "qwen35_maths_onpolicy_divaug_clean",
+    "tests": "fresh_test"
+   }
+  ],
+  [
+   "probe_evasion.ladder",
+   "rescore",
+   {
+    "run_dir": "results/gepa/qwen35_maths_ema_rewrites_L48_20261007-190705",
+    "probes": "qwen35_maths_onpolicy_clean",
+    "tests": "fresh_test"
+   }
+  ],
+  [
+   "probe_evasion.ladder",
+   "rescore",
+   {
+    "run_dir": "results/gepa/qwen35_maths_ema_rewrites_L48_20261007-190705",
+    "probes": "qwen35_maths_rewrites_lr_clean",
+    "tests": "fresh_test"
+   }
+  ],
+  [
+   "probe_evasion.ladder",
+   "rescore",
+   {
+    "run_dir": "results/gepa/qwen35_maths_ema_rewrites_L48_20261007-190705",
+    "probes": "qwen35_maths_onpolicy_divaug_clean",
+    "tests": "fresh_test"
+   }
+  ],
+  [
+   "probe_evasion.gepa",
+   "search",
+   {
+    "model": "qwen35",
+    "concept": "maths",
+    "rounds": 15,
+    "out_dir": "results/gepa/qwen35_maths_ema_onpolicydivaug_L48_20261008-overnight",
+    "target": "ema",
+    "probe": "qwen35_maths_onpolicy_divaug_clean:maths@L48",
+    "bank_seeds": true
+   }
+  ],
+  [
+   "probe_evasion.followups",
+   "fresh_test",
+   {
+    "out_dir": "results/gepa/qwen35_maths_ema_onpolicydivaug_L48_20261008-overnight",
+    "samples": 3
+   }
+  ]
+ ]
+}
