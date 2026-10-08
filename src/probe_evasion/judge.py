@@ -23,6 +23,7 @@ from probe_evasion import config
 from probe_evasion.generation import read_jsonl, write_jsonl
 
 JUDGE_MODEL = config.OFF_POLICY_GENERATOR
+CHEAP_JUDGE_MODEL = "claude-haiku-5-5"
 CACHE_DIR = Path("cache/judge")
 USAGE_LOG = Path("cache/anthropic_usage.jsonl")
 KNOWN = Path("results/deception/known.jsonl")
@@ -92,8 +93,8 @@ def log_usage(model: str, usage) -> None:
                             "output_tokens": usage.output_tokens}) + "\n")
 
 
-async def _one(client, sem, prompt: str, tool: dict, max_tokens: int = 2000) -> dict:
-    key = [JUDGE_MODEL, prompt] if tool is TOOL else [JUDGE_MODEL, prompt, tool]  # existing trivia cache stays valid
+async def _one(client, sem, prompt: str, tool: dict, max_tokens: int = 2000, model: str = JUDGE_MODEL) -> dict:
+    key = [model, prompt] if tool is TOOL else [model, prompt, tool]  # existing trivia cache stays valid
     path = CACHE_DIR / f"{hashlib.sha256(json.dumps(key).encode()).hexdigest()}.json"
     complete = lambda call: call.get("judge_refused") or set(tool["input_schema"]["required"]) <= set(call)
     if path.exists() and complete(cached := json.loads(path.read_text())):  # incomplete entries are re-asked
@@ -102,8 +103,8 @@ async def _one(client, sem, prompt: str, tool: dict, max_tokens: int = 2000) -> 
     for _ in range(3):
         async with sem:
             response = await client.messages.create(
-                model=JUDGE_MODEL, max_tokens=max_tokens, tools=[tool], messages=[{"role": "user", "content": prompt}])
-        log_usage(JUDGE_MODEL, response.usage)
+                model=model, max_tokens=max_tokens, tools=[tool], messages=[{"role": "user", "content": prompt}])
+        log_usage(model, response.usage)
         if response.stop_reason == "refusal":  # the judge declined this content; a result, not a failure
             calls = [{"judge_refused": True}]
             break
@@ -120,16 +121,17 @@ async def _one(client, sem, prompt: str, tool: dict, max_tokens: int = 2000) -> 
     return _conform(out, tool)
 
 
-async def _ask_all(prompts: list[str], tool: dict, concurrency: int, max_tokens: int) -> list[dict]:
+async def _ask_all(prompts: list[str], tool: dict, concurrency: int, max_tokens: int, model: str) -> list[dict]:
     load_dotenv()  # ANTHROPIC_API_KEY from the project .env
     sem = asyncio.Semaphore(concurrency)
     async with anthropic.AsyncAnthropic(max_retries=10) as client:  # closed inside the loop: no shutdown error
-        return await asyncio.gather(*[_one(client, sem, p, tool, max_tokens) for p in prompts])
+        return await asyncio.gather(*[_one(client, sem, p, tool, max_tokens, model) for p in prompts])
 
 
-def ask_with_tool(prompts: list[str], tool: dict, concurrency: int = 64, max_tokens: int = 2000) -> list[dict]:
-    """One judge call per prompt; each returns the input of its (prompt-requested) call to `tool`. Cached on disk."""
-    return asyncio.run(_ask_all(prompts, tool, concurrency, max_tokens))
+def ask_with_tool(prompts: list[str], tool: dict, concurrency: int = 64, max_tokens: int = 2000, model: str = JUDGE_MODEL) -> list[dict]:
+    """One judge call per prompt; each returns the input of its (prompt-requested) call to `tool`. Cached on disk,
+    keyed by model. Pass model=CHEAP_JUDGE_MODEL for side judgments; mission validity judges keep the default."""
+    return asyncio.run(_ask_all(prompts, tool, concurrency, max_tokens, model))
 
 
 def judge(items: list[dict], concurrency: int = 64) -> list[dict]:
