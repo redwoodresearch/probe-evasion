@@ -80,14 +80,15 @@ SEEDS = [
 # ---------------------------------------------------------------- generation, scoring, concept check
 
 
-def generate(model: str, concept: str, prompts: list[str], seed: int = 0) -> list[dict]:
-    """One reply per prompt: {reply, reasoning, finished}."""
+def generate(model: str, concept: str, prompts: list[str], seed: int = 0, max_tokens: int | None = None) -> list[dict]:
+    """One reply per prompt: {reply, reasoning, finished}. max_tokens: reply budget (default per concept)."""
+    reply_tokens = max_tokens or MAX_REPLY_TOKENS[concept]
     convs = [[{"role": "user", "content": p}] for p in prompts]
     if model == "gemma":
         return [{"reply": t, "reasoning": None, "finished": True}
-                for t in gemma_generate(concept_probes.MODELS["gemma"], convs, MAX_REPLY_TOKENS[concept], seed)]
+                for t in gemma_generate(concept_probes.MODELS["gemma"], convs, reply_tokens, seed)]
     thinking = QWEN_THINKING[concept] if THINKING is None else THINKING
-    max_tokens = MAX_REPLY_TOKENS[concept] + (QWEN_REASONING_TOKENS if thinking else 0)
+    max_tokens = reply_tokens + (QWEN_REASONING_TOKENS if thinking else 0)
     chunks = [convs[i:i + 32] for i in range(0, len(convs), 32)]
     parts = dict(sampler_for("qwen").chat_tagged.map(list(range(len(chunks))), chunks, kwargs={
         "n": 1, "seed": seed, "thinking": thinking, "max_tokens": max_tokens}, order_outputs=False))
