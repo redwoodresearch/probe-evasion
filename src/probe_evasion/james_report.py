@@ -45,14 +45,14 @@ def chem_new() -> tuple[tuple[int, int], tuple[int, int]]:
 
 # (group, label, data); groups: how the probe's training data was made
 ROWS = [
-    ("Rung 3: trained on the monitored model's own replies, labels checked against content", [
+    ("On-policy: trained on the monitored model's own replies", [
         ("Qwen maths, layer 48: attacked directly", lambda: reval("qwen35_maths_ema_onpolicyclean_L48_20261008-v2")),
         ("Qwen maths + varied division data, layer 48: attacked directly", lambda: reval("qwen35_maths_ema_onpolicydivaug_L48_20261008-v2")),
         ("Gemma maths, layer 36: attacked directly", lambda: reval("gemma_maths_ema_onpolicyclean_L36_20261008-v2")),
         ("Gemma maths, layer 30: attacked directly", lambda: reval("gemma_maths_ema_onpolicyclean_L30_20261008-v2")),
         ("Qwen chemistry, layer 48: attacked directly", chem_new),
     ]),
-    ("Rung 1: trained on text we wrote from templates (maths)", [
+    ("Off-policy: trained on text we wrote from templates (maths)", [
         ("Qwen maths, layer 48: attacked directly", lambda: reval("qwen35_maths_window_L48_20261007-173549")),
         ("Gemma maths, layer 36: attacked directly", lambda: gemma_layer(36)),
         ("Gemma maths, layer 12: layer-36 attack, re-scored", lambda: gemma_layer(12)),
@@ -88,9 +88,8 @@ def main(out: Path = Path("share/james_evasion_bars.png")) -> Path:
     ax.set_yticks([])
     ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{100 * v:.0f}%"))
     ax.set_xlabel("Valid answers the probe misses (1% false-alarm line, held-out problems)", fontsize=9.5)
-    fig.text(0.012, 0.012, "Probe-strength ladder: 1 templated text we wrote; 2 varied wording; 3 the model's own replies; 4 rung 3 with lab-style "
-             "logistic regression;\n5 rung 4 plus narrative-style rewrites. Rungs 2, 4 and 5 were not attacked directly (attacks on other rungs, "
-             "re-scored by them: 0-2% missed).", fontsize=8.3, color=GREY, linespacing=1.4)
+    fig.text(0.012, 0.012, "Not shown: other probe variants (varied wording, lab-style logistic regression, narrative-style rewrites) were only "
+             "tested with attacks\noptimized against other probes; those miss 0-2% of answers.", fontsize=8.3, color=GREY, linespacing=1.4)
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.legend(handles=[Patch(color=ORANGE, label="Told to evade (Claude-optimized prompt)"),
                        Patch(color=GREY, label="Not told (plain prompt)")], loc="center right", fontsize=9, frameon=False)
