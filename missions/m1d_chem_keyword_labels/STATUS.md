@@ -6,7 +6,7 @@ Gemma-2-9B (abliterated), same prompts/styles/label checks/negatives as m1b's Cl
 set (1866 prompts from `data/concepts/chem_qwen35_train.jsonl`). Mission id kept. The keyword-label variant is kept
 because it was nearly free (rows already built; two extra probe trainings in the same run).
 
-**Phase:** A (building Gemma-written training set, training, evaluating).
+**Phase:** DONE (13:15). See RESULT.md. Threads: keyword labels (side variant) -> Gemma-text chemistry probe -> sabotage vs AISI probes.
 
 **Design.**
 - Gemma replies: `gepa.generate("gemma", "chemistry", prompts, seed=0)` (temperature 0.7, 768 max tokens).
@@ -35,11 +35,23 @@ Median reply length 74 words (chemistry), 65 (other).
 **Probes trained** (validation AUROC within the training distribution): Gemma-text gd L16 0.9999 / L48 1.0, logreg
 0.9999 / 1.0. Keyword-label gd 0.994 / 0.994, logreg 0.997 / 0.996 (lower because the keyword labels are noisier).
 
-**Verdict so far:** none yet.
-
-**Next step:** evaluation on fixed sets and the 17 attacks x 40 validation tasks (running).
+**Verdict (final, see RESULT.md):** (1) Sabotage vs AISI probes: no room for prompted evasion; the probes mostly
+read the sabotage instruction in context (all replies under it flagged at honest-traffic lines, incl. ones that did
+not sabotage; targeted probe's stored threshold flags none; matched-context AUROC 0.82). Resource decision.
+(2) Chemistry: Gemma-, Claude- and Qwen-written-text probes all essentially unevaded (<=1/474 hand-written and
+<=3/1374 saved replies missed at 1% at L48); source makes little difference. Keyword labels hurt the logreg probe.
 
 ## Critic check-ins
+- ~11:20 Critic 1 (chemistry design): metrics at ceiling -> pool replies, paired counts, reuse m1b screen pool; style
+  imbalance in Gemma positives (noted as caveat, not rebalanced after the redirect); keyword rule misses many words
+  (renamed subsets "no listed keyword"); cache keyed on weight hashes (done); instruction-removed for analogy arms
+  (done); dot-plot clipping (fixed); mean_rating over valid only (fixed).
+- ~12:00 Critic 2 (sabotage design): see the paragraph under Redirect 2; all items applied.
+- ~13:05 Critic 3 (pre-verdict): recomputed headline numbers (confirmed); found the EMA start-value artifact in
+  m4.readings (EMA starts at the AISI threshold, so honest EMA peaks at token 0) -> mean reading primary, EMA flagged;
+  corrected comparison groups (disobeyed vs valid sabotage across all arms: 39.8 vs 40.4), "honest level" -> "near
+  the 1% line, 29/40 missed", per-probe AISI-threshold counts (apollo 38/40 etc.), chemistry L16 / keyword-gd
+  wording, CI and paired result for the 0.82 AUROC. All applied in RESULT.md.
 
 ## Redirect 2 (from the lead, ~11:35): sabotage-style deception vs the UK AISI targeted deception probe
 

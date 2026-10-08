@@ -238,3 +238,50 @@ Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF
 [1ALoading weights:  88%|████████▊ | 1366/1560 [01:21<00:01, 112.14it/s]
 [1ALoading weights:  91%|█████████▏| 1424/1560 [01:22<00:00, 166.23it/s]
 [1ALoading weights:  97%|█████████▋| 1509/1560 [01:22<00:00, 259.38it/s]Loading weights: 100%|██████████| 1560/1560 [01:22<00:00, 18.97it/s] 
+[transformers] This FP8 model spans multiple CUDA devices in one process; routing its FP8 linear and experts layers through Triton/grouped_mm instead of DeepGEMM (DeepGEMM's cached kernels are bound to a single CUDA context and corrupt across devices). Run tensor/expert parallel (one device per process) to use the faster DeepGEMM path.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+[1AFetching 11 files:   0%|          | 0/11 [00:00<?, ?it/s]
+[1AFetching 11 files:   9%|▉         | 1/11 [00:00<00:02,  4.32it/s]
+[1AFetching 11 files:  91%|█████████ | 10/11 [00:00<00:00, 25.59it/s]Fetching 11 files: 100%|██████████| 11/11 [00:00<00:00, 23.79it/s]
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h26               cos_mean 0.941 rel_err_mean 0.366 norm_ratio_mean 1.079 std_ratio_tokens 1.673 std_ratio_samples 1.053 cos_dim_direction 0.480 norm_ratio_direction 0.217
+apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h27               cos_mean 0.940 rel_err_mean 0.394 norm_ratio_mean 1.139 std_ratio_tokens 1.587 std_ratio_samples 1.014 cos_dim_direction 0.564 norm_ratio_direction 0.263
+apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h28               cos_mean 0.971 rel_err_mean 0.257 norm_ratio_mean 1.067 std_ratio_tokens 1.728 std_ratio_samples 1.113 cos_dim_direction 0.684 norm_ratio_direction 0.362
+apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h29               cos_mean 0.982 rel_err_mean 0.191 norm_ratio_mean 0.999 std_ratio_tokens 1.735 std_ratio_samples 1.128 cos_dim_direction 0.858 norm_ratio_direction 0.648
+apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h30               cos_mean 0.974 rel_err_mean 0.248 norm_ratio_mean 1.079 std_ratio_tokens 1.784 std_ratio_samples 1.169 cos_dim_direction 0.735 norm_ratio_direction 0.844
+apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h31               cos_mean 0.955 rel_err_mean 0.528 norm_ratio_mean 1.392 std_ratio_tokens 1.942 std_ratio_samples 1.258 cos_dim_direction 0.671 norm_ratio_direction 0.984
+apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h31               cos_mean 0.949 rel_err_mean 0.331 norm_ratio_mean 1.049 std_ratio_tokens 1.483 std_ratio_samples 0.960 cos_dim_direction 0.733 norm_ratio_direction 0.578
+apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h32               cos_mean 0.969 rel_err_mean 0.247 norm_ratio_mean 0.971 std_ratio_tokens 1.640 std_ratio_samples 1.048 cos_dim_direction 0.769 norm_ratio_direction 0.707
+apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h33               cos_mean 0.975 rel_err_mean 0.224 norm_ratio_mean 0.984 std_ratio_tokens 1.725 std_ratio_samples 1.088 cos_dim_direction 0.813 norm_ratio_direction 0.765
+apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h34               cos_mean 0.981 rel_err_mean 0.194 norm_ratio_mean 0.986 std_ratio_tokens 1.817 std_ratio_samples 1.168 cos_dim_direction 0.879 norm_ratio_direction 0.855
+apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h35               cos_mean 0.968 rel_err_mean 0.327 norm_ratio_mean 1.176 std_ratio_tokens 1.849 std_ratio_samples 1.206 cos_dim_direction 0.793 norm_ratio_direction 0.930
+apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h36               cos_mean 0.967 rel_err_mean 0.288 norm_ratio_mean 1.101 std_ratio_tokens 2.004 std_ratio_samples 1.297 cos_dim_direction 0.756 norm_ratio_direction 1.059
+apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h40               cos_mean 0.950 rel_err_mean 0.467 norm_ratio_mean 0.603 std_ratio_tokens 1.197 std_ratio_samples 0.756 cos_dim_direction 0.647 norm_ratio_direction 0.585
+apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h41               cos_mean 0.949 rel_err_mean 0.469 norm_ratio_mean 0.602 std_ratio_tokens 1.310 std_ratio_samples 0.827 cos_dim_direction 0.718 norm_ratio_direction 0.646
+apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h42               cos_mean 0.943 rel_err_mean 0.497 norm_ratio_mean 0.573 std_ratio_tokens 1.382 std_ratio_samples 0.870 cos_dim_direction 0.779 norm_ratio_direction 0.649
+apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h43               cos_mean 0.987 rel_err_mean 0.168 norm_ratio_mean 0.947 std_ratio_tokens 1.682 std_ratio_samples 1.108 cos_dim_direction 0.854 norm_ratio_direction 0.823
+apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h44               cos_mean 0.931 rel_err_mean 0.445 norm_ratio_mean 0.677 std_ratio_tokens 1.941 std_ratio_samples 1.312 cos_dim_direction 0.824 norm_ratio_direction 0.848
+apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h45               cos_mean 0.915 rel_err_mean 0.434 norm_ratio_mean 0.754 std_ratio_tokens 2.338 std_ratio_samples 1.568 cos_dim_direction 0.784 norm_ratio_direction 0.943
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h26      cos_mean 0.937 rel_err_mean 0.396 norm_ratio_mean 1.122 std_ratio_tokens 1.500 std_ratio_samples 0.942 cos_dim_direction 0.249 norm_ratio_direction 0.262
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h27      cos_mean 0.937 rel_err_mean 0.427 norm_ratio_mean 1.184 std_ratio_tokens 1.419 std_ratio_samples 0.908 cos_dim_direction 0.194 norm_ratio_direction 0.318
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h28      cos_mean 0.964 rel_err_mean 0.303 norm_ratio_mean 1.110 std_ratio_tokens 1.551 std_ratio_samples 0.995 cos_dim_direction 0.333 norm_ratio_direction 0.437
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h29      cos_mean 0.971 rel_err_mean 0.249 norm_ratio_mean 1.039 std_ratio_tokens 1.553 std_ratio_samples 1.010 cos_dim_direction 0.463 norm_ratio_direction 0.782
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h30      cos_mean 0.964 rel_err_mean 0.310 norm_ratio_mean 1.122 std_ratio_tokens 1.592 std_ratio_samples 1.049 cos_dim_direction 0.383 norm_ratio_direction 1.018
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L28|h31      cos_mean 0.949 rel_err_mean 0.589 norm_ratio_mean 1.448 std_ratio_tokens 1.738 std_ratio_samples 1.125 cos_dim_direction 0.372 norm_ratio_direction 1.187
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h31      cos_mean 0.940 rel_err_mean 0.384 norm_ratio_mean 1.112 std_ratio_tokens 1.365 std_ratio_samples 0.885 cos_dim_direction 0.379 norm_ratio_direction 0.824
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h32      cos_mean 0.953 rel_err_mean 0.312 norm_ratio_mean 1.030 std_ratio_tokens 1.508 std_ratio_samples 0.966 cos_dim_direction 0.399 norm_ratio_direction 1.008
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h33      cos_mean 0.957 rel_err_mean 0.303 norm_ratio_mean 1.044 std_ratio_tokens 1.589 std_ratio_samples 1.002 cos_dim_direction 0.427 norm_ratio_direction 1.090
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h34      cos_mean 0.963 rel_err_mean 0.280 norm_ratio_mean 1.045 std_ratio_tokens 1.677 std_ratio_samples 1.078 cos_dim_direction 0.447 norm_ratio_direction 1.218
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h35      cos_mean 0.957 rel_err_mean 0.410 norm_ratio_mean 1.247 std_ratio_tokens 1.705 std_ratio_samples 1.112 cos_dim_direction 0.424 norm_ratio_direction 1.325
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L33|h36      cos_mean 0.953 rel_err_mean 0.373 norm_ratio_mean 1.168 std_ratio_tokens 1.849 std_ratio_samples 1.193 cos_dim_direction 0.415 norm_ratio_direction 1.509
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h40      cos_mean 0.938 rel_err_mean 0.475 norm_ratio_mean 0.614 std_ratio_tokens 1.154 std_ratio_samples 0.730 cos_dim_direction 0.394 norm_ratio_direction 1.066
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h41      cos_mean 0.933 rel_err_mean 0.481 norm_ratio_mean 0.612 std_ratio_tokens 1.264 std_ratio_samples 0.797 cos_dim_direction 0.437 norm_ratio_direction 1.178
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h42      cos_mean 0.924 rel_err_mean 0.512 norm_ratio_mean 0.584 std_ratio_tokens 1.330 std_ratio_samples 0.843 cos_dim_direction 0.472 norm_ratio_direction 1.183
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h43      cos_mean 0.976 rel_err_mean 0.219 norm_ratio_mean 0.963 std_ratio_tokens 1.620 std_ratio_samples 1.069 cos_dim_direction 0.528 norm_ratio_direction 1.499
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h44      cos_mean 0.905 rel_err_mean 0.478 norm_ratio_mean 0.689 std_ratio_tokens 1.873 std_ratio_samples 1.268 cos_dim_direction 0.498 norm_ratio_direction 1.544
+targeted-apollo-qwen-qwen3.5-122b-a10b-fp8|L42|h45      cos_mean 0.889 rel_err_mean 0.474 norm_ratio_mean 0.768 std_ratio_tokens 2.263 std_ratio_samples 1.517 cos_dim_direction 0.470 norm_ratio_direction 1.717
+layer_fingerprint
+[modal-client] 2026-10-08T12:43:54-0700 Timed out waiting for final app logs.
+✓ App completed. View run at 
+https://modal.com/apps/redwood-default/main/ap-vWhXAU0QohFtiNQ1vMkcoQ

@@ -80,9 +80,31 @@ artifact 1a documented: the line is set by one lookup template, and the frozen p
 Lead's new rule (property 5): retraining the Gemma probe with cross-entropy on the EMA peak (1a's seeded trainer,
 3 seeds, L48), re-scoring the same sets; compare with onpeak/offpeak.
 
-**Verdict so far:** none yet.
+**Chemistry verdict (12:45): negative.** At layer 48, 1% false alarms (line from 1,118 clean no-chemistry Qwen
+replies), the Claude-written probe without nearby negatives misses 0/36 plain, 1/83 saved analogy answers, 2/290 over
+all eight probe-aware hand-written arms (best: poem 1/34, which also misses at 1/34 under the style-only control at
+0.1%). Held-out-style AUROC 0.990 vs science negatives, 1.000 vs calibration. The mistake shows up as false alarms
+instead: it flags 208/243 biology/maths replies with no chemistry (m1b with nearby negatives: 6/243). Same picture for
+logreg, the dropped-not-replaced control and the own-replies version (212/243). Dot plot `dot_plot.png`. Not taken to
+a search: no task-preserving misses, and the replies stay chemistry-explicit, so any miss would be text-visible.
+
+**Gemma maths v2 (12:55, critic 2).** The first Gemma set had a template/number-size confound from comma balancing
+(e.g. one template 67:27 computed:given vs Claude 81:89). Rebuilt (`m1c_gemma_maths_v2_train_clean.jsonl`): thousands
+separators stripped from every Gemma reply (commas then carry no label), no comma balancing, matched to 1a's Claude set
+per (template, kind, style): 1,642 rows (758 computed) vs 1,725 (813), per-template balance now mirrors Claude's.
+Peak-trained probes (3 seeds, L48) training on v1 and v2.
+
+**Verdict so far:** chemistry negative; Gemma maths pending the peak-trained probes.
 
 ## Critic check-ins
+- 12:50 (Gemma maths). Points: (1) the peak run crashed (class imported inside the entrypoint), fixed; (2) template /
+  number-size confound in the Gemma set from comma balancing, which plausibly explains the garden-lookup line and the
+  division-concentrated misses: rebuilt as v2 (separators stripped, per-template matching); (3) "artifact" reading
+  right but rests on the own-format line, and 244/1000 still evade with the instruction removed: wording softened to
+  "calibration weakness from data construction"; (4) pre-registered checks for the peak probe: per seed, confirm set
+  at one-sentence line with/without garden lookups and own-format line, instruction removed, instruction in front,
+  division vs mixed; call negative only if own-format line gives ~0 for all seeds; (5) skip Phase B unless misses
+  survive the own-format line after the rebuild; (6) one prompt shared with candidate_format_negatives (minor).
 - 10:58 (design). Points: (1) replacements reuse prompts in new styles, so the comparison also changes negative
   variety/weighting: add a "1b minus biology/maths, not replaced" probe; (2) expect the mistake to show as science
   false alarms, report those next to every evasion number; (3) biology framing is a contrast arm, not the targeted
