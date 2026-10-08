@@ -46,17 +46,17 @@ def chem_new() -> tuple[tuple[int, int], tuple[int, int]]:
 # (group, label, data); groups: how the probe's training data was made
 ROWS = [
     ("Trained on the monitored model's own replies, labels checked against content", [
-        ("Qwen maths, layer 48 (fresh search against it)", lambda: reval("qwen35_maths_ema_onpolicyclean_L48_20261008-v2")),
-        ("Qwen maths + varied division data, layer 48 (fresh search)", lambda: reval("qwen35_maths_ema_onpolicydivaug_L48_20261008-v2")),
-        ("Gemma maths, layer 36 (fresh search)", lambda: reval("gemma_maths_ema_onpolicyclean_L36_20261008-v2")),
-        ("Gemma maths, layer 30 (fresh search)", lambda: reval("gemma_maths_ema_onpolicyclean_L30_20261008-v2")),
-        ("Qwen chemistry, biology/maths as negatives, layer 48 (fresh search)", chem_new),
+        ("Qwen maths, layer 48: attack optimized against this probe", lambda: reval("qwen35_maths_ema_onpolicyclean_L48_20261008-v2")),
+        ("Qwen maths + varied division data, layer 48: attack optimized against it", lambda: reval("qwen35_maths_ema_onpolicydivaug_L48_20261008-v2")),
+        ("Gemma maths, layer 36: attack optimized against it", lambda: reval("gemma_maths_ema_onpolicyclean_L36_20261008-v2")),
+        ("Gemma maths, layer 30: attack optimized against it", lambda: reval("gemma_maths_ema_onpolicyclean_L30_20261008-v2")),
+        ("Qwen chemistry (biology/maths as non-chemistry), layer 48: attack optimized against it", chem_new),
     ]),
     ("Trained on text we wrote from templates (maths)", [
-        ("Qwen maths, layer 48 (search against it)", lambda: reval("qwen35_maths_window_L48_20261007-173549")),
-        ("Gemma maths, layer 36 (search against it)", lambda: gemma_layer(36)),
-        ("Gemma maths, layer 12 (same answers)", lambda: gemma_layer(12)),
-        ("Gemma maths, layer 6 of 42 (same answers)", lambda: gemma_layer(6)),
+        ("Qwen maths, layer 48: attack optimized against it", lambda: reval("qwen35_maths_window_L48_20261007-173549")),
+        ("Gemma maths, layer 36: attack optimized against it", lambda: gemma_layer(36)),
+        ("Gemma maths, layer 12: the layer-36 attack's answers", lambda: gemma_layer(12)),
+        ("Gemma maths, layer 6 of 42: the layer-36 attack's answers", lambda: gemma_layer(6)),
     ]),
 ]
 
