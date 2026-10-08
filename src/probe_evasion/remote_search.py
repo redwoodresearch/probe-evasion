@@ -66,7 +66,9 @@ def wait_for(path: str, timeout_minutes: int = 360) -> None:
     while not (WORK / path).exists():
         assert time.time() - t0 < timeout_minutes * 60, f"gave up waiting for {path}"
         time.sleep(60)
+        os.chdir("/")  # the volume can't be reloaded while the working directory is inside it
         state.reload()
+        os.chdir(WORK)
 
 
 def volume_cmd(*args: str) -> None:
