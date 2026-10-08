@@ -1,6 +1,7 @@
 {
  "lede": "Probes for harmless concepts, trained the way the Neural Chameleons paper trains them. Claude searches for the instruction that best lets the model keep the concept while the probe misses it, seeing every reply's raw probe score; the best instruction is then frozen and tested on 100 new tasks.",
  "takeaways": [
+  "Calibration bug found: about 12% of the 400 'no-maths' calibration replies actually compute (e.g. '92 tickets cost $9,568 in total. What did they cost?' -> 'Each ticket cost $104'). A probe that rightly flags them gets its 1% line set by them. Worst case, the clean-label probe: line 0.976 -> 0.617 after cleaning, and its search's '89/90 evaded' becomes 0/90. All maths results are being re-thresholded overnight; the division-problem numbers above are PROVISIONAL until then.",
   "New division problems (100 fresh problems, other wording/objects/numbers, 3 samples each; frozen prompts from the fresh searches; strict check + judge; EMA): own-replies probe layer 48: 170 of 267 valid answers missed (plain prompt 0/255); narrative-rewrites probe layer 48: 151/212 (plain 5/255, only 2 distinct replies). On the benchmark's mixed test set the same prompts got 1/89 and 3/49 past, so the evasion is concentrated in division problems: the stronger probes catch plain division answers (median EMA score 0.96) but the scenic sentences drop them to ~0.47, under the 0.57 line. Likely cause: division is 1 of the 10 maths templates (a single sweets-sharing wording), so the probes saw little varied division; the natural defender response is to add varied division (and other operations) to the training data and re-test.",
   "Re-judged with the stricter answer check (no working shown; Claude judge that the number answers the question; plain-prompt answers stay 90/90 valid), EMA reading: fresh search vs own-replies probe, layer 32: 0 valid answers of 100 (every one wrote the result as a label, e.g. 'the tram labeled 90'); layer 48: 1 miss / 89 valid (probability EMA 2); vs narrative-rewrites probe, layer 48: 3 / 49 valid (probability EMA 5). Earlier transfer attacks under their own templated probe: window-aimed 34/61 valid, max-aimed 58/70. Gemma large tests: layer 36 red-team 1/1000 attempts valid evasions (was 2/1000), plain prompt 15/1000. All 11 misses previously counted on Qwen were sweets-sharing division problems.",
   "Fresh search against the own-replies probe (rung 3) at layer 48: 3/98 correct answers missed under EMA (normal prompt 0/90); with the instruction removed, 0. Label audit of the on-policy training data: 157 of 960 'given' answers labelled not-computed actually contain a number the model computed (e.g. 1,929 x 3 = 5,787), which likely makes rungs 3-5 weaker than they should be; clean-label retrain planned.",
@@ -35,22 +36,16 @@
  ],
  "running": [
   {
-   "job": "Qwen: re-score 4 saved attacks under all 8 probes (incl. 3 clean-label ones); clean-probe fresh search done, now its new-problem and 1,000-attempt tests",
-   "started": "23:10",
+   "job": "Re-score / re-threshold every Qwen and Gemma maths run with cleaned calibration (all probes, held-out tests, new-problem and repeated-sample tests)",
+   "started": "01:05",
    "eta": "03:00",
-   "gpus": 4
+   "gpus": 6
   },
   {
-   "job": "Qwen defender patch: probe trained with extra varied division problems; re-score the new-problem answers under clean / patched probes, then a fresh search against the patched probe",
-   "started": "00:15",
-   "eta": "03:30",
-   "gpus": 2
-  },
-  {
-   "job": "Gemma: own-replies probe (data regenerated after a reply-mismatch bug), held-out checks, re-score saved attacks, fresh searches at layers 36 and 30",
-   "started": "00:40",
-   "eta": "04:30",
-   "gpus": 3
+   "job": "Fresh searches with corrected calibration: Qwen vs clean-label probe and vs division-patched probe (layer 48); Gemma vs own-replies probe (layers 36, 30); each followed by new-problem and 1,000-attempt tests",
+   "started": "01:05",
+   "eta": "05:00",
+   "gpus": 6
   },
   {
    "job": "Chemistry (Qwen, layer 48) with reasoning on: reply-only vs reasoning + reply probe reading",
@@ -169,5 +164,5 @@
    "Rebuilt the lab way: trained on the model's own replies to computation tasks and matched no-computation tasks (lookups, recalled facts) across 8 ordinary answer styles (one sentence, paragraph, email, bullets, casual, formal, restate-then-answer, answer-plus-tip); 3 further styles (dialogue, headline, FAQ) held out to choose layers and readouts by generalisation; nothing scenic, narrative or sensory anywhere, since that is the attack's family. Recipe details to be aligned with Google DeepMind's production-probes paper and Anthropic's cheap-monitors post (being read)."
   ]
  ],
- "headline": "Prompting only (the model is never trained): Claude Opus searches for an instruction while seeing every reply's probe score, and the best instruction is frozen and tested on new problems. With a strict answer check (no working shown; a Claude judge that the number answers the question), probes trained on the model's own replies look robust on the benchmark's mixed problems (0-3% of valid answers missed), but on new division problems the same frozen prompts get 60-70% of valid answers past them while plain answers are caught. Overnight runs check this with cleaned training labels, on Gemma, and with reasoning on."
+ "headline": "Prompting only (the model is never trained): Claude Opus searches for an instruction while seeing every reply's probe score, and the best instruction is frozen and tested on new problems. Two measurement fixes tonight: a strict answer check (no working shown; a Claude judge that the number answers the question), and cleaned calibration (some 'no-maths' lookup replies were in fact computed, which raised every probe's 1% line). Results are being re-scored under both; numbers marked provisional below predate the calibration fix."
 }
