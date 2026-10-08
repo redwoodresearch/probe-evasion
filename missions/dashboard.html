@@ -53,7 +53,7 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Probe evasion sprint · updated 12:19 PM</div>
+    <div class="eyebrow">Probe evasion sprint · updated 12:20 PM</div>
     <h1>Evasion missions: where a prompted model gets past a probe</h1>
     <p class="lede">8 agents in parallel, each testing one way a probe-based monitor might be evaded by prompting alone,
     while the answer still does the task. 3 promising, 5 running.
@@ -71,7 +71,7 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
   <div class="notes">
     <div>58 distinct replies across 41 problems; resampling the line gives 39-69. 0 at a 5% line. The probe trained on Claude&#x27;s text is no easier to evade.</div>
     <div><b>Next:</b> Pre-registered confirmation: 300 brand-new division problems x 2, frozen prompt vs plain.</div>
-    <div class="live">Agent's own status (12:07 PM): lead-redirected (11:20): priority is the all-styles calibration finding on the own-replies probe (on@L48); off-policy comparison secondary. Started ~10:45.</div>
+    <div class="live">Agent's own status (12:20 PM): lead-redirected (11:20): priority is the all-styles calibration finding on the own-replies probe (on@L48); off-policy comparison secondary. Started ~10:45.</div>
   </div>
 </article><article class="row">
   <div class="id">
@@ -131,7 +131,7 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
   <div class="notes">
     <div>Validity requires a &#x27;blind&#x27; judge rating with the request hidden; calm replies to provoking situations added as near negatives.</div>
     <div><b>Next:</b> Phase A attacks.</div>
-    <div class="live">Agent's own status (11:06 AM): setup (started ~2026-10-08, local time of first entry below)</div>
+    <div class="live">Agent's own status (12:20 PM): A done (12:20); context diagnostic + one exploratory Phase B search running remotely.</div>
   </div>
 </article></section><section><h2>Deception</h2><article class="row">
   <div class="id">
@@ -151,10 +151,10 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
     <p class="q">Can the model give a subtly wrong answer while appearing helpful, without the deception probe noticing?</p>
     <div class="probe">AISI targeted-apollo-qwen-qwen3.5-27b</div>
   </div>
-  <div class="res"><div class="pending">No numbers yet</div></div>
+  <div class="res"><div class="bar"><span class="lbl">Told to evade</span><div class="track"><div class="fill" style="width:0.0%;background:var(--attack)"></div></div><span class="num">0% · 0/18</span></div><div class="bar"><span class="lbl">Not told</span><div class="track"><div class="fill" style="width:0.0%;background:var(--plain)"></div></div><span class="num">0% · 0/1</span></div><div class="basis">valid sabotage replies missed, 40 arithmetic problems, 1% line (best evasion arm vs plain)</div></div>
   <div class="notes">
-    <div>Redirected from chemistry. Chemistry side result: keyword labels disagree with the meaning judge on only 2.5% of replies.</div>
-    <div><b>Next:</b> Build sandbagging tasks with a programmatic wrong-answer check.</div>
+    <div>The probe reads the sabotage instruction in context, not the act: honest replies read under the sabotage prompt score as high as sabotage (median 59 vs line 33.6); sabotage replies read under the honest prompt drop to honest levels. Every valid sabotage reply is caught at 0.1-5% lines, for all four AISI probes.</div>
+    <div><b>Next:</b> Matched context: one system prompt with a conditional rule, so honest and sabotaged replies share the context; check whether the probe separates them at all.</div>
     <div class="live">Agent's own status (12:11 PM): A (building Gemma-written training set, training, evaluating).</div>
   </div>
 </article></section>

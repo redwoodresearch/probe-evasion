@@ -1,0 +1,52 @@
+train: 2560 Claude replies (673 kept ones used the system prompt), 2310 pass label_ok; by kind: {'computed': '845/960', 'given': '833/960', 'recalled': '632/640'}
+   short cell ('computed', 'casual text'): 107/119
+   short cell ('computed', 'formal report'): 83/119
+   short cell ('computed', 'one sentence'): 75/120
+   short cell ('given', 'formal report'): 98/104
+   short cell ('given', 'short paragraph'): 62/74
+   short cell ('recalled', 'answer plus tip'): 37/40
+   short cell ('recalled', 'bullets'): 47/48
+   short cell ('recalled', 'casual text'): 36/41
+   short cell ('recalled', 'email'): 33/35
+   short cell ('recalled', 'one sentence'): 35/37
+   short cell ('recalled', 'short paragraph'): 47/50
+train: 1771 rows (830 computed) vs on-policy 1898 (923) | comma rates by label: Claude {0: 0.672, 1: 0.678}, Qwen {0: 0.631, 1: 0.631}
+Task exception was never retrieved
+future: <Task finished name='Task-15813' coro=<AsyncClient.aclose() done, defined at /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/httpx2/_client.py:2198> exception=RuntimeError('Event loop is closed')>
+Traceback (most recent call last):
+  File "/Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/httpx2/_client.py", line 2205, in aclose
+    await self._transport.aclose()
+  File "/Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/httpx2/_transports/default.py", line 400, in aclose
+    await self._pool.aclose()
+  File "/Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/httpcore2/_async/connection_pool.py", line 382, in aclose
+    await self._close_connections(closing_connections)
+  File "/Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/httpcore2/_async/connection_pool.py", line 374, in _close_connections
+    await connection.aclose()
+  File "/Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/httpcore2/_async/connection.py", line 157, in aclose
+    await self._connection.aclose()
+  File "/Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/httpcore2/_async/http11.py", line 236, in aclose
+    await self._network_stream.aclose()
+  File "/Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/httpcore2/_backends/anyio.py", line 55, in aclose
+    await self._stream.aclose()
+  File "/Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/anyio/streams/tls.py", line 248, in aclose
+    await self.transport_stream.aclose()
+  File "/Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1467, in aclose
+    self._transport.close()
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/asyncio/selector_events.py", line 1213, in close
+    super().close()
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/asyncio/selector_events.py", line 875, in close
+    self._loop.call_soon(self._call_connection_lost, None)
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/asyncio/base_events.py", line 799, in call_soon
+    self._check_closed()
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/asyncio/base_events.py", line 545, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+heldout: 600 Claude replies (196 kept ones used the system prompt), 568 pass label_ok; by kind: {'computed': '231/240', 'given': '219/240', 'recalled': '118/120'}
+   short cell ('computed', 'dialogue'): 79/80
+   short cell ('computed', 'faq'): 73/80
+   short cell ('given', 'dialogue'): 56/57
+   short cell ('given', 'faq'): 68/71
+   short cell ('recalled', 'dialogue'): 25/28
+   short cell ('recalled', 'faq'): 25/28
+   short cell ('recalled', 'headline'): 19/24
+heldout: 482 rows (230 computed) vs on-policy 505 (238) | comma rates by label: Claude {0: 0.71, 1: 0.713}, Qwen {0: 0.629, 1: 0.63}

@@ -1,0 +1,278 @@
+ogram exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+(EngineCore pid=59) Process EngineCore:
+[rank0]:[W1008 18:22:49.028639797 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Runner terminated.
+(EngineCore pid=59) Traceback (most recent call last):
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+(EngineCore pid=59)     self.run()
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/multiprocessing/process.py", line 108, in run
+(EngineCore pid=59)     self._target(*self._args, **self._kwargs)
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1328, in run_engine_core
+(EngineCore pid=59)     engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+(EngineCore pid=59)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1085, in __init__
+(EngineCore pid=59)     super().__init__(
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 145, in __init__
+(EngineCore pid=59)     kv_cache_config = self._initialize_kv_caches(vllm_config)
+(EngineCore pid=59)                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 356, in _initialize_kv_caches
+(EngineCore pid=59)     self.model_executor.compile_or_warm_up_model()
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/executor/abstract.py", line 126, in compile_or_warm_up_model
+(EngineCore pid=59)     compilation_times: list[CompilationTimes] = self.collective_rpc(
+(EngineCore pid=59)                                                 ^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/executor/uniproc_executor.py", line 103, in collective_rpc
+(EngineCore pid=59)     result = run_method(self.driver_worker, method, args, kwargs)
+(EngineCore pid=59)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/serial_utils.py", line 510, in run_method
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py", line 811, in compile_or_warm_up_model
+(EngineCore pid=59)     warmup_kernels(self.model_runner, self.execute_model, self.sample_tokens)
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/warmup.py", line 235, in warmup_kernels
+(EngineCore pid=59)     _warmup_kernels(model_runner, worker_execute_model, worker_sample_tokens)
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/warmup.py", line 373, in _warmup_kernels
+(EngineCore pid=59)     worker_sample_tokens(grammar_output)
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py", line 1145, in sample_tokens
+(EngineCore pid=59)     return self.model_runner.sample_tokens(grammar_output)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/eplb_utils.py", line 27, in wrapper
+(EngineCore pid=59)     result = fn(self, *args, **kwargs)
+(EngineCore pid=59)              ^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/model_runner.py", line 2048, in sample_tokens
+(EngineCore pid=59)     sampler_output, num_sampled, num_rejected = self.sample(
+(EngineCore pid=59)                                                 ^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/model_runner.py", line 1554, in sample
+(EngineCore pid=59)     sampler_output = self.sampler(logits, input_batch)
+(EngineCore pid=59)                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/sample/sampler.py", line 163, in __call__
+(EngineCore pid=59)     logprobs_tensors = compute_topk_scores(
+(EngineCore pid=59)                        ^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/sample/logprob.py", line 131, in compute_topk_scores
+(EngineCore pid=59)     scores = compute_token_logprobs(logits, logprob_token_ids)
+(EngineCore pid=59)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/sample/logprob.py", line 96, in compute_token_logprobs
+(EngineCore pid=59)     _topk_log_softmax_kernel[(batch_size,)](
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py", line 370, in <lambda>
+(EngineCore pid=59)     return lambda *args, **kwargs: self.run(grid=grid, warmup=False, *args, **kwargs)
+(EngineCore pid=59)                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py", line 739, in run
+(EngineCore pid=59)     kernel = self._do_compile(key, signature, device, constexprs, options, attrs, warmup)
+(EngineCore pid=59)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py", line 884, in _do_compile
+(EngineCore pid=59)     kernel = self.compile(src, target=target, options=options.__dict__)
+(EngineCore pid=59)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/triton/compiler/compiler.py", line 327, in compile
+(EngineCore pid=59)     next_module = compile_ir(module, metadata)
+(EngineCore pid=59)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 549, in <lambda>
+(EngineCore pid=59)     stages["ttgir"] = lambda src, metadata: self.make_ttgir(src, metadata, options, capability)
+(EngineCore pid=59)                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 321, in make_ttgir
+(EngineCore pid=59)     pm.run(mod, 'make_ttgir')
+(EngineCore pid=59) KeyboardInterrupt
+[rank0]:[W1008 18:22:49.236613386 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[rank0]:[W1008 18:22:49.993469980 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Runner terminated.
+Runner terminated.
+[rank0]:[W1008 18:22:49.166690293 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Runner terminated.
+[rank0]:[W1008 18:22:49.525558596 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[rank0]:[W1008 18:22:49.587982371 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Runner terminated.
+(EngineCore pid=59) Process EngineCore:
+Runner terminated.
+[rank0]:[W1008 18:22:50.017575442 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[rank0]:[W1008 18:22:50.835822914 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Runner terminated.
+(EngineCore pid=59) Traceback (most recent call last):
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+(EngineCore pid=59)     self.run()
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/multiprocessing/process.py", line 108, in run
+(EngineCore pid=59)     self._target(*self._args, **self._kwargs)
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1328, in run_engine_core
+(EngineCore pid=59)     engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+(EngineCore pid=59)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1085, in __init__
+(EngineCore pid=59)     super().__init__(
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 145, in __init__
+(EngineCore pid=59)     kv_cache_config = self._initialize_kv_caches(vllm_config)
+(EngineCore pid=59)                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 356, in _initialize_kv_caches
+(EngineCore pid=59)     self.model_executor.compile_or_warm_up_model()
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/executor/abstract.py", line 126, in compile_or_warm_up_model
+(EngineCore pid=59)     compilation_times: list[CompilationTimes] = self.collective_rpc(
+(EngineCore pid=59)                                                 ^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/executor/uniproc_executor.py", line 103, in collective_rpc
+(EngineCore pid=59)     result = run_method(self.driver_worker, method, args, kwargs)
+(EngineCore pid=59)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/serial_utils.py", line 510, in run_method
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py", line 811, in compile_or_warm_up_model
+(EngineCore pid=59)     warmup_kernels(self.model_runner, self.execute_model, self.sample_tokens)
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/warmup.py", line 235, in warmup_kernels
+(EngineCore pid=59)     _warmup_kernels(model_runner, worker_execute_model, worker_sample_tokens)
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/warmup.py", line 373, in _warmup_kernels
+(EngineCore pid=59)     worker_sample_tokens(grammar_output)
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py", line 1145, in sample_tokens
+(EngineCore pid=59)     return self.model_runner.sample_tokens(grammar_output)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(EngineCore pid=59)     return func(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/eplb_utils.py", line 27, in wrapper
+(EngineCore pid=59)     result = fn(self, *args, **kwargs)
+(EngineCore pid=59)              ^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/model_runner.py", line 2048, in sample_tokens
+(EngineCore pid=59)     sampler_output, num_sampled, num_rejected = self.sample(
+(EngineCore pid=59)                                                 ^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/model_runner.py", line 1554, in sample
+(EngineCore pid=59)     sampler_output = self.sampler(logits, input_batch)
+(EngineCore pid=59)                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/sample/sampler.py", line 141, in __call__
+(EngineCore pid=59)     sampled, processed_logits = self.sample(
+(EngineCore pid=59)                                 ^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/sample/sampler.py", line 310, in sample
+(EngineCore pid=59)     return self._sample_random(
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/worker/gpu/sample/sampler.py", line 331, in _sample_random
+(EngineCore pid=59)     sampled = flashinfer_sample(processed_logits, top_k, top_p).to(torch.int64)
+(EngineCore pid=59)               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/vllm/v1/sample/ops/topk_topp_sampler.py", line 522, in flashinfer_sample
+(EngineCore pid=59)     next_token_ids = flashinfer.sampling.top_k_top_p_sampling_from_logits(
+(EngineCore pid=59)                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/flashinfer/api_logging.py", line 2333, in _auto_dump_wrapper
+(EngineCore pid=59)     return _inner(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/flashinfer/sampling.py", line 1547, in top_k_top_p_sampling_from_logits
+(EngineCore pid=59)     masked_logits = top_k_mask_logits(logits, top_k)
+(EngineCore pid=59)                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/flashinfer/api_logging.py", line 2333, in _auto_dump_wrapper
+(EngineCore pid=59)     return _inner(*args, **kwargs)
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/flashinfer/sampling.py", line 1974, in top_k_mask_logits
+(EngineCore pid=59)     return get_sampling_module().top_k_mask_logits(
+(EngineCore pid=59)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/flashinfer/sampling.py", line 68, in get_sampling_module
+(EngineCore pid=59)     module = gen_sampling_module().build_and_load()
+(EngineCore pid=59)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/flashinfer/jit/core.py", line 320, in build_and_load
+(EngineCore pid=59)     self.build()
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/flashinfer/jit/core.py", line 427, in build
+(EngineCore pid=59)     run_ninja(self.build_dir, self.ninja_path, verbose)
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/site-packages/flashinfer/jit/cpp_ext.py", line 370, in run_ninja
+(EngineCore pid=59)     subprocess.run(
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/subprocess.py", line 550, in run
+(EngineCore pid=59)     stdout, stderr = process.communicate(input, timeout=timeout)
+(EngineCore pid=59)                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59)   File "/usr/local/lib/python3.12/subprocess.py", line 1196, in communicate
+(EngineCore pid=59)     stdout = self.stdout.read()
+(EngineCore pid=59)              ^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59) KeyboardInterrupt
+Runner terminated.
+Runner terminated.
+[rank0]:[W1008 18:22:50.690154157 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Runner terminated.
+Runner terminated.
+Runner terminated.
+Runner terminated.
+Runner terminated.
+[rank0]:[W1008 18:22:51.390660937 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[rank0]:[W1008 18:22:51.898078486 ProcessGroupNCCL.cpp:1624] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Runner terminated.
+                  │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/parallel_map.py:971 in _map_invocation_inputplane                         │
+│                                                                              │
+│    970 │   ) as merged:                                                      │
+│ ❱  971 │   │   async for maybe_output in merged:                             │
+│    972 │   │   │   if maybe_output is not None:  # ignore None sentinels     │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_utils/async_utils.py:1108 in async_merge                                 │
+│                                                                              │
+│   1107 │   │   │   │   │   assert_type(item, ExceptionWrapper)               │
+│ ❱ 1108 │   │   │   │   │   raise item.value                                  │
+│   1109                                                                       │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_utils/async_utils.py:1087 in producer                                    │
+│                                                                              │
+│   1086 │   │   │   async with aclosing(generator) as stream:                 │
+│ ❱ 1087 │   │   │   │   async for item in stream:                             │
+│   1088 │   │   │   │   │   await queue.put(ValueWrapper(item))               │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/parallel_map.py:818 in check_lost_inputs                                  │
+│                                                                              │
+│    817 │   │   │   │   metadata = await client.get_input_plane_metadata(func │
+│ ❱  818 │   │   │   │   response: api_pb2.MapCheckInputsResponse = await inpu │
+│    819 │   │   │   │   │   request, metadata=metadata                        │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_grpc_client.py:164 in direct                                             │
+│                                                                              │
+│   163 │   │   self.wrapped_method.channel = await self.client._get_channel(s │
+│ ❱ 164 │   │   return await self.client._call_unary(self.wrapped_method, req, │
+│   165                                                                        │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/client.py:533 in _call_unary                                              │
+│                                                                              │
+│   532 │   │   coro = grpclib_method(request, timeout=timeout, metadata=metad │
+│ ❱ 533 │   │   return await self._call_safely(coro, grpclib_method.name)      │
+│   534                                                                        │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/client.py:489 in _call_safely                                             │
+│                                                                              │
+│   488 │   │   │   │   request_task.set_name(readable_method)                 │
+│ ❱ 489 │   │   │   │   return await request_task                              │
+│   490 │   │   │   except asyncio.CancelledError:                             │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/grp │
+│ clib/client.py:913 in __call__                                               │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/grp │
+│ clib/client.py:426 in recv_message                                           │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/grp │
+│ clib/client.py:368 in recv_initial_metadata                                  │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/grp │
+│ clib/utils.py:70 in __exit__                                                 │
+╰──────────────────────────────────────────────────────────────────────────────╯
+StreamTerminatedError: Connection lost
