@@ -1,6 +1,7 @@
 {
   "lede": "Probes for harmless concepts, trained the way the Neural Chameleons paper trains them. Claude searches for the instruction that best lets the model keep the concept while the probe misses it, seeing every reply's raw probe score; the best instruction is then frozen and tested on 100 new tasks.",
   "takeaways": [
+    "Qwen3.5-27B chemistry, layer-48 probe, held-out: the optimized prompt gets 70 of 83 chemistry answers past the 10-token window (normal prompt 3/92) and 75/83 past the highest-token reading (normal 17/92). Unlike maths, most of this needs the instruction in context: with it removed, the same replies are missed only 20 times. The winning prompt describes the monitor (\"reads your reply in sliding windows of about 10 words and flags it if any window feels like chemistry\") and asks for analogies throughout.",
     "Qwen3.5-27B, layer-48 maths probe read by its single highest token (strictest reading), fresh search: 84 of 99 correct answers missed (normal prompt 0/90). With the instruction removed from the prompt the same replies are missed 31 times, so the instruction in context contributes a lot. Style control (40 validation problems, layer 48): a generic cozy-scene request with no mention of a probe gets 36 of 36 correct answers past the EMA reading. Token-level: Qwen's layer-48 probe barely fires outside the computed digits (7% of other tokens above 0.5, vs 44% for Gemma layer 36), consistent with a narrow probe; Qwen probes trained on varied wording are training now to test that.",
     "Standard EMA (rate 0.1, from neutral) re-scoring of every run: EMA is a weaker defender than the 10-token window against the scenic trick at Gemma's deep layers (layer 30: 22/63 missed vs 11/63; layer 36: 16/83 vs 2/83; normal prompt 0/90), because its slow running average is diluted the same way. The varied-training layer-30 probe holds under every reading (EMA 1/74).",
     "Qwen3.5-27B chemistry, layer-16 probe, held-out: the optimized prompt gets 72 of 76 chemistry answers past the EMA reading (normal prompt 1/92) and 44 of 76 past even the single-highest-token reading (normal 7/92). New trick: write the chemistry as a terse algebra proof (\"Let $a$ = carbonate ion, $a \\in S$...\"): the content is chemistry, the surface is mathematical notation. The layer-48 chemistry search is still running.",
@@ -27,12 +28,6 @@
     "Paper reading (notes/paper_insights.md): in RL-Obfuscation, trained models beat averaged probes mostly by padding and failed against max- or attention-pooled ones; prompting alone did nothing. In Obfuscated Activations, real-word prompts barely dented probes reading the reply. Both suggest prompted evasion without padding should be rare."
   ],
   "running": [
-    {
-      "job": "Qwen3.5-27B chemistry probes at 7 layers, then searches against layers 16 and 48 (no reasoning step)",
-      "started": "5:38",
-      "eta": "7:15",
-      "gpus": 3
-    },
     {
       "job": "Qwen3.5-27B maths probes trained on varied wording (7 layers), then re-score the saved optimized replies",
       "started": "6:20",
