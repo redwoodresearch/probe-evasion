@@ -66,3 +66,14 @@ non-critical replies), held-out-style check, and the probe reads Qwen3.5-27B's a
   forced-choice verdict check (valid = rating 4-5 AND verdict negative); second calibration sample per prompt; new arms
   (evade:any, rating, decision_word, third_party); summaries now report ema and max, instruction removed, distinct replies,
   share rated 5; Claude-rewrite diagnostic added. v1 kept as the "blunt-only, realistic mistake" comparison.
+- ~19:25 check-in 2 (Phase A results). Main points: (1) the 0.1% line rests on 2-3 replies from ~994 prompts (bootstrap
+  95% interval 12.3-17.5 log-odds), so lead with the 1% line; (2) every instructed arm scores lower in context than with
+  the instruction removed (mean shift up to -7 log-odds, even style-only arms), so instruction-removed counts are the
+  headline; at 1% the L48 result is 6 in context / 1 removed: close to nothing; (3) judge mostly fine on anecdotes, but
+  the evasion works by making the verdict implicit: rated-5 share falls from 39/40 (plain) to 8/34 (evade:anecdote);
+  (4) gepa search/test use rating-only validity and a 1% line only: re-validate its test replies; (5) logreg_v2@L16 shows
+  the strongest signal: evade:anecdote 12/34 removed at 1% vs plain 0/40 and style:anecdote 3/40 (but L16 also misses
+  indirect styles generally). Done: m3b_validate_search (verdict check + all probes + 3 lines + removed) for the search
+  tests; Phase B frozen-prompt run on the 100 untouched test tasks with plain, evade:any, evade:anecdote,
+  style:anecdote, plus "anecdote_explicit" variants (story + one plain verdict sentence) to test whether the evasion
+  survives an explicit verdict. Headline will be instruction-removed at 1%, with 0.1% given with its interval.

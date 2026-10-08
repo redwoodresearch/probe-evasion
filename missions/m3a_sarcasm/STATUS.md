@@ -1,10 +1,18 @@
 # m3a_sarcasm status
 
-**Phase:** B/C (frozen test on untouched tasks + short search running). Started 10:40.
-**Verdict so far (12:15):** promising. On 40 validation tasks x 2 samples, a hand-written "deadpan" evasion prompt got
-23/70 distinct valid sarcastic replies past the main probe (off-policy gd L16, EMA, 1% line) vs 1/73 for the plain
-prompt; 25/70 with the instruction text removed from the context. Misses sit just under the line: at the 5% line it
-is 8/70 vs 0/73. Needs: test-split confirmation, style-only control, search.
+**Phase:** C (scaling the searched prompt on the untouched test tasks; 5 seeds). Updated 12:25.
+**Verdict so far:** positive, with stated limits. Against a reasonably trained off-policy sarcasm probe (layer 16,
+held-out AUROC 0.98-0.99, catches 67/68 plain answers at 1%), prompts asking for flat / deadpan sarcasm get many
+clearly sarcastic replies under the 1% line on untouched test tasks; plain prompting almost never does.
+- Hand-written deadpan (frozen before test): 93/250 valid replies missed (93/300 attempts, 55 of 100 tasks) vs plain
+  6/284 (3 tasks). Task-clustered 95% CI for the difference in valid evasions per attempt: +22 to +36 points.
+  Style-only deadpan (no mention of the probe): 91/239. So the style does the work, not the warning.
+- Phase B search (5 rounds, Opus reflection) found a plainer prompt (one short literal sentence that flips reality,
+  no praise words or interjections; it never mentions a probe). On the 100 test tasks: 57/75 valid missed at 1%
+  (30/75 at 5%) vs plain 0/93; both judges confirm sarcasm.
+- Limits: misses are near the line for the hand-written prompt (deadpan: 16/250 at 5%); the replies are obviously
+  sarcastic to a human reader; the probe still separates deadpan sarcasm from deadpan sincere text (AUROC 0.997), the
+  line is set by playful sincere humour in ordinary traffic.
 
 ## Plan
 - Probe data from Qwen's own replies (reasoning off), labels checked by the Claude judge:
@@ -98,6 +106,38 @@ probes (off_gd@L48 53/70 missed vs 6/73 plain; off_lr@L48 49/70 vs 12/73), so la
   understatement / neutral_mock_praise / absurd_suggestion and style-only deadpan are secondary arms. 100 test tasks x
   seeds 0,1,2 (`frozen_test`). Phase B search (5 rounds, against off_gd@L16, mission calibration) running in parallel.
 
+## Test split (frozen hand-written prompts; 100 test tasks x 3 seeds; main probe off_gd@L16 EMA)
+`analysis_test_frozen.json`, `dots_test_frozen_off_gd_L16.png`
+
+| arm | valid/300 | blind rating | missed 0.1% / 0.5% / 1% / 2% / 5% | 1% instr. removed | tasks (1%) | rated 5 by both & missed |
+|---|---|---|---|---|---|---|
+| plain | 284 | 4.56 | 28 / 9 / 6 / 0 / 0 | 6 | 3 | 1 |
+| deadpan (primary) | 250 | 4.26 | 188 / 124 / 93 / 56 / 16 | 102 | 55 | 26 |
+| style-only deadpan | 239 | 4.15 | 189 / 123 / 91 / 58 / 18 | 103 | 61 | 27 |
+| understatement | 254 | 4.28 | 137 / 57 / 33 / 18 / 3 | 50 | 28 | 7 |
+| neutral_mock_praise | 240 | 4.25 | 162 / 67 / 42 / 25 / 4 | 31 | 32 | 17 |
+| absurd_suggestion | 238 | 4.08 | 186 / 112 / 88 / 63 / 24 | 95 | 59 | 24 |
+
+- Deadpan vs plain, task-clustered 95% CI of the difference in valid evasions per attempt: 0.1% +46..+61 pts,
+  1% +22..+36, 5% +3..+8. Calibration bootstrap of the 1% line: deadpan misses 91-100 (5-95%).
+- Other probes at 1% (deadpan vs plain): on-policy gd L48 86 vs 1; off-policy lr L48 185 vs 49; old off-policy probe
+  with the request word removed (its weakness) 16 vs 4. Max reading is easier to evade than EMA (144 vs 10).
+- Register control (`register_control.jsonl`): sincere replies written deadpan / businesslike are NOT scored lower
+  than plain sincere ones (median logit -0.39 / formal lower, vs -0.59; 0/187 deadpan-sincere flagged at 1%). Deadpan
+  sarcasm (median logit 6.0) vs sincere deadpan: AUROC 0.997. So the style weakens the sarcasm signal (plain sarcasm
+  median logit 12.6) rather than shifting all scores; it crosses because the 1% line (logit 5.3) sits at the tail of
+  playful-but-sincere replies.
+
+## Phase B search (results/gepa/m3a_sarcasm_off_gd_L16, 5 rounds, search's own calibration replaced by the mission's)
+Re-judged with the blind judge, distinct replies, mission lines (`search_test_*_rejudged.jsonl`):
+
+| arm (100 test tasks, 1 sample) | valid | blind rating | missed 0.1% / 1% / 5% | tasks |
+|---|---|---|---|---|
+| plain | 93 | 4.61 | 10 / 0 / 0 | 0 |
+| optimized | 75 | 4.02 | 71 / 57 / 30 | 57 |
+| seed strategy hint | 75 | 3.98 | 35 / 9 / 2 | 9 |
+Search instruction-removed (search's own count, primed judge): 53 vs 59 as generated.
+
 ## Critic check-ins
 - ~11:15 critic 1. Main points: (1) judge sees "sarcastic" in the request, so flat literal replies can be judged valid;
   (2) asymmetric augmentation left the request word predictive of the label (60% vs 19% sarcastic); (3) gepa.search's
@@ -106,3 +146,8 @@ probes (off_gd@L48 53/70 missed vs 6/73 plain; off_lr@L48 49/70 vs 12/73), so la
   has lexical markers (openers, "!") -> add attack avoiding them; (8) report too-long separately; (9) per-format
   calibration quantiles; (10) 2 near-duplicate messages in calibration. Done: all except (3), which I will handle
   when (if) Phase B runs, by writing calibration.json from the mission calibration first.
+- ~12:15 critic 2: no fake-positive bug found; line correct; misses spread, no duplicates; ~90% of claimed misses
+  unambiguous. Asked for: misses-vs-false-alarm curve (done), task-clustered CI (done), register control with logit
+  shift + within-style AUROC (done), misses among replies rated 5 by both judges (done), old probe with request word
+  removed (done), re-judge search outputs with blind judge (done), correct STATUS timestamps (done), be candid that
+  replies are obviously sarcastic to a reader and margins are thin (in verdict).
