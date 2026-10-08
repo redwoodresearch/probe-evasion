@@ -1,6 +1,10 @@
 # m3c_anger status
 
 **Phase:** v2 Phase A done (14:00); Phase B search (5 rounds, peak probe L48) running remotely as a last check.
+**Phase: done (RESULT.md written, ~15:45).** Frozen re-test (100 test tasks x 2 samples): layer-48 peak probe misses
+196/200 optimized replies at 1% (plain 6/200), style-only control 197/200; the layer-16 peak probe catches all of
+them. A stricter judge says only 32/196 optimized replies are clearly angry beyond mild frustration (plain 71/144),
+but all 32 evade. See RESULT.md for the verdict, caveats and the two-probe ensemble.
 **UPDATE 15:10: candidate found.** Phase B search against claude_peak L48 (5 rounds, best = round-1 candidate #4,
 frozen) on the 100 untouched test tasks: optimized 99/100 valid and 99/99 missed at the 1% line (also under the max
 reading); plain 70 valid, 3 missed; "told probe is watching" 84 valid, 4 missed. Instruction removed: 68/99 still
