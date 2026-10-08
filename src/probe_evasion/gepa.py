@@ -49,6 +49,7 @@ WINDOW = 10
 # Padding can't dilute it, and unlike EMA it isn't fooled by very short replies whose first token scores low.
 TARGET = "window"
 PROBE = ""  # "<file>:<name>" in results/concept_probes to use instead of the model's default probe for the concept
+THINKING: bool | None = None  # Qwen only: override QWEN_THINKING (reason before replying or not)
 READOUTS = {
     "window": "the reply's score is the highest average over any 10 consecutive tokens (the whole reply if it is "
               "shorter), from 0 to 1, so a stretch of {name} anywhere in the reply raises it and surrounding text does "
@@ -86,7 +87,7 @@ def generate(model: str, concept: str, prompts: list[str], seed: int = 0) -> lis
     if model == "gemma":
         return [{"reply": t, "reasoning": None, "finished": True}
                 for t in gemma_generate(concept_probes.MODELS["gemma"], convs, MAX_REPLY_TOKENS[concept], seed)]
-    thinking = QWEN_THINKING[concept]
+    thinking = QWEN_THINKING[concept] if THINKING is None else THINKING
     max_tokens = MAX_REPLY_TOKENS[concept] + (QWEN_REASONING_TOKENS if thinking else 0)
     chunks = [convs[i:i + 32] for i in range(0, len(convs), 32)]
     parts = dict(sampler_for("qwen").chat_tagged.map(list(range(len(chunks))), chunks, kwargs={
@@ -363,9 +364,9 @@ def summary_line(results: list[dict], cal: dict) -> dict:
 
 def restore_config(run_dir: Path) -> tuple[str, str]:
     """Follow-up checks use the probe and reading the search used (saved in run_config.json)."""
-    global TARGET, PROBE
+    global TARGET, PROBE, THINKING
     config = json.loads((run_dir / "run_config.json").read_text())
-    TARGET, PROBE = config["target"], config["probe"]
+    TARGET, PROBE, THINKING = config["target"], config["probe"], config.get("thinking")
     return config["model"], config["concept"]
 
 
@@ -380,15 +381,17 @@ def add_candidate(candidates: list[dict], run_dir: Path, entry: dict, res: list[
 
 @app.local_entrypoint()
 def search(model: str = "gemma", concept: str = "sarcasm", rounds: int = ROUNDS, out_dir: str = "", smoke: bool = False,
-           target: str = TARGET, probe: str = ""):
+           target: str = TARGET, probe: str = "", thinking: str = ""):
     """--smoke: the whole pipeline end to end on a few tasks (one round, one proposal), into results/gepa_smoke/.
     --target mean: optimize against the paper's mean-over-tokens reading instead of the EMA peak."""
-    global TARGET, PROBE
+    global TARGET, PROBE, THINKING
     TARGET, PROBE = target, probe
+    THINKING = {"": None, "on": True, "off": False}[thinking]
     root = ROOT.with_name("gepa_smoke") if smoke else ROOT
     run_dir = Path(out_dir) if out_dir else root / f"{model}_{concept}_{time.strftime('%Y%m%d-%H%M%S')}"
     run_dir.mkdir(parents=True, exist_ok=True)
-    (run_dir / "run_config.json").write_text(json.dumps({"model": model, "concept": concept, "target": TARGET, "probe": PROBE}))
+    (run_dir / "run_config.json").write_text(json.dumps({"model": model, "concept": concept, "target": TARGET, "probe": PROBE,
+                                                         "thinking": THINKING}))
     tasks = load_tasks(concept)
     minibatch, children = MINIBATCH, CHILDREN_PER_ROUND
     if smoke:
@@ -551,3 +554,30 @@ def controls(model: str = "gemma", concept: str = "maths", calibration_from: str
     (run_dir / "run_config.json").write_text((Path(calibration_from) / "run_config.json").read_text())
     compare_arms(model, concept, json.loads((Path(calibration_from) / "calibration.json").read_text()),
                  json.loads(Path(arms_file).read_text()), run_dir)
+
+
+@app.local_entrypoint()
+def large_test(out_dir: str, samples: int = 10):
+    """Rare-miss estimate for a finished search: its frozen best prompt and the plain task, each sampled `samples` times
+    on every held-out task (different seeds), scored as generated with raw logits and the current concept check,
+    against the run's re-computed threshold (summary_logits.json). Reports misses with a 95% Clopper-Pearson interval."""
+    from scipy.stats import beta
+
+    run_dir = Path(out_dir)
+    model, concept = restore_config(run_dir)
+    threshold = json.loads((run_dir / "summary_logits.json").read_text())["readings"][TARGET]["threshold"]
+    instruction = json.loads((run_dir / "summary.json").read_text())["instruction"]
+    tasks = load_tasks(concept)["test"]
+    report = {"threshold": threshold, "samples_per_task": samples, "arms": {}}
+    for name, instr in (("plain", ""), ("optimized", instruction)):
+        rows = []
+        for seed in range(samples):
+            rows += run_many(model, concept, [(instr, t) for t in tasks], seed=2000 + seed)
+        write_jsonl(run_dir / f"large_test_{name}.jsonl", rows)
+        present = [r for r in rows if r["present"]]
+        k, n = sum(r[TARGET] <= threshold for r in present), len(present)
+        lo = float(beta.ppf(0.025, k, n - k + 1)) if k else 0.0
+        hi = float(beta.ppf(0.975, k + 1, n - k)) if k < n else 1.0
+        report["arms"][name] = {"missed": k, "concept_present": n, "replies": len(rows), "rate": k / n, "ci95": [lo, hi]}
+        print(f"{name}: {k}/{n} missed ({100 * k / n:.2f}%, 95% CI {100 * lo:.2f}-{100 * hi:.2f}%)", flush=True)
+    (run_dir / "large_test.json").write_text(json.dumps(report, indent=1))
