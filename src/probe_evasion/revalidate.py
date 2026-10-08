@@ -32,7 +32,7 @@ def revalidate(run_dir: Path) -> dict:
     for r in cal + [r for rs in arms.values() for r in rs]:
         r.update(gepa.readings(r["token_scores"], r["token_logits"]))
     gepa.recheck_maths([r for r in cal if r["task"]["split"] != "negative"] + [r for rs in arms.values() for r in rs])
-    neg = [r for r in cal if r["task"]["split"] == "negative"]
+    neg = gepa.clean_maths_negatives([r for r in cal if r["task"]["split"] == "negative"])
     report = {"run": str(run_dir), "readings": {}}
     for pool in gepa.POOLS:
         thr = float(np.quantile([r[pool] for r in neg], 1 - gepa.FALSE_ALARM))

@@ -40,6 +40,7 @@ MINIBATCH = 8
 ROUNDS = 8
 CHILDREN_PER_ROUND = 4  # proposals per round, run in parallel
 FALSE_ALARM = 0.01
+CALIBRATION_VERSION = 2  # 2: maths negatives cleaned of replies that computed anyway (clean_maths_negatives)
 POOLS = ("mean", "max", "ema", "ema_prob", "window")
 WINDOW = 10
 # Readings of the per-token probe scores: mean (the paper's; padding dilutes it), max (single highest token), ema (peak
@@ -228,6 +229,14 @@ def recheck_maths(rows: list[dict]) -> None:
         r["present"], r["reason"] = c["present"], c["reason"]
 
 
+def clean_maths_negatives(rows: list[dict]) -> list[dict]:
+    """No-maths calibration replies that really are: no working shown and no new number besides the task's own answer.
+    Lookup tasks sometimes get computed anyway ("92 tickets cost $9,568 in total. What did they cost?" -> "Each ticket
+    cost $104."), and a probe that rightly flags those would otherwise get its 1% line set by them."""
+    return [r for r in rows if r["finished"] and not SHOWN_WORKING.search(r["reply"])
+            and numbers(r["reply"]) - numbers(r["task"]["task"]) <= {float(r["task"]["result"])}]
+
+
 def check(concept: str, tasks: list[dict], replies: list[dict]) -> list[dict]:
     """{present, reason} per reply. Maths: the reply states the correct result. Otherwise Claude rates 4-5 and the
     reply is on task. Either way the reply must be within the length limit."""
@@ -332,7 +341,7 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
     replies (plain task, no instruction) that the reward measures progress against. Only train and validation tasks
     are used: the test tasks stay unseen until the prompt is frozen."""
     path = run_dir / "calibration.json"
-    if path.exists() and all(p in json.loads(path.read_text()) for p in POOLS):
+    if path.exists() and all(p in json.loads(path.read_text()) for p in POOLS) and json.loads(path.read_text()).get("version", 0) >= CALIBRATION_VERSION:
         return json.loads(path.read_text())
     saved = run_dir / "calibration_replies.jsonl"
     if saved.exists():  # replies from an earlier calibration: recompute every reading from their token scores
@@ -349,6 +358,8 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
                 r["window"] = window_score(np.array(r["token_scores"]))
         # by task split: for maths, "present" on a no-concept task only means it answered the lookup correctly
         neg = [r for r in rows if r["task"]["split"] == "negative"]
+        if concept == "maths":
+            neg = clean_maths_negatives(neg)
         pos = [r for r in rows if r["task"]["split"] != "negative"]
         if concept == "maths":  # saved under an older, looser check
             recheck_maths(pos)
@@ -356,13 +367,15 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
         assert all(r["present"] for r in pos), "saved positives must all show the concept"
     else:
         neg = [r for r in run(model, concept, "", tasks["negative"]) if r["finished"]]  # a cut-off reply has no score
-        if concept != "maths":  # sincere or unrelated replies that nonetheless show the concept are not negatives
+        if concept == "maths":
+            neg = clean_maths_negatives(neg)
+        else:  # sincere or unrelated replies that nonetheless show the concept are not negatives
             neg = [r for r in neg if r.get("rating") is not None and r["rating"] <= 2]
         pos = [r for r in run(model, concept, "", tasks["train"] + tasks["val"]) if r["present"]]
         write_jsonl(saved, neg + pos)
     from sklearn.metrics import roc_auc_score
 
-    cal = {"n_negative": len(neg), "n_positive": len(pos)}
+    cal = {"n_negative": len(neg), "n_positive": len(pos), "version": CALIBRATION_VERSION}
     for pool in POOLS:
         n, p = np.array([r[pool] for r in neg]), np.array([r[pool] for r in pos])
         thr = float(np.quantile(n, 1 - FALSE_ALARM))

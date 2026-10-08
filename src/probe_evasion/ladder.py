@@ -35,9 +35,12 @@ def rescore(run_dir: str, probes: str, tests: str = "test"):
         r["ladder"] = {name: gepa.readings(s[name], s[f"{name}__logits"]) for name in probe_set}  # raw logits, no ceiling
     if concept == "maths":  # current answer check: exact number, no working shown, judged to answer the question
         gepa.recheck_maths([r for r in rows if r["task"]["split"] != "negative"])
+    clean_neg = [r for r in cal if r["task"]["split"] == "negative"]
+    if concept == "maths":
+        clean_neg = gepa.clean_maths_negatives(clean_neg)
     report = {"probes": probes, "run": run_dir, "results": {}}
     for name in probe_set:
-        neg = [r["ladder"][name] for r in cal if r["task"]["split"] == "negative"]
+        neg = [r["ladder"][name] for r in clean_neg]
         pos = [r["ladder"][name] for r in cal if r["task"]["split"] != "negative" and r["present"]]
         entry = {"val_auroc_training_style": json.loads((concept_probes.PROBES / f"{probes}.json").read_text())[name]["val_auroc"]}
         for pool in POOLS:
@@ -150,6 +153,8 @@ def rescore_logits(run_dir: str):
     if concept == "maths":  # current answer check: exact number, no working shown, judged to answer the question
         gepa.recheck_maths([r for r in rows if r["task"]["split"] != "negative"])
     neg = [r for r in cal if r["task"]["split"] == "negative"]
+    if concept == "maths":
+        neg = gepa.clean_maths_negatives(neg)
     pos = [r for r in cal if r["task"]["split"] != "negative" and r["present"]]
     report = {"run": run_dir, "readings": {}}
     for pool in POOLS:
