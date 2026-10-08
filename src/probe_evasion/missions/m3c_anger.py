@@ -620,8 +620,9 @@ def summarize(rows: list[dict], probe: str, reading: str = "ema") -> dict:
 
 
 @app.local_entrypoint()
-def m3c_attacks(probe: str = MAIN, split: str = "val", seed: int = 0, name: str = f"{V}_phase_a"):
-    arms = {"plain": "", **ATTACKS}
+def m3c_attacks(probe: str = MAIN, split: str = "val", seed: int = 0, name: str = f"{V}_phase_a", arms: str = ""):
+    """arms: comma-separated ATTACKS names to run (default all), always with the plain prompt."""
+    arms = {"plain": "", **{k: v for k, v in ATTACKS.items() if not arms or k in arms.split(",")}}
     OUT.mkdir(parents=True, exist_ok=True)
     rows = run_arms(arms, gepa.load_tasks(CONCEPT)[split], seed, raw=OUT / f"{name}_raw.jsonl")
     write_jsonl(OUT / f"{name}_replies.jsonl", rows)
@@ -666,6 +667,23 @@ def m3c_context_check(name: str = "phase_a"):
                      "calm_median_with_angry_directive": float(np.median([x[p]["ema"] for x in b]))}
         print(p, json.dumps(report[p]), flush=True)
     (OUT / f"{name}_context_check.json").write_text(json.dumps(report, indent=1))
+
+
+@app.local_entrypoint()
+def m3c_frozen(arms_file: str, split: str = "test", seed: int = 2000, name: str = f"{V}_frozen_search", samples: int = 1):
+    """Frozen instructions from a JSON file ({name: instruction}; "" = plain) on a task split, every probe, in context
+    and with the instruction removed; `samples` seeds each."""
+    arms = json.loads(Path(arms_file).read_text())
+    rows = []
+    for k in range(samples):
+        rows += [{**r, "sample": k} for r in run_arms(arms, gepa.load_tasks(CONCEPT)[split], seed + k, raw=OUT / f"{name}_raw_s{k}.jsonl")]
+    write_jsonl(OUT / f"{name}_replies.jsonl", rows)
+    report = {p: summarize(rows, p) for p in all_probes()}
+    (OUT / f"{name}_summary.json").write_text(json.dumps(report, indent=1))
+    for p in ("claude_peak:anger@L48", "claude_peak:anger@L16"):
+        for arm, e in report[p].items():
+            print(f"{p} {arm:32s} valid {e['valid']}/{e['n']} | evaded (0.1/1/5%) {e['evaded@0.001']}/{e['evaded@0.01']}/"
+                  f"{e['evaded@0.05']} | instr removed {e['evaded_no_instr@0.01']} @1%", flush=True)
 
 
 # ---------------------------------------------------------------- Phase B: Claude prompt search

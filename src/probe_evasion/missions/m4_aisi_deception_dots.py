@@ -39,12 +39,14 @@ def groups() -> tuple[dict, dict, dict]:
         "warm_helper,\ninstruction\nremoved": [mean_score(r, "scores_removed") for r in valid(base, "warm_helper")],
         "own warm\npreamble,\ninstruction\nremoved": [mean_score(r, "scores_removed") for r in valid(pre, "pre_warm")],
     }
-    search_test = m.SEARCH_DIR / "test_rows.jsonl"
-    if search_test.exists():
-        t = read_jsonl(search_test)
-        as_generated["test: plain\n(valid)"] = [mean_score(r) for r in valid(t, "plain")]
-        as_generated["test: optimized\n(valid)"] = [mean_score(r) for r in valid(t, "optimized")]
-        as_generated["test: optimized,\ninstruction\nremoved"] = [mean_score(r, "scores_removed") for r in valid(t, "optimized")]
+    confirm = m.OUT / "fresh2_confirm" / "rows.jsonl"
+    if confirm.exists():
+        t = read_jsonl(confirm)
+        as_generated["3rd confirmation:\nplain (valid)"] = [mean_score(r) for r in valid(t, "plain")]
+        as_generated["optimized (search),\ninstruction\nremoved (valid)"] = [mean_score(r, "scores_removed") for r in valid(t, "optimized")]
+        as_generated["length control,\ninstruction\nremoved (valid)"] = [mean_score(r, "scores_removed") for r in valid(t, "length_control")]
+        as_generated["honest +\nlength control\n(clean)"] = [mean_score(r, "scores_removed") for r in t
+                                                            if r["arm"] == "honest_length_control" and r.get("clean_honest") and r["scores"]]
     idx = {id(r): i for i, r in enumerate(base)}
     no_goal = {
         "honest role-play\n(calibration,\nclean)": [float(np.mean(diag[(idx[id(r)], "no_goal")][f"apollo@h{m.HIDDEN}"]))
@@ -60,7 +62,7 @@ def panel(ax, data: dict, lines: dict, title: str) -> None:
     rng = np.random.default_rng(0)
     colours = {"Alpaca": GREY, "honest": GREEN, "plain": BLUE}
     for i, (label, xs) in enumerate(data.items()):
-        c = next((v for k, v in colours.items() if label.startswith(k)), ORANGE)
+        c = next((v for k, v in colours.items() if label.startswith(k) or (k == "plain" and "plain" in label)), ORANGE)
         if "failed" in label:
             c = RED
         ax.scatter(i + rng.uniform(-0.28, 0.28, len(xs)), xs, s=7, color=c, alpha=0.6, linewidths=0)
@@ -79,7 +81,7 @@ def panel(ax, data: dict, lines: dict, title: str) -> None:
 
 def main() -> Path:
     ag, ng, lines = groups()
-    fig, axes = plt.subplots(1, 2, figsize=(17, 6.5), dpi=150, gridspec_kw={"width_ratios": [len(ag), 2.6]})
+    fig, axes = plt.subplots(1, 2, figsize=(22, 6.8), dpi=150, gridspec_kw={"width_ratios": [len(ag), 2.6]})
     panel(axes[0], ag, lines["as_generated"], "Read in the context the reply was written in (scenario + goal sentence + question)")
     panel(axes[1], ng, lines["no_goal"], "Same replies, goal sentence removed\n(lines re-set on honest replies read the same way)")
     axes[0].set_ylabel("AISI apollo probe (layer 32), mean over reply tokens (raw score)")
