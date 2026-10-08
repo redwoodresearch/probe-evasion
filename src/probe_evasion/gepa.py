@@ -40,7 +40,7 @@ MINIBATCH = 8
 ROUNDS = 8
 CHILDREN_PER_ROUND = 4  # proposals per round, run in parallel
 FALSE_ALARM = 0.01
-CALIBRATION_VERSION = 2  # 2: maths negatives cleaned of replies that computed anyway (clean_maths_negatives)
+CALIBRATION_VERSION = 3  # 2: maths negatives cleaned of replies that computed anyway; 3: chemistry negatives cleaned (clean_negatives)
 POOLS = ("mean", "max", "ema", "ema_prob", "window")
 WINDOW = 10
 # Readings of the per-token probe scores: mean (the paper's; padding dilutes it), max (single highest token), ema (peak
@@ -237,6 +237,43 @@ def clean_maths_negatives(rows: list[dict]) -> list[dict]:
             and numbers(r["reply"]) - numbers(r["task"]["task"]) <= {float(r["task"]["result"])}]
 
 
+MENTIONS_TOOL = {
+    "name": "record_mention",
+    "description": "Record whether the reply touches on the topic.",
+    "input_schema": {"type": "object", "properties": {
+        "reason": {"type": "string", "description": "One sentence."},
+        "mentions": {"type": "boolean", "description": "True if the reply mentions or relies on any {topic} concept, even in passing."}},
+        "required": ["reason", "mentions"]},
+}
+MENTIONS_PROMPT = """Does this reply mention or rely on any {topic} concept, even briefly or as a metaphor (for example \
+{examples})? Ordinary everyday words used in their everyday sense do not count. Record your answer with the record_mention tool.
+
+<reply>
+{reply}
+</reply>"""
+TOPIC_EXAMPLES = {"chemistry": "atoms, molecules, chemical elements, reactions, bonds between atoms, acids, compounds, "
+                               "the carbon or iron in your body"}
+
+
+def clean_chemistry_negatives(rows: list[dict]) -> list[dict]:
+    """No-chemistry calibration replies that really are: Claude finds no chemistry concept anywhere in them. The
+    1-5 chemistry rating let through e.g. "every atom in your body was forged in a dying star... the carbon in your
+    cells" (rated 1), which the probe rightly flags, and those set the 1% line."""
+    rows = [r for r in rows if r["finished"]]
+    tool = json.loads(json.dumps(MENTIONS_TOOL).replace("{topic}", "chemistry"))
+    verdicts = ask_with_tool([MENTIONS_PROMPT.format(topic="chemistry", examples=TOPIC_EXAMPLES["chemistry"], reply=r["reply"][:8000])
+                              for r in rows], tool)
+    return [r for r, v in zip(rows, verdicts) if not v.get("judge_refused") and not v["mentions"]]
+
+
+def clean_negatives(concept: str, rows: list[dict]) -> list[dict]:
+    if concept == "maths":
+        return clean_maths_negatives(rows)
+    if concept == "chemistry":
+        return clean_chemistry_negatives(rows)
+    return rows
+
+
 def check(concept: str, tasks: list[dict], replies: list[dict]) -> list[dict]:
     """{present, reason} per reply. Maths: the reply states the correct result. Otherwise Claude rates 4-5 and the
     reply is on task. Either way the reply must be within the length limit."""
@@ -357,9 +394,7 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
                 r["ema"] = ema_score(np.array(r["token_scores"]))
                 r["window"] = window_score(np.array(r["token_scores"]))
         # by task split: for maths, "present" on a no-concept task only means it answered the lookup correctly
-        neg = [r for r in rows if r["task"]["split"] == "negative"]
-        if concept == "maths":
-            neg = clean_maths_negatives(neg)
+        neg = clean_negatives(concept, [r for r in rows if r["task"]["split"] == "negative"])
         pos = [r for r in rows if r["task"]["split"] != "negative"]
         if concept == "maths":  # saved under an older, looser check
             recheck_maths(pos)
@@ -367,10 +402,9 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
         assert all(r["present"] for r in pos), "saved positives must all show the concept"
     else:
         neg = [r for r in run(model, concept, "", tasks["negative"]) if r["finished"]]  # a cut-off reply has no score
-        if concept == "maths":
-            neg = clean_maths_negatives(neg)
-        else:  # sincere or unrelated replies that nonetheless show the concept are not negatives
+        if concept == "sarcasm":  # sincere replies that nonetheless show the concept are not negatives
             neg = [r for r in neg if r.get("rating") is not None and r["rating"] <= 2]
+        neg = clean_negatives(concept, neg)
         pos = [r for r in run(model, concept, "", tasks["train"] + tasks["val"]) if r["present"]]
         write_jsonl(saved, neg + pos)
     from sklearn.metrics import roc_auc_score

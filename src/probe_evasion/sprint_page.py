@@ -169,6 +169,8 @@ def render() -> str:
   </header>
 
   <section><h2>Results</h2>{results_grid()}</section>
+  <section><h2>Every reply's score, with the flag line before and after the calibration fix</h2>
+    <figure class="card"><img class="fig" src="score_dots.png" alt="Probe scores per reply type with old and corrected flag lines"></figure></section>
   <section><h2>Better-trained probes catch the same optimized answers</h2>
     <figure class="card"><img class="fig" src="probe_rungs.png" alt="Probe-strength ladder: training data, method and miss rate for each rung"></figure></section>
   <section><h2>The depth effect differs by model</h2>{depth_chart()}</section>

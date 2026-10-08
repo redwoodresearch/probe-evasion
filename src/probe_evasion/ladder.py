@@ -36,8 +36,7 @@ def rescore(run_dir: str, probes: str, tests: str = "test"):
     if concept == "maths":  # current answer check: exact number, no working shown, judged to answer the question
         gepa.recheck_maths([r for r in rows if r["task"]["split"] != "negative"])
     clean_neg = [r for r in cal if r["task"]["split"] == "negative"]
-    if concept == "maths":
-        clean_neg = gepa.clean_maths_negatives(clean_neg)
+    clean_neg = gepa.clean_negatives(concept, clean_neg)
     report = {"probes": probes, "run": run_dir, "results": {}}
     for name in probe_set:
         neg = [r["ladder"][name] for r in clean_neg]
@@ -153,8 +152,7 @@ def rescore_logits(run_dir: str):
     if concept == "maths":  # current answer check: exact number, no working shown, judged to answer the question
         gepa.recheck_maths([r for r in rows if r["task"]["split"] != "negative"])
     neg = [r for r in cal if r["task"]["split"] == "negative"]
-    if concept == "maths":
-        neg = gepa.clean_maths_negatives(neg)
+    neg = gepa.clean_negatives(concept, neg)
     pos = [r for r in cal if r["task"]["split"] != "negative" and r["present"]]
     report = {"run": run_dir, "readings": {}}
     for pool in POOLS:

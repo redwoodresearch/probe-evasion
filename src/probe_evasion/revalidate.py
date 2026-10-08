@@ -1,4 +1,4 @@
-"""Re-judge a finished maths search with the current answer check and every current reading, from its saved token
+"""Re-judge a finished search with the current answer check (maths) and every current reading, from its saved token
 logits (no GPU): thresholds recomputed on the run's own no-concept replies, misses per test arm, and which problem
 families the misses come from. Writes revalidated.json next to summary.json.
 
@@ -31,9 +31,11 @@ def revalidate(run_dir: Path) -> dict:
     arms = {f.stem.removeprefix("test_"): jl(f) for f in sorted(run_dir.glob("test_*.jsonl"))}
     for r in cal + [r for rs in arms.values() for r in rs]:
         r.update(gepa.readings(r["token_scores"], r["token_logits"]))
-    gepa.recheck_maths([r for r in cal if r["task"]["split"] != "negative"] + [r for rs in arms.values() for r in rs])
-    neg = gepa.clean_maths_negatives([r for r in cal if r["task"]["split"] == "negative"])
-    report = {"run": str(run_dir), "readings": {}}
+    concept = json.loads((run_dir / "run_config.json").read_text())["concept"]
+    if concept == "maths":
+        gepa.recheck_maths([r for r in cal if r["task"]["split"] != "negative"] + [r for rs in arms.values() for r in rs])
+    neg = gepa.clean_negatives(concept, [r for r in cal if r["task"]["split"] == "negative"])
+    report = {"run": str(run_dir), "n_negative": len(neg), "readings": {}}
     for pool in gepa.POOLS:
         thr = float(np.quantile([r[pool] for r in neg], 1 - gepa.FALSE_ALARM))
         entry = {"threshold": thr, "missed": {}}
