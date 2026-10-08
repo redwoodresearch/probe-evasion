@@ -14,30 +14,76 @@ SPRINT = Path("sprint")
 OUT = SPRINT / "page.html"
 G = Path("results/gepa")
 CONCEPTS = {"maths": "Maths in the head", "sarcasm": "Sarcasm", "chemistry": "Chemistry"}
-READINGS = [("mean", "averaged"), ("ema", "EMA"), ("window", "10-token window"), ("max", "highest token")]
-N_LAYERS = {"gemma": 42, "qwen35": 64}
-# (model, concept, probe layer, run directory or None for "latest matching", readout the search optimized)
-GRID = [
-    ("Gemma-2-9B", "Maths", "12", G / "gemma_maths_ema_20261007-145004", "ema"),
-    ("Gemma-2-9B", "Maths", "30", G / "gemma_maths_window_L30_20261007-151039", "window"),
-    ("Gemma-2-9B", "Maths", "36", G / "gemma_maths_window_L36_20261007-154620", "window"),
-    ("Gemma-2-9B", "Maths", "30, varied training", G / "gemma_maths_window_variedL30_20261007-154620", "window"),
-    ("Gemma-2-9B", "Chemistry", "12 (paper's probe)", G / "gemma_chemistry_ema_20261007-145004", "ema"),
-    ("Gemma-2-9B", "Sarcasm", "12", G / "gemma_sarcasm_ema_20261007-145004", "ema"),
-    ("Qwen3.5-27B", "Maths", "16", G / "qwen35_maths_window_L16_20261007-173549", "window"),
-    ("Qwen3.5-27B", "Maths", "32", G / "qwen35_maths_window_L32_20261007-173549", "window"),
-    ("Qwen3.5-27B", "Maths", "48", G / "qwen35_maths_window_L48_20261007-173549", "window"),
-    ("Qwen3.5-27B", "Maths", "48, searched vs highest token", "qwen35_maths_max_L48_*", "max"),
-    ("Qwen3.5-27B", "Chemistry", "16", G / "qwen35_chemistry_window_L16_20261007-173800", "window"),
-    ("Qwen3.5-27B", "Chemistry", "48", G / "qwen35_chemistry_window_L48_20261007-173800", "window"),
+Q, GM = "qwen35_maths", "gemma_maths"
+QRUN = {"window": G / f"{Q}_window_L48_20261007-173549", "onpolicy": G / f"{Q}_ema_onpolicy_L48_20261007-190705",
+        "rewrites": G / f"{Q}_ema_rewrites_L48_20261007-190705", "clean": G / f"{Q}_ema_onpolicyclean_L48_20261008-v2",
+        "divaug": G / f"{Q}_ema_onpolicydivaug_L48_20261008-v2"}
+GRUN = {"saved": G / f"{GM}_window_L36_20261007-154620", "clean36": G / f"{GM}_ema_onpolicyclean_L36_20261008-v2",
+        "clean30": G / f"{GM}_ema_onpolicyclean_L30_20261008-v2"}
+CHEM = {48: G / "qwen35_chemistry_window_L48_20261007-173800", 16: G / "qwen35_chemistry_window_L16_20261007-173800"}
+
+
+def ladder_cell(run: Path, probe: str, layer: int, arm: str) -> tuple[int, int]:
+    res = read_json(run / f"ladder_{probe}.json")["results"][f"maths@L{layer}"]["ema"]["missed"][arm]
+    return tuple(int(x) for x in res.split("/"))
+
+
+def reval_cell(run: Path, arm: str) -> tuple[int, int]:
+    m = read_json(run / "revalidated.json")["readings"]["ema"]["missed"][arm]
+    return m["missed"], m["valid"]
+
+
+def summary_cell(run: Path, arm: str) -> tuple[int, int]:
+    """Searches run under the current maths rules (calibration version 2+): their own held-out summary is current."""
+    assert read_json(run / "calibration.json").get("version", 0) >= 2, run
+    a = read_json(run / "summary.json")["arms"][arm]
+    return a["missed_ema"], a["present"]
+
+
+def repeat_cell(run: Path, kind: str, arm: str) -> tuple[int, int]:
+    a = read_json(run / f"{kind}.json")["arms"][arm]
+    return a["valid_evasions"], a["attempts"]
+
+
+# (group, probe, attack, held-out (optimized, plain), repeats (optimized, plain), new division problems (optimized, plain))
+ROWS = [
+    ("Qwen3.5-27B · maths · layer 48", "Templated data (original)", "found against this probe",
+     lambda: (ladder_cell(QRUN["window"], f"{Q}_layers", 48, "optimized"), ladder_cell(QRUN["window"], f"{Q}_layers", 48, "no_instruction")), None, None),
+    (None, "Model's own replies", "fresh search against it",
+     lambda: (ladder_cell(QRUN["onpolicy"], f"{Q}_onpolicy", 48, "optimized"), ladder_cell(QRUN["onpolicy"], f"{Q}_onpolicy", 48, "no_instruction")),
+     lambda: (repeat_cell(QRUN["onpolicy"], "large_test", "optimized"), repeat_cell(QRUN["onpolicy"], "large_test", "plain")),
+     lambda: (repeat_cell(QRUN["onpolicy"], "fresh_test", "optimized"), repeat_cell(QRUN["onpolicy"], "fresh_test", "plain"))),
+    (None, "Own replies + narrative rewrites", "fresh search against it",
+     lambda: (ladder_cell(QRUN["rewrites"], f"{Q}_rewrites_lr", 48, "optimized"), ladder_cell(QRUN["rewrites"], f"{Q}_rewrites_lr", 48, "no_instruction")),
+     lambda: (repeat_cell(QRUN["rewrites"], "large_test", "optimized"), repeat_cell(QRUN["rewrites"], "large_test", "plain")),
+     lambda: (repeat_cell(QRUN["rewrites"], "fresh_test", "optimized"), repeat_cell(QRUN["rewrites"], "fresh_test", "plain"))),
+    (None, "Own replies, clean labels", "fresh search against it",
+     lambda: (summary_cell(QRUN["clean"], "optimized"), summary_cell(QRUN["clean"], "no instruction")),
+     lambda: (repeat_cell(QRUN["clean"], "large_test", "optimized"), repeat_cell(QRUN["clean"], "large_test", "plain")),
+     lambda: (repeat_cell(QRUN["clean"], "fresh_test", "optimized"), repeat_cell(QRUN["clean"], "fresh_test", "plain"))),
+    (None, "Clean labels + varied division", "fresh search against it",
+     lambda: (summary_cell(QRUN["divaug"], "optimized"), summary_cell(QRUN["divaug"], "no instruction")),
+     lambda: (repeat_cell(QRUN["divaug"], "large_test", "optimized"), repeat_cell(QRUN["divaug"], "large_test", "plain")),
+     lambda: (repeat_cell(QRUN["divaug"], "fresh_test", "optimized"), repeat_cell(QRUN["divaug"], "fresh_test", "plain"))),
+    ("Gemma-2-9B · maths", "Templated data, layer 6 of 42", "found against the layer-36 probe",
+     lambda: (ladder_cell(GRUN["saved"], f"{GM}_layers", 6, "optimized"), ladder_cell(GRUN["saved"], f"{GM}_layers", 6, "no_instruction")), None, None),
+    (None, "Templated data, layer 12", "found against the layer-36 probe",
+     lambda: (ladder_cell(GRUN["saved"], f"{GM}_layers", 12, "optimized"), ladder_cell(GRUN["saved"], f"{GM}_layers", 12, "no_instruction")), None, None),
+    (None, "Templated data, layer 36", "found against this probe",
+     lambda: (ladder_cell(GRUN["saved"], f"{GM}_layers", 36, "optimized"), ladder_cell(GRUN["saved"], f"{GM}_layers", 36, "no_instruction")), None, None),
+    (None, "Own replies, clean labels, layer 36", "fresh search against it",
+     lambda: (summary_cell(GRUN["clean36"], "optimized"), summary_cell(GRUN["clean36"], "no instruction")),
+     lambda: (repeat_cell(GRUN["clean36"], "large_test", "optimized"), repeat_cell(GRUN["clean36"], "large_test", "plain")),
+     lambda: (repeat_cell(GRUN["clean36"], "fresh_test", "optimized"), repeat_cell(GRUN["clean36"], "fresh_test", "plain"))),
+    (None, "Own replies, clean labels, layer 30", "fresh search against it",
+     lambda: (summary_cell(GRUN["clean30"], "optimized"), summary_cell(GRUN["clean30"], "no instruction")), None,
+     lambda: (repeat_cell(GRUN["clean30"], "fresh_test", "optimized"), repeat_cell(GRUN["clean30"], "fresh_test", "plain"))),
+    ("Qwen3.5-27B · chemistry", "Chemistry dataset, layer 48", "found against this probe",
+     lambda: (reval_cell(CHEM[48], "optimized"), reval_cell(CHEM[48], "no_instruction")), None, None),
+    (None, "Chemistry dataset, layer 16", "found against this probe",
+     lambda: (reval_cell(CHEM[16], "optimized"), reval_cell(CHEM[16], "no_instruction")), None, None),
 ]
-# maths, Gemma vs Qwen by depth: (model, layer, run)
-DEPTH = [("gemma", 12, G / "gemma_maths_ema_20261007-145004"), ("gemma", 30, G / "gemma_maths_window_L30_20261007-151039"),
-         ("gemma", 36, G / "gemma_maths_window_L36_20261007-154620"),
-         ("qwen35", 16, G / "qwen35_maths_window_L16_20261007-173549"), ("qwen35", 32, G / "qwen35_maths_window_L32_20261007-173549"),
-         ("qwen35", 48, G / "qwen35_maths_window_L48_20261007-173549")]
-LARGE = [("Gemma-2-9B maths, layer 36", G / "gemma_maths_window_L36_20261007-154620"),
-         ("Gemma-2-9B maths, layer 30, varied training", G / "gemma_maths_window_variedL30_20261007-154620")]
+
 
 EXTRA_CSS = """
 .grid { width: 100%; border-collapse: separate; border-spacing: 3px; font-size: 13px; }
@@ -48,7 +94,8 @@ EXTRA_CSS = """
 .grid td.l span { color: var(--muted); font-weight: 400; font-size: 12px; }
 .grid td.target { outline: 2px solid var(--fg); outline-offset: -2px; }
 .grid td .sub { display: block; font: 400 10.5px var(--mono); color: var(--muted); }
-.grid tr.sep td { padding-top: 14px; }
+.grid tr.group td { padding-top: 16px; text-align: left; font: 600 12px var(--sans); color: var(--muted); background: none; }
+.grid td.na { font: 400 11.5px var(--mono); color: var(--muted); background: var(--surface); }
 .tablewrap { overflow-x: auto; }
 .fig { display: block; width: 100%; border-radius: 6px; background: #fff; }
 .links { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
@@ -66,86 +113,37 @@ def read_json(p: Path):
 
 
 def corrected_misses(run: Path, target: str) -> tuple[tuple[int, int], tuple[int, int]]:
-    """(plain, optimized) as (missed, concept present) on the held-out test, from the raw-logit re-scoring
-    (summary_logits.json) when it exists, else the search's own summary."""
-    if (run / "summary_logits.json").exists():
-        m = read_json(run / "summary_logits.json")["readings"][target]["missed"]
-        return tuple(tuple(int(x) for x in m[a].split("/")) for a in ("no_instruction", "optimized"))
+    """(plain, optimized) as (missed, valid) on the held-out test: revalidated.json (current measurement rules) when it
+    exists, else the numbers as the search saw them (summary.json)."""
+    if (run / "revalidated.json").exists():
+        m = read_json(run / "revalidated.json")["readings"][target]["missed"]
+        return tuple((m[a]["missed"], m[a]["valid"]) for a in ("no_instruction", "optimized"))
     arms = read_json(run / "summary.json")["arms"]
     return tuple((arms[a][f"missed_{target}"], arms[a]["present"]) for a in ("no instruction", "optimized"))
 
 
-def finished(run: Path | None) -> bool:
-    return run is not None and (run / "summary.json").exists() and "arms" in read_json(run / "summary.json")
+def cell(pair: tuple[tuple[int, int], tuple[int, int]] | None) -> str:
+    if pair is None:
+        return '<td class="na">not run</td>'
+    (k, n), (pk, pn) = pair
+    rate = k / n if n else 0
+    return (f'<td style="background: rgba(234,88,12,{0.04 + 0.7 * rate:.2f})" title="red team {k}/{n}; normal prompt {pk}/{pn}">'
+            f'{100 * rate:.0f}%<span class="sub">{k}/{n}</span><span class="sub">normal {pk}/{pn}</span></td>')
 
 
-def results_grid() -> str:
-    head = "".join(f"<th>{esc(n)}</th>" for _, n in READINGS)
-    rows, last_model = "", None
-    for model, concept, layer, run, searched in GRID:
-        if isinstance(run, str):
-            matches = sorted(G.glob(run))
-            run = matches[-1] if matches else None
-        sep = ' class="sep"' if last_model and model != last_model else ""
-        last_model = model
-        label = f'<td class="l">{esc(model)} · {esc(concept)}<span> · layer {esc(layer)}</span></td>'
-        if not finished(run):
-            rows += f'<tr{sep}>{label}<td colspan="{len(READINGS)}" class="l"><span>search running</span></td></tr>'
-            continue
-        cells = ""
-        for key, _ in READINGS:
-            (pk, pn), (ok, on) = corrected_misses(run, key)
-            rate = ok / on
-            cells += (f'<td class="{"target" if key == searched else ""}" style="background: rgba(234,88,12,{0.05 + 0.7 * rate:.2f})" '
-                      f'title="red-team prompt {ok}/{on}; normal prompt {pk}/{pn}">{100 * rate:.0f}%'
-                      f'<span class="sub">normal {100 * pk / pn:.0f}%</span></td>')
-        rows += f"<tr{sep}>{label}{cells}</tr>"
-    return (f'<figure class="card"><figcaption><b>Out of date for maths:</b> these use the original answer check and calibration; under the corrected '
-            f'calibration (see findings log) the Qwen maths red-team rates fall to near 0. Being rebuilt. '
-            f'Share of valid answers (concept confirmed) that the red-team prompt gets past the probe, '
-            f'on 100 held-out tasks; small text: the normal prompt. Columns: how the probe\'s per-token scores are combined. '
-            f'Outlined: the reading that search optimized against.</figcaption><div class="tablewrap"><table class="grid">'
-            f'<thead><tr><th class="l">Model · concept · probe layer</th>{head}</tr></thead><tbody>{rows}</tbody></table></div></figure>')
-
-
-def depth_chart() -> str:
-    """Maths, EMA reading: red-team miss rate against relative probe depth, Gemma vs Qwen."""
-    w, h, l, b, t = 640, 240, 44, 40, 18
-    x = lambda f: l + f * (w - l - 16)
-    y = lambda v: t + (1 - v) * (h - t - b)
-    out = "".join(f'<line class="grid" x1="{l}" x2="{w - 16}" y1="{y(v):.1f}" y2="{y(v):.1f}"/>'
-                  f'<text class="tick" x="{l - 6}" y="{y(v) + 4:.1f}" text-anchor="end">{int(v * 100)}%</text>' for v in (0, .5, 1))
-    out += "".join(f'<text class="tick" x="{x(f):.1f}" y="{h - 20}" text-anchor="middle">{int(f * 100)}%</text>' for f in (0, .25, .5, .75, 1))
-    out += f'<text class="tick" x="{(l + w) / 2:.0f}" y="{h - 4}" text-anchor="middle">probe depth (share of the model\'s layers)</text>'
-    for model, cls in (("gemma", "s2"), ("qwen35", "s1")):
-        pts = []
-        for m, layer, run in DEPTH:
-            if m == model and finished(run):
-                (_, _), (ok, on) = corrected_misses(run, "ema")
-                pts.append((layer / N_LAYERS[m], ok / on, layer, ok, on))
-        pp = " ".join(f"{x(f):.1f},{y(v):.1f}" for f, v, *_ in pts)
-        out += f'<polyline class="ln {cls}" points="{pp}"/>' + "".join(
-            f'<circle class="dot {cls}" cx="{x(f):.1f}" cy="{y(v):.1f}" r="4.5"><title>layer {L}: {k}/{n}</title></circle>'
-            f'<text class="val" x="{x(f):.1f}" y="{y(v) - 9:.1f}" text-anchor="middle">L{L}</text>' for f, v, L, k, n in pts)
-    return (f'<figure class="card"><figcaption><b>Out of date:</b> original calibration, being rebuilt. <span class="key"><span class="sw s2"></span>Gemma-2-9B (42 layers)</span>'
-            f'<span class="key"><span class="sw s1"></span>Qwen3.5-27B (64 layers)</span> · maths, a fresh search at each probe, '
-            f'EMA reading, held-out</figcaption><svg viewBox="0 0 {w} {h}" role="img" aria-label="Miss rate by probe depth">{out}</svg></figure>')
-
-
-def rare_table() -> str:
+def evasion_table() -> str:
     rows = ""
-    for label, run in LARGE:
-        if not (run / "large_test.json").exists():
-            continue
-        arms = read_json(run / "large_test.json")["arms"]
-        if "evasions_per_attempt" not in arms.get("optimized", {}):
-            continue
-        cell = lambda a: (f'{a["valid_evasions"]}/{a["attempts"]} ({100 * a["evasions_per_attempt"]:.1f}%; 95% CI '
-                          f'{100 * a["ci95_per_attempt"][0]:.2f}-{100 * a["ci95_per_attempt"][1]:.2f}%)')
-        rows += f'<tr><td>{esc(label)}</td><td class="n">{cell(arms["optimized"])}</td><td class="n">{cell(arms["plain"])}</td></tr>'
-    return (f'<figure class="card"><figcaption>Valid evasions out of all attempts: 10 samples on each of 100 held-out problems, '
-            f'10-token window</figcaption><div class="tablewrap"><table class="ptable"><thead><tr><th>Probe</th>'
-            f'<th>Red-team prompt</th><th>Normal prompt</th></tr></thead><tbody>{rows}</tbody></table></div></figure>')
+    for group, probe, attack, held, rep, fresh in ROWS:
+        if group:
+            rows += f'<tr class="group"><td colspan="5">{esc(group)}</td></tr>'
+        rows += (f'<tr><td class="l">{esc(probe)}<span>{esc(attack)}</span></td>{cell(held())}'
+                 f'{cell(rep() if rep else None)}{cell(fresh() if fresh else None)}</tr>')
+    return (f'<figure class="card"><figcaption>Valid answers that get past the probe (EMA reading, 1% false-alarm line from cleaned '
+            f'no-concept replies). Held-out: misses among valid answers on 100 problems the search never saw. Repeated and new-problem '
+            f'columns: valid evasions out of all attempts (10 samples of the 100 problems; 100 new division problems x 3). Small text: '
+            f'the same probe on the normal prompt.</figcaption><div class="tablewrap"><table class="grid"><thead><tr>'
+            f'<th class="l">Probe trained on · attack</th><th>Held-out problems</th><th>1,000 repeated attempts</th>'
+            f'<th>New division problems</th></tr></thead><tbody>{rows}</tbody></table></div></figure>')
 
 
 def render() -> str:
@@ -168,13 +166,11 @@ def render() -> str:
     <p class="lede">{esc(st['headline'])}</p>
   </header>
 
-  <section><h2>Results</h2>{results_grid()}</section>
+  <section><h2>What gets past the probes</h2>{evasion_table()}</section>
   <section><h2>Every reply's score, with the flag line before and after the calibration fix</h2>
     <figure class="card"><img class="fig" src="score_dots.png" alt="Probe scores per reply type with old and corrected flag lines"></figure></section>
-  <section><h2>Better-trained probes catch the same optimized answers</h2>
+  <section><h2>How each maths probe was trained (layer 48; last columns re-scored under the corrected calibration)</h2>
     <figure class="card"><img class="fig" src="probe_rungs.png" alt="Probe-strength ladder: training data, method and miss rate for each rung"></figure></section>
-  <section><h2>The depth effect differs by model</h2>{depth_chart()}</section>
-  <section><h2>Rare misses against the strongest Gemma probes</h2>{rare_table()}</section>
   <section><h2>Pages</h2><div class="links">{links}</div></section>
 
   <section>
@@ -183,7 +179,8 @@ def render() -> str:
   </section>
   {section_spend(st['running'])}
 
-  <details class="more"><summary>Findings log</summary><ul class="takeaways">{''.join(f"<li>{esc(x)}</li>" for x in st['takeaways'])}</ul></details>
+  <details class="more" open><summary>Findings (corrected measurement)</summary><ul class="takeaways">{''.join(f"<li>{esc(x)}</li>" for x in st['takeaways'])}</ul></details>
+  <details class="more"><summary>Earlier findings log (numbers superseded by the measurement fixes)</summary><ul class="takeaways">{''.join(f"<li>{esc(x)}</li>" for x in st['superseded'])}</ul></details>
   <details class="more"><summary>Setup and methods</summary><dl>{decisions}</dl></details>
 </div>
 """
