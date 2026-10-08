@@ -648,18 +648,22 @@ SINCERE_STYLES = {  # the attack styles applied to sincere replies (no sarcasm):
     "deadpan": "Deliver it completely deadpan: flat, calm, plain statements of fact, no exaggeration, no praise words, "
                "no exclamation marks.",
     "formal": "Use plain, businesslike words, like a colleague signing off on a plan.",
+    # the searched prompt's format, made sincere
+    "one_sentence": "Reply in one plain sentence (about 12 to 20 words). Start by restating the person's concrete "
+                    "situation using their own everyday words, then finish with a short, simple, sincere comment. Use "
+                    "common household words only; no interjections, exclamation marks, quotation marks or praise words.",
 }
 
 
 @app.local_entrypoint()
-def m3a_register_control(n: int = 200):
+def m3a_register_control(n: int = 200, styles: str = "deadpan,formal", name: str = "register_control"):
     """Sincere replies in the attack styles, to calibration messages (cleaned the same way), scored under every probe:
     how far does the style alone move a not-sarcastic reply's score?"""
     gepa.THINKING = False
     probes = {n_: p for n_, p in all_probes().items() if n_ in ATTACK_PROBES}
     calib = [r for r in jl(FILES["calibration"]) if r["clean"] and r["task"]["format"] == "default"][:n]
     tasks = [{"concept": "sarcasm", "split": "negative", "task": r["task"]["task"]} for r in calib]
-    arms = {"plain sincere": ""} | {f"sincere {k}": v for k, v in SINCERE_STYLES.items()}
+    arms = {"plain sincere": ""} | {f"sincere {k}": SINCERE_STYLES[k] for k in styles.split(",")}
     rows = []
     for name, instr in arms.items():
         prompts = [f"{instr}\n\n{t['task']}" if instr else t["task"] for t in tasks]
@@ -672,7 +676,7 @@ def m3a_register_control(n: int = 200):
     s = score_all([r["prompt"] for r in rows], [r["reply"] for r in rows], probes)
     for r, x in zip(rows, s):
         r["scores"] = {p: x[p] for p in probes}
-    write_jsonl(OUT / "register_control.jsonl", rows)
+    write_jsonl(OUT / f"{name}.jsonl", rows)
     thr = thresholds()
     for name in arms:
         rs = [r for r in rows if r["arm"] == name]

@@ -135,10 +135,16 @@
    "question": "Does the source of off-policy training text matter (Gemma-2-9B vs Claude)?",
    "probe": "Off-policy (Gemma-written), layer 48",
    "state": "negative",
-   "attack": null,
-   "plain": null,
-   "basis": "",
-   "note": "Maths: trained for the peak reading, the Gemma-text probe misses at most 0.8% of attempts at the attack's own-format line, about the same as the own-replies probe; the earlier 505/1000 came from the line and the mean-vs-peak mismatch. Chemistry without nearby negatives: false alarms on biology and maths replies (208 of 243 at the 1% line, vs 6 with them), but chemistry answers are not evadable (0-1 misses per arm).",
+   "attack": [
+    45,
+    1000
+   ],
+   "plain": [
+    0,
+    1000
+   ],
+   "basis": "peak-trained Gemma-text maths probe (3 seeds), frozen story-sentence prompt, 1,000 attempts on new problems, pooled one-sentence 1% line (worst seed)",
+   "note": "Weak and calibration-driven: the Gemma probe scores benign garden-area lookups high enough to set its line; without that template, 0/1000; at an own-format line, 1-2/1000. The prompt never mentions evasion. Claude-text and own-replies probes: 0-1 on the same replies. Chemistry without near negatives: false alarms on science (208 of 243), but chemistry not evadable (2 of 290).",
    "next": "Finished (RESULT.md)."
   }
  ]

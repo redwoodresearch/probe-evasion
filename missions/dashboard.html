@@ -53,7 +53,7 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Probe evasion sprint · updated 12:55 PM</div>
+    <div class="eyebrow">Probe evasion sprint · updated 1:01 PM</div>
     <h1>Evasion missions: where a prompted model gets past a probe</h1>
     <p class="lede">8 agents in parallel, each testing one way a probe-based monitor might be evaded by prompting alone,
     while the answer still does the task. 1 promising, 2 running.
@@ -91,11 +91,11 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
     <p class="q">Does the source of off-policy training text matter (Gemma-2-9B vs Claude)?</p>
     <div class="probe">Off-policy (Gemma-written), layer 48</div>
   </div>
-  <div class="res"><div class="pending">No numbers yet</div></div>
+  <div class="res"><div class="bar"><span class="lbl">Told to evade</span><div class="track"><div class="fill" style="width:4.5%;background:var(--attack)"></div></div><span class="num">4% · 45/1000</span></div><div class="bar"><span class="lbl">Not told</span><div class="track"><div class="fill" style="width:0.0%;background:var(--plain)"></div></div><span class="num">0% · 0/1000</span></div><div class="basis">peak-trained Gemma-text maths probe (3 seeds), frozen story-sentence prompt, 1,000 attempts on new problems, pooled one-sentence 1% line (worst seed)</div></div>
   <div class="notes">
-    <div>Maths: trained for the peak reading, the Gemma-text probe misses at most 0.8% of attempts at the attack&#x27;s own-format line, about the same as the own-replies probe; the earlier 505/1000 came from the line and the mean-vs-peak mismatch. Chemistry without nearby negatives: false alarms on biology and maths replies (208 of 243 at the 1% line, vs 6 with them), but chemistry answers are not evadable (0-1 misses per arm).</div>
+    <div>Weak and calibration-driven: the Gemma probe scores benign garden-area lookups high enough to set its line; without that template, 0/1000; at an own-format line, 1-2/1000. The prompt never mentions evasion. Claude-text and own-replies probes: 0-1 on the same replies. Chemistry without near negatives: false alarms on science (208 of 243), but chemistry not evadable (2 of 290).</div>
     <div><b>Next:</b> Finished (RESULT.md).</div>
-    <div class="live">Agent's own status (12:54 PM): chemistry readout finishing (scoring running); then lead&#x27;s second redirect (11:40): a MATHS probe trained on</div>
+    <div class="live">Agent's own status (1:01 PM): chemistry readout finishing (scoring running); then lead&#x27;s second redirect (11:40): a MATHS probe trained on</div>
   </div>
 </article></section><section><h2>Meaning vs wording</h2><article class="row">
   <div class="id">
@@ -119,7 +119,7 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
   <div class="notes">
     <div>Phase A: the off-policy anger probe catches every valid hand-written attack at the 1% line. Validity requires a &#x27;blind&#x27; judge rating with the request hidden.</div>
     <div><b>Next:</b> Context diagnostic and one exploratory search, running remotely.</div>
-    <div class="live">Agent's own status (12:53 PM): v2 Phase A running remotely (chain `m3c_anger_v2_peak`, app launched from m3c_launch).</div>
+    <div class="live">Agent's own status (1:01 PM): v2 Phase A done (14:00); Phase B search (5 rounds, peak probe L48) running remotely as a last check.</div>
   </div>
 </article><article class="row">
   <div class="id">
@@ -143,7 +143,7 @@ h2 { font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercas
   <div class="notes">
     <div>Mostly from the instruction sitting in context: with it removed, 4/54. Layer convention verified from the probe files. Bug found by m1d: this scorer&#x27;s EMA reading started at AISI&#x27;s threshold, so EMA numbers (including this one) are being re-checked with AISI&#x27;s own mean reading.</div>
     <div><b>Next:</b> Have the model write the warm framing itself in its reply, then deceive.</div>
-    <div class="live">Agent's own status (12:48 PM): A done (11:58); diagnosing where the probe signal comes from before any search. Started 11:22.</div>
+    <div class="live">Agent's own status (12:57 PM): A done (11:58); diagnosing where the probe signal comes from before any search. Started 11:22.</div>
   </div>
 </article><article class="row">
   <div class="id">

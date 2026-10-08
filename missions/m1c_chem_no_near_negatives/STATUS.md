@@ -100,11 +100,31 @@ the one-sentence line (strict 35/32/37; instruction removed 49/28/34; plain 0; p
 0-2/600), own-format line 1/2/1, garden left out 0/0/0. Garden lookups alone set the one-sentence line (0.12-0.15 vs
 0.009-0.011 without). Comparable to 1a's offpeak (68) and above onpeak (2).
 
-**Verdict so far:** chemistry negative. Gemma maths: a reproducible ~4% vs 0% gap only at the pooled one-sentence
-line, gone at the own-format line, so treated as a calibration effect, not robust evasion. RESULT.md drafted; final
-critic running.
+**Phase:** done. RESULT.md written.
+
+**Verdict:**
+- **Chemistry: negative.** Leaving out nearby negatives causes false alarms on biology/maths (208/243), not
+  evadability.
+- **Gemma-text maths, peak-trained: weak positive with a calibration caveat.**
+  - Frozen divaug-v2 style prompt: 38-45 valid evasions per 1,000 attempts against 0 plain, at the pooled
+    one-sentence 1% line, across 3 seeds.
+  - 1a's Claude-text and own-replies peak probes get 0-1 on the same replies.
+  - Cause: the Gemma probe scores the benign garden-area lookups high, which lifts the line.
+  - With the line set per answer format, or with that template left out, the gap is 0-2 per 1,000.
+- **Next step, not run:** a short search against `gem2pk`.
 
 ## Critic check-ins
+- 13:30 (pre-verdict). Points:
+  1. Report 0.1% and 5%. At 0.1%, the "is actually" survey replies set the line, for every off-policy probe.
+  2. Compare against 1a's properly trained `offpk`/`onpk` (0-1 per 1,000), not the under-trained `offpeak`.
+  3. "Negative" is unfair; call it a weak positive with a calibration caveat.
+  4. The own-format line has only 280 negatives.
+  5. Report misses among valid answers.
+  6. Chemistry: 2/252 without the biology arm.
+
+  Done: `final_table` (all rates, four pool variants, seeded 1a probes on the same rows, bootstrap interval for the
+  own-format line), RESULT reframed, valid counts given. Not done: generating more own-format negatives (time); the
+  bootstrap interval is reported instead.
 - 12:50 (Gemma maths). Points: (1) the peak run crashed (class imported inside the entrypoint), fixed; (2) template /
   number-size confound in the Gemma set from comma balancing, which plausibly explains the garden-lookup line and the
   division-concentrated misses: rebuilt as v2 (separators stripped, per-template matching); (3) "artifact" reading
