@@ -50,7 +50,7 @@ ROWS = [
         ("Qwen maths + varied division data, layer 48: attacked directly", lambda: reval("qwen35_maths_ema_onpolicydivaug_L48_20261008-v2")),
         ("Gemma maths, layer 36: attacked directly", lambda: reval("gemma_maths_ema_onpolicyclean_L36_20261008-v2")),
         ("Gemma maths, layer 30: attacked directly", lambda: reval("gemma_maths_ema_onpolicyclean_L30_20261008-v2")),
-        ("Qwen chemistry (biology, maths as negatives), layer 48: attacked directly", chem_new),
+        ("Qwen chemistry, layer 48: attacked directly", chem_new),
     ]),
     ("Trained on text we wrote from templates (maths)", [
         ("Qwen maths, layer 48: attacked directly", lambda: reval("qwen35_maths_window_L48_20261007-173549")),
