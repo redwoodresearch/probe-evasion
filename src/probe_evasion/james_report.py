@@ -38,11 +38,6 @@ def gemma_layer(layer: int) -> tuple[tuple[int, int], tuple[int, int]]:
     return frac(e["missed_lenient"]["optimized"]), frac(e["missed_lenient"]["no_instruction"])
 
 
-def chem_old() -> tuple[tuple[int, int], tuple[int, int]]:
-    line = next(l for l in read(P / "chem_eval_qwen35_chemistry_layers.json")["layers"]["L48"]["lines"] if l["false_alarm"] == 0.01)
-    return frac(line["missed_optimized"]), frac(line["missed_no_instruction"])
-
-
 def chem_new() -> tuple[tuple[int, int], tuple[int, int]]:
     a = read(G / "qwen35_chemistry_ema_onpolicy_L48_20261008" / "summary.json")["arms"]
     return (a["optimized"]["missed_ema"], a["optimized"]["present"]), (a["no instruction"]["missed_ema"], a["no instruction"]["present"])
@@ -62,9 +57,6 @@ ROWS = [
         ("Gemma maths, layer 36 (search against it)", lambda: gemma_layer(36)),
         ("Gemma maths, layer 12 (same answers)", lambda: gemma_layer(12)),
         ("Gemma maths, layer 6 of 42 (same answers)", lambda: gemma_layer(6)),
-    ]),
-    ("Trained on the Neural Chameleons dataset (another model's text; non-chemistry side mostly other languages)", [
-        ("Qwen chemistry, layer 48 (search against it)", chem_old),
     ]),
 ]
 
