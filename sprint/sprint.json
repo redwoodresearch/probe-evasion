@@ -1,6 +1,7 @@
 {
  "lede": "Probes for harmless concepts, trained the way the Neural Chameleons paper trains them. Claude searches for the instruction that best lets the model keep the concept while the probe misses it, seeing every reply's raw probe score; the best instruction is then frozen and tested on 100 new tasks.",
  "takeaways": [
+  "Re-judged with the stricter answer check (no working shown; Claude judge that the number answers the question; plain-prompt answers stay 90/90 valid), EMA reading: fresh search vs own-replies probe, layer 32: 0 valid answers of 100 (every one wrote the result as a label, e.g. 'the tram labeled 90'); layer 48: 1 miss / 89 valid (probability EMA 2); vs narrative-rewrites probe, layer 48: 3 / 49 valid (probability EMA 5). Earlier transfer attacks under their own templated probe: window-aimed 34/61 valid, max-aimed 58/70. Gemma large tests: layer 36 red-team 1/1000 attempts valid evasions (was 2/1000), plain prompt 15/1000. All 11 misses previously counted on Qwen were sweets-sharing division problems.",
   "Fresh search against the own-replies probe (rung 3) at layer 48: 3/98 correct answers missed under EMA (normal prompt 0/90); with the instruction removed, 0. Label audit of the on-policy training data: 157 of 960 'given' answers labelled not-computed actually contain a number the model computed (e.g. 1,929 x 3 = 5,787), which likely makes rungs 3-5 weaker than they should be; clean-label retrain planned.",
   "Second transfer attack (the prompt optimized against the templated probe's highest single token), layer 48, EMA: templated probe misses 83/99, varied wording 61/99, own replies 12/99, own replies lab-trained 12/99, plus narrative rewrites 12/99 (normal prompt 0). So the stronger probes leave about 4-12% of optimized answers uncaught depending on the attack, not ~4%.",
   "Fresh Claude searches (15 rounds) aimed directly at the stronger Qwen maths probes, best prompt frozen and tested on 100 held-out problems, EMA reading: own-replies probe at layer 32: 2 of 98 correct answers missed (normal prompt 0/90); narrative-rewrites probe at layer 48: 6/98 (normal 0/90; 10-token window 2/98, highest token 14/98). Against weak probes the same search got 60-99% past. Both winning prompts still use the scenic-sentence trick (the L32 one writes the answer as a house number or tram route). So prompt-only evasion of well-trained probes is rare but not zero, similar to Gemma's deep layers.",
@@ -31,7 +32,32 @@
   "Maths: Claude's first idea was also padding (a dreamy forest passage after the answer); the word limit rejected it. The search now states the limit up front and was restarted.",
   "Paper reading (notes/paper_insights.md): in RL-Obfuscation, trained models beat averaged probes mostly by padding and failed against max- or attention-pooled ones; prompting alone did nothing. In Obfuscated Activations, real-word prompts barely dented probes reading the reply. Both suggest prompted evasion without padding should be rare."
  ],
- "running": [],
+ "running": [
+  {
+   "job": "Qwen: clean-label retrain of own-replies probes (3 recipes), held-out checks, re-score of 4 saved attacks under all 8 probes, then a fresh search against the clean probe plus new-problem and 1,000-attempt tests",
+   "started": "23:10",
+   "eta": "04:00",
+   "gpus": 4
+  },
+  {
+   "job": "Gemma: build own-replies probe data, clean labels, train, held-out check, re-score saved attacks, fresh searches at layers 36 and 30",
+   "started": "23:10",
+   "eta": "04:00",
+   "gpus": 3
+  },
+  {
+   "job": "Chemistry (Qwen, layer 48): frozen attack and plain prompt with reasoning on; probe reading reply only vs reasoning + reply",
+   "started": "23:10",
+   "eta": "01:30",
+   "gpus": 2
+  },
+  {
+   "job": "Qwen fresh-search prompts: 100 new division problems x 3 samples, and 1,000-attempt repeat tests",
+   "started": "23:10",
+   "eta": "02:00",
+   "gpus": 2
+  }
+ ],
  "earlier": [
   [
    "Strategy bank",
@@ -142,5 +168,5 @@
    "Rebuilt the lab way: trained on the model's own replies to computation tasks and matched no-computation tasks (lookups, recalled facts) across 8 ordinary answer styles (one sentence, paragraph, email, bullets, casual, formal, restate-then-answer, answer-plus-tip); 3 further styles (dialogue, headline, FAQ) held out to choose layers and readouts by generalisation; nothing scenic, narrative or sensory anywhere, since that is the attack's family. Recipe details to be aligned with Google DeepMind's production-probes paper and Anthropic's cheap-monitors post (being read)."
   ]
  ],
- "headline": "Prompting only (the model is never trained): Claude Opus searches for an instruction while seeing every reply's probe score; the best instruction is frozen and tested on 100 new problems, and a reply counts only if it still does the task. Against probes trained on short templated answers it wins easily (60-99% of answers missed on Qwen3.5-27B). Against probes trained on the model's own replies in varied styles, even a fresh search aimed at them gets only 2-6% past: rare, but not zero."
+ "headline": "Prompting only (the model is never trained): Claude Opus searches for an instruction while seeing every reply's probe score; the best instruction is frozen and tested on 100 new problems. A stricter answer check (no working shown, and a Claude judge that the number actually answers the question) shows many earlier 'evasions' were not valid answers, e.g. the result written as a tram label. Under it, fresh searches against Qwen probes trained on the model's own replies get 0-3% of answers past (EMA reading); overnight runs repeat this with cleaned training labels, on Gemma, with reasoning on, and on new problems."
 }
