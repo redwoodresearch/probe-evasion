@@ -106,13 +106,16 @@ def layers_figure(out: Path = Path("share/james_layers.png")) -> Path:
     probe at each layer, vs plain-prompt answers, under the corrected measurement."""
     layers = (6, 12, 18, 24, 30, 36)
     data = [gemma_layer(l) for l in layers]
-    fig, ax = plt.subplots(figsize=(9, 4.6), dpi=170)
+    ladder = read(G / "gemma_maths_window_L36_20261007-154620" / "ladder_gemma_maths_layers.json")["results"]
+    heldout = read(P / "gemma_maths_layers_heldout_eval_clean.json")
+    auroc = [(ladder[f"maths@L{l}"]["val_auroc_training_style"], heldout[f"maths@L{l}"]["ema"]) for l in layers]
+    fig, ax = plt.subplots(figsize=(9, 5.4), dpi=170)
     for i, ((k, n), (pk, pn)) in enumerate(data):
         for dx, (a, b), colour in ((-0.19, (pk, pn), GREY), (0.19, (k, n), ORANGE)):
             ax.bar(i + dx, a / b, width=0.36, color=colour)
         ax.text(i + 0.19, k / n + 0.02, f"{100 * k / n:.0f}%", ha="center", fontsize=10, fontweight="bold", color=INK)
-    ax.set_xticks(range(len(layers)), [f"Layer {l}\n{k}/{n} vs {pk}/{pn}" for l, ((k, n), (pk, pn)) in zip(layers, data)],
-                  fontsize=9)
+    ax.set_xticks(range(len(layers)), [f"Layer {l}\n{k}/{n} vs {pk}/{pn}\n\nvalidation {v:.3f}\nnew styles {h:.3f}"
+                                       for l, ((k, n), (pk, pn)), (v, h) in zip(layers, data, auroc)], fontsize=8.6)
     ax.set_ylim(0, 1.05)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{100 * v:.0f}%"))
     ax.set_ylabel("Correct answers the probe misses")
@@ -124,9 +127,10 @@ def layers_figure(out: Path = Path("share/james_layers.png")) -> Path:
     fig.text(0.012, 0.87, "Same answers at every layer: those from the prompt Claude optimized against the layer-36 probe.\n"
              "Probes trained on templated text; EMA reading; the flag line catches 1% of clean no-maths replies.", fontsize=8.5,
              color=GREY, linespacing=1.4)
-    fig.text(0.012, 0.018, "Replaces the earlier version (87/84/88/44% at layers 6-24), whose false-alarm line was raised by "
-             "'no-maths' calibration replies that actually computed.", fontsize=8.3, color=GREY)
-    fig.subplots_adjust(left=0.09, right=0.98, top=0.8, bottom=0.18)
+    fig.text(0.012, 0.018, "Probe AUROC under each layer: 'validation' = its own validation split; 'new styles' = Gemma's own answers in styles "
+             "it never saw.\nReplaces the earlier version (87/84/88/44% at layers 6-24), whose false-alarm "
+             "line was raised by 'no-maths' calibration replies that actually computed.", fontsize=8.3, color=GREY, linespacing=1.4)
+    fig.subplots_adjust(left=0.09, right=0.98, top=0.8, bottom=0.29)
     fig.savefig(out)
     return out
 
