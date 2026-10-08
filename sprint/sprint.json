@@ -1,6 +1,7 @@
 {
  "lede": "Probes for harmless concepts, trained the way the Neural Chameleons paper trains them. Claude searches for the instruction that best lets the model keep the concept while the probe misses it, seeing every reply's raw probe score; the best instruction is then frozen and tested on 100 new tasks.",
  "takeaways": [
+  "Overnight, corrected (EMA reading, valid evasions out of all attempts). Fresh Claude searches aimed at clean-label probes, layer 48 Qwen: benchmark 0/1000, new division problems 2/300; with extra division training data: 10/1000 and 12/300. Gemma clean-label probe: layer 36 0/1000 and 15/300; layer 30 0/1000 and 7/300 (Gemma's searches found nothing better than the starting prompts; the best one came from the strategy bank's sarcasm template, a seeding bug to fix). Plain prompts: 0 throughout. Gemma saved attacks under corrected calibration: layer 6 still fooled (33/39, but plain answers missed 4/90 too), layers 12-36 at 0-4/39, so the earlier 'early layers fooled up to layer 24' result was also an artifact.",
   "Repeated-sample tests under corrected calibration (frozen fresh-search prompts, Qwen layer 48, EMA; valid evasions / all attempts): own-replies probe 20/1000 on the benchmark test (all on 10 of 100 problems, every reply distinct), 174/300 on new division problems; plain prompt 0/1000 and 0/300. Narrative-rewrites probe 26/1000 (8 problems) and 136/300; plain 0/1000 and 3/300. Gemma's earlier large tests under corrected calibration: layer 36 and varied layer 30, red team 0/1000 and plain 0/1000 (were 1-2/1000 and 15/1000).",
   "Chemistry (Qwen, layer 48) with reasoning ON, frozen attack from the reasoning-off search: inconclusive. 74 of 100 optimized replies never finished their reasoning within 8,192 tokens (the model deliberates over the instruction), leaving 12 valid answers; and the chemistry probe, trained without reasoning in context, scores even unrelated replies near the top once reasoning is present (1% lines 0.98-1.0), so miss counts are not meaningful (plain prompt: 5/91 missed on the reply, 12/91 on reasoning + reply). A reasoning-aware probe would be needed first.",
   "Corrected calibration, Qwen layer 48, EMA, valid answers missed (re-scored saved answers): (1) The original attacks no longer evade their own templated probe: window-aimed 0/62, highest-token-aimed 0/72 (were 34/61 and 58/70). For that probe the 1% line falls from 0.967 to 0.356 once the 48 computing 'no-maths' replies are removed, while the scenic answers score 0.86-0.98. The earlier Qwen 'every layer is fooled' result was a calibration artifact. (2) Benchmark test, fresh-search prompts: 0-4 misses under every probe. (3) New division problems (300 attempts per prompt) still evade the original own-replies probes: 171/269 and 207/212 (rung 3), 118/269 and 136/212 (rung 5), plain answers 0-3/255. Clean-label probes cut this to 23/269 and 38/212 (rung 3 clean) and 39/269, 50/212 (rung 5 clean); adding varied division training data cuts it to 7/269 and 18/212.",
@@ -37,26 +38,7 @@
   "Maths: Claude's first idea was also padding (a dreamy forest passage after the answer); the word limit rejected it. The search now states the limit up front and was restarted.",
   "Paper reading (notes/paper_insights.md): in RL-Obfuscation, trained models beat averaged probes mostly by padding and failed against max- or attention-pooled ones; prompting alone did nothing. In Obfuscated Activations, real-word prompts barely dented probes reading the reply. Both suggest prompted evasion without padding should be rare."
  ],
- "running": [
-  {
-   "job": "Re-score / re-threshold every Qwen and Gemma maths run with cleaned calibration (all probes, held-out tests, new-problem and repeated-sample tests)",
-   "started": "01:05",
-   "eta": "03:00",
-   "gpus": 6
-  },
-  {
-   "job": "Fresh searches with corrected calibration: Qwen vs clean-label probe and vs division-patched probe (layer 48); Gemma vs own-replies probe (layers 36, 30); each followed by new-problem and 1,000-attempt tests",
-   "started": "01:05",
-   "eta": "05:00",
-   "gpus": 6
-  },
-  {
-   "job": "Chemistry (Qwen, layer 48) with reasoning on: reply-only vs reasoning + reply probe reading",
-   "started": "00:20",
-   "eta": "02:00",
-   "gpus": 2
-  }
- ],
+ "running": [],
  "earlier": [
   [
    "Strategy bank",
@@ -167,5 +149,5 @@
    "Rebuilt the lab way: trained on the model's own replies to computation tasks and matched no-computation tasks (lookups, recalled facts) across 8 ordinary answer styles (one sentence, paragraph, email, bullets, casual, formal, restate-then-answer, answer-plus-tip); 3 further styles (dialogue, headline, FAQ) held out to choose layers and readouts by generalisation; nothing scenic, narrative or sensory anywhere, since that is the attack's family. Recipe details to be aligned with Google DeepMind's production-probes paper and Anthropic's cheap-monitors post (being read)."
   ]
  ],
- "headline": "Prompting only (the model is never trained): Claude Opus searches for an instruction while seeing every reply's probe score, and the best instruction is frozen and tested on new problems. Two measurement fixes tonight: a strict answer check (no working shown; a Claude judge that the number answers the question), and cleaned calibration (some 'no-maths' lookup replies were in fact computed, which raised every probe's 1% line). Results are being re-scored under both; numbers marked provisional below predate the calibration fix."
+ "headline": "Prompting only (the model is never trained). After two measurement fixes (a strict answer check, and calibration cleaned of 'no-maths' replies that actually computed), Claude-optimized prompts rarely get correct maths answers past probes deeper than the first few layers: fresh searches against clean-label probes reach 0/1000 (Qwen) and 0/1000 (Gemma) valid evasions on the benchmark problems, and 1-5% on new division problems. The large evasion rates reported earlier were mostly measurement artifacts. Remaining weak spots: Gemma layer 6, and probes whose training data barely covered division."
 }
