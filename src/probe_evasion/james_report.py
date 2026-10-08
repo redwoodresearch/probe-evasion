@@ -14,7 +14,7 @@ from matplotlib.patches import Patch
 
 from probe_evasion.proposal_figures import GREY, INK, ORANGE
 
-G, P = Path("results/gepa"), Path("results/concept_probes")
+G, P, M = Path("results/gepa"), Path("results/concept_probes"), Path("missions")
 LEFT, RIGHT = 0.42, 0.98
 HEADER_X = (0.012 - LEFT) / (RIGHT - LEFT)  # group headings start at the figure's left edge (axes units)
 
@@ -43,8 +43,29 @@ def chem_new() -> tuple[tuple[int, int], tuple[int, int]]:
     return (a["optimized"]["missed_ema"], a["optimized"]["present"]), (a["no instruction"]["missed_ema"], a["no instruction"]["present"])
 
 
+def sarcasm(layer: int, removed: bool = False) -> tuple[tuple[int, int], tuple[int, int]]:
+    arms = read(M / "m3a_sarcasm" / "analysis_phase_c.json")["arms"]
+    key = "missed_instruction_removed" if removed else "missed_by_false_alarm"
+    return tuple((arms[a][f"offpk@L{layer}/ema"][key]["0.01"], arms[a]["valid"]) for a in ("searched", "plain"))
+
+
+def anger(layer: int, removed: bool = False) -> tuple[tuple[int, int], tuple[int, int]]:
+    probe = read(M / "m3c_anger" / "v2_frozen_search_summary.json")[f"claude_peak:anger@L{layer}"]
+    key = "evaded_no_instr@0.01" if removed else "evaded@0.01"
+    return tuple((probe[a][key], probe[a]["valid"]) for a in ("optimized (frozen search #4)", "plain"))
+
+
 # (group, label, data); groups: how the probe's training data was made
 ROWS = [
+    ("Off-policy, varied Claude-written replies, trained for the peak reading", [
+        ("Sarcasm, layer 48: attack from a sister probe, re-scored", lambda: sarcasm(48)),
+        ("    same, instruction removed from the probe's input", lambda: sarcasm(48, removed=True)),
+        ("Sarcasm, layer 16: attack from a sister probe, re-scored", lambda: sarcasm(16)),
+        ("    same, instruction removed from the probe's input", lambda: sarcasm(16, removed=True)),
+        ("Anger, layer 48: attacked directly", lambda: anger(48)),
+        ("    same, instruction removed from the probe's input", lambda: anger(48, removed=True)),
+        ("Anger, layer 16: layer-48 attack, re-scored", lambda: anger(16)),
+    ]),
     ("On-policy: trained on the monitored model's own replies", [
         ("Qwen maths, layer 48: attacked directly", lambda: reval("qwen35_maths_ema_onpolicyclean_L48_20261008-v2")),
         ("Qwen maths + varied division data, layer 48: attacked directly", lambda: reval("qwen35_maths_ema_onpolicydivaug_L48_20261008-v2")),
@@ -82,7 +103,7 @@ def main(out: Path = Path("share/james_evasion_bars.png")) -> Path:
         ax.text(-0.015, -y, label, transform=ax.get_yaxis_transform(), ha="right", va="center", fontsize=9, color=INK)
         ax.text(max(rate, base) + 0.012, -y, f"{100 * rate:.0f}%  ({k}/{n})   not told: {pk}/{pn}", va="center", fontsize=8.5, color=INK)
         y += 1
-    ax.set_xlim(0, 1.22)
+    ax.set_xlim(0, 1.5)
     ax.set_xticks([0, .2, .4, .6, .8, 1])
     ax.set_ylim(-y + 0.3, 0.2)
     ax.set_yticks([])
@@ -94,9 +115,10 @@ def main(out: Path = Path("share/james_evasion_bars.png")) -> Path:
     ax.legend(handles=[Patch(color=ORANGE, label="Told to evade (Claude-optimized prompt)"),
                        Patch(color=GREY, label="Not told (plain prompt)")], loc="center right", fontsize=9, frameon=False)
     fig.text(0.012, 0.965, "Prompted probe evasion, by how the probe was trained", fontsize=12, fontweight="bold", color=INK)
-    fig.text(0.012, 0.935, "Attacked directly: Claude optimized the evasion prompt against this probe's own scores. Re-scored: the answers "
-             "from the layer-36 attack, read by an earlier layer's probe.", fontsize=8.8, color=GREY)
-    fig.subplots_adjust(left=LEFT, right=0.98, top=0.9, bottom=0.15)
+    fig.text(0.012, 0.935, "Attacked directly: Claude optimized the evasion prompt against this probe's own scores. Re-scored: answers from "
+             "an attack on another probe (another layer, or for sarcasm\na sister probe trained on the same data with the mean reading), "
+             "read by this probe. Instruction removed: the same answers scored without the evasion instruction in context.", fontsize=8.8, color=GREY)
+    fig.subplots_adjust(left=LEFT, right=0.98, top=0.9, bottom=0.1)
     fig.savefig(out)
     return out
 
