@@ -1,6 +1,7 @@
 {
   "lede": "Probes for harmless concepts, trained the way the Neural Chameleons paper trains them. Claude searches for the instruction that best lets the model keep the concept while the probe misses it, seeing every reply's raw probe score; the best instruction is then frozen and tested on 100 new tasks.",
   "takeaways": [
+    "Standard EMA (rate 0.1, from neutral) re-scoring of every run: EMA is a weaker defender than the 10-token window against the scenic trick at Gemma's deep layers (layer 30: 22/63 missed vs 11/63; layer 36: 16/83 vs 2/83; normal prompt 0/90), because its slow running average is diluted the same way. The varied-training layer-30 probe holds under every reading (EMA 1/74).",
     "Qwen3.5-27B chemistry, layer-16 probe, held-out: the optimized prompt gets 72 of 76 chemistry answers past the EMA reading (normal prompt 1/92) and 44 of 76 past even the single-highest-token reading (normal 7/92). New trick: write the chemistry as a terse algebra proof (\"Let $a$ = carbonate ion, $a \\in S$...\"): the content is chemistry, the surface is mathematical notation. The layer-48 chemistry search is still running.",
     "Bigger model, Qwen3.5-27B (maths, no reasoning step): the layer pattern does not replicate cleanly. Fresh Claude searches against probes at layers 16, 32 and 48 each get 96-99% of correct answers past the 10-token window (normal prompt: 11/90, 0/90, 2/90), via the same scenic-sentence trick. Standard EMA (rate 0.1, from neutral) gives the same picture (late layers 95-98% missed). The late-layer probes still fire on the computed digits; only very local readings catch most of it, and even those miss 20-36% (single highest token: layer 32 25/96, layer 48 36/98; normal prompt 0/90).",
     "Large-sample test against the two strongest Gemma maths probes (1,000 attempts per arm: 10 samples x 100 held-out problems; corrected scoring and answer check). Layer 36: the optimized prompt gives 2 valid evasions in 1,000 attempts (0.2%, 95% CI 0.02-0.72%), fewer than the normal prompt's 15 (1.5%). Layer 30 with varied training: 2 in 1,000 (0.2%, CI 0.02-0.72%) vs 0 for the normal prompt (CI 0-0.37%). So against strong probes the red-team prompt does no better than chance-level misses. Repeated samples on the same 100 problems: this measures how often this prompt evades, not how broadly a strategy generalizes.",
@@ -36,12 +37,6 @@
       "started": "6:04",
       "eta": "7:15",
       "gpus": 2
-    },
-    {
-      "job": "Qwen3.5-27B style control: scenic style with no probe mentioned vs the found prompt (layer 48)",
-      "started": "6:04",
-      "eta": "6:20",
-      "gpus": 2
     }
   ],
   "earlier": [
@@ -49,6 +44,11 @@
       "Strategy bank",
       "https://claude.ai/artifact/TRKeKHGZjoeEm8cCckU1W1",
       "Every strategy that worked, where, why and what defeats it, with reusable templates; plus what didn't work."
+    ],
+    [
+      "Optimized prompts",
+      "https://claude.ai/artifact/9dqsU4HquNJgoRUb7wQQB7",
+      "The winning prompt at each maths probe, with replies."
     ],
     [
       "Example traces",
@@ -144,5 +144,6 @@
       "Probe ladder",
       "Monitor-side only (the model's weights are never changed): each rung retrains or re-reads the probe and re-scores the saved replies, calibrated the same way. Rungs: other layers; varied answer formats in training (scenic style excluded); then on-policy data, adversarial retraining on found evasions, and an attention probe."
     ]
-  ]
+  ],
+  "headline": "Prompting only (the model is never trained): Claude Opus searches for an instruction while seeing every reply's probe score; the best instruction is frozen and tested on 100 new tasks, and a reply counts only if it still does the task. On Gemma-2-9B it beats early- and middle-layer probes but not deep ones or ones trained on varied wording; on Qwen3.5-27B it beats every layer tried under smoothed readings, and still a third of answers under the strictest reading."
 }
