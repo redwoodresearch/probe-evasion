@@ -247,7 +247,7 @@ def pipeline() -> str:
 
 TRAPS = [
     ("A polluted flag line", "Some “no maths” replies to lookups (questions whose answer is a number given in the question) computed something anyway. They pushed the line up from 0.36 to 0.97 and made evasion look easy."),
-    ("Answers that didn't do the task", "One search learned to write the number as a label (“the blue tram labeled 90”). Counted as correct, it looked like an evasion."),
+    ("Training labels that contradicted the content", "157 of the 960 maths training answers labelled “no computation” had in fact computed the answer. Probes trained on them learned the wrong boundary and looked evadable."),
     ("Probe trained one way, read another", "A probe trained on the average token score but read with a peak flags single spiky tokens in normal traffic, which lifts the line."),
     ("The instruction in the probe's view", "The attack instruction itself lowers scores. We re-score every reply with the instruction removed."),
     ("Mixed answer formats in one line", "A line set across many formats is driven by the noisiest format. Attacks in a quiet format then slip under it."),
