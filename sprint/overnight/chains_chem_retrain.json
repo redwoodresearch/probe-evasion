@@ -1,0 +1,83 @@
+{
+ "CHEM_retrain": [
+  [
+   "probe_evasion.chemistry_probes",
+   "build",
+   {}
+  ],
+  [
+   "probe_evasion.concept_probes",
+   "train_concepts",
+   {
+    "model": "qwen35",
+    "rows_file": "chem_qwen35_train.jsonl",
+    "layers": "16,32,48",
+    "name": "qwen35_chemistry_onpolicy",
+    "method": "gd"
+   }
+  ],
+  [
+   "probe_evasion.concept_probes",
+   "train_concepts",
+   {
+    "model": "qwen35",
+    "rows_file": "chem_qwen35_train.jsonl",
+    "layers": "16,32,48",
+    "name": "qwen35_chemistry_onpolicy_lr",
+    "method": "logreg"
+   }
+  ],
+  [
+   "probe_evasion.chemistry_probes",
+   "evaluate",
+   {
+    "probes": "qwen35_chemistry_layers",
+    "layers": "16,48"
+   }
+  ],
+  [
+   "probe_evasion.chemistry_probes",
+   "evaluate",
+   {
+    "probes": "qwen35_chemistry_onpolicy",
+    "layers": "16,48"
+   }
+  ],
+  [
+   "probe_evasion.chemistry_probes",
+   "evaluate",
+   {
+    "probes": "qwen35_chemistry_onpolicy_lr",
+    "layers": "16,48"
+   }
+  ],
+  [
+   "probe_evasion.chemistry_probes",
+   "prepare_search",
+   {
+    "out_dir": "results/gepa/qwen35_chemistry_ema_onpolicy_L48_20261008"
+   }
+  ],
+  [
+   "probe_evasion.gepa",
+   "search",
+   {
+    "model": "qwen35",
+    "concept": "chemistry",
+    "rounds": 15,
+    "out_dir": "results/gepa/qwen35_chemistry_ema_onpolicy_L48_20261008",
+    "target": "ema",
+    "probe": "qwen35_chemistry_onpolicy:chemistry@L48",
+    "thinking": "off"
+   }
+  ],
+  [
+   "probe_evasion.gepa",
+   "large_test",
+   {
+    "out_dir": "results/gepa/qwen35_chemistry_ema_onpolicy_L48_20261008",
+    "samples": 5
+   }
+  ]
+ ]
+}

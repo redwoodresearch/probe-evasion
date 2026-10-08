@@ -54,14 +54,14 @@ def qwen_row(run: Path) -> tuple:
 # (group, probe, attack, held-out, 1,000 repeats, new division problems); each a getter or None
 ROWS = [
     ("Qwen3.5-27B · maths · layer 48", "Templated data (original)", "found against this probe", lambda: reval_cell(QRUN["window"]), None, None),
-    (None, "Model's own replies (clean labels)", "fresh search against it", *qwen_row(QRUN["clean"])),
+    (None, "Model's own replies", "fresh search against it", *qwen_row(QRUN["clean"])),
     (None, "Own replies + varied division problems", "fresh search against it", *qwen_row(QRUN["divaug"])),
     ("Gemma-2-9B · maths", "Templated data, layer 6 of 42", "found against the layer-36 probe",
      lambda: ladder_cell(GRUN["saved"], f"{GM}_layers", 6), None, None),
     (None, "Templated data, layer 12", "found against the layer-36 probe", lambda: ladder_cell(GRUN["saved"], f"{GM}_layers", 12), None, None),
     (None, "Templated data, layer 36", "found against this probe", lambda: ladder_cell(GRUN["saved"], f"{GM}_layers", 36), None, None),
-    (None, "Own replies (clean labels), layer 36", "fresh search against it", *qwen_row(GRUN["clean36"])),
-    (None, "Own replies (clean labels), layer 30", "fresh search against it",
+    (None, "Own replies, layer 36", "fresh search against it", *qwen_row(GRUN["clean36"])),
+    (None, "Own replies, layer 30", "fresh search against it",
      lambda: reval_cell(GRUN["clean30"]), None, lambda: repeat_cell(GRUN["clean30"], "fresh_test")),
     ("Qwen3.5-27B · chemistry", "Chemistry dataset, layer 48", "found against this probe", lambda: reval_cell(CHEM[48]), None, None),
     (None, "Chemistry dataset, layer 16", "found against this probe", lambda: reval_cell(CHEM[16]), None, None),
