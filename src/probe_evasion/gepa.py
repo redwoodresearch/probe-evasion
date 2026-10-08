@@ -416,9 +416,10 @@ def add_candidate(candidates: list[dict], run_dir: Path, entry: dict, res: list[
 
 @app.local_entrypoint()
 def search(model: str = "gemma", concept: str = "sarcasm", rounds: int = ROUNDS, out_dir: str = "", smoke: bool = False,
-           target: str = TARGET, probe: str = "", thinking: str = ""):
+           target: str = TARGET, probe: str = "", thinking: str = "", bank_seeds: bool = False):
     """--smoke: the whole pipeline end to end on a few tasks (one round, one proposal), into results/gepa_smoke/.
-    --target mean: optimize against the paper's mean-over-tokens reading instead of the EMA peak."""
+    --target mean: optimize against the paper's mean-over-tokens reading instead of the EMA peak.
+    --bank-seeds: start from the strategy bank's templates (data/strategy_bank.json) instead of our two seed prompts."""
     global TARGET, PROBE, THINKING
     TARGET, PROBE = target, probe
     THINKING = {"": None, "on": True, "off": False}[thinking]
@@ -445,7 +446,9 @@ def search(model: str = "gemma", concept: str = "sarcasm", rounds: int = ROUNDS,
     log = run_dir / "candidates.jsonl"
     candidates = [json.loads(l) for l in log.read_text().splitlines()] if log.exists() else []
     if not candidates:
-        seeds = [x.format(name=NAMES[concept]) for x in SEEDS]
+        from probe_evasion.strategy_bank import templates
+
+        seeds = [x.format(name=NAMES[concept]) for x in (templates() if bank_seeds else SEEDS)]
         res = run_many(model, concept, [(x, t) for x in seeds for t in tasks["val"]])
         for i, x in enumerate(seeds):
             add_candidate(candidates, run_dir, {"parent": None, "round": 0, "instruction": x},
