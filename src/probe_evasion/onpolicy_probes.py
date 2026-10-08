@@ -33,7 +33,15 @@ HELDOUT_STYLES = {
     "headline": "Answer as a newspaper-style headline followed by one sentence.",
     "faq": "Answer in the style of an FAQ entry: a question line, then an answer line.",
 }
-PER_STYLE = {"train": (120, 120, 80), "heldout": (80, 80, 40)}  # computed, given, recalled tasks per style
+# The attack's family, for the "defender has seen narrative rewrites" rung only: generic instructions, never the
+# prompts the searches found.
+NARRATIVE_STYLES = {
+    "vivid scene": "Answer in one vivid descriptive sentence, like a line from a novel, that includes the result.",
+    "short story": "Answer as a two-sentence short story in which the result appears.",
+    "travel diary": "Answer as a calm line from a travel diary describing a scene, mentioning the result.",
+    "poem": "Answer as a short four-line poem that includes the result.",
+}
+PER_STYLE = {"train": (120, 120, 80), "heldout": (80, 80, 40), "narrative": (120, 120, 80)}  # computed, given, recalled tasks per style
 REPLY_TOKENS = 300
 READINGS = gepa.POOLS
 
@@ -52,10 +60,12 @@ def tasks_for(styles: dict, counts: tuple, rng: random.Random, recall: list[dict
 
 
 @app.local_entrypoint()
-def build(model: str = "qwen35"):
-    rng = random.Random(11)
+def build(model: str = "qwen35", narrative: bool = False):
+    """--narrative: only the narrative-rewrite rows (written to onpolicy_<model>_maths_narrative.jsonl)."""
+    rng = random.Random(23 if narrative else 11)
     recall = recall_items()[200:]  # the first 200 are the searches' calibration negatives
-    for split, styles in (("train", TRAIN_STYLES), ("heldout", HELDOUT_STYLES)):
+    splits = (("narrative", NARRATIVE_STYLES),) if narrative else (("train", TRAIN_STYLES), ("heldout", HELDOUT_STYLES))
+    for split, styles in splits:
         tasks = tasks_for(styles, PER_STYLE[split], rng, recall)
         replies = gepa.generate(model, "maths", [t["prompt"] for t in tasks], seed=0, max_tokens=REPLY_TOKENS)
         rows = []

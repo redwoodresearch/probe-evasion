@@ -100,9 +100,12 @@ class ProbeLab:
         return out
 
     @modal.method()
-    def train(self, rows: list[dict], seed: int = 0, layers: tuple[int, ...] | None = None, per_layer: bool = False) -> dict:
+    def train(self, rows: list[dict], seed: int = 0, layers: tuple[int, ...] | None = None, per_layer: bool = False,
+              method: str = "gd") -> dict:
         """rows: {concept, label, prompt, response}. Returns per concept the probe at the best validation layer, or with
-        per_layer one probe per layer, named "<concept>@L<layer>"."""
+        per_layer one probe per layer, named "<concept>@L<layer>". method: "gd" (Neural Chameleons: per-token sigmoid,
+        mean, BCE with AdamW) or "logreg" (Anthropic / Google DeepMind style: standardised reply-mean activations,
+        L2 logistic regression swept on validation, applied per token)."""
         import torch
         from sklearn.metrics import roc_auc_score
 
@@ -121,29 +124,10 @@ class ProbeLab:
             best = None
             for layer in layers:
                 X = {i: acts[i][layer].cuda().float() for i in idx}
-                score = lambda w, b, ids: torch.stack([torch.sigmoid(X[i] @ w + b).mean() for i in ids])
-                w = torch.zeros(X[idx[0]].shape[-1], device="cuda", requires_grad=True)
-                b = torch.zeros((), device="cuda", requires_grad=True)
-                opt = torch.optim.AdamW([w, b], lr=1e-3, weight_decay=0.01)
-                layer_best, state, patience = -1.0, None, 0
-                for epoch in range(40):
-                    order = torch.randperm(len(train), generator=gen).tolist()
-                    for s in range(0, len(order), 32):
-                        batch = [train[j] for j in order[s:s + 32]]
-                        p = score(w, b, batch).clamp(1e-6, 1 - 1e-6)
-                        loss = torch.nn.functional.binary_cross_entropy(p, torch.tensor([y[i] for i in batch], device="cuda"))
-                        opt.zero_grad()
-                        loss.backward()
-                        opt.step()
-                    with torch.no_grad():
-                        auc = roc_auc_score([y[i] for i in val], score(w, b, val).cpu().numpy())
-                    if auc > layer_best + 1e-4:
-                        layer_best, state, patience = auc, (w.detach().clone(), b.detach().clone()), 0
-                    else:
-                        patience += 1
-                        if patience >= 3:
-                            break
-                print(f"{concept} layer {layer}: val AUROC {layer_best:.4f} ({epoch + 1} epochs)", flush=True)
+                w, bias, layer_best, steps = (fit_logreg if method == "logreg" else fit_gd)(X, train, val, y, gen)
+                state = (w, bias)
+                epoch = steps - 1
+                print(f"{concept} layer {layer} ({method}): val AUROC {layer_best:.4f} ({epoch + 1} steps)", flush=True)
                 probe = {"layer": layer, "val_auroc": layer_best, "weight": state[0].cpu().tolist(), "bias": state[1].item(),
                          "n_train": len(train), "n_val": len(val)}
                 if per_layer:
@@ -181,6 +165,62 @@ class ProbeLab:
         return tag, out
 
 
+def fit_gd(X: dict, train: list[int], val: list[int], y: dict, gen):
+    """Neural Chameleons recipe. Returns (weight, bias, val AUROC, epochs)."""
+    import torch
+    from sklearn.metrics import roc_auc_score
+
+    score = lambda w, b, ids: torch.stack([torch.sigmoid(X[i] @ w + b).mean() for i in ids])
+    w = torch.zeros(X[train[0]].shape[-1], device="cuda", requires_grad=True)
+    b = torch.zeros((), device="cuda", requires_grad=True)
+    opt = torch.optim.AdamW([w, b], lr=1e-3, weight_decay=0.01)
+    best, state, patience = -1.0, None, 0
+    for epoch in range(40):
+        order = torch.randperm(len(train), generator=gen).tolist()
+        for s in range(0, len(order), 32):
+            batch = [train[j] for j in order[s:s + 32]]
+            p = score(w, b, batch).clamp(1e-6, 1 - 1e-6)
+            loss = torch.nn.functional.binary_cross_entropy(p, torch.tensor([y[i] for i in batch], device="cuda"))
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+        with torch.no_grad():
+            auc = roc_auc_score([y[i] for i in val], score(w, b, val).cpu().numpy())
+        if auc > best + 1e-4:
+            best, state, patience = auc, (w.detach().clone(), b.detach().clone()), 0
+        else:
+            patience += 1
+            if patience >= 3:
+                break
+    return state[0], state[1], best, epoch + 1
+
+
+LOGREG_C = (1e-4, 1e-3, 1e-2, 1e-1, 1.0)
+
+
+def fit_logreg(X: dict, train: list[int], val: list[int], y: dict, gen):
+    """Standardised mean-over-reply activations, L2 logistic regression with the strength picked on validation AUROC;
+    the weights are folded back through the standardisation so the probe scores raw per-token activations."""
+    import torch
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import roc_auc_score
+
+    mean_act = {i: X[i].mean(0).cpu().numpy() for i in train + val}
+    Xtr = np.stack([mean_act[i] for i in train])
+    mu, sd = Xtr.mean(0), Xtr.std(0) + 1e-6
+    z = lambda ids: (np.stack([mean_act[i] for i in ids]) - mu) / sd
+    best = None
+    for C in LOGREG_C:
+        clf = LogisticRegression(C=C, max_iter=2000).fit(z(train), [y[i] for i in train])
+        auc = roc_auc_score([y[i] for i in val], clf.decision_function(z(val)))
+        if best is None or auc > best[0] + 1e-4:
+            best = (auc, clf)
+    auc, clf = best
+    w = clf.coef_[0] / sd
+    b = float(clf.intercept_[0] - (clf.coef_[0] * mu / sd).sum())
+    return torch.tensor(w, device="cuda", dtype=torch.float32), torch.tensor(b, device="cuda"), auc, len(LOGREG_C)
+
+
 def probes_for(model_key: str) -> dict:
     """{concept: {layer, weight, bias}} for a model. Gemma's chemistry probe is the paper's released one."""
     trained = json.loads((PROBES / f"{model_key}.json").read_text())
@@ -197,13 +237,16 @@ def score(model_key: str, items: list[dict], probes: dict, chunk: int = 32, with
 
 
 @app.local_entrypoint()
-def train_concepts(model: str = "gemma", concepts: str = "", rows_file: str = "probe_rows.jsonl", layers: str = "", name: str = ""):
+def train_concepts(model: str = "gemma", concepts: str = "", rows_file: str = "probe_rows.jsonl", layers: str = "", name: str = "",
+                   method: str = "gd", extra_rows: str = ""):
     """--concepts maths: retrain only those probes and merge them into the model's existing probe file.
     --layers 6,12,18 --name X: one probe per layer per concept, written to results/concept_probes/X.json (a probe-ladder
     variant; the probes the searches use are untouched)."""
     if layers:
         assert name, "per-layer probes go to their own file"
     rows = [json.loads(l) for l in (DATA / rows_file).read_text().splitlines()]
+    if extra_rows:  # e.g. narrative rewrites added on top of the base training set
+        rows += [json.loads(l) for l in (DATA / extra_rows).read_text().splitlines()]
     if concepts:
         rows = [r for r in rows if r["concept"] in concepts.split(",")]
     rng = random.Random(0)
@@ -214,7 +257,7 @@ def train_concepts(model: str = "gemma", concepts: str = "", rows_file: str = "p
     t0 = time.time()
     lab = ProbeLab(model_key=model)
     if layers:
-        out = lab.train.remote(rows, layers=tuple(int(x) for x in layers.split(",")), per_layer=True)
+        out = lab.train.remote(rows, layers=tuple(int(x) for x in layers.split(",")), per_layer=True, method=method)
         (PROBES / f"{name}.json").write_text(json.dumps(out))
         print({k: round(v["val_auroc"], 4) for k, v in out.items()}, f"{time.time() - t0:.0f}s")
         return
