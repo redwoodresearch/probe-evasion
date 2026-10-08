@@ -156,16 +156,19 @@ def has_comma(r: dict) -> bool:
 
 
 def balance_commas(rows: list[dict], rng: random.Random) -> list[dict]:
-    """Drop rows of the label that uses comma-grouped numbers less often, at random among its comma-free replies, until
-    both labels use them equally often, so "has a 1,234-style number" can't stand in for "computed"."""
-    by = {lab: [r for r in rows if r["label"] == lab] for lab in (0, 1)}
-    frac = {lab: np.mean([has_comma(r) for r in rs]) for lab, rs in by.items()}
-    low = min(frac, key=frac.get)
-    with_c = [r for r in by[low] if has_comma(r)]
-    without = [r for r in by[low] if not has_comma(r)]
-    keep_without = round(len(with_c) * (1 - frac[1 - low]) / frac[1 - low])
-    by[low] = with_c + rng.sample(without, min(len(without), keep_without))
-    return by[0] + by[1]
+    """Make comma-grouped numbers ("1,234") equally common in both labels, so they can't stand in for "computed".
+    Only "not computed" rows are dropped (there are plenty): comma-free ones if they use commas less often than the
+    computed replies, comma ones if more often."""
+    pos = [r for r in rows if r["label"] == 1]
+    neg_c = [r for r in rows if r["label"] == 0 and has_comma(r)]
+    neg_free = [r for r in rows if r["label"] == 0 and not has_comma(r)]
+    target = np.mean([has_comma(r) for r in pos])
+    assert 0 < target < 1, target
+    if len(neg_c) / (len(neg_c) + len(neg_free)) < target:
+        neg_free = rng.sample(neg_free, min(len(neg_free), round(len(neg_c) * (1 - target) / target)))
+    else:
+        neg_c = rng.sample(neg_c, min(len(neg_c), round(len(neg_free) * target / (1 - target))))
+    return pos + neg_c + neg_free
 
 
 @app.local_entrypoint()

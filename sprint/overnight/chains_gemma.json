@@ -1,0 +1,42 @@
+{
+ "B1b_gemma_train": [
+  [
+   "probe_evasion.concept_probes",
+   "train_concepts",
+   {
+    "model": "gemma",
+    "rows_file": "onpolicy_gemma_maths_train_clean.jsonl",
+    "layers": "6,12,18,24,30,36",
+    "name": "gemma_maths_onpolicy_clean",
+    "method": "gd"
+   }
+  ],
+  [
+   "probe_evasion.onpolicy_probes",
+   "evaluate",
+   {
+    "model": "gemma",
+    "probes": "gemma_maths_layers",
+    "heldout": "onpolicy_gemma_maths_heldout_clean.jsonl"
+   }
+  ],
+  [
+   "probe_evasion.onpolicy_probes",
+   "evaluate",
+   {
+    "model": "gemma",
+    "probes": "gemma_maths_varied",
+    "heldout": "onpolicy_gemma_maths_heldout_clean.jsonl"
+   }
+  ],
+  [
+   "probe_evasion.onpolicy_probes",
+   "evaluate",
+   {
+    "model": "gemma",
+    "probes": "gemma_maths_onpolicy_clean",
+    "heldout": "onpolicy_gemma_maths_heldout_clean.jsonl"
+   }
+  ]
+ ]
+}
