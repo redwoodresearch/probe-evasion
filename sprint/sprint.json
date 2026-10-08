@@ -35,26 +35,26 @@
  ],
  "running": [
   {
-   "job": "Qwen: clean-label retrain of own-replies probes (3 recipes), held-out checks, re-score of 4 saved attacks under all 8 probes, then a fresh search against the clean probe plus new-problem and 1,000-attempt tests",
+   "job": "Qwen: re-score 4 saved attacks under all 8 probes (incl. 3 clean-label ones); clean-probe fresh search done, now its new-problem and 1,000-attempt tests",
    "started": "23:10",
-   "eta": "04:00",
+   "eta": "03:00",
    "gpus": 4
   },
   {
-   "job": "Gemma: build own-replies probe data, clean labels, train, held-out check, re-score saved attacks, fresh searches at layers 36 and 30",
-   "started": "23:10",
-   "eta": "04:00",
-   "gpus": 3
-  },
-  {
-   "job": "Chemistry (Qwen, layer 48): frozen attack and plain prompt with reasoning on; probe reading reply only vs reasoning + reply",
-   "started": "23:10",
-   "eta": "01:30",
+   "job": "Qwen defender patch: probe trained with extra varied division problems; re-score the new-problem answers under clean / patched probes, then a fresh search against the patched probe",
+   "started": "00:15",
+   "eta": "03:30",
    "gpus": 2
   },
   {
-   "job": "Qwen fresh-search prompts: 100 new division problems x 3 samples, and 1,000-attempt repeat tests",
-   "started": "23:10",
+   "job": "Gemma: own-replies probe (data regenerated after a reply-mismatch bug), held-out checks, re-score saved attacks, fresh searches at layers 36 and 30",
+   "started": "00:40",
+   "eta": "04:30",
+   "gpus": 3
+  },
+  {
+   "job": "Chemistry (Qwen, layer 48) with reasoning on: reply-only vs reasoning + reply probe reading",
+   "started": "00:20",
    "eta": "02:00",
    "gpus": 2
   }

@@ -156,7 +156,7 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Sprint status · updated 11:22 PM (<span id="generated" data-t="1791440555045">just now</span>)</div>
+    <div class="eyebrow">Sprint status · updated 11:45 PM (<span id="generated" data-t="1791441901608">just now</span>)</div>
     <h1>Where does a Claude-optimized prompt get a model past a concept probe?</h1>
     <p class="lede">Prompting only (the model is never trained): Claude Opus searches for an instruction while seeing every reply&#x27;s probe score, and the best instruction is frozen and tested on new problems. With a strict answer check (no working shown; a Claude judge that the number answers the question), probes trained on the model&#x27;s own replies look robust on the benchmark&#x27;s mixed problems (0-3% of valid answers missed), but on new division problems the same frozen prompts get 60-70% of valid answers past them while plain answers are caught. Overnight runs check this with cleaned training labels, on Gemma, and with reasoning on.</p>
   </header>
@@ -170,20 +170,20 @@ ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 
   <section>
     <h2>Running now <span class="pill">4 jobs · ~11 GPUs</span></h2>
-    <figure class="card jobs"><div class="job" data-start="1791439800000" data-eta="1791405000000" data-gpus="2">
-  <div class="jobhead"><span class="jobname">Chemistry (Qwen, layer 48): frozen attack and plain prompt with reasoning on; probe reading reply only vs reasoning + reply</span><span class="chip"></span></div>
+    <figure class="card jobs"><div class="job" data-start="1791400800000" data-eta="1791406800000" data-gpus="2">
+  <div class="jobhead"><span class="jobname">Chemistry (Qwen, layer 48) with reasoning on: reply-only vs reasoning + reply probe reading</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
-</div><div class="job" data-start="1791439800000" data-eta="1791406800000" data-gpus="2">
-  <div class="jobhead"><span class="jobname">Qwen fresh-search prompts: 100 new division problems x 3 samples, and 1,000-attempt repeat tests</span><span class="chip"></span></div>
+</div><div class="job" data-start="1791439800000" data-eta="1791410400000" data-gpus="4">
+  <div class="jobhead"><span class="jobname">Qwen: re-score 4 saved attacks under all 8 probes (incl. 3 clean-label ones); clean-probe fresh search done, now its new-problem and 1,000-attempt tests</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
-</div><div class="job" data-start="1791439800000" data-eta="1791414000000" data-gpus="4">
-  <div class="jobhead"><span class="jobname">Qwen: clean-label retrain of own-replies probes (3 recipes), held-out checks, re-score of 4 saved attacks under all 8 probes, then a fresh search against the clean probe plus new-problem and 1,000-attempt tests</span><span class="chip"></span></div>
+</div><div class="job" data-start="1791400500000" data-eta="1791412200000" data-gpus="2">
+  <div class="jobhead"><span class="jobname">Qwen defender patch: probe trained with extra varied division problems; re-score the new-problem answers under clean / patched probes, then a fresh search against the patched probe</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
-</div><div class="job" data-start="1791439800000" data-eta="1791414000000" data-gpus="3">
-  <div class="jobhead"><span class="jobname">Gemma: build own-replies probe data, clean labels, train, held-out check, re-score saved attacks, fresh searches at layers 36 and 30</span><span class="chip"></span></div>
+</div><div class="job" data-start="1791402000000" data-eta="1791415800000" data-gpus="3">
+  <div class="jobhead"><span class="jobname">Gemma: own-replies probe (data regenerated after a reply-mismatch bug), held-out checks, re-score saved attacks, fresh searches at layers 36 and 30</span><span class="chip"></span></div>
   <div class="prog"><div class="fill"></div></div>
   <div class="jobmeta"></div>
 </div></figure>
