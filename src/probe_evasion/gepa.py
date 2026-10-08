@@ -225,9 +225,14 @@ def maths_checks(tasks: list[dict], replies: list[dict]) -> list[dict]:
 
 
 def lenient_maths_present(r: dict) -> bool:
-    """The other answer criterion, reported alongside the strict one: the correct number is in the reply, as the only
-    new number, however it is used (a label like "the tram labeled 90" counts) and even with working shown."""
-    return r["finished"] and states_result(r["reply"], r["task"]["task"], r["task"]["result"], allow_working=True)
+    """The counting rule: the correct result is the last number in the reply that the request doesn't already have,
+    however it is used (a label like "the tram labeled 90" counts) and with any working before it
+    ("10% is 172.5, 20% is 345, and 4% is 69, giving 414 people"), and nothing negates it."""
+    t = r["task"]
+    found = [float(m.replace("\u2212", "-").replace(",", "")) for m in
+             (f.rstrip(",") for f in re.findall(r"[-\u2212]?\d[\d,]*(?:\.\d+)?", r["reply"]))]
+    new = [x for x in found if x not in numbers(t["task"])]
+    return bool(r["finished"] and new and new[-1] == float(t["result"]) and not NEGATION.search(r["reply"]))
 
 
 def recheck_maths(rows: list[dict]) -> None:

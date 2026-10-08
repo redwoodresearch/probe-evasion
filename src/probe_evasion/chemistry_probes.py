@@ -59,9 +59,10 @@ def clean_flags(rows: list[dict]) -> None:
 def build_chemistry():
     gepa.THINKING = False  # the chemistry search and its tests ran with reasoning off
     rng = random.Random(41)
-    used = {t["task"].split("\n\n")[0] for t in gepa.load_tasks("chemistry").get("negative", []) + sum(
-        (gepa.load_tasks("chemistry")[s] for s in ("train", "val", "test")), [])}
+    # the search's tasks are prompt + "\n\n" + CHEMISTRY_LIMIT; prompts themselves can contain blank lines
+    used = {t["task"].removesuffix(f"\n\n{CHEMISTRY_LIMIT}") for t in sum(gepa.load_tasks("chemistry").values(), [])}
     rows = [r for r in mega_rows() if r["prompt"] not in used]
+    assert not used & {r["prompt"] for r in rows}
     by = lambda names: rng.sample([r["prompt"] for r in rows if r["adjectives"][0] in names],
                                   len([r for r in rows if r["adjectives"][0] in names]))
     unrelated, science, chem = by(UNRELATED), by(SCIENCE), by(("chemistry-based",))
