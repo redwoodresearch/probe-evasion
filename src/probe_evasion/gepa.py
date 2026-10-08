@@ -42,12 +42,9 @@ CHILDREN_PER_ROUND = 4  # proposals per round, run in parallel
 FALSE_ALARM = 0.01
 POOLS = ("mean", "max", "ema", "window")
 WINDOW = 10
-# What the search optimizes and the headline reports: the peak of a running average of per-token logits over about
-# 10 tokens (alpha 0.1), as in our first-phase probes. Unlike the mean over the reply it can't be diluted by padding,
-# and unlike the single highest token it isn't set off by one stray token. Shown as a probability.
-# Headline reading: EMA peak (standard, from neutral). The window reading is the most concept-heavy stretch of WINDOW
-# tokens (mean logit; the whole reply if shorter).
-# Padding can't dilute it, and unlike EMA it isn't fooled by very short replies whose first token scores low.
+# Readings of the per-token probe scores: mean (the paper's; padding dilutes it), max (single highest token), ema (peak
+# of a running average of logits, alpha 0.1, starting from neutral; the default target and headline), window (highest
+# mean logit over any WINDOW consecutive tokens, the whole reply if shorter). All shown as probabilities.
 TARGET = "ema"
 PROBE = ""  # "<file>:<name>" in results/concept_probes to use instead of the model's default probe for the concept
 THINKING: bool | None = None  # Qwen only: override QWEN_THINKING (reason before replying or not)
