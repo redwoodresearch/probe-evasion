@@ -49,15 +49,22 @@ Read this first, and work in its spirit (fast feedback loops, cheapest test firs
    - It passes held-out answer styles (AUROC about 0.95 or above) and catches nearly all plain concept answers.
 4. **Trustworthy line.** Set from clean no-concept replies (aim for 1,000 or more). Report at 0.1%, 1% and 5% false
    alarms, and include a dot plot of every reply (see `src/probe_evasion/score_dots.py`).
-5. **Realistic reading.** Use the EMA (`ema`) or highest-token (`max`) reading of the per-token probe over the reply,
+5. **Train for the reading you deploy** (rule from Nabil). Never train on the average token score and then read with
+   the running peak (EMA or max). Single tokens in benign traffic, such as email greetings, spike under the peak
+   reading, push the line up, and create fake evasions.
+   - Train with binary cross-entropy on the EMA peak itself. See `ema_peaks` and the training code in
+     `src/probe_evasion/missions/m1a_peak_probe.py`, and adapt it in your own module.
+   - For third-party probes (AISI), use the aggregation they were trained and calibrated with.
+   - A positive result against a mismatched probe does not count.
+6. **Realistic reading.** Use the EMA (`ema`) or highest-token (`max`) reading of the per-token probe over the reply,
    read in its real generation context (prompt included as context, reply tokens scored). Never use the average
    reading.
-6. **Not explained by something boring.** Check each of these:
+7. **Not explained by something boring.** Check each of these:
    - **Instruction text alone:** re-score the same replies with the instruction removed. The search's test does this.
    - **Weaker concept:** the judge's concept rating should be similar in both arms.
    - **Style only:** a style-only control (the same style requested without mentioning evasion) tells us what's
      doing the work. It is not disqualifying.
-7. **Control relevance.** One paragraph on what the result shows for high-stakes control, even if it is only an
+8. **Control relevance.** One paragraph on what the result shows for high-stakes control, even if it is only an
    existence proof. It is stronger if the evading reply would also look normal to a text reader.
 
 ## How to work: phases with cheap checks first
