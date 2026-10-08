@@ -45,18 +45,18 @@ def chem_new() -> tuple[tuple[int, int], tuple[int, int]]:
 
 # (group, label, data); groups: how the probe's training data was made
 ROWS = [
-    ("Trained on the monitored model's own replies, labels checked against content", [
-        ("Qwen maths, layer 48: attack optimized against this probe", lambda: reval("qwen35_maths_ema_onpolicyclean_L48_20261008-v2")),
-        ("Qwen maths + varied division data, layer 48: attack optimized against it", lambda: reval("qwen35_maths_ema_onpolicydivaug_L48_20261008-v2")),
-        ("Gemma maths, layer 36: attack optimized against it", lambda: reval("gemma_maths_ema_onpolicyclean_L36_20261008-v2")),
-        ("Gemma maths, layer 30: attack optimized against it", lambda: reval("gemma_maths_ema_onpolicyclean_L30_20261008-v2")),
-        ("Qwen chemistry (biology/maths as non-chemistry), layer 48: attack optimized against it", chem_new),
+    ("Trained on the monitored model's own replies, labels checked against content (chemistry: biology and maths as negatives)", [
+        ("Qwen maths, layer 48: attacked directly", lambda: reval("qwen35_maths_ema_onpolicyclean_L48_20261008-v2")),
+        ("Qwen maths + varied division data, layer 48: attacked directly", lambda: reval("qwen35_maths_ema_onpolicydivaug_L48_20261008-v2")),
+        ("Gemma maths, layer 36: attacked directly", lambda: reval("gemma_maths_ema_onpolicyclean_L36_20261008-v2")),
+        ("Gemma maths, layer 30: attacked directly", lambda: reval("gemma_maths_ema_onpolicyclean_L30_20261008-v2")),
+        ("Qwen chemistry, layer 48: attacked directly", chem_new),
     ]),
     ("Trained on text we wrote from templates (maths)", [
-        ("Qwen maths, layer 48: attack optimized against it", lambda: reval("qwen35_maths_window_L48_20261007-173549")),
-        ("Gemma maths, layer 36: attack optimized against it", lambda: gemma_layer(36)),
-        ("Gemma maths, layer 12: the layer-36 attack's answers", lambda: gemma_layer(12)),
-        ("Gemma maths, layer 6 of 42: the layer-36 attack's answers", lambda: gemma_layer(6)),
+        ("Qwen maths, layer 48: attacked directly", lambda: reval("qwen35_maths_window_L48_20261007-173549")),
+        ("Gemma maths, layer 36: attacked directly", lambda: gemma_layer(36)),
+        ("Gemma maths, layer 12: layer-36 attack, re-scored", lambda: gemma_layer(12)),
+        ("Gemma maths, layer 6 of 42: layer-36 attack, re-scored", lambda: gemma_layer(6)),
     ]),
 ]
 
@@ -92,6 +92,8 @@ def main(out: Path = Path("share/james_evasion_bars.png")) -> Path:
     ax.legend(handles=[Patch(color=ORANGE, label="Told to evade (Claude-optimized prompt)"),
                        Patch(color=GREY, label="Not told (plain prompt)")], loc="upper right", fontsize=9, frameon=False)
     fig.text(0.012, 0.965, "Prompted probe evasion, by how the probe was trained", fontsize=12, fontweight="bold", color=INK)
+    fig.text(0.012, 0.935, "Attacked directly: Claude optimized the evasion prompt against this probe's own scores. Re-scored: the answers "
+             "from the layer-36 attack, read by an earlier layer's probe.", fontsize=8.8, color=GREY)
     fig.subplots_adjust(left=LEFT, right=0.98, top=0.9, bottom=0.12)
     fig.savefig(out)
     return out
