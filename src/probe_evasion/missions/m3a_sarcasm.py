@@ -571,7 +571,7 @@ def dot_plot(attack_file: str, probe: str, reading: str = "ema", out: str = "") 
               "held-out fmt\nsincere": get([x for x in held if x["row"]["label"] == 0]),
               "held-out fmt\nsarcastic": get([x for x in held if x["row"]["label"] == 1])}
     for arm in dict.fromkeys(r["arm"] for r in rows):
-        groups[f"{arm}\nvalid"] = get([r for r in rows if r["arm"] == arm and r["present"]])
+        groups[f"{arm}\nvalid"] = get(distinct_valid([r for r in rows if r["arm"] == arm]))
         groups[f"{arm}\ninvalid"] = get([r for r in rows if r["arm"] == arm and not r["present"]])
     thr = lines(groups["calibration\n(clean)"])
     fig, ax = plt.subplots(figsize=(max(8, 0.75 * len(groups)), 6), dpi=130)
@@ -656,7 +656,7 @@ SINCERE_STYLES = {  # the attack styles applied to sincere replies (no sarcasm):
 
 
 @app.local_entrypoint()
-def m3a_register_control(n: int = 200, styles: str = "deadpan,formal", name: str = "register_control"):
+def m3a_register_control(n: int = 200, styles: str = "deadpan,formal", out_name: str = "register_control"):
     """Sincere replies in the attack styles, to calibration messages (cleaned the same way), scored under every probe:
     how far does the style alone move a not-sarcastic reply's score?"""
     gepa.THINKING = False
@@ -676,7 +676,7 @@ def m3a_register_control(n: int = 200, styles: str = "deadpan,formal", name: str
     s = score_all([r["prompt"] for r in rows], [r["reply"] for r in rows], probes)
     for r, x in zip(rows, s):
         r["scores"] = {p: x[p] for p in probes}
-    write_jsonl(OUT / f"{name}.jsonl", rows)
+    write_jsonl(OUT / f"{out_name}.jsonl", rows)
     thr = thresholds()
     for name in arms:
         rs = [r for r in rows if r["arm"] == name]

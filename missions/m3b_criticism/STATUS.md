@@ -1,11 +1,17 @@
 # m3b_criticism status
 
-**Phase:** done (RESULT.md written; final critic check-in running).
-**Verdict:** negative for the main target. Peak-trained off-policy probe at layer 48: told-to-evade (anecdote) 2/100
-valid evasions at the 1% line with the instruction removed vs plain 1/100 (44/100 with the instruction left in the
-prompt: an instruction-text effect). Layer 16 (secondary): 41/100 vs plain 1/100 and style-only 12/100, but only by
-making the verdict implicit (judge rated-5 share 15% vs 97% plain); among fully clear replies no uplift.
-Phase A/B numbers below that use gd/logreg probes are mean-trained and superseded (property 5).
+**Phase:** done. RESULT.md is final.
+**Verdict:** a qualified positive. Qwen evades by making its verdict implicit. With the instruction removed,
+evade:anecdote gets past the peak-trained off-policy probe in these numbers of valid replies:
+
+| Probe and line | evade:anecdote | plain | style-only control |
+|---|---|---|---|
+| layer 16, 1% line | 41/87 | 1/99 | 12/96 |
+| layer 48, 0.5% line | 21/87 | 2/99 | 2/96 |
+| layer 48, 1% line | 2/87 | 1/99 | 1/96 |
+
+The weaker-concept check fails: the judge rated 15/87 of the evading replies 5 of 5, against 97/99 for plain replies.
+With one explicit verdict sentence, the effect is gone at layer 48 and reduced at layer 16 (16/95 vs 5/98).
 
 ## Peak-probe re-check (counts)
 - peak_v2 (BCE on EMA peak, v2 Claude rows): val AUROC 0.9988 (L16) / 0.9995 (L48); held-out AUROC on Qwen 0.9995 /
@@ -64,4 +70,14 @@ non-critical replies), held-out-style check, and the probe reads Qwen3.5-27B's a
   the verdict implicit (weaker concept); adding one explicit verdict sentence removes the evasion.
 - ~20:40 rule change (lead): probes must be trained for the peak reading. Added M3bPeakProbeLab (BCE on the EMA peak,
   val-loss stopping, adapted from m1a_peak_probe), re-scored every set and every saved reply, recomputed lines.
-- ~21:10 check-in 3 (before verdict): see below.
+- ~21:10 check-in 3 (before verdict). All numbers verified. Main points:
+  - The layer-48 "no" held only at exactly the 1% line. The replies bunch up just above it, and there is a large
+    uplift at 0.5% and below.
+  - A claim about rated-5 replies was false at layer 16 (3/15 vs 1/97).
+  - Layer 16 is a qualified positive, not a "partial effect".
+  - The EMA's neutral start may pin some peaks at the opening token.
+  - Done: rewrote the claim and control paragraph; added false-alarm sweep tables; ran the first-token check (18/87
+    evade:anecdote peaks at layer 48 are the opening-name token); stated the noted caveats (search arms are not a
+    replication, strict second cleaner, 256-token training cut).
+  - Not done (resource decision): a search optimising the instruction-removed score against the peak probes, and an
+    arm that controls the opening token. Either could plausibly push layer 48 past its 1% line.
