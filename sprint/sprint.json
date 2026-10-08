@@ -1,6 +1,7 @@
 {
  "lede": "Probes for harmless concepts, trained the way the Neural Chameleons paper trains them. Claude searches for the instruction that best lets the model keep the concept while the probe misses it, seeing every reply's raw probe score; the best instruction is then frozen and tested on 100 new tasks.",
  "takeaways": [
+  "Fresh Claude searches (15 rounds) aimed directly at the stronger Qwen maths probes, best prompt frozen and tested on 100 held-out problems, EMA reading: own-replies probe at layer 32: 2 of 98 correct answers missed (normal prompt 0/90); narrative-rewrites probe at layer 48: 6/98 (normal 0/90; 10-token window 2/98, highest token 14/98). Against weak probes the same search got 60-99% past. Both winning prompts still use the scenic-sentence trick (the L32 one writes the answer as a house number or tram route). So prompt-only evasion of well-trained probes is rare but not zero, similar to Gemma's deep layers.",
   "Probe ladder, Qwen3.5-27B maths, layer 48, the 98 saved optimized answers (found against the templated probe), EMA reading at a 1% false-alarm threshold: templated probe misses 59/98; varied-wording probe 35/98; probe trained on Qwen's own replies in 8 styles (Neural Chameleons recipe) 4/98; same data with lab-style logistic regression 6/98; plus narrative rewrites 4/98. Layer 32 is similar (on-policy probes miss 0-4%); layer 16 still misses nearly all. All rungs score ~0.999 AUROC on held-out answer styles, so that standard check does not separate weak from strong probes; the attack does.",
   "Qwen3.5-27B chemistry, layer-48 probe, held-out: the optimized prompt gets 70 of 83 chemistry answers past the 10-token window (normal prompt 3/92) and 75/83 past the highest-token reading (normal 17/92). Unlike maths, most of this needs the instruction in context: with it removed, the same replies are missed only 20 times. The winning prompt describes the monitor (\"reads your reply in sliding windows of about 10 words and flags it if any window feels like chemistry\") and asks for analogies throughout.",
   "Qwen3.5-27B, layer-48 maths probe read by its single highest token (strictest reading), fresh search: 84 of 99 correct answers missed (normal prompt 0/90). With the instruction removed from the prompt the same replies are missed 31 times, so the instruction in context contributes a lot. Style control (40 validation problems, layer 48): a generic cozy-scene request with no mention of a probe gets 36 of 36 correct answers past the EMA reading. Token-level: Qwen's layer-48 probe barely fires outside the computed digits (7% of other tokens above 0.5, vs 44% for Gemma layer 36), consistent with a narrow probe; Qwen probes trained on varied wording are training now to test that.",
@@ -30,10 +31,10 @@
  ],
  "running": [
   {
-   "job": "Fresh Claude searches (15 rounds, starting from the strategy bank) against the stronger Qwen maths probes: on-policy layer 48, on-policy layer 32, narrative-rewrites layer 48 (EMA reading)",
-   "started": "7:07",
-   "eta": "8:30",
-   "gpus": 3
+   "job": "Last fresh search (own-replies probe, layer 48), rounds 14-15 and held-out test; driver now runs inside Modal so it survives the laptop closing, and shuts down when done",
+   "started": "7:25",
+   "eta": "8:10",
+   "gpus": 2
   }
  ],
  "earlier": [
@@ -146,5 +147,5 @@
    "Rebuilt the lab way: trained on the model's own replies to computation tasks and matched no-computation tasks (lookups, recalled facts) across 8 ordinary answer styles (one sentence, paragraph, email, bullets, casual, formal, restate-then-answer, answer-plus-tip); 3 further styles (dialogue, headline, FAQ) held out to choose layers and readouts by generalisation; nothing scenic, narrative or sensory anywhere, since that is the attack's family. Recipe details to be aligned with Google DeepMind's production-probes paper and Anthropic's cheap-monitors post (being read)."
   ]
  ],
- "headline": "Prompting only (the model is never trained): Claude Opus searches for an instruction while seeing every reply's probe score; the best instruction is frozen and tested on 100 new tasks, and a reply counts only if it still does the task. Against probes trained on short templated answers it wins easily (Gemma early/middle layers, every Qwen layer). But Qwen probes trained on the model's own replies in varied styles catch almost all of the same answers (60% missed drops to 4%), so the early wins mostly reflect weak probes. Fresh searches against the stronger probes are running."
+ "headline": "Prompting only (the model is never trained): Claude Opus searches for an instruction while seeing every reply's probe score; the best instruction is frozen and tested on 100 new problems, and a reply counts only if it still does the task. Against probes trained on short templated answers it wins easily (60-99% of answers missed on Qwen3.5-27B). Against probes trained on the model's own replies in varied styles, even a fresh search aimed at them gets only 2-6% past: rare, but not zero."
 }
