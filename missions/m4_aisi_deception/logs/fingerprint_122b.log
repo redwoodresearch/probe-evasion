@@ -1,6 +1,90 @@
 Note that running a local entrypoint in detached mode only keeps the last triggered Modal function alive after the parent process has been killed or disconnected.
 ✓ Initialized. View run at 
-https://modal.com/apps/redwood-default/main/ap-zXnoP7XTFHl3rdGTSDIOF4
+https://modal.com/apps/redwood-default/main/ap-vWhXAU0QohFtiNQ1vMkcoQ
+Building image im-jBRZ2hGttbdZf7IvlZ5NUF
+
+=> Step 0: FROM base
+
+=> Step 1: COPY --from=ghcr.io/astral-sh/uv:latest /uv /.uv/uv
+Getting image source signatures
+Copying blob sha256:dcd00f4c468462b2a68c19a552a5b67c3fd23b41967f8622f7f1620cad1d105d
+Copying blob sha256:f3f7502ac07c10bd911c63b27afb9b3f5902b8554ccbe381bde627178ad1915b
+Copying config sha256:2832daefdfaee215fd647b8bc850821ece2a4c4f7703a11895c6d4631ef0858e
+Writing manifest to image destination
+Unpacking OCI image
+   • unpacking rootfs ...     
+   • ... done                 
+   • unpacked image rootfs: /tmp/task-data/ta-01M4EG741AN8YSVXVJH9K2A4VB/registry-unpackm5vFzm
+
+=> Step 2: RUN /.uv/uv pip install --python $(command -v python) --compile-bytecode accelerate anthropic datasets flash-linear-attention kernels==0.17.0 lie-detectors==0.1.0 matplotlib python-dotenv scikit-learn scipy
+Using Python 3.12.1 environment at: /usr/local
+Resolved 124 packages in 906ms
+Downloading pyarrow (47.8MiB)
+Downloading pandas (10.3MiB)
+Downloading fonttools (5.1MiB)
+Downloading kiwisolver (1.4MiB)
+Downloading scipy (33.7MiB)
+Downloading matplotlib (9.4MiB)
+Downloading rfc3161-client (2.3MiB)
+Downloading scikit-learn (8.7MiB)
+ Downloaded kiwisolver
+Downloading kernels (1.8MiB)
+ Downloaded rfc3161-client
+ Downloaded kernels
+ Downloaded fonttools
+ Downloaded matplotlib
+ Downloaded scikit-learn
+ Downloaded pyarrow
+ Downloaded pandas
+ Downloaded scipy
+Prepared 37 packages in 1.03s
+Uninstalled 1 package in 25ms
+Installed 37 packages in 716ms
+Bytecode compiled 5161 files in 2.13s
+ + accelerate==1.15.0
+ + contourpy==1.4.0
+ + cycler==0.12.1
+ + datasets==5.1.0
+ + fla-core==0.5.2
+ + flash-linear-attention==0.5.2
+ + fonttools==4.66.1
+ - fsspec==2026.9.0
+ + fsspec==2026.7.0
+ + id==1.6.1
+ + jaxtyping==0.3.11
+ + joblib==1.6.0
+ + kernels==0.17.0
+ + kiwisolver==1.5.1
+ + lie-detectors==0.1.0
+ + matplotlib==3.11.2
+ + multiprocess==0.70.19
+ + narwhals==2.26.0
+ + pandas==3.0.6
+ + platformdirs==4.12.4
+ + pyarrow==25.0.1
+ + pyasn1==0.6.4
+ + pyopenssl==26.4.0
+ + pyparsing==3.3.3
+ + python-dateutil==2.9.0.post0
+ + rfc3161-client==1.0.9
+ + rfc8785==0.1.4
+ + scikit-learn==1.9.1
+ + scipy==1.18.1
+ + securesystemslib==1.5.1
+ + sigstore==4.5.0
+ + sigstore-models==0.0.6
+ + sigstore-rekor-types==0.0.18
+ + threadpoolctl==3.7.0
+ + tomlkit==0.15.1
+ + tuf==7.0.1
+ + wadler-lindig==0.1.7
+ + xxhash==4.0.1
+Saving image...
+Image saved, took 6.19s
+
+Built image im-jBRZ2hGttbdZf7IvlZ5NUF in 16.44s
+
+
 ✓ Created objects.
 ├── ✓ Uploaded 
 │   /Users/nabilbaugher/dev/probe-evasion/results/chameleons/trained_probes
@@ -8,100 +92,101 @@ https://modal.com/apps/redwood-default/main/ap-zXnoP7XTFHl3rdGTSDIOF4
 │   /Users/nabilbaugher/dev/probe-evasion/external/minimal_neural_chameleons/pro
 │   bes
 ├── ✓ Uploaded PythonPackage:probe_evasion
+├── ✓ Created Function execute.
 ├── ✓ Created Function Sampler.*.
 ├── ✓ Created Function train.
 ├── ✓ Created Function score.
-├── ✓ Created Function execute.
-├── ✓ Created Function AisiScorer.*.
 ├── ✓ Created Function chain.
 ├── ✓ Created Function remote_step.
 ├── ✓ Created Function ProbeLab.*.
 ├── ✓ Created Function ConceptGen.*.
 ├── ✓ Created Function ConceptScorer.*.
-└── ✓ Created Function train_probes_remote.
+├── ✓ Created Function train_probes_remote.
+└── ✓ Created Function AisiScorer.*.
 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
 
 [1AGenerating train split:   0%|          | 0/613 [00:00<?, ? examples/s]
-[1AGenerating train split: 100%|██████████| 613/613 [00:00<00:00, 116921.71 examples/s]
+[1AGenerating train split: 100%|██████████| 613/613 [00:00<00:00, 72877.22 examples/s]
 
 [1AFetching 53 files:   0%|          | 0/53 [00:00<?, ?it/s]
-[1AFetching 53 files: 100%|██████████| 53/53 [00:00<00:00, 1090.01it/s]
-Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[1AFetching 53 files: 100%|██████████| 53/53 [00:00<00:00, 1025.07it/s]
 
 [1ALoading weights:   0%|          | 0/1560 [00:00<?, ?it/s]
-[1ALoading weights:   1%|          | 16/1560 [00:00<01:02, 24.74it/s]
-[1ALoading weights:   1%|          | 19/1560 [00:00<01:11, 21.43it/s]
-[1ALoading weights:   3%|▎         | 42/1560 [00:01<01:07, 22.38it/s]
-[1ALoading weights:   3%|▎         | 45/1560 [00:02<01:12, 20.98it/s]
-[1ALoading weights:   4%|▍         | 68/1560 [00:03<01:11, 20.78it/s]
-[1ALoading weights:   5%|▍         | 71/1560 [00:03<01:25, 17.34it/s]
-[1ALoading weights:   5%|▌         | 82/1560 [00:04<01:48, 13.63it/s]
-[1ALoading weights:   5%|▌         | 84/1560 [00:04<01:50, 13.37it/s]
-[1ALoading weights:   8%|▊         | 118/1560 [00:06<01:10, 20.50it/s]
-[1ALoading weights:   8%|▊         | 120/1560 [00:06<01:10, 20.35it/s]
-[1ALoading weights:   9%|▊         | 136/1560 [00:06<00:47, 30.22it/s]
-[1ALoading weights:   9%|▉         | 144/1560 [00:07<01:13, 19.35it/s]
-[1ALoading weights:  10%|▉         | 149/1560 [00:07<01:11, 19.68it/s]
-[1ALoading weights:  11%|█         | 170/1560 [00:08<01:08, 20.29it/s]
-[1ALoading weights:  11%|█         | 174/1560 [00:08<01:08, 20.35it/s]
-[1ALoading weights:  12%|█▏        | 184/1560 [00:09<01:28, 15.59it/s]
-[1ALoading weights:  12%|█▏        | 187/1560 [00:09<01:26, 15.95it/s]
-[1ALoading weights:  14%|█▍        | 220/1560 [00:11<01:00, 22.12it/s]
-[1ALoading weights:  14%|█▍        | 223/1560 [00:11<01:02, 21.25it/s]
-[1ALoading weights:  16%|█▌        | 246/1560 [00:12<01:02, 21.07it/s]
-[1ALoading weights:  16%|█▌        | 249/1560 [00:12<01:02, 20.85it/s]
-[1ALoading weights:  17%|█▋        | 272/1560 [00:13<01:02, 20.47it/s]
-[1ALoading weights:  18%|█▊        | 275/1560 [00:13<01:04, 19.94it/s]
-[1ALoading weights:  18%|█▊        | 286/1560 [00:14<01:21, 15.67it/s]
-[1ALoading weights:  19%|█▊        | 289/1560 [00:15<01:19, 15.95it/s]
-[1ALoading weights:  21%|██        | 322/1560 [00:16<00:57, 21.63it/s]
-[1ALoading weights:  21%|██        | 325/1560 [00:16<00:57, 21.43it/s]
-[1ALoading weights:  22%|██▏       | 348/1560 [00:17<00:58, 20.68it/s]
-[1ALoading weights:  22%|██▎       | 351/1560 [00:17<00:59, 20.44it/s]
-[1ALoading weights:  24%|██▍       | 374/1560 [00:18<00:58, 20.39it/s]
-[1ALoading weights:  24%|██▍       | 377/1560 [00:19<00:58, 20.08it/s]
-[1ALoading weights:  25%|██▍       | 388/1560 [00:20<01:16, 15.35it/s]
-[1ALoading weights:  25%|██▌       | 390/1560 [00:20<01:16, 15.23it/s]
-[1ALoading weights:  27%|██▋       | 420/1560 [00:20<00:32, 35.33it/s]
-[1ALoading weights:  28%|██▊       | 430/1560 [00:21<00:56, 19.88it/s]
-[1ALoading weights:  29%|██▉       | 450/1560 [00:22<00:58, 18.94it/s]
-[1ALoading weights:  29%|██▉       | 456/1560 [00:23<00:54, 20.28it/s]
-[1ALoading weights:  31%|███       | 476/1560 [00:24<00:56, 19.05it/s]
-[1ALoading weights:  31%|███       | 480/1560 [00:24<00:56, 19.19it/s]
-[1ALoading weights:  31%|███▏      | 490/1560 [00:25<01:09, 15.43it/s]
-[1ALoading weights:  32%|███▏      | 493/1560 [00:25<01:09, 15.27it/s]
-[1ALoading weights:  34%|███▎      | 526/1560 [00:26<00:45, 22.86it/s]
-[1ALoading weights:  34%|███▍      | 529/1560 [00:26<00:45, 22.56it/s]
-[1ALoading weights:  35%|███▌      | 552/1560 [00:27<00:45, 22.36it/s]
-[1ALoading weights:  36%|███▌      | 555/1560 [00:28<00:46, 21.65it/s]
-[1ALoading weights:  37%|███▋      | 578/1560 [00:29<00:44, 22.15it/s]
-[1ALoading weights:  37%|███▋      | 581/1560 [00:29<00:46, 20.94it/s]
-[1ALoading weights:  38%|███▊      | 592/1560 [00:30<00:55, 17.30it/s]
-[1ALoading weights:  40%|████      | 628/1560 [00:31<00:43, 21.53it/s]
-[1ALoading weights:  40%|████      | 631/1560 [00:31<00:43, 21.27it/s]
-[1ALoading weights:  42%|████▏     | 654/1560 [00:33<00:46, 19.42it/s]
-[1ALoading weights:  42%|████▏     | 657/1560 [00:33<00:47, 19.09it/s]
-[1ALoading weights:  44%|████▎     | 680/1560 [00:34<00:49, 17.94it/s]
-[1ALoading weights:  44%|████▍     | 683/1560 [00:34<00:50, 17.52it/s]
-[1ALoading weights:  44%|████▍     | 694/1560 [00:36<01:06, 13.06it/s]
-[1ALoading weights:  45%|████▍     | 696/1560 [00:36<01:04, 13.31it/s]
-[1ALoading weights:  45%|████▍     | 698/1560 [00:36<01:08, 12.67it/s]
-[1ALoading weights:  47%|████▋     | 730/1560 [00:37<00:43, 19.26it/s]
-[1ALoading weights:  47%|████▋     | 733/1560 [00:38<00:45, 18.35it/s]
-[1ALoading weights:  48%|████▊     | 756/1560 [00:39<00:44, 18.10it/s]
-[1ALoading weights:  49%|████▊     | 758/1560 [00:39<00:45, 17.76it/s]
-[1ALoading weights:  49%|████▊     | 760/1560 [00:39<00:46, 17.16it/s]
-[1ALoading weights:  50%|█████     | 782/1560 [00:40<00:44, 17.57it/s]
-[1ALoading weights:  50%|█████     | 785/1560 [00:41<00:44, 17.53it/s]
-[1ALoading weights:  51%|█████     | 796/1560 [00:41<00:50, 15.23it/s]
-[1ALoading weights:  51%|█████     | 799/1560 [00:42<00:49, 15.24it/s]
-[1ALoading weights:  53%|█████▎    | 832/1560 [00:43<00:29, 24.34it/s]
-[1ALoading weights:  54%|█████▎    | 835/1560 [00:43<00:30, 23.90it/s]
-[1ALoading weights:  55%|█████▌    | 858/1560 [00:44<00:29, 24.21it/s]
-[1ALoading weights:  55%|█████▌    | 861/1560 [00:44<00:28, 24.19it/s]
-[1ALoading weights:  57%|█████▋    | 884/1560 [00:45<00:28, 23.93it/s]
-[1ALoading weights:  57%|█████▋    | 887/1560 [00:45<00:29, 23.17it/s]
-[1ALoading weights:  58%|█████▊    | 898/1560 [00:46<00:35, 18.50it/s]
-[1ALoading weights:  58%|█████▊    | 900/1560 [00:46<00:36, 18.26it/s]
-[1ALoading weights:  58%|█████▊    | 902/1560 [00:46<00:36, 18.23it/s]
-[1ALoading weights:  60%|█████▉    | 934/1560 [00:47<00:23, 27.16it/s]
+[1ALoading weights:   1%|          | 16/1560 [00:00<00:36, 42.77it/s]
+[1ALoading weights:   1%|▏         | 21/1560 [00:00<00:49, 30.99it/s]
+[1ALoading weights:   3%|▎         | 42/1560 [00:01<01:04, 23.42it/s]
+[1ALoading weights:   3%|▎         | 45/1560 [00:01<01:11, 21.20it/s]
+[1ALoading weights:   4%|▍         | 68/1560 [00:03<01:20, 18.50it/s]
+[1ALoading weights:   4%|▍         | 70/1560 [00:03<01:22, 18.02it/s]
+[1ALoading weights:   5%|▍         | 72/1560 [00:03<01:24, 17.63it/s]
+[1ALoading weights:   5%|▌         | 82/1560 [00:04<02:11, 11.28it/s]
+[1ALoading weights:   5%|▌         | 84/1560 [00:05<02:16, 10.80it/s]
+[1ALoading weights:   6%|▌         | 86/1560 [00:05<02:11, 11.21it/s]
+[1ALoading weights:   8%|▊         | 118/1560 [00:06<01:23, 17.19it/s]
+[1ALoading weights:   8%|▊         | 120/1560 [00:07<01:25, 16.91it/s]
+[1ALoading weights:   9%|▊         | 135/1560 [00:07<00:54, 26.10it/s]
+[1ALoading weights:   9%|▉         | 144/1560 [00:08<01:40, 14.14it/s]
+[1ALoading weights:  10%|▉         | 149/1560 [00:08<01:34, 14.91it/s]
+[1ALoading weights:  11%|█         | 170/1560 [00:10<01:34, 14.69it/s]
+[1ALoading weights:  11%|█         | 173/1560 [00:10<01:41, 13.63it/s]
+[1ALoading weights:  12%|█▏        | 184/1560 [00:11<01:55, 11.94it/s]
+[1ALoading weights:  12%|█▏        | 186/1560 [00:11<01:51, 12.28it/s]
+[1ALoading weights:  12%|█▏        | 188/1560 [00:12<01:48, 12.68it/s]
+[1ALoading weights:  14%|█▍        | 220/1560 [00:13<01:15, 17.66it/s]
+[1ALoading weights:  14%|█▍        | 223/1560 [00:13<01:21, 16.31it/s]
+[1ALoading weights:  16%|█▌        | 246/1560 [00:15<01:17, 17.05it/s]
+[1ALoading weights:  16%|█▌        | 248/1560 [00:15<01:18, 16.77it/s]
+[1ALoading weights:  16%|█▌        | 250/1560 [00:15<01:20, 16.29it/s]
+[1ALoading weights:  17%|█▋        | 272/1560 [00:16<01:16, 16.74it/s]
+[1ALoading weights:  18%|█▊        | 274/1560 [00:17<01:22, 15.62it/s]
+[1ALoading weights:  18%|█▊        | 276/1560 [00:17<01:25, 15.07it/s]
+[1ALoading weights:  18%|█▊        | 286/1560 [00:18<01:46, 11.92it/s]
+[1ALoading weights:  18%|█▊        | 288/1560 [00:18<01:47, 11.78it/s]
+[1ALoading weights:  19%|█▊        | 290/1560 [00:18<01:43, 12.26it/s]
+[1ALoading weights:  21%|██        | 322/1560 [00:19<01:03, 19.52it/s]
+[1ALoading weights:  21%|██        | 324/1560 [00:20<01:03, 19.46it/s]
+[1ALoading weights:  21%|██        | 326/1560 [00:20<01:04, 19.25it/s]
+[1ALoading weights:  22%|██▏       | 348/1560 [00:21<01:10, 17.25it/s]
+[1ALoading weights:  22%|██▎       | 351/1560 [00:21<01:17, 15.63it/s]
+[1ALoading weights:  24%|██▍       | 374/1560 [00:23<01:07, 17.62it/s]
+[1ALoading weights:  24%|██▍       | 376/1560 [00:23<01:09, 16.94it/s]
+[1ALoading weights:  24%|██▍       | 378/1560 [00:23<01:12, 16.25it/s]
+[1ALoading weights:  25%|██▍       | 388/1560 [00:24<01:37, 12.05it/s]
+[1ALoading weights:  25%|██▌       | 390/1560 [00:24<01:38, 11.84it/s]
+[1ALoading weights:  25%|██▌       | 392/1560 [00:24<01:37, 11.93it/s]
+[1ALoading weights:  27%|██▋       | 424/1560 [00:26<00:59, 19.23it/s]
+[1ALoading weights:  27%|██▋       | 426/1560 [00:26<01:01, 18.33it/s]
+[1ALoading weights:  27%|██▋       | 428/1560 [00:26<01:04, 17.62it/s]
+[1ALoading weights:  29%|██▉       | 450/1560 [00:27<01:02, 17.79it/s]
+[1ALoading weights:  29%|██▉       | 452/1560 [00:27<01:03, 17.41it/s]
+[1ALoading weights:  29%|██▉       | 454/1560 [00:28<01:02, 17.57it/s]
+[1ALoading weights:  31%|███       | 476/1560 [00:29<01:04, 16.86it/s]
+[1ALoading weights:  31%|███       | 478/1560 [00:29<01:07, 16.00it/s]
+[1ALoading weights:  31%|███       | 483/1560 [00:29<00:58, 18.52it/s]
+[1ALoading weights:  31%|███▏      | 490/1560 [00:30<01:32, 11.55it/s]
+[1ALoading weights:  32%|███▏      | 493/1560 [00:31<01:28, 12.00it/s]
+[1ALoading weights:  34%|███▎      | 526/1560 [00:32<00:57, 17.98it/s]
+[1ALoading weights:  34%|███▍      | 528/1560 [00:32<00:57, 18.05it/s]
+[1ALoading weights:  34%|███▍      | 530/1560 [00:32<00:58, 17.49it/s]
+[1ALoading weights:  35%|███▌      | 552/1560 [00:34<01:00, 16.58it/s]
+[1ALoading weights:  36%|███▌      | 554/1560 [00:34<01:01, 16.25it/s]
+[1ALoading weights:  36%|███▌      | 556/1560 [00:34<01:03, 15.87it/s]
+[1ALoading weights:  37%|███▋      | 578/1560 [00:35<01:01, 16.01it/s]
+[1ALoading weights:  37%|███▋      | 580/1560 [00:36<01:03, 15.38it/s]
+[1ALoading weights:  37%|███▋      | 582/1560 [00:36<01:02, 15.69it/s]
+[1ALoading weights:  38%|███▊      | 592/1560 [00:37<01:26, 11.18it/s]
+[1ALoading weights:  40%|███▉      | 621/1560 [00:37<00:34, 27.60it/s]
+[1ALoading weights:  40%|████      | 631/1560 [00:39<01:09, 13.40it/s]
+[1ALoading weights:  42%|████▏     | 654/1560 [00:40<01:01, 14.66it/s]
+[1ALoading weights:  42%|████▏     | 660/1560 [00:41<00:58, 15.29it/s]
+[1ALoading weights:  44%|████▎     | 680/1560 [00:42<00:59, 14.74it/s]
+[1ALoading weights:  44%|████▍     | 684/1560 [00:42<00:59, 14.66it/s]
+[1ALoading weights:  44%|████▍     | 694/1560 [00:44<01:20, 10.71it/s]
+[1ALoading weights:  45%|████▍     | 697/1560 [00:44<01:17, 11.10it/s]
+[1ALoading weights:  47%|████▋     | 730/1560 [00:46<00:53, 15.60it/s]
+[1ALoading weights:  47%|████▋     | 733/1560 [00:46<00:55, 14.96it/s]
+[1ALoading weights:  48%|████▊     | 756/1560 [00:48<00:55, 14.59it/s]
+[1ALoading weights:  49%|████▊     | 759/1560 [00:48<00:53, 15.03it/s]
+[1ALoading weights:  50%|█████     | 782/1560 [00:50<00:52, 14.73it/s]
+[1ALoading weights:  50%|█████     | 784/1560 [00:50<00:53, 14.42it/s]
+[1ALoading weights:  50%|█████     | 786/1560 [00:50<00:54, 14.26it/s]

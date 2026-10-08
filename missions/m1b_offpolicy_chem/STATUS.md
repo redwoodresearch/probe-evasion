@@ -95,3 +95,17 @@ loop.
   - Not done yet: length matching (the chat-vs-computed length gap remains; a caveat) and the edit checks.
 - 12:20. Lead: narrowed the chemistry headline (the cause of the Neural Chameleons evasion is not isolated; mission 1c
   is the matched ablation). Done.
+- 13:00. Critic 3 (before verdict). Not fake, but "evasion" overclaims. The no-nearby-negatives probe is
+  format-brittle.
+  - Ordinary format changes are missed as completely as the searched prompts: JSON 40/40, French 40/40, "number
+    only" 39/39, formal report line 39/40.
+  - Within the formal-report style it separates computed answers from lookups at chance (AUROC 0.52).
+  - So property 3 fails off-format, and the uplift comes from style, not from being told to evade.
+  - Counting: plain arm valid is 593/600 attempts; 351 is distinct replies.
+  - Headline the overnight winner: instruction removed 585/585, strict judge near plain.
+  - Run 1a's same-format checks (the winners' styles applied to lookups).
+- 13:05. Lead: new property 5 (train for the reading you deploy). The maths result used mean-trained probes read with
+  EMA, so it does not count. Did: training peak probes (BCE on the EMA peak, val-loss stop, 3 seeds, layer 48) for
+  the no-nearby-negatives set (`m1b_maths_nonear2_peak_seeds`) and for 1a's set with nearby negatives
+  (`m1b_maths_nonear_withnear_peak_seeds`). Re-scoring the calibration pools, fresh tests, hand-written arms and 1a's
+  same-format negative sets with them.

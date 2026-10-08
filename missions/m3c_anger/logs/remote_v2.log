@@ -10472,3 +10472,506 @@ Runner failed with exception: Runner has been shutting down for too long (grace 
 
 [1AProcessed prompts: 100%|██████████| 32/32 [00:29<00:00,  1.89it/s, est. speed input: 110.52 toks/s, output: 176.13 toks/s]
 [1AProcessed prompts: 100%|██████████| 32/32 [00:29<00:00,  1.89it/s, est. speed input: 110.52 toks/s, output: 176.13 toks/s]Processed prompts: 100%|██████████| 32/32 [00:29<00:00,  1.07it/s, est. speed input: 110.52 toks/s, output: 176.13 toks/s]
+calibration: 1438 replies, 408 show anger (removed); calm-provoking tasks: 189/200 removed; over 150 words: 10
+plain positives (search train+val): 59/80 valid
+probe_rows_train_claude [(('calm-provoking', 0, 0), 111), (('calm-provoking', 0, None), 39), (('calm-provoking-paired', 0, 0), 242), (('calm-provoking-paired', 0, 1), 1), (('calm-provoking-paired', 0, None), 137), (('mild', 0, 0), 173), (('mild', 0, None), 4), (('neutral', 0, 0), 281), (('provoking', 1, 0), 3), (('provoking', 1, 1), 700), (('provoking', 1, None), 57), (('provoking-controlled', 1, 1), 178), (('provoking-controlled', 1, None), 12), (('unrelated', 0, 0), 168)]
+probe_rows_train_claude: 879 angry, 978 not
+probe_rows_heldout [(('calm-provoking', 0, 1), 26), (('calm-provoking', 0, None), 24), (('calm-provoking-paired', 0, 1), 62), (('calm-provoking-paired', 0, None), 38), (('mild', 0, 0), 14), (('mild', 0, 1), 20), (('mild', 0, None), 18), (('neutral', 0, 0), 87), (('neutral', 0, 1), 2), (('neutral', 0, None), 13), (('provoking', 1, 0), 1), (('provoking', 1, 1), 68), (('provoking', 1, None), 31), (('unrelated', 0, 0), 46)]
+probe_rows_heldout: 178 angry, 148 not
+[m3c_anger_v2] step 1: m3c_train {'method': 'gd', 'source': 'claude'}
+Stopping app - user stopped from CLI.
+FAILED m3c_anger_v2 RemoteError('')
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 987, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_runtime/container_io_manager.py", line 266, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/probe_evasion/remote_search.py", line 51, in chain
+    getattr(importlib.import_module(module), entrypoint)(**kwargs)
+  File "/pkg/modal/app.py", line 74, in __call__
+    return self._info.raw_f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/probe_evasion/missions/m3c_anger.py", line 449, in m3c_train
+    out = concept_probes.ProbeLab(model_key=MODEL).train.remote(rows, layers=LAYERS, per_layer=True, method=method)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_object.py", line 49, in wrapped
+    return await method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_functions.py", line 2067, in remote
+    return await self._call_function(args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_functions.py", line 2004, in _call_function
+    return await invocation.run_function()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_functions.py", line 496, in run_function
+    return await _process_result(
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_utils/function_utils.py", line 574, in _process_result
+    raise RemoteError(result.exception)
+modal.exception.RemoteError
+Exception ignored in atexit callback: Exception ignored in atexit callback<function _exit_function at 0x2ae305bdbd80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:42 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:42 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:42 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:42 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:42 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:42 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:42 [core_client.py:751] [shutdown] MPClient: complete
+Exception ignored in atexit callback: : <function _exit_function at 0x2b54ac6b7d80>
+Traceback (most recent call last):
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:42 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:42 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:42 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:42 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:42 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:42 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:42 [core_client.py:751] [shutdown] MPClient: complete
+<function _exit_function at 0x2a96773abd80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:42 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:42 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:42 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:42 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:42 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:42 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:42 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:42 [core_client.py:751] [shutdown] MPClient: complete
+
+[1AFetching 24 files:   0%|          | 0/24 [00:00<?, ?it/s]
+[1AFetching 24 files: 100%|██████████| 24/24 [00:00<00:00, 1390.72it/s]
+Exception ignored in atexit callback: Exception ignored in atexit callbackException ignored in atexit callback<function _exit_function at 0x2ad7035c7d80>
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:43 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+: <function _exit_function at 0x2aafa91bfd80>
+Traceback (most recent call last):
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:43 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:43 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:43 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:43 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+: <function _exit_function at 0x2b3f34493d80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+    p.join()
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+INFO 10-08 19:35:43 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:43 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:43 [core_client.py:751] [shutdown] MPClient: complete
+WARNING 10-08 19:35:43 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:43 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:43 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:43 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:43 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:43 [core_client.py:751] [shutdown] MPClient: complete
+               ^^^^^^^^^^^Exception ignored in atexit callback^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:43 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:43 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:43 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:43 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:43 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:43 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:43 [core_client.py:751] [shutdown] MPClient: complete
+: <function _exit_function at 0x2ba20dad7d80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+    p.join()
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:43 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:43 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:43 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:43 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:43 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:43 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:43 [core_client.py:751] [shutdown] MPClient: complete
+Exception ignored in atexit callbackException ignored in atexit callback: Exception ignored in atexit callback<function _exit_function at 0x2b3c0fecbd80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+    p.join()
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+: <function _exit_function at 0x2a73e6dc7d80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:43 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+KeyboardInterrupt: 
+INFO 10-08 19:35:43 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:43 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:43 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:43 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:43 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:43 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:43 [core_client.py:751] [shutdown] MPClient: complete
+: <function _exit_function at 0x2a5e54fb7d80>
+Traceback (most recent call last):
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:43 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:43 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:43 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:43 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:43 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:43 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:43 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:43 [core_client.py:751] [shutdown] MPClient: complete
+WARNING 10-08 19:35:43 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:43 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:43 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:43 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:43 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:43 [core_client.py:751] [shutdown] MPClient: complete
+Exception ignored in atexit callback: <function _exit_function at 0x2afc777c3d80>
+Traceback (most recent call last):
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:44 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:44 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:44 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:44 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:44 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:44 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:44 [core_client.py:751] [shutdown] MPClient: complete
+Exception ignored in atexit callbackException ignored in atexit callback: <function _exit_function at 0x2a602986fd80>
+Traceback (most recent call last):
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:44 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+Exception ignored in atexit callback: : <function _exit_function at 0x2b14800afd80>
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:44 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:44 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:44 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:44 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:44 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:44 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:44 [core_client.py:751] [shutdown] MPClient: complete
+<function _exit_function at 0x2b4db9cbfd80>
+Traceback (most recent call last):
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:44 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:44 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:44 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:44 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:44 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:44 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:44 [core_client.py:751] [shutdown] MPClient: complete
+WARNING 10-08 19:35:44 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:44 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:44 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:44 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:44 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:44 [core_client.py:751] [shutdown] MPClient: complete
+Exception ignored in atexit callback: <function _exit_function at 0x2b84de8c3d80>
+Traceback (most recent call last):
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+    p.join()
+(EngineCore pid=59) INFO 10-08 19:35:44 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:44 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:45 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:45 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:45 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:45 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:45 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:45 [core_client.py:751] [shutdown] MPClient: complete
+Exception ignored in atexit callbackException ignored in atexit callbackException ignored in atexit callback: <function _exit_function at 0x2ab0099bfd80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:45 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+: <function _exit_function at 0x2b3e282c7d80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+KeyboardInterrupt: : <function _exit_function at 0x2b0e8f9c7d80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-08 19:35:45 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-08 19:35:45 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:45 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:45 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:45 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:45 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:45 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:45 [core_client.py:751] [shutdown] MPClient: complete
+
+INFO 10-08 19:35:45 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-08 19:35:45 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:45 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:45 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:45 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:45 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:45 [core_client.py:751] [shutdown] MPClient: complete
+WARNING 10-08 19:35:45 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-08 19:35:45 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-08 19:35:45 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-08 19:35:45 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-08 19:35:45 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-08 19:35:45 [core_client.py:751] [shutdown] MPClient: complete
+Runner terminated.
+Runner terminated.
+Runner terminated.
+Runner terminated.
+Runner terminated.
+Runner terminated.
+[modal-client] 2026-10-08T12:35:49-0700 Timed out waiting for final app logs.
+✓ App completed. View run at 
+https://modal.com/apps/redwood-default/main/ap-qaCtKIWTeflzPAeYB6Y8Jn

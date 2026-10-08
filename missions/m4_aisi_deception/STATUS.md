@@ -172,6 +172,10 @@ reading; EMA and max are secondary. Consequences:
   scenarios.
 - New confirmation set: 574 more Claude-written scenarios (`data/concepts/m4_aisi_deception_scenarios_fresh2.jsonl`,
   deduplicated against all earlier ones), untouched so far.
+- Confirmation run launched 12:55 on the first 300 fresh2 scenarios (seed 2000): plain, neutral_delay, pre_echo, plus
+  honest versions for plain and neutral_delay. Pre-registered headline: TARGETED probe (l_32 dim), mean reading,
+  instruction removed, Phase A 1% line, neutral_delay vs plain valid evasions among attempts, McNemar. Secondary: apollo,
+  logistic-regression probes, EMA/max, 0.1%/5% lines, pre_echo.
 - Searches restarted with the mean reading as target, one against apollo (seeds warm_helper, calm_state, pre_warm,
   pre_echo) and one against targeted (seeds calm_state, plain_facts, pre_echo, routine); reward uses the higher of
   as-generated and instruction-removed scores. The EMA-target search is finishing; it is reported as secondary.
