@@ -65,14 +65,10 @@ def logits(probs) -> np.ndarray:
 
 
 def ema_peak(lg: np.ndarray, alpha: float, start: float | None, score_from: int = 0) -> float:
-    """Highest value of the running average at positions >= score_from, as a probability."""
-    s = lg[0] if start is None else start
-    best = -np.inf
-    for i, x in enumerate(lg):
-        s = x if (i == 0 and start is None) else alpha * x + (1 - alpha) * s
-        if i >= score_from:
-            best = max(best, s)
-    return float(1 / (1 + np.exp(-best)))
+    """As a probability."""
+    from probe_evasion.gepa import ema_logit
+
+    return float(1 / (1 + np.exp(-ema_logit(lg, alpha, start, score_from))))
 
 
 @app.local_entrypoint()

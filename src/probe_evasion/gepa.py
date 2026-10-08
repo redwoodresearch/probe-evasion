@@ -45,12 +45,14 @@ WINDOW = 10
 # What the search optimizes and the headline reports: the peak of a running average of per-token logits over about
 # 10 tokens (alpha 0.1), as in our first-phase probes. Unlike the mean over the reply it can't be diluted by padding,
 # and unlike the single highest token it isn't set off by one stray token. Shown as a probability.
-# The headline reading: the most concept-heavy stretch of WINDOW tokens (mean logit; the whole reply if shorter).
+# Headline reading: EMA peak (standard, from neutral). The window reading is the most concept-heavy stretch of WINDOW
+# tokens (mean logit; the whole reply if shorter).
 # Padding can't dilute it, and unlike EMA it isn't fooled by very short replies whose first token scores low.
-TARGET = "window"
+TARGET = "ema"
 PROBE = ""  # "<file>:<name>" in results/concept_probes to use instead of the model's default probe for the concept
 THINKING: bool | None = None  # Qwen only: override QWEN_THINKING (reason before replying or not)
 READOUTS = {
+    "max": "the reply's score is its single highest token score (0 to 1), so one strongly {name} token anywhere flags it.",
     "window": "the reply's score is the highest average over any 10 consecutive tokens (the whole reply if it is "
               "shorter), from 0 to 1, so a stretch of {name} anywhere in the reply raises it and surrounding text does "
               "not dilute it.",
@@ -212,7 +214,22 @@ def readings(probs: list[float], logits: list[float]) -> dict:
         return {p: float("nan") for p in POOLS}
     lg = np.array(logits)
     sig = lambda x: float(1 / (1 + np.exp(-x)))
-    return {"mean": float(np.mean(probs)), "max": sig(lg.max()), "ema": sig(ema_max(lg)), "window": sig(window_logit(lg))}
+    return {"mean": float(np.mean(probs)), "max": sig(lg.max()), "ema": sig(ema_logit(lg)), "window": sig(window_logit(lg))}
+
+
+EMA_ALPHA = 0.1
+
+
+def ema_logit(lg: np.ndarray, alpha: float = EMA_ALPHA, start: float | None = 0.0, score_from: int = 0) -> float:
+    """Peak of a running average of per-token logits. Starts from a neutral value (logit 0): starting from the first
+    token instead let short replies with a low-scoring opening word stay below the line."""
+    s = lg[0] if start is None else start
+    best = -np.inf
+    for i, x in enumerate(lg):
+        s = x if (i == 0 and start is None) else alpha * x + (1 - alpha) * s
+        if i >= score_from:
+            best = max(best, s)
+    return float(best)
 
 
 def window_logit(lg: np.ndarray, k: int = WINDOW) -> float:
@@ -267,8 +284,11 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
                 r.update(s)
             write_jsonl(saved, rows)
         for r in rows:
-            r["ema"] = ema_score(np.array(r["token_scores"]))
-            r["window"] = window_score(np.array(r["token_scores"]))
+            if "token_logits" in r:
+                r.update(readings(r["token_scores"], r["token_logits"]))
+            else:  # older runs saved only rounded probabilities
+                r["ema"] = ema_score(np.array(r["token_scores"]))
+                r["window"] = window_score(np.array(r["token_scores"]))
         # by task split: for maths, "present" on a no-concept task only means it answered the lookup correctly
         neg = [r for r in rows if r["task"]["split"] == "negative"]
         pos = [r for r in rows if r["task"]["split"] != "negative"]
