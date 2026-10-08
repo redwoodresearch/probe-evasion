@@ -204,7 +204,7 @@ mechanism section).
    - Mean blind-judge rating: 3.88 vs 4.55, so the sarcasm is somewhat weaker.
    - Restricted to replies both judges rated 5, the searched prompt still has 102 misses at 1% (plain: 5).
    - Hand-reading: critic 2 read 43 claimed evasions on the validation tasks; about 90% were unambiguous. I read about
-     30 on the test tasks; all but a few borderline ones were plainly sarcastic.
+     25 on the test tasks; all but a few borderline ones were plainly sarcastic.
 2. **Uplift.**
    - Same probe, same tasks; prompts were frozen before the test tasks were touched; distinct replies only.
    - The uplift holds at every line from 0.1% to 5%, under both readings and under every probe we trained (table above).
@@ -228,7 +228,7 @@ mechanism section).
    - **Readout mismatch (the lead's check).**
      - We retrained the probe on the same rows with binary cross-entropy on the EMA peak (m1a's `PeakProbeLabSeeds`,
        3 seeds at layers 16 and 48; seed 0 is reported, and the other seeds give the same held-out AUROC to within
-       0.002).
+       0.003).
      - This does not close the gap. The peak-trained probes miss more of both arms: searched 301 (L16) and 271 (L48)
        vs plain 56 and 29 at 1%.
      - Unlike m1a's maths case, the evasion here is not an artifact of training on the mean and reading the peak.
