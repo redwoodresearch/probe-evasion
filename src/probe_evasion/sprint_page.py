@@ -23,89 +23,50 @@ GRUN = {"saved": G / f"{GM}_window_L36_20261007-154620", "clean36": G / f"{GM}_e
 CHEM = {48: G / "qwen35_chemistry_window_L48_20261007-173800", 16: G / "qwen35_chemistry_window_L16_20261007-173800"}
 
 
-def ladder_cell(run: Path, probe: str, layer: int, arm: str) -> tuple[int, int]:
-    res = read_json(run / f"ladder_{probe}.json")["results"][f"maths@L{layer}"]["ema"]["missed"][arm]
-    return tuple(int(x) for x in res.split("/"))
+def frac(x: str) -> tuple[int, int]:
+    return tuple(int(v) for v in x.split("/"))
 
 
-def reval_cell(run: Path, arm: str) -> tuple[int, int]:
-    m = read_json(run / "revalidated.json")["readings"]["ema"]["missed"][arm]
-    return m["missed"], m["valid"]
+def ladder_cell(run: Path, probe: str, layer: int) -> dict:
+    e = read_json(run / f"ladder_{probe}.json")["results"][f"maths@L{layer}"]["ema"]
+    return {"opt": frac(e["missed"]["optimized"]), "plain": frac(e["missed"]["no_instruction"]),
+            "lenient": frac(e["missed_lenient"]["optimized"])}
 
 
-def summary_cell(run: Path, arm: str) -> tuple[int, int]:
-    """Searches run under the current maths rules (calibration version 2+): their own held-out summary is current."""
-    assert read_json(run / "calibration.json").get("version", 0) >= 2, run
-    a = read_json(run / "summary.json")["arms"][arm]
-    return a["missed_ema"], a["present"]
+def reval_cell(run: Path) -> dict:
+    m = read_json(run / "revalidated.json")["readings"]["ema"]["missed"]
+    o, pl = m["optimized"], m["no_instruction"]
+    return {"opt": (o["missed"], o["valid"]), "plain": (pl["missed"], pl["valid"]), "lenient": (o["missed_lenient"], o["valid_lenient"])}
 
 
-def repeat_cell(run: Path, kind: str, arm: str) -> tuple[int, int]:
-    a = read_json(run / f"{kind}.json")["arms"][arm]
-    return a["valid_evasions"], a["attempts"]
+def repeat_cell(run: Path, kind: str) -> dict:
+    arms = read_json(run / f"{kind}.json")["arms"]
+    o, pl = arms["optimized"], arms["plain"]
+    return {"opt": (o["valid_evasions"], o["attempts"]), "plain": (pl["valid_evasions"], pl["attempts"]),
+            "lenient": (o["valid_evasions_lenient"], o["attempts"])}
 
 
-# (group, probe, attack, held-out (optimized, plain), repeats (optimized, plain), new division problems (optimized, plain))
+def qwen_row(run: Path) -> tuple:
+    return lambda: reval_cell(run), lambda: repeat_cell(run, "large_test"), lambda: repeat_cell(run, "fresh_test")
+
+
+# (group, probe, attack, held-out, 1,000 repeats, new division problems); each a getter or None
 ROWS = [
-    ("Qwen3.5-27B · maths · layer 48", "Templated data (original)", "found against this probe",
-     lambda: (ladder_cell(QRUN["window"], f"{Q}_layers", 48, "optimized"), ladder_cell(QRUN["window"], f"{Q}_layers", 48, "no_instruction")), None, None),
-    (None, "Model's own replies", "fresh search against it",
-     lambda: (ladder_cell(QRUN["onpolicy"], f"{Q}_onpolicy", 48, "optimized"), ladder_cell(QRUN["onpolicy"], f"{Q}_onpolicy", 48, "no_instruction")),
-     lambda: (repeat_cell(QRUN["onpolicy"], "large_test", "optimized"), repeat_cell(QRUN["onpolicy"], "large_test", "plain")),
-     lambda: (repeat_cell(QRUN["onpolicy"], "fresh_test", "optimized"), repeat_cell(QRUN["onpolicy"], "fresh_test", "plain"))),
-    (None, "Own replies + narrative rewrites", "fresh search against it",
-     lambda: (ladder_cell(QRUN["rewrites"], f"{Q}_rewrites_lr", 48, "optimized"), ladder_cell(QRUN["rewrites"], f"{Q}_rewrites_lr", 48, "no_instruction")),
-     lambda: (repeat_cell(QRUN["rewrites"], "large_test", "optimized"), repeat_cell(QRUN["rewrites"], "large_test", "plain")),
-     lambda: (repeat_cell(QRUN["rewrites"], "fresh_test", "optimized"), repeat_cell(QRUN["rewrites"], "fresh_test", "plain"))),
-    (None, "Own replies, clean labels", "fresh search against it",
-     lambda: (summary_cell(QRUN["clean"], "optimized"), summary_cell(QRUN["clean"], "no instruction")),
-     lambda: (repeat_cell(QRUN["clean"], "large_test", "optimized"), repeat_cell(QRUN["clean"], "large_test", "plain")),
-     lambda: (repeat_cell(QRUN["clean"], "fresh_test", "optimized"), repeat_cell(QRUN["clean"], "fresh_test", "plain"))),
-    (None, "Clean labels + varied division", "fresh search against it",
-     lambda: (summary_cell(QRUN["divaug"], "optimized"), summary_cell(QRUN["divaug"], "no instruction")),
-     lambda: (repeat_cell(QRUN["divaug"], "large_test", "optimized"), repeat_cell(QRUN["divaug"], "large_test", "plain")),
-     lambda: (repeat_cell(QRUN["divaug"], "fresh_test", "optimized"), repeat_cell(QRUN["divaug"], "fresh_test", "plain"))),
+    ("Qwen3.5-27B · maths · layer 48", "Templated data (original)", "found against this probe", lambda: reval_cell(QRUN["window"]), None, None),
+    (None, "Model's own replies", "fresh search against it", *qwen_row(QRUN["onpolicy"])),
+    (None, "Own replies + narrative rewrites", "fresh search against it", *qwen_row(QRUN["rewrites"])),
+    (None, "Own replies, clean labels", "fresh search against it", *qwen_row(QRUN["clean"])),
+    (None, "Clean labels + varied division", "fresh search against it", *qwen_row(QRUN["divaug"])),
     ("Gemma-2-9B · maths", "Templated data, layer 6 of 42", "found against the layer-36 probe",
-     lambda: (ladder_cell(GRUN["saved"], f"{GM}_layers", 6, "optimized"), ladder_cell(GRUN["saved"], f"{GM}_layers", 6, "no_instruction")), None, None),
-    (None, "Templated data, layer 12", "found against the layer-36 probe",
-     lambda: (ladder_cell(GRUN["saved"], f"{GM}_layers", 12, "optimized"), ladder_cell(GRUN["saved"], f"{GM}_layers", 12, "no_instruction")), None, None),
-    (None, "Templated data, layer 36", "found against this probe",
-     lambda: (ladder_cell(GRUN["saved"], f"{GM}_layers", 36, "optimized"), ladder_cell(GRUN["saved"], f"{GM}_layers", 36, "no_instruction")), None, None),
-    (None, "Own replies, clean labels, layer 36", "fresh search against it",
-     lambda: (summary_cell(GRUN["clean36"], "optimized"), summary_cell(GRUN["clean36"], "no instruction")),
-     lambda: (repeat_cell(GRUN["clean36"], "large_test", "optimized"), repeat_cell(GRUN["clean36"], "large_test", "plain")),
-     lambda: (repeat_cell(GRUN["clean36"], "fresh_test", "optimized"), repeat_cell(GRUN["clean36"], "fresh_test", "plain"))),
+     lambda: ladder_cell(GRUN["saved"], f"{GM}_layers", 6), None, None),
+    (None, "Templated data, layer 12", "found against the layer-36 probe", lambda: ladder_cell(GRUN["saved"], f"{GM}_layers", 12), None, None),
+    (None, "Templated data, layer 36", "found against this probe", lambda: ladder_cell(GRUN["saved"], f"{GM}_layers", 36), None, None),
+    (None, "Own replies, clean labels, layer 36", "fresh search against it", *qwen_row(GRUN["clean36"])),
     (None, "Own replies, clean labels, layer 30", "fresh search against it",
-     lambda: (summary_cell(GRUN["clean30"], "optimized"), summary_cell(GRUN["clean30"], "no instruction")), None,
-     lambda: (repeat_cell(GRUN["clean30"], "fresh_test", "optimized"), repeat_cell(GRUN["clean30"], "fresh_test", "plain"))),
-    ("Qwen3.5-27B · chemistry", "Chemistry dataset, layer 48", "found against this probe",
-     lambda: (reval_cell(CHEM[48], "optimized"), reval_cell(CHEM[48], "no_instruction")), None, None),
-    (None, "Chemistry dataset, layer 16", "found against this probe",
-     lambda: (reval_cell(CHEM[16], "optimized"), reval_cell(CHEM[16], "no_instruction")), None, None),
+     lambda: reval_cell(GRUN["clean30"]), None, lambda: repeat_cell(GRUN["clean30"], "fresh_test")),
+    ("Qwen3.5-27B · chemistry", "Chemistry dataset, layer 48", "found against this probe", lambda: reval_cell(CHEM[48]), None, None),
+    (None, "Chemistry dataset, layer 16", "found against this probe", lambda: reval_cell(CHEM[16]), None, None),
 ]
-
-
-EXTRA_CSS = """
-.grid { width: 100%; border-collapse: separate; border-spacing: 3px; font-size: 13px; }
-.grid th { font: 500 11px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; text-align: center; padding: 4px; }
-.grid th.l, .grid td.l { text-align: left; }
-.grid td { padding: 6px 8px; border-radius: 4px; text-align: center; font: 600 13px var(--mono); color: var(--fg); }
-.grid td.l { font: 500 13px var(--sans); background: none; white-space: nowrap; }
-.grid td.l span { color: var(--muted); font-weight: 400; font-size: 12px; }
-.grid td.target { outline: 2px solid var(--fg); outline-offset: -2px; }
-.grid td .sub { display: block; font: 400 10.5px var(--mono); color: var(--muted); }
-.grid tr.group td { padding-top: 16px; text-align: left; font: 600 12px var(--sans); color: var(--muted); background: none; }
-.grid td.na { font: 400 11.5px var(--mono); color: var(--muted); background: var(--surface); }
-.tablewrap { overflow-x: auto; }
-.fig { display: block; width: 100%; border-radius: 6px; background: #fff; }
-.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-.links a { display: grid; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; text-decoration: none; color: var(--fg); }
-.links a span { color: var(--muted); font-size: 12.5px; }
-.ptable { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-.ptable th, .ptable td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); }
-.ptable th { font: 500 11.5px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-.ptable td.n { font: 13px var(--mono); }
-"""
 
 
 def read_json(p: Path):
@@ -122,13 +83,15 @@ def corrected_misses(run: Path, target: str) -> tuple[tuple[int, int], tuple[int
     return tuple((arms[a][f"missed_{target}"], arms[a]["present"]) for a in ("no instruction", "optimized"))
 
 
-def cell(pair: tuple[tuple[int, int], tuple[int, int]] | None) -> str:
-    if pair is None:
+def cell(c: dict | None, maths: bool = True) -> str:
+    if c is None:
         return '<td class="na">not run</td>'
-    (k, n), (pk, pn) = pair
+    (k, n), (pk, pn) = c["opt"], c["plain"]
     rate = k / n if n else 0
+    lk, ln = c["lenient"]
+    lenient = f'<span class="sub">lenient {lk}/{ln}</span>' if maths and (lk, ln) != (k, n) else ""
     return (f'<td style="background: rgba(234,88,12,{0.04 + 0.7 * rate:.2f})" title="red team {k}/{n}; normal prompt {pk}/{pn}">'
-            f'{100 * rate:.0f}%<span class="sub">{k}/{n}</span><span class="sub">normal {pk}/{pn}</span></td>')
+            f'{100 * rate:.0f}%<span class="sub">{k}/{n}</span>{lenient}<span class="sub">normal {pk}/{pn}</span></td>')
 
 
 def evasion_table() -> str:
@@ -136,12 +99,16 @@ def evasion_table() -> str:
     for group, probe, attack, held, rep, fresh in ROWS:
         if group:
             rows += f'<tr class="group"><td colspan="5">{esc(group)}</td></tr>'
-        rows += (f'<tr><td class="l">{esc(probe)}<span>{esc(attack)}</span></td>{cell(held())}'
-                 f'{cell(rep() if rep else None)}{cell(fresh() if fresh else None)}</tr>')
+        if group:
+            maths = "maths" in group
+        rows += (f'<tr><td class="l">{esc(probe)}<span>{esc(attack)}</span></td>{cell(held(), maths)}'
+                 f'{cell(rep() if rep else None, maths)}{cell(fresh() if fresh else None, maths)}</tr>')
     return (f'<figure class="card"><figcaption>Valid answers that get past the probe (EMA reading, 1% false-alarm line from cleaned '
             f'no-concept replies). Held-out: misses among valid answers on 100 problems the search never saw. Repeated and new-problem '
             f'columns: valid evasions out of all attempts (10 samples of the 100 problems; 100 new division problems x 3). Small text: '
-            f'the same probe on the normal prompt.</figcaption><div class="tablewrap"><table class="grid"><thead><tr>'
+            f'the same probe on the normal prompt. Maths answers are counted under two criteria: strict (the correct '
+            f'result answers the question and no working is shown) and lenient (the correct number appears however it is used, '
+            f'e.g. as a label, working allowed), shown when it differs.</figcaption><div class="tablewrap"><table class="grid"><thead><tr>'
             f'<th class="l">Probe trained on · attack</th><th>Held-out problems</th><th>1,000 repeated attempts</th>'
             f'<th>New division problems</th></tr></thead><tbody>{rows}</tbody></table></div></figure>')
 

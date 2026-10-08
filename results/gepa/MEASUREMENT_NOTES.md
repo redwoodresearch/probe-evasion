@@ -1,10 +1,11 @@
 # Which result files are current
 
-Two measurement fixes on 2026-10-07/08 changed most numbers (see sprint page, findings log):
+One measurement fix and one reporting choice on 2026-10-07/08 (see sprint page):
 
-1. **Answer check (maths):** a valid answer states the correct result, shows no working, and Claude judges that the
-   number answers the question (`gepa.maths_checks`).
-2. **Calibration:** the no-concept replies that set each probe's 1% line are cleaned of replies that show the concept
+1. **Answer criteria (maths), a choice, reported both ways:** strict = the correct result answers the question (Claude
+   judge) with no working shown (`gepa.maths_checks`); lenient = the correct number appears however it is used, labels
+   and working allowed (`gepa.lenient_maths_present`). Reports carry both (`*_lenient` fields).
+2. **Calibration (a bug fix):** the no-concept replies that set each probe's 1% line are cleaned of replies that show the concept
    anyway (`gepa.clean_negatives`; maths: lookups the model computed; chemistry: replies Claude finds any chemistry in).
    `gepa.CALIBRATION_VERSION` records the rules; `calibration.json` and `revalidated.json` carry the version they used.
 
