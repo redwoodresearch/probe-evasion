@@ -43,7 +43,7 @@ FALSE_ALARM = 0.01
 POOLS = ("mean", "max", "ema", "window")
 WINDOW = 10
 # Readings of the per-token probe scores: mean (the paper's; padding dilutes it), max (single highest token), ema (peak
-# of a running average of logits, alpha 0.1, starting from neutral; the default target and headline), window (highest
+# of a running average of logits, alpha 0.5 as in the labs' probes, starting from neutral; the default target and headline), window (highest
 # mean logit over any WINDOW consecutive tokens, the whole reply if shorter). All shown as probabilities.
 TARGET = "ema"
 PROBE = ""  # "<file>:<name>" in results/concept_probes to use instead of the model's default probe for the concept
@@ -215,7 +215,7 @@ def readings(probs: list[float], logits: list[float]) -> dict:
     return {"mean": float(np.mean(probs)), "max": sig(lg.max()), "ema": sig(ema_logit(lg)), "window": sig(window_logit(lg))}
 
 
-EMA_ALPHA = 0.1
+EMA_ALPHA = 0.5  # both Anthropic (cheap monitors) and Google DeepMind (Gemini probes) use 0.5
 
 
 def ema_logit(lg: np.ndarray, alpha: float = EMA_ALPHA, start: float | None = 0.0, score_from: int = 0) -> float:
