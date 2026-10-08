@@ -1,12 +1,12 @@
 """Chemistry, done the way the maths probes ended up: Qwen's own replies, labels checked against what each reply
 actually says, a much larger no-chemistry calibration set, and the saved attack re-tested at several false-alarm rates.
 
-    build      Qwen's replies (reasoning off, as the chemistry search ran) to: unrelated prompts for calibration
+    build_chemistry      Qwen's replies (reasoning off, as the chemistry search ran) to: unrelated prompts for calibration
                (same kind as the original 200) and science-flavoured ones (biology, maths) scored separately; training
                rows in 6 answer styles; held-out-style rows; plain replies to the search's train/val tasks.
-    evaluate   for a probe file: lines at several false-alarm rates from the big calibration set, how often each
+    evaluate_chemistry   for a probe file: lines at several false-alarm rates from the big calibration set, how often each
                line flags science-flavoured non-chemistry, and the saved attack answers missed at each line.
-    prepare_search   a run directory whose calibration is the big set, for a fresh search against a new probe.
+    prepare_chemistry_search   a run directory whose calibration is the big set, for a fresh search against a new probe.
 """
 
 import json
@@ -56,7 +56,7 @@ def clean_flags(rows: list[dict]) -> None:
 
 
 @app.local_entrypoint()
-def build():
+def build_chemistry():
     gepa.THINKING = False  # the chemistry search and its tests ran with reasoning off
     rng = random.Random(41)
     used = {t["task"].split("\n\n")[0] for t in gepa.load_tasks("chemistry").get("negative", []) + sum(
@@ -109,7 +109,7 @@ def scored(probe_file: str, layer: int, rows: list[dict]) -> list[dict]:
 
 
 @app.local_entrypoint()
-def evaluate(probes: str = "qwen35_chemistry_layers", layers: str = "16,48"):
+def evaluate_chemistry(probes: str = "qwen35_chemistry_layers", layers: str = "16,48"):
     jl = lambda p: [json.loads(l) for l in Path(p).read_text().splitlines()]
     calib = [r for r in jl(FILES["calibration"]) if r["no_chemistry"]]
     science = [r for r in jl(FILES["science"]) if r["no_chemistry"]]
@@ -139,7 +139,7 @@ def evaluate(probes: str = "qwen35_chemistry_layers", layers: str = "16,48"):
 
 
 @app.local_entrypoint()
-def prepare_search(out_dir: str):
+def prepare_chemistry_search(out_dir: str):
     """Calibration for a fresh search: the big no-chemistry set plus plain replies to the search's train/val tasks."""
     jl = lambda p: [json.loads(l) for l in Path(p).read_text().splitlines()]
     run_dir = Path(out_dir)
