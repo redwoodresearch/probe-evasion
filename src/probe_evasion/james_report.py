@@ -88,9 +88,9 @@ def main(out: Path = Path("share/james_evasion_bars.png")) -> Path:
     ax.set_yticks([])
     ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{100 * v:.0f}%"))
     ax.set_xlabel("Valid answers the probe misses (1% false-alarm line, held-out problems)", fontsize=9.5)
-    fig.text(0.012, 0.025, "Probe-strength ladder: 1 templated text we wrote; 2 varied wording; 3 the model's own replies; 4 rung 3 with lab-style "
-             "logistic regression; 5 rung 4 plus narrative-style rewrites. Rungs 2, 4 and 5 were not attacked directly (attacks on other "
-             "rungs, re-scored by them: 0-2% missed).", fontsize=8.3, color=GREY)
+    fig.text(0.012, 0.012, "Probe-strength ladder: 1 templated text we wrote; 2 varied wording; 3 the model's own replies; 4 rung 3 with lab-style "
+             "logistic regression;\n5 rung 4 plus narrative-style rewrites. Rungs 2, 4 and 5 were not attacked directly (attacks on other rungs, "
+             "re-scored by them: 0-2% missed).", fontsize=8.3, color=GREY, linespacing=1.4)
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.legend(handles=[Patch(color=ORANGE, label="Told to evade (Claude-optimized prompt)"),
                        Patch(color=GREY, label="Not told (plain prompt)")], loc="center right", fontsize=9, frameon=False)
