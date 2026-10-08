@@ -35,7 +35,7 @@ def revalidate(run_dir: Path) -> dict:
     if concept == "maths":
         gepa.recheck_maths([r for r in cal if r["task"]["split"] != "negative"] + [r for rs in arms.values() for r in rs])
     neg = gepa.clean_negatives(concept, [r for r in cal if r["task"]["split"] == "negative"])
-    report = {"run": str(run_dir), "n_negative": len(neg), "readings": {}}
+    report = {"run": str(run_dir), "calibration_version": gepa.CALIBRATION_VERSION, "n_negative": len(neg), "readings": {}}
     for pool in gepa.POOLS:
         thr = float(np.quantile([r[pool] for r in neg], 1 - gepa.FALSE_ALARM))
         entry = {"threshold": thr, "missed": {}}

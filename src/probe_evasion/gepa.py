@@ -712,15 +712,11 @@ def clopper_pearson(k: int, n: int) -> list[float]:
 
 
 def run_threshold(run_dir: Path) -> float:
-    """The run's threshold for its target reading: re-computed from raw logits for older runs (summary_logits.json),
-    else the run's own calibration (already from raw logits)."""
+    """The run's threshold for its target reading, from a calibration under the current rules (CALIBRATION_VERSION);
+    an older one would bring back superseded numbers, so re-threshold the run first (followups.rethreshold)."""
     cal = json.loads((run_dir / "calibration.json").read_text())
-    if cal.get("version", 0) >= CALIBRATION_VERSION:
-        return cal[TARGET]["threshold"]
-    logits = run_dir / "summary_logits.json"
-    if logits.exists():
-        return json.loads(logits.read_text())["readings"][TARGET]["threshold"]
-    return json.loads((run_dir / "calibration.json").read_text())[TARGET]["threshold"]
+    assert cal.get("version", 0) >= CALIBRATION_VERSION, f"{run_dir}: calibration predates the current rules; run followups.rethreshold"
+    return cal[TARGET]["threshold"]
 
 
 def analyze_large_test(run_dir: Path, prefix: str = "large_test_") -> dict:
