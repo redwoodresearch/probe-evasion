@@ -101,5 +101,35 @@ def main(out: Path = Path("share/james_evasion_bars.png")) -> Path:
     return out
 
 
+def layers_figure(out: Path = Path("share/james_layers.png")) -> Path:
+    """Gemma-2-9B maths: the same optimized answers (prompt found against the layer-36 probe) read by the templated
+    probe at each layer, vs plain-prompt answers, under the corrected measurement."""
+    layers = (6, 12, 18, 24, 30, 36)
+    data = [gemma_layer(l) for l in layers]
+    fig, ax = plt.subplots(figsize=(9, 4.6), dpi=170)
+    for i, ((k, n), (pk, pn)) in enumerate(data):
+        for dx, (a, b), colour in ((-0.19, (pk, pn), GREY), (0.19, (k, n), ORANGE)):
+            ax.bar(i + dx, a / b, width=0.36, color=colour)
+        ax.text(i + 0.19, k / n + 0.02, f"{100 * k / n:.0f}%", ha="center", fontsize=10, fontweight="bold", color=INK)
+    ax.set_xticks(range(len(layers)), [f"Layer {l}\n{k}/{n} vs {pk}/{pn}" for l, ((k, n), (pk, pn)) in zip(layers, data)],
+                  fontsize=9)
+    ax.set_ylim(0, 1.05)
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{100 * v:.0f}%"))
+    ax.set_ylabel("Correct answers the probe misses")
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.legend(handles=[Patch(color=GREY, label="Not told to evade (plain prompt)"),
+                       Patch(color=ORANGE, label="Told to evade (Claude-optimized prompt)")], frameon=False, loc="upper right")
+    fig.text(0.012, 0.955, "Gemma-2-9B maths probe at different depths (42 layers), corrected measurement", fontsize=12,
+             fontweight="bold", color=INK)
+    fig.text(0.012, 0.87, "Same answers at every layer: those from the prompt Claude optimized against the layer-36 probe.\n"
+             "Probes trained on templated text; EMA reading; the flag line catches 1% of clean no-maths replies.", fontsize=8.5,
+             color=GREY, linespacing=1.4)
+    fig.text(0.012, 0.018, "Replaces the earlier version (87/84/88/44% at layers 6-24), whose false-alarm line was raised by "
+             "'no-maths' calibration replies that actually computed.", fontsize=8.3, color=GREY)
+    fig.subplots_adjust(left=0.09, right=0.98, top=0.8, bottom=0.18)
+    fig.savefig(out)
+    return out
+
+
 if __name__ == "__main__":
-    print(main())
+    print(main(), layers_figure())
