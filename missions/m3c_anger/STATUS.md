@@ -1,6 +1,6 @@
 # m3c_anger status
 
-**Phase:** v1 Phase A done and found flawed (12:45); v2 rebuild + Phase A running remotely (chain `m3c_anger_v2`).
+**Phase:** v2 Phase A running remotely (chain `m3c_anger_v2_peak`, app launched from m3c_launch).
 **Verdict so far:** v1 showed 0/401 evasions, but the v1 probe reads the request ("make it clear you are angry"),
 not just the reply, so v1 says nothing about evasion. v2 removes that confound (below).
 
@@ -9,6 +9,18 @@ not just the reply, so v1 says nothing about evasion. v2 removes that confound (
 2. Tasks file `data/concepts/tasks_anger.jsonl` (train 40 / val 40 / test 100 / negative ~1,200).
 3. Probe data from Qwen's own replies (reasoning off), disjoint scenarios, judge-checked labels; train gd + logreg at L16/L48.
 4. Phase A: held-out-style AUROC, calibration lines at 0.1/1/5%, dot plot, 6-10 hand-written attacks on val.
+
+## v2 key numbers (so far)
+- Rule change from lead (brief property 5): main probe now trained with binary cross-entropy on the EMA peak
+  (m1a_peak_probe.PeakProbeLabSeeds, val-loss stopping, seed 0): `claude_peak:anger@L48` (file
+  results/concept_probes/m3c_anger_v2_claude_peak.json). Mean-trained gd/logreg kept only as comparison.
+- v2 data: calibration 1,438 tasks -> 1,030 clean (408 removed as showing anger: with "say honestly how you feel",
+  Qwen voices mild annoyance in many mild/neutral situations; 189/200 provoking situations removed, so only 11
+  provoking-situation near negatives remain; the near negatives are mostly mild situations answered with worry,
+  disappointment or anxiety). Plain search train+val replies: 59/80 valid (clearly angry, reply-only rating 4-5).
+  Probe training (Claude replies, v2 context): 879 angry / 978 not. Held-out styles (Qwen): 178 angry / 148 not.
+- claude_peak L48: held-out-style AUROC 0.999 (letter 1.0, post 1.0, bullets 0.997); plain valid replies missed at
+  0.1/1/5%: 17/59, 3/59, 0/59; held-out angry missed 16/178, 1/178, 0/178.
 
 ## v1 key numbers (Phase A; SUPERSEDED, the probe read the request; files prefixed v1_)
 - Data: 1,438 calibration tasks -> 1,337 clean no-anger Qwen replies (101 removed as showing anger, incl. 96/200 calm

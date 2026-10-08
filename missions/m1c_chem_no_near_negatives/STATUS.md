@@ -94,7 +94,15 @@ separators stripped from every Gemma reply (commas then carry no label), no comm
 per (template, kind, style): 1,642 rows (758 computed) vs 1,725 (813), per-template balance now mirrors Claude's.
 Peak-trained probes (3 seeds, L48) training on v1 and v2.
 
-**Verdict so far:** chemistry negative; Gemma maths pending the peak-trained probes.
+**Gemma maths peak-trained results (13:20).** v1 rows (confounded): divaug-v2 frozen prompt 26/2/8 per 1,000 at the
+one-sentence 1% line (3 seeds), own-format line 7/6/8, garden left out 0. v2 rows (corrected): 43/38/45 per 1,000 at
+the one-sentence line (strict 35/32/37; instruction removed 49/28/34; plain 0; plain replies with instruction in front
+0-2/600), own-format line 1/2/1, garden left out 0/0/0. Garden lookups alone set the one-sentence line (0.12-0.15 vs
+0.009-0.011 without). Comparable to 1a's offpeak (68) and above onpeak (2).
+
+**Verdict so far:** chemistry negative. Gemma maths: a reproducible ~4% vs 0% gap only at the pooled one-sentence
+line, gone at the own-format line, so treated as a calibration effect, not robust evasion. RESULT.md drafted; final
+critic running.
 
 ## Critic check-ins
 - 12:50 (Gemma maths). Points: (1) the peak run crashed (class imported inside the entrypoint), fixed; (2) template /

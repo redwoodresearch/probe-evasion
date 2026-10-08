@@ -256,3 +256,224 @@ INFO 10-08 19:46:14 [registry.py:146] All limits of multimodal modalities suppor
 [1ACapturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:36<02:48,  4.00s/it]
 [1ACapturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:36<01:58,  2.88s/it]
 [1ACapturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:36<01:24,  2.12s/it](Worker_TP0 pid=105) INFO 10-08 19:50:00 [backends.py:393] Compiling a graph for compile range (1, 341) takes 60.86 s
+(Worker_TP0 pid=105) INFO 10-08 19:50:01 [backends.py:393] Compiling a graph for compile range (342, 16384) takes 62.41 s
+(Worker_TP3 pid=108) INFO 10-08 19:50:07 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20089099 bytes total
+(EngineCore pid=84) INFO 10-08 19:50:09 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+(Worker_TP2 pid=107) INFO 10-08 19:50:10 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20098569 bytes total
+(Worker_TP0 pid=105) INFO 10-08 19:50:11 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20152424 bytes total
+(Worker_TP0 pid=105) INFO 10-08 19:50:11 [decorators.py:719] saved AOT compiled function to /root/.cache/vllm/torch_compile_cache/torch_aot_compile/67fbcfc89f5b9cf9c6b7614e2ab55e397b95f5de38d0ffa61758cd4a494bb748/rank_0_0/model
+(Worker_TP0 pid=105) INFO 10-08 19:50:11 [monitor.py:53] torch.compile took 97.28 s in total
+(Worker_TP1 pid=106) INFO 10-08 19:50:11 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20152549 bytes total
+(EngineCore pid=84) INFO 10-08 19:50:34 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+(Worker_TP0 pid=105) WARNING 10-08 19:50:38 [fused_moe.py:1167] Using default MoE config. Performance might be sub-optimal! Config file not found at /usr/local/lib/python3.12/site-packages/vllm/model_executor/layers/fused_moe/configs/E=256,N=256,device_name=NVIDIA_H100_80GB_HBM3,dtype=fp8_w8a8,block_shape=[128,128].json
+(Worker_TP0 pid=105) INFO 10-08 19:50:43 [monitor.py:81] Initial profiling/warmup run took 31.90 s
+
+[1ACapturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [01:37<12:53, 19.83s/it](Worker_TP0 pid=105) 
+[1ACapturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [01:48<11:01, 17.40s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [01:49<07:32, 12.23s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [01:49<05:10,  8.63s/it]
+(EngineCore pid=84) INFO 10-08 19:51:09 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [01:49<03:34,  6.13s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   2%|▏         | 1/51 [00:23<19:23, 23.27s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   4%|▍         | 2/51 [00:24<08:13, 10.07s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   6%|▌         | 3/51 [00:24<04:33,  5.70s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   8%|▊         | 4/51 [00:24<02:49,  3.60s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  10%|▉         | 5/51 [00:25<01:52,  2.44s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  12%|█▏        | 6/51 [00:25<01:17,  1.73s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  14%|█▎        | 7/51 [00:26<00:57,  1.30s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  16%|█▌        | 8/51 [00:26<00:45,  1.05s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [02:04<04:58,  8.77s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [02:05<03:27,  6.29s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [02:05<02:23,  4.48s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [02:05<01:39,  3.21s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [02:06<01:09,  2.32s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [02:06<00:49,  1.70s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [02:06<00:35,  1.27s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [02:06<00:25,  1.04it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:37<02:55,  4.17s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:38<02:04,  3.03s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:38<01:30,  2.25s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [02:17<01:40,  3.87s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [02:17<01:09,  2.79s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [02:17<00:48,  2.02s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [02:18<00:34,  1.50s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [02:18<00:24,  1.13s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [02:18<00:18,  1.16it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [02:19<00:13,  1.46it/s]
+(EngineCore pid=84) INFO 10-08 19:51:34 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [02:19<00:10,  1.81it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [02:29<01:01,  3.43s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [02:29<00:42,  2.48s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [02:29<00:28,  1.81s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [02:30<00:20,  1.35s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [02:30<00:14,  1.02s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [02:30<00:10,  1.27it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [02:30<00:07,  1.60it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [02:31<00:05,  1.96it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [02:41<00:34,  3.41s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [02:41<00:22,  2.47s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [02:41<00:14,  1.80s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [02:42<00:09,  1.33s/it]
+(EngineCore pid=84) INFO 10-08 19:52:09 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [02:54<00:27,  4.63s/it]
+(EngineCore pid=84) INFO 10-08 19:52:34 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [01:40<13:16, 20.43s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [01:52<11:19, 17.88s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [01:53<07:45, 12.58s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [01:53<05:20,  8.90s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [01:53<03:41,  6.32s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [02:08<05:03,  8.93s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [02:09<03:31,  6.41s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [02:09<02:26,  4.57s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [02:09<01:41,  3.29s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [02:10<01:11,  2.39s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [02:10<00:51,  1.77s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [02:10<00:37,  1.32s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [02:11<00:27,  1.01s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [02:21<01:39,  3.83s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [02:21<01:09,  2.78s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [02:22<00:49,  2.05s/it]
+(EngineCore pid=84) INFO 10-08 19:53:09 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [02:22<00:35,  1.55s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [02:22<00:25,  1.17s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [02:23<00:19,  1.10it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [02:23<00:14,  1.38it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [02:23<00:11,  1.69it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [02:33<01:01,  3.39s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [02:33<00:41,  2.46s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [02:34<00:29,  1.82s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [02:34<00:20,  1.37s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [02:34<00:14,  1.05s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [02:35<00:10,  1.22it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [02:35<00:07,  1.52it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [02:35<00:05,  1.84it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [04:16<02:19, 27.85s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [04:17<01:19, 19.83s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [04:18<00:42, 14.13s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [04:19<00:20, 10.15s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [04:19<00:07,  7.18s/it]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [04:21<00:00,  5.72s/it]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [04:21<00:00,  5.13s/it]
+(Worker_TP0 pid=105) 
+[1ACapturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (FULL):  50%|█████     | 1/2 [00:00<00:00,  4.41it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  4.34it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  4.35it/s]
+(Worker_TP2 pid=107) INFO 10-08 19:53:31 [model_runner.py:1066] Graph capturing finished in 263 secs, took 1.08 GiB
+(Worker_TP1 pid=106) INFO 10-08 19:53:31 [model_runner.py:1066] Graph capturing finished in 263 secs, took 1.08 GiB
+(Worker_TP3 pid=108) INFO 10-08 19:53:31 [model_runner.py:1066] Graph capturing finished in 264 secs, took 1.08 GiB
+(Worker_TP0 pid=105) INFO 10-08 19:53:31 [model_runner.py:1066] Graph capturing finished in 263 secs, took 1.08 GiB
+(Worker_TP3 pid=108) INFO 10-08 19:53:32 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP1 pid=106) INFO 10-08 19:53:32 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP0 pid=105) INFO 10-08 19:53:32 [gpu_worker.py:640] Available KV cache memory: 39.41 GiB
+(Worker_TP0 pid=105) INFO 10-08 19:53:32 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP2 pid=107) INFO 10-08 19:53:32 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(EngineCore pid=84) INFO 10-08 19:53:32 [kv_cache_utils.py:2395] GPU KV cache size: 2,931,137 tokens, Maximum concurrency for 36,864 tokens per request: 79.51x
+(Worker_TP3 pid=108) INFO 10-08 19:53:32 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP2 pid=107) INFO 10-08 19:53:32 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP3 pid=108) INFO 10-08 19:53:32 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP2 pid=107) INFO 10-08 19:53:32 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP0 pid=105) INFO 10-08 19:53:32 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP1 pid=106) INFO 10-08 19:53:32 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP0 pid=105) INFO 10-08 19:53:32 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP1 pid=106) INFO 10-08 19:53:32 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP0 pid=105) INFO 10-08 19:53:32 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP3 pid=108) INFO 10-08 19:53:32 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP2 pid=107) INFO 10-08 19:53:32 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP1 pid=106) INFO 10-08 19:53:32 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+
+[1ACapturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [02:46<00:34,  3.49s/it]
+(Worker_TP3 pid=108) INFO 10-08 19:53:33 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP2 pid=107) INFO 10-08 19:53:33 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP0 pid=105) INFO 10-08 19:53:33 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP1 pid=106) INFO 10-08 19:53:33 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP3 pid=108) INFO 10-08 19:53:33 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP2 pid=107) INFO 10-08 19:53:33 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP0 pid=105) INFO 10-08 19:53:33 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP1 pid=106) INFO 10-08 19:53:33 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+[1ACapturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [02:46<00:22,  2.53s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [02:46<00:14,  1.87s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [02:46<00:09,  1.40s/it](Worker_TP0 pid=105) 
+(EngineCore pid=84) INFO 10-08 19:53:34 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ADeepGEMM warmup:   0%|          | 0/1887 [00:00<?, ?it/s]
+[1ADeepGEMM warmup:   0%|          | 1/1887 [00:04<2:09:22,  4.12s/it]
+[1ADeepGEMM warmup:   3%|▎         | 48/1887 [00:06<03:30,  8.73it/s] 
+[1ADeepGEMM warmup:   3%|▎         | 57/1887 [00:10<05:19,  5.73it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [02:59<00:29,  4.87s/it]
+[1ADeepGEMM warmup:   3%|▎         | 64/1887 [00:12<06:31,  4.65it/s]
+[1ADeepGEMM warmup:   4%|▎         | 70/1887 [00:18<10:57,  2.76it/s]
+[1ADeepGEMM warmup:   4%|▍         | 78/1887 [00:23<12:53,  2.34it/s]
+[1ADeepGEMM warmup:   5%|▍         | 85/1887 [00:27<13:10,  2.28it/s]
+[1ADeepGEMM warmup:  22%|██▏       | 418/1887 [00:31<00:52, 27.86it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 451/1887 [00:33<00:58, 24.34it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 454/1887 [00:36<01:16, 18.77it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 457/1887 [00:39<01:43, 13.88it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 461/1887 [00:44<02:59,  7.96it/s]
+[1ADeepGEMM warmup:  25%|██▍       | 463/1887 [00:49<04:26,  5.34it/s]
+[1ADeepGEMM warmup:  25%|██▌       | 472/1887 [00:52<04:46,  4.94it/s]
+[1ADeepGEMM warmup:  25%|██▌       | 477/1887 [00:56<06:03,  3.88it/s]
+(EngineCore pid=84) INFO 10-08 19:54:33 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+(EngineCore pid=84) INFO 10-08 19:54:34 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ADeepGEMM warmup:  26%|██▌       | 483/1887 [00:58<06:39,  3.52it/s]
+[1ADeepGEMM warmup:  26%|██▌       | 487/1887 [01:01<07:50,  2.97it/s]
+[1ADeepGEMM warmup:  26%|██▌       | 491/1887 [01:07<12:10,  1.91it/s]
+[1ADeepGEMM warmup:  26%|██▌       | 494/1887 [01:12<15:38,  1.48it/s]
+[1ADeepGEMM warmup:  27%|██▋       | 507/1887 [01:15<10:55,  2.10it/s]
+[1ADeepGEMM warmup:  42%|████▏     | 799/1887 [01:17<00:40, 26.92it/s]
+[1ADeepGEMM warmup:  43%|████▎     | 818/1887 [01:20<00:46, 22.77it/s]
+[1ADeepGEMM warmup:  44%|████▎     | 823/1887 [01:22<01:00, 17.58it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 828/1887 [01:25<01:20, 13.16it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 831/1887 [01:28<01:58,  8.93it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 837/1887 [01:31<02:25,  7.24it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 839/1887 [01:34<03:14,  5.39it/s]
+[1ADeepGEMM warmup:  45%|████▍     | 842/1887 [01:36<04:10,  4.18it/s]
+[1ADeepGEMM warmup:  45%|████▌     | 851/1887 [01:39<04:18,  4.01it/s]
+[1ADeepGEMM warmup:  45%|████▌     | 854/1887 [01:41<05:23,  3.19it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [04:29<02:31, 30.26s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [04:30<01:26, 21.54s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [04:31<00:46, 15.35s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [04:32<00:22, 11.03s/it]
+[1ADeepGEMM warmup:  45%|████▌     | 855/1887 [01:45<08:11,  2.10it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [04:32<00:07,  7.80s/it]
+[1ADeepGEMM warmup:  46%|████▌     | 865/1887 [01:47<06:35,  2.58it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [04:35<00:00,  6.20s/it]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [04:35<00:00,  5.40s/it]
+(Worker_TP0 pid=105) 
+[1ACapturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (FULL):  50%|█████     | 1/2 [00:00<00:00,  3.83it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  3.93it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  3.91it/s]
+(Worker_TP3 pid=108) INFO 10-08 19:55:23 [model_runner.py:1066] Graph capturing finished in 277 secs, took 1.08 GiB
+(Worker_TP1 pid=106) INFO 10-08 19:55:23 [model_runner.py:1066] Graph capturing finished in 277 secs, took 1.08 GiB
+(Worker_TP2 pid=107) INFO 10-08 19:55:23 [model_runner.py:1066] Graph capturing finished in 277 secs, took 1.08 GiB
+(Worker_TP0 pid=105) INFO 10-08 19:55:23 [model_runner.py:1066] Graph capturing finished in 277 secs, took 1.08 GiB
+(Worker_TP3 pid=108) INFO 10-08 19:55:24 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP1 pid=106) INFO 10-08 19:55:24 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP2 pid=107) INFO 10-08 19:55:24 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP0 pid=105) INFO 10-08 19:55:24 [gpu_worker.py:640] Available KV cache memory: 39.41 GiB
+(Worker_TP0 pid=105) INFO 10-08 19:55:24 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(EngineCore pid=84) INFO 10-08 19:55:24 [kv_cache_utils.py:2395] GPU KV cache size: 2,931,137 tokens, Maximum concurrency for 36,864 tokens per request: 79.51x
+(Worker_TP3 pid=108) INFO 10-08 19:55:24 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP2 pid=107) INFO 10-08 19:55:24 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP1 pid=106) INFO 10-08 19:55:24 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP0 pid=105) INFO 10-08 19:55:24 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP3 pid=108) INFO 10-08 19:55:24 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP2 pid=107) INFO 10-08 19:55:24 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP1 pid=106) INFO 10-08 19:55:24 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP0 pid=105) INFO 10-08 19:55:24 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP0 pid=105) INFO 10-08 19:55:24 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP3 pid=108) INFO 10-08 19:55:24 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP2 pid=107) INFO 10-08 19:55:24 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP1 pid=106) INFO 10-08 19:55:24 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+
+(Worker_TP3 pid=108) INFO 10-08 19:55:24 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP1 pid=106) INFO 10-08 19:55:24 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP2 pid=107) INFO 10-08 19:55:24 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP0 pid=105) INFO 10-08 19:55:24 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP3 pid=108) INFO 10-08 19:55:24 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP2 pid=107) INFO 10-08 19:55:24 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP0 pid=105) INFO 10-08 19:55:24 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP1 pid=106) INFO 10-08 19:55:24 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+[1ADeepGEMM warmup:  46%|████▋     | 874/1887 [01:50<05:59,  2.82it/s](Worker_TP0 pid=105) 
+[1ADeepGEMM warmup:   0%|          | 0/1887 [00:00<?, ?it/s]
+[1ADeepGEMM warmup:  47%|████▋     | 891/1887 [01:53<04:14,  3.91it/s]
+[1ADeepGEMM warmup:   0%|          | 1/1887 [00:04<2:10:09,  4.14s/it]
