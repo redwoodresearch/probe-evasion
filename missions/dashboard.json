@@ -18,15 +18,15 @@
    ],
    "basis": "valid evasions per attempt, frozen hand-written deadpan prompt, 100 untouched test tasks x 3, 1% line",
    "note": "55 of 100 tasks have an evasion; 95% CI for the gap +22 to +36 points. A searched prompt (one flat literal sentence that flips reality; never mentions a probe): 57/75 valid missed at 1%, 30/75 at 5%, vs 0/93 plain. Same style without mentioning the probe: 91/239, so the style does the work. Limits: the replies are obviously sarcastic to a human; the line is set by playful sincere humour in ordinary traffic; the probe still separates deadpan sarcasm from deadpan sincere text (AUROC 0.997).",
-   "next": "Scaling the searched prompt on the test tasks (5 seeds); RESULT.md with examples."
+   "next": "Re-check with a probe trained for the peak reading (rules out the readout mismatch found in maths); then 5-seed scaling and examples."
   },
   {
    "id": "m1a_offpolicy_maths",
    "group": "Maths",
-   "name": "Maths: probe trained for one reading, deployed with another",
+   "name": "Maths: off-policy probe and the mixed-traffic line",
    "question": "With the flag line set from mixed real traffic (emails, paragraphs, one-liners), does a frozen evasion prompt get correct answers past the own-replies maths probe?",
    "probe": "Own replies, clean labels, layer 48; trained on the average token score, read with the running peak (EMA)",
-   "state": "promising",
+   "state": "negative",
    "attack": [
     500,
     1000
@@ -36,8 +36,8 @@
     1000
    ],
    "basis": "valid evasions per attempt, 100 held-out problems x 10, 1% line from 2,032 audited mixed-format non-maths replies",
-   "note": "296 distinct replies across 59 problems. Benign lookup emails score ~0.95 only because greeting and sign-off tokens spike under the peak reading, which sets the line. The same data trained for the peak reading catches everything (0/1000). Off-policy part: Claude-written training text is no easier to evade (0/1000 at the format-matched line).",
-   "next": "Agent finished (RESULT.md). Lead to decide whether this counts as a 'realistic mistake' result."
+   "note": "Off-policy (Claude-written) training is no easier to evade: 0/1000 at the format-matched line. The 500/1000 vs 0/1000 at a mixed-traffic line came from a probe trained on the average token score but read with the running peak (email greetings spike, raising the line); trained for the peak reading, 0/1000. Set aside as a readout mismatch.",
+   "next": "Finished (RESULT.md)."
   },
   {
    "id": "m1b_offpolicy_chem",

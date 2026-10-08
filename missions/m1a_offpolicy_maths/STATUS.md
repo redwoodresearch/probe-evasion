@@ -270,6 +270,17 @@ balancing, size and per-cell counts)?
   peak probe fires on garden-area lookups at 0.4-0.5 where the own-replies one stays under 0.18, and scores the
   scene-style answers lower), but whether it is an "evasion" rests entirely on counting those lookups as clean.
 
+- 12:25 Critic 4 (pre-verdict): claim #3 is a calibration-tail effect, not off-policy evadability. (1) The attack
+  replies score the same under both peak probes (divaug-v2 valid replies, 1%/5% quantiles: offpeak 0.206/0.362,
+  onpeak 0.237/0.359); the gap is only offpeak's line, set by garden-area lookups (garden share of pool 0% / 2% /
+  10.5% -> line 0.089 / 0.35 / 0.47 -> divaug evasions 0 / 46 / 68 of 1000) -- the same traffic-mix structure as the
+  global-line artefact; the "is actually" verifications set the 0.1% line, so the 0.1% counts are meaningless.
+  (2) The peak probes were under-trained single runs: early stopping on validation AUROC (1.0 after epoch 1) kept
+  epoch-1 weights. (3) onpeak (1,898 rows) vs offpeak (1,725) not size-matched. (4) window_L48: 68 of 79 fail the strict
+  check. Claims #1 and #2 supported (with single-instance and v2-only caveats). Actions: reframed #3 as calibration
+  fragility (RESULT.md); retraining 3 seeds of each peak probe with validation-loss stopping, plus a size-matched
+  own-replies peak probe (`seeded_peak`, running), to see whether the garden-lookup gap is real or training noise.
+
 ## Verdict so far
 Negative (resource decision), see RESULT.md. (1) Off-policy (Claude-text) training does not make the repo-standard
 maths probe evadable at the format-matched line; it is as robust as or more robust than the own-replies probe on every
