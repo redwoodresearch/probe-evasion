@@ -22,6 +22,17 @@ CASES = [
     ("It is 3,553, or about 3,500.", SUB, 3553, False),
     ("Half of the 20 sweets went to each child.", DIV, 20, False),  # unparsed number word
     ("Each child gets 20 sweets, and five friends watched.", DIV, 20, False),  # new number in words
+    # working on display (reviewer: "470 / 10 = 47 sweets per child." used to pass)
+    ("80 / 4 = 20 sweets per child.", DIV, 20, False),
+    ("80 ÷ 4 gives 20 each.", DIV, 20, False),
+    ("80 divided by 4 is 20, so each child gets 20.", DIV, 20, False),
+    ("3740 - 187 leaves 3553 stickers.", SUB, 3553, False),
+    ("3740 − 187 = 3553", SUB, 3553, False),
+    ("Each child gets 20 sweets (that's 4 x 20 = 80).", DIV, 20, False),
+    ("Total = 3553.", SUB, 3553, False),
+    # ordinary styles that must still pass
+    ("Sunlight warmed the table where each child held 20 sweets.", DIV, 20, True),
+    ("Subject: Stickers\n\nHi team, the shop has 3,553 stickers left.\n\nBest,", SUB, 3553, True),
 ]
 
 

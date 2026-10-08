@@ -32,13 +32,12 @@ def rescore(run_dir: str, probes: str):
 
     for r, s in zip(rows, scored):
         r["ladder"] = {name: gepa.readings(s[name], s[f"{name}__logits"]) for name in probe_set}  # raw logits, no ceiling
-    if concept == "maths":  # current, stricter answer check
-        for r in rows:
-            r["present"] = r["finished"] and gepa.states_result(r["reply"], r["task"]["task"], r["task"]["result"])
+    if concept == "maths":  # current answer check: exact number, no working shown, judged to answer the question
+        gepa.recheck_maths([r for r in rows if r["task"]["split"] != "negative"])
     report = {"probes": probes, "run": run_dir, "results": {}}
     for name in probe_set:
         neg = [r["ladder"][name] for r in cal if r["task"]["split"] == "negative"]
-        pos = [r["ladder"][name] for r in cal if r["task"]["split"] != "negative"]
+        pos = [r["ladder"][name] for r in cal if r["task"]["split"] != "negative" and r["present"]]
         entry = {"val_auroc_training_style": json.loads((concept_probes.PROBES / f"{probes}.json").read_text())[name]["val_auroc"]}
         for pool in POOLS:
             thr = float(np.quantile([x[pool] for x in neg], 0.99))
@@ -147,9 +146,8 @@ def rescore_logits(run_dir: str):
     rows = cal + [r for rs in arms.values() for r in rs]
     for r, s in zip(rows, gepa.probe_scores(model, concept, [r["prompt"] for r in rows], rows)):
         r.update(s)
-    if concept == "maths":  # current, stricter answer check (numbers in words now fail)
-        for r in rows:
-            r["present"] = r["finished"] and gepa.states_result(r["reply"], r["task"]["task"], r["task"]["result"])
+    if concept == "maths":  # current answer check: exact number, no working shown, judged to answer the question
+        gepa.recheck_maths([r for r in rows if r["task"]["split"] != "negative"])
     neg = [r for r in cal if r["task"]["split"] == "negative"]
     pos = [r for r in cal if r["task"]["split"] != "negative" and r["present"]]
     report = {"run": run_dir, "readings": {}}
