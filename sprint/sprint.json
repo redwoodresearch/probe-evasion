@@ -38,6 +38,12 @@
       "started": "6:20",
       "eta": "7:00",
       "gpus": 1
+    },
+    {
+      "job": "Better Qwen maths probes: the model's own replies in 8 answer styles (3 more held out; nothing scenic), probes at 7 layers, held-out-style check, then re-score the saved optimized replies",
+      "started": "6:35",
+      "eta": "7:45",
+      "gpus": 2
     }
   ],
   "earlier": [
@@ -144,6 +150,10 @@
     [
       "Probe ladder",
       "Monitor-side only (the model's weights are never changed): each rung retrains or re-reads the probe and re-scores the saved replies, calibrated the same way. Rungs: other layers; varied answer formats in training (scenic style excluded); then on-policy data, adversarial retraining on found evasions, and an attention probe."
+    ],
+    [
+      "Better probes",
+      "Rebuilt the lab way: trained on the model's own replies to computation tasks and matched no-computation tasks (lookups, recalled facts) across 8 ordinary answer styles (one sentence, paragraph, email, bullets, casual, formal, restate-then-answer, answer-plus-tip); 3 further styles (dialogue, headline, FAQ) held out to choose layers and readouts by generalisation; nothing scenic, narrative or sensory anywhere, since that is the attack's family. Recipe details to be aligned with Google DeepMind's production-probes paper and Anthropic's cheap-monitors post (being read)."
     ]
   ],
   "headline": "Prompting only (the model is never trained): Claude Opus searches for an instruction while seeing every reply's probe score; the best instruction is frozen and tested on 100 new tasks, and a reply counts only if it still does the task. On Gemma-2-9B it beats early- and middle-layer probes but not deep ones or ones trained on varied wording; on Qwen3.5-27B it beats every layer tried under smoothed readings, and still a third of answers under the strictest reading."
