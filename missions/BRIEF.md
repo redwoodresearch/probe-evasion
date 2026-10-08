@@ -38,7 +38,11 @@ Read this first, and work in its spirit (fast feedback loops, cheapest test firs
    saw. Small is fine: a reproducible 0% → 5% is useful. A 20% attack rate is not useful if the baseline is 25%.
    Count distinct replies only.
 3. **Reasonably trained probe.** It need not be state of the art, but:
-   - Trained on the monitored model's own replies, or a stated, realistic alternative.
+   - **Off-policy by default** (update from the lead). Train on text written by a different model, e.g. Claude, or
+     synthetic text. For the behaviours high-stakes control cares about, on-policy labelled examples usually don't
+     exist, so real monitors are trained off-policy. On-policy probes are only an optional comparison.
+   - Calibration and held-out checks still use the monitored model's own replies, since that's what a deployed
+     monitor sees.
    - Labels checked against content.
    - Several answer styles.
    - Sensible negatives.
