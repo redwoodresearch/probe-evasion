@@ -50,6 +50,7 @@ EXTRA_CSS = """
 .grid td .sub { display: block; font: 400 10.5px var(--mono); color: var(--muted); }
 .grid tr.sep td { padding-top: 14px; }
 .tablewrap { overflow-x: auto; }
+.fig { display: block; width: 100%; border-radius: 6px; background: #fff; }
 .links { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
 .links a { display: grid; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; text-decoration: none; color: var(--fg); }
 .links a span { color: var(--muted); font-size: 12.5px; }
@@ -166,6 +167,8 @@ def render() -> str:
   </header>
 
   <section><h2>Results</h2>{results_grid()}</section>
+  <section><h2>Better-trained probes catch the same optimized answers</h2>
+    <figure class="card"><img class="fig" src="probe_rungs.png" alt="Probe-strength ladder: training data, method and miss rate for each rung"></figure></section>
   <section><h2>The depth effect differs by model</h2>{depth_chart()}</section>
   <section><h2>Rare misses against the strongest Gemma probes</h2>{rare_table()}</section>
   <section><h2>Pages</h2><div class="links">{links}</div></section>

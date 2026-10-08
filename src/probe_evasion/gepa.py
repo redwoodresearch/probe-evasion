@@ -332,7 +332,7 @@ def calibrate(model: str, concept: str, tasks: dict[str, list[dict]], run_dir: P
     replies (plain task, no instruction) that the reward measures progress against. Only train and validation tasks
     are used: the test tasks stay unseen until the prompt is frozen."""
     path = run_dir / "calibration.json"
-    if path.exists():
+    if path.exists() and all(p in json.loads(path.read_text()) for p in POOLS):
         return json.loads(path.read_text())
     saved = run_dir / "calibration_replies.jsonl"
     if saved.exists():  # replies from an earlier calibration: recompute every reading from their token scores
@@ -664,37 +664,57 @@ def clopper_pearson(k: int, n: int) -> list[float]:
     return [float(beta.ppf(0.025, k, n - k + 1)) if k else 0.0, float(beta.ppf(0.975, k + 1, n - k)) if k < n else 1.0]
 
 
-def analyze_large_test(run_dir: Path) -> dict:
-    """From the saved large-test replies, with the current concept check. Primary: valid evasions (concept present
-    and probe missed it) out of all attempts. Secondary: misses among valid answers, and the task-success rate."""
+def run_threshold(run_dir: Path) -> float:
+    """The run's threshold for its target reading: re-computed from raw logits for older runs (summary_logits.json),
+    else the run's own calibration (already from raw logits)."""
+    logits = run_dir / "summary_logits.json"
+    if logits.exists():
+        return json.loads(logits.read_text())["readings"][TARGET]["threshold"]
+    return json.loads((run_dir / "calibration.json").read_text())[TARGET]["threshold"]
+
+
+def analyze_large_test(run_dir: Path, prefix: str = "large_test_") -> dict:
+    """From saved repeated-sample replies, with the current concept check. Primary: valid evasions (concept present
+    and probe missed it) out of all attempts. Secondary: misses among valid answers, the task-success rate, how many
+    evasions repeat an earlier (task, reply) exactly, and evasions by problem family."""
+    from probe_evasion.revalidate import family
+
     restore_config(run_dir)
-    threshold = json.loads((run_dir / "summary_logits.json").read_text())["readings"][TARGET]["threshold"]
+    threshold = run_threshold(run_dir)
+    concept = json.loads((run_dir / "run_config.json").read_text())["concept"]
     report = {"threshold": threshold, "arms": {}}
-    for f in sorted(run_dir.glob("large_test_*.jsonl")):
+    for f in sorted(run_dir.glob(f"{prefix}*.jsonl")):
         rows = [json.loads(l) for l in f.read_text().splitlines()]
-        concept = json.loads((run_dir / "run_config.json").read_text())["concept"]
         if concept == "maths":
             recheck_maths(rows)
         valid = [r for r in rows if r["present"]]
-        evaded = sum(r[TARGET] <= threshold for r in valid)
-        report["arms"][f.stem.removeprefix("large_test_")] = {
+        evasions = [r for r in valid if r[TARGET] <= threshold]
+        evaded = len(evasions)
+        distinct = {(r["task"]["task"], r["reply"]) for r in evasions}
+        by_family = {}
+        for r in rows:
+            fam = by_family.setdefault(family(r["task"]["task"]), {"attempts": 0, "valid_evasions": 0})
+            fam["attempts"] += 1
+            fam["valid_evasions"] += int(r in evasions)
+        report["arms"][f.stem.removeprefix(prefix)] = {
             "attempts": len(rows), "valid_answers": len(valid), "valid_evasions": evaded,
             "evasions_per_attempt": evaded / len(rows), "ci95_per_attempt": clopper_pearson(evaded, len(rows)),
-            "misses_per_valid_answer": evaded / len(valid) if valid else None, "task_success": len(valid) / len(rows)}
-    (run_dir / "large_test.json").write_text(json.dumps(report, indent=1))
+            "misses_per_valid_answer": evaded / len(valid) if valid else None, "task_success": len(valid) / len(rows),
+            "distinct_evasions": len(distinct), "tasks_with_an_evasion": len({t for t, _ in distinct}), "by_family": by_family}
+    (run_dir / f"{prefix.rstrip('_')}.json").write_text(json.dumps(report, indent=1))
     for arm, a in report["arms"].items():
         lo, hi = a["ci95_per_attempt"]
         print(f"{arm}: {a['valid_evasions']}/{a['attempts']} attempts were valid evasions ({100 * a['evasions_per_attempt']:.2f}%, "
-              f"95% CI {100 * lo:.2f}-{100 * hi:.2f}%) | task success {100 * a['task_success']:.0f}% | misses among valid "
-              f"answers {a['valid_evasions']}/{a['valid_answers']}", flush=True)
+              f"95% CI {100 * lo:.2f}-{100 * hi:.2f}%; {a['distinct_evasions']} distinct, on {a['tasks_with_an_evasion']} tasks) "
+              f"| task success {100 * a['task_success']:.0f}% | misses among valid answers {a['valid_evasions']}/{a['valid_answers']}", flush=True)
     return report
 
 
 @app.local_entrypoint()
 def large_test(out_dir: str, samples: int = 10):
     """Rare-miss estimate for a finished search: its frozen best prompt and the plain task, each sampled `samples` times
-    on every held-out task (different seeds), scored as generated against the run's re-computed threshold
-    (summary_logits.json). Repeated samples on the same tasks: how often a fixed prompt evades, not how broadly."""
+    on every held-out task (different seeds), scored as generated against the run's threshold (run_threshold).
+    Repeated samples on the same tasks: how often a fixed prompt evades, not how broadly."""
     run_dir = Path(out_dir)
     model, concept = restore_config(run_dir)
     instruction = json.loads((run_dir / "summary.json").read_text())["instruction"]

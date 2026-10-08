@@ -35,7 +35,7 @@ probe_image = (vllm_base_image.uv_pip_install("flash-linear-attention", "acceler
 
 
 def encode(tok, model_key: str, prompt: str, response: str, reasoning: str | None = None,
-           messages: list[dict] | None = None) -> tuple[list[int], int]:
+           messages: list[dict] | None = None, from_reasoning: bool = False) -> tuple[list[int], int]:
     """Token ids of the whole conversation and the index where the reply starts. `messages` (Gemma only) replaces
     the single user turn with a whole earlier conversation ending in a user turn.
     Gemma: as the Neural Chameleons reference (chat-templated prompt and reply tokenized separately).
@@ -48,6 +48,8 @@ def encode(tok, model_key: str, prompt: str, response: str, reasoning: str | Non
 
     assert messages is None, "multi-turn scoring is only implemented for Gemma"
     text, start = render(tok, {"question": prompt, "reasoning": reasoning or "", "response": response})
+    if from_reasoning:  # the scored span starts at the reasoning (just after "<think>\n"), user prompt excluded
+        start -= len((reasoning or "").strip() + "\n</think>\n\n")
     enc = tok(text, return_offsets_mapping=True, add_special_tokens=False)
     first = next(i for i, (s, _) in enumerate(enc["offset_mapping"]) if s >= start)
     return enc["input_ids"], first
@@ -77,7 +79,8 @@ class ProbeLab:
             self.layers = next(m for n, m in self.model.named_modules()
                                if n.endswith("language_model.layers") and isinstance(m, torch.nn.ModuleList))
 
-    def _reply_acts(self, items: list[dict], layers: tuple[int, ...], max_tokens: int | None = None, with_prompt: bool = False):
+    def _reply_acts(self, items: list[dict], layers: tuple[int, ...], max_tokens: int | None = None, with_prompt: bool = False,
+                    from_reasoning: bool = False):
         """Per item, ({layer: [reply_tokens, d] bf16 on GPU}, reply token ids). with_prompt: every token after the
         first (beginning-of-text) token instead, prompt included; the reply starts at len(ids) - n_reply."""
         import torch
@@ -88,7 +91,8 @@ class ProbeLab:
         out = []
         try:
             for it in items:
-                ids, start = encode(self.tok, self.model_key, it["prompt"], it["response"], it.get("reasoning"), it.get("messages"))
+                ids, start = encode(self.tok, self.model_key, it["prompt"], it["response"], it.get("reasoning"), it.get("messages"),
+                                    from_reasoning)
                 end = len(ids) if max_tokens is None else min(len(ids), start + max_tokens)
                 with torch.no_grad():
                     self.model(input_ids=torch.tensor([ids[:end]], device="cuda"), use_cache=False)
@@ -147,7 +151,8 @@ class ProbeLab:
         return {"layer": 12, "weight": W[k].tolist(), "bias": float(b[k])}
 
     @modal.method()
-    def score(self, tag: int, items: list[dict], probes: dict, with_prompt: bool = False) -> tuple[int, list[dict]]:
+    def score(self, tag: int, items: list[dict], probes: dict, with_prompt: bool = False,
+              from_reasoning: bool = False) -> tuple[int, list[dict]]:
         """items: {prompt, response, reasoning?}; probes: {name: {layer, weight, bias}}.
         Returns per item {"tokens": reply token strings, name: per-token probabilities over the reply}."""
         import torch
@@ -156,7 +161,7 @@ class ProbeLab:
         params = {n: (p["layer"], torch.tensor(p["weight"], device="cuda"), torch.tensor(p["bias"], device="cuda"))
                   for n, p in probes.items()}
         out = []
-        for acts, ids in self._reply_acts(items, layers, with_prompt=with_prompt):
+        for acts, ids in self._reply_acts(items, layers, with_prompt=with_prompt, from_reasoning=from_reasoning):
             logits = {n: acts[l].float() @ w + b for n, (l, w, b) in params.items()}
             # probabilities for display; raw logits for the readouts (rounded probabilities saturate at exactly 1)
             out.append({"tokens": [self.tok.decode([i]) for i in ids],
@@ -229,9 +234,12 @@ def probes_for(model_key: str) -> dict:
     return trained
 
 
-def score(model_key: str, items: list[dict], probes: dict, chunk: int = 32, with_prompt: bool = False) -> list[dict]:
+def score(model_key: str, items: list[dict], probes: dict, chunk: int = 32, with_prompt: bool = False,
+          from_reasoning: bool = False) -> list[dict]:
+    """from_reasoning (Qwen): score the reasoning and the reply, as a monitor that reads the chain of thought would."""
     lab = ProbeLab(model_key=model_key)
-    parts = dict(lab.score.starmap([(i, items[s:s + chunk], probes, with_prompt) for i, s in enumerate(range(0, len(items), chunk))],
+    parts = dict(lab.score.starmap([(i, items[s:s + chunk], probes, with_prompt, from_reasoning)
+                                    for i, s in enumerate(range(0, len(items), chunk))],
                                    order_outputs=False))
     return [x for i in range(len(parts)) for x in parts[i]]
 

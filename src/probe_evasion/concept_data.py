@@ -126,12 +126,18 @@ RECALL_TOPICS = ["history", "geography", "the human body", "astronomy", "sports 
                  "computing history", "world wars", "kings and queens", "national flags"]
 
 
+RECALL_FILE = OUT / "recall_items.json"  # saved, so every machine (and the cloud driver) gets the same items in the same order
+
+
 def recall_items() -> list[dict]:
+    if RECALL_FILE.exists():
+        return json.loads(RECALL_FILE.read_text())
     out = []
     for topic, v in zip(RECALL_TOPICS, ask_with_tool([RECALL_PROMPT.format(topic=t) for t in RECALL_TOPICS], RECALL_TOOL,
                                                      concurrency=16, max_tokens=8000)):
         assert not v.get("judge_refused"), topic
         out += [i for i in v["items"] if str(i["number"]) not in i["question"].replace(",", "")]
+    RECALL_FILE.write_text(json.dumps(out, indent=1))
     return out
 
 
