@@ -314,3 +314,41 @@ def offpeak_confirm(samples: int = 2):
         r["division"] = r["task"]["task"] in {t["task"] for t in division}
     write_jsonl(SCORES / "confirm.jsonl", rows)
     print(f"confirm: {len(rows)} rows", flush=True)
+
+
+def fit_peak_probe(X: list, y, seed: int, max_epochs: int = 15) -> dict:
+    """The PeakProbeLabSeeds recipe as a plain function (for other models' labs): X = per-reply [tokens, d] float
+    tensors on the GPU, y = float labels on the GPU. Seed sets the 20% validation split and batch order; stops on
+    validation loss (patience PATIENCE, at most max_epochs)."""
+    import torch
+    from sklearn.metrics import roc_auc_score
+
+    gen = torch.Generator().manual_seed(seed)
+    perm = torch.randperm(len(X), generator=gen).tolist()
+    n_val = len(X) // 5
+    val, train = perm[:n_val], perm[n_val:]
+    w = torch.zeros(X[0].shape[-1], device="cuda", requires_grad=True)
+    b = torch.zeros((), device="cuda", requires_grad=True)
+    opt = torch.optim.AdamW([w, b], lr=LR, weight_decay=WEIGHT_DECAY)
+    peaks = lambda ids: ema_peaks([X[i] @ w + b for i in ids])
+    best, state, patience, epoch, best_auc, best_epoch = float("inf"), None, 0, 0, float("nan"), 0
+    for epoch in range(max_epochs):
+        order = torch.randperm(len(train), generator=gen).tolist()
+        for s in range(0, len(order), BATCH):
+            batch = [train[j] for j in order[s:s + BATCH]]
+            loss = torch.nn.functional.binary_cross_entropy_with_logits(peaks(batch), y[batch])
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+        with torch.no_grad():
+            vp = peaks(val)
+            vloss = torch.nn.functional.binary_cross_entropy_with_logits(vp, y[val]).item()
+            auc = roc_auc_score(y[val].cpu().numpy(), vp.cpu().numpy())
+        if vloss < best - 1e-4:
+            best, state, patience, best_auc, best_epoch = vloss, (w.detach().clone(), b.detach().clone()), 0, auc, epoch + 1
+        else:
+            patience += 1
+            if patience >= PATIENCE:
+                break
+    return {"val_loss": best, "val_auroc": best_auc, "epoch": best_epoch, "seed": seed, "weight": state[0].cpu().tolist(),
+            "bias": state[1].item(), "objective": "bce on ema peak, val-loss stop"}
