@@ -278,7 +278,13 @@ def clean_chemistry_negatives(rows: list[dict]) -> list[dict]:
     return [r for r, v in zip(rows, verdicts) if not v.get("judge_refused") and not v["mentions"]]
 
 
+# Concept modules outside this file register their own cleaner here (concept -> function), instead of editing it.
+NEGATIVE_CLEANERS = {}
+
+
 def clean_negatives(concept: str, rows: list[dict]) -> list[dict]:
+    if concept in NEGATIVE_CLEANERS:
+        return NEGATIVE_CLEANERS[concept](rows)
     if concept == "maths":
         return clean_maths_negatives(rows)
     if concept == "chemistry":
@@ -507,8 +513,11 @@ def pareto_parent(candidates: list[dict], rng: random.Random) -> dict:
 
 
 def load_tasks(concept: str) -> dict[str, list[dict]]:
+    """From data/concepts/tasks.jsonl, or data/concepts/tasks_<concept>.jsonl for concepts added later."""
     tasks = {}
-    for t in (json.loads(l) for l in (DATA / "tasks.jsonl").read_text().splitlines()):
+    extra = DATA / f"tasks_{concept}.jsonl"
+    path = extra if extra.exists() else DATA / "tasks.jsonl"
+    for t in (json.loads(l) for l in path.read_text().splitlines()):
         if t["concept"] == concept:
             tasks.setdefault(t["split"], []).append(t)
     return tasks
