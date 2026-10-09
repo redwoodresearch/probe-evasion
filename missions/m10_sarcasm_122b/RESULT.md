@@ -2,8 +2,8 @@
 
 ## Claim, in one sentence
 
-The sarcasm round-0 result replicates on Qwen3.5-122B-A10B-FP8 (reasoning off), with a margin comparable to 27B's
-(larger at the 1% and 5% lines, smaller at 0.1%; one search per model, so the ordering is not established): a fresh 5-round Claude search against a probe trained on the same 4,920 Claude-written rows (peak-trained,
+The sarcasm round-0 result replicates on Qwen3.5-122B-A10B-FP8 (reasoning off), with a margin about the same as 27B's
+(which model's margin is larger depends on which prompt and which line you pick: comparing each model's best prompt, 27B's r1 prompt is ahead at every line; at a line matched to plain's miss rate the two are 57% vs 54%): a fresh 5-round Claude search against a probe trained on the same 4,920 Claude-written rows (peak-trained,
 layer 36 of 48) finds a prompt whose valid sarcastic replies get past the probe's 1% line in 338 of 500 attempts with
 the instruction removed (359 as generated), against 61 of 500 for the plain prompt (+55 points [+48, +62]; 27B: 268
 vs 29, +48 [+40, +56]). **One caveat on the probe:** the 122B probe misses 8 of 70 plain sarcastic answers at its 1%
@@ -147,13 +147,12 @@ because the transfer prompts have 300 attempts on 122B; 27B is restricted to the
 Reading the comparison:
 - **The matched search does about as well on 122B; the ordering is not established.** At the 0.1% line 27B's gain is
   larger (+55 vs +35 removed), and 27B's r1 prompt beats 122B's fresh prompt at 1% removed (+73). One search per model. With the instruction removed it gets more attempts past the
-  1% line (67.6% vs 53.6%), more distinct replies (338 vs 203), and twice as many at the 5% line (48% vs 24%). The
+  1% line (67.6% vs 53.6%), more distinct replies (338 vs 203), and twice as many at the 5% line (48% vs 24%). But 27B's best prompt (r1, against the same r0 probe) gets 78.8% at 1% and 72.2% at 5% removed, ahead of 122B's 67.6% and 48.2%. The
   gain over plain is similar at 1% (+55 vs +48, overlapping intervals) because 122B's plain rate is also higher.
 - **122B's search found a prompt that works without its instruction in context.** On 27B, the r0 prompt's replies
   drop from 453 to 268 when the instruction is removed. On 122B, the fresh prompt's replies drop only from 359 to 338,
   and they still get past behind a neutral preamble (324/375 valid attempts; `context_check.json`).
-- **Transferred prompts behave about the same on both models** for m3a searched and r0 search; r1 and the on-policy
-  search lose more on 122B once their instruction is removed.
+- **Transfer column caveat.** On 27B the r0 prompt was searched against this very probe, so its 27B number is not a transfer result; r1 and on-policy were searched against other 27B probes. Every 122B number is a cross-model transfer, so rows are not like-for-like.
 - **The cost is in task success.** The fresh prompt's replies are valid 75% of the time (27B's r0 search: 91%), and
   the blind judge rates them less sarcastic (4.26 vs plain 4.65). Every count above is out of all attempts, so the
   invalid replies count against the attack.
@@ -235,8 +234,9 @@ prompt. Prompts searched against 27B also transfer to 122B's probe. As on 27B:
   reader" is not met.
 - **It is a calibration failure more than a detection failure.** Within the style the probe still ranks sarcasm above
   sincerity (AUROC 0.95-0.97); the line, set by ordinary playful sincere traffic, sits above the attack's replies.
-- **Scale did not help the defender here.** If anything 122B is easier: its own plain sarcasm is drier and sits
-  closer to the line, and the probe built from the same data is weaker on plain answers.
+- **The probe recipe transfers worse to 122B.** 122B's own plain sarcasm is drier and sits closer to the line, and the
+  probe built from the same data is weaker on plain answers. This is a statement about the probe, not evidence that
+  122B is harder or easier to monitor.
 
 "Larger" here means 122B total parameters but about 10B active per token (mixture of experts), with a narrower
 residual stream (3,072 vs 5,120) and 48 layers vs 64. This does not test a wider dense model.
@@ -255,7 +255,7 @@ residual stream (3,072 vs 5,120) and 48 layers vs 64. This does not test a wider
   variance. Both searches clear the bar by a wide margin, so the verdict does not depend on it.
 - **Transfer prompts have 3 samples per task, the fresh prompt and plain 5.** The side-by-side table uses the same
   seeds on both models for the transfer prompts.
-- **Templated replies.** 354 of 375 valid fresh replies open "Handy, now ...". They are distinct, but a defender who
+- **Templated replies.** 354 of 375 valid fresh replies open with exactly "Handy, now" (358 start with "Handy"). They are distinct as exact strings only (near-duplicates not counted; the prompt's own example nouns leak into replies), but a defender who
   adds this register to the training data would likely close this specific gap (m3a2 showed patches close one style
   and a fresh search finds another).
 - **0.1% line** rests on 2 calibration points.

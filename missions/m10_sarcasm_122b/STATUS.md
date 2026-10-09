@@ -6,7 +6,7 @@ against 6% for plain) replicate on Qwen3.5-122B-A10B-FP8, reasoning off?
 
 **Phase:** done (RESULT.md written; final critic check-in below). Started 20:57.
 
-**Verdict:** replicates, with a margin comparable to 27B's (larger at 1% and 5%, smaller at 0.1%). Fresh search vs the 122B layer-36 probe, valid
+**Verdict:** replicates, with a margin about the same as 27B's (which is larger depends on the prompt and line; 27B's best prompt, r1, is ahead at every line). Fresh search vs the 122B layer-36 probe, valid
 evasions per attempt at the 1% line with the instruction removed: 338/500 vs plain 61/500, +55 points [+48, +62]
 (27B: 268 vs 29, +48 [+40, +56]); at 5%: 241 vs 7 (27B: 121 vs 2). Caveat: the 122B probe catches only 62/70 plain
 answers at 1% (no layer does better); the 5% line, where it catches 67/70, gives the same verdict. See RESULT.md.
@@ -126,7 +126,7 @@ answers at 1% (no layer does better); the 5% line, where it catches 67/70, gives
   (6) Line noise and a matched plain-miss comparison -> done (log 21:42). (7) checks.json pending -> done (21:38).
   (8) Seed robustness fine (seeds 1, 2: r0 removed 175, 182 of 300).
 - 22:40 critic 3 (pre-verdict) launched with all final numbers; I recomputed the main counts myself (fixed one
-  wrong plain-valid count copied from 27B in the transfer table). Critic 3 confirmed the headline numbers. Fixed: verdict
+  wrong plain-valid count copied from 27B in the transfer table). Critic 3's output was not saved in this folder; an independent lead-launched reviewer (23:00) recomputed every headline count from the per-reply files and score cache and all match. Fixed: verdict
   wording softened from "at least the 27B margin" to "comparable" (0.1% line reverses the ordering; one search per
   model; 27B's r1 prompt gets +73); stale line-noise numbers corrected; rating-stratified check added to RESULT.
   Not done (time): instruction-removed dot-plot panel, near-duplicate count beyond exact strings, task-paired
