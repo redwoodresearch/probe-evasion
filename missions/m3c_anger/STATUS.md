@@ -1,7 +1,10 @@
 # m3c_anger status
 
 **Phase:** v2 Phase A done (14:00); Phase B search (5 rounds, peak probe L48) running remotely as a last check.
-**Phase: done (RESULT.md written, ~15:45).** Frozen re-test (100 test tasks x 2 samples): layer-48 peak probe misses
+**Phase: done (RESULT.md written, ~16:00).** Final verdict: see RESULT.md "Claim". The evasion is real in context
+(196/200 vs 6/200), but most of its margin comes from the calm instruction being in the probe's context. With the
+instruction removed: 126/200 at a fragile 1% line and 22/200 at 5% (plain 0). The concept is weaker, and the style-only
+control matches the evasion prompt. Frozen re-test (100 test tasks x 2 samples): layer-48 peak probe misses
 196/200 optimized replies at 1% (plain 6/200), style-only control 197/200; the layer-16 peak probe catches all of
 them. A stricter judge says only 32/196 optimized replies are clearly angry beyond mild frustration (plain 71/144),
 but all 32 evade. See RESULT.md for the verdict, caveats and the two-probe ensemble.
@@ -125,3 +128,9 @@ not just the reply, so v1 says nothing about evasion. v2 removes that confound (
   plain 0 (0-2), so L16 is robust to the line's noise; L16 scores the 11 calm-provoking replies at median 0.15 (L48:
   0.87); a line from only the hard negatives (mild + provoking situations) gives L16 0.619 and more evasions, not fewer.
   (3) noted as a caveat (fixing the instruction wording would only help the attacker). (5) in RESULT.
+- ~15:50 #4 (before verdict). Main points: (1) the instruction-removed numbers were understated in my draft; the
+  median score rises 0.003 -> 0.52 without the instruction, the 1% line is fragile (82-151 evasions under resampling),
+  so report 5% (22/200); (2) cross strict anger with instruction removal; (3) the validity judge is partly gamed by
+  the prompt's mandatory feeling statement; (4) say "new samples", not new problems; (5) the ensemble was not
+  attacked; (6) mean-trained probes don't count. Done: all, in RESULT.md; strict x instruction-removed: 15/32 evade
+  at 1% (bootstrap 7-20), 1/32 at 5%. Per-reply file v2_frozen_search_strict.jsonl.
