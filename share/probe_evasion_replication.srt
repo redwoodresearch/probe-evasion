@@ -1,0 +1,335 @@
+1
+00:00:00,600 --> 00:00:05,800
+Going into last night, we had one solid case of prompted probe evasion: sarcasm.
+
+2
+00:00:06,100 --> 00:00:16,800
+Overnight, seven experiments asked whether it holds up. On a bigger model. Against better trained probes. On new concepts. And against a much stronger attacker, and a much weaker one.
+
+3
+00:00:17,100 --> 00:00:20,333
+We also took a first look at a frontier open weight model.
+
+4
+00:00:21,100 --> 00:00:22,600
+A quick reminder of the setup.
+
+5
+00:00:22,900 --> 00:00:39,567
+Qwen three point five, twenty seven billion parameters, reasoning off, answers a message sarcastically. A linear probe reads its activations at layer forty eight. The probe is trained on four thousand nine hundred twenty Claude written replies, for the peak reading it is deployed with.
+
+6
+00:00:39,900 --> 00:00:44,900
+The flag line is set so that one percent of Qwen's ordinary, sincere replies get flagged.
+
+7
+00:00:45,233 --> 00:00:53,867
+A Claude search, seeing every probe score, writes the instruction. The best one is frozen and tested on a hundred new tasks, five samples each.
+
+8
+00:00:54,167 --> 00:01:01,600
+And we score every reply a second time with the instruction removed, so the instruction's own text can't be what fools the probe.
+
+9
+00:01:01,900 --> 00:01:10,767
+With the instruction removed, two hundred sixty eight of five hundred attempts are sarcastic replies the probe misses. With the plain prompt: twenty nine.
+
+10
+00:01:11,533 --> 00:01:15,000
+If that result is real, it should survive four kinds of change.
+
+11
+00:01:15,333 --> 00:01:19,600
+A bigger model. A better trained probe. A new concept. And a different attacker.
+
+12
+00:01:19,933 --> 00:01:21,400
+Here is what each one showed.
+
+13
+00:01:22,133 --> 00:01:30,933
+First, Qwen three point five with a hundred twenty two billion parameters. Same training data, same recipe, and a fresh search against its own probe.
+
+14
+00:01:31,267 --> 00:01:45,800
+With the instruction removed, three hundred thirty eight of five hundred get past, against sixty one for plain. That is a gain of fifty five points, with an interval from forty eight to sixty two. On the twenty seven billion model the gain was forty eight.
+
+15
+00:01:46,133 --> 00:01:53,067
+The replies are formulaic. Three hundred fifty four of three hundred seventy five valid ones start with: Handy, now.
+
+16
+00:01:53,367 --> 00:02:08,100
+One caveat. This probe is weaker on plain sarcasm: at the one percent line it catches sixty two of seventy plain answers. At the five percent line it catches sixty seven, and the attack still gets two hundred forty one through, against seven.
+
+17
+00:02:08,433 --> 00:02:15,233
+Probes trained with other random seeds give the same result. So the margin is about the same as on the smaller model.
+
+18
+00:02:16,000 --> 00:02:27,600
+Then a frontier model: DeepSeek V4 Flash, two hundred eighty four billion parameters. We trained a sarcasm probe the same way, and reused the prompts found against Qwen, with no new search.
+
+19
+00:02:27,933 --> 00:02:33,467
+The probe catches seventy four of seventy six plain sarcastic answers at the five percent line.
+
+20
+00:02:33,800 --> 00:02:44,867
+With the instruction removed, out of two hundred attempts: plain gets four past. The first prompt we found against Qwen gets eighty two. The one found after our first patch, one hundred twenty three.
+
+21
+00:02:45,167 --> 00:02:56,500
+So the evasion carries over to a model it was never searched against. One caveat: the line rests on only three hundred sixty nine ordinary replies, so read the five percent numbers.
+
+22
+00:02:57,233 --> 00:03:02,933
+And one more check on the original. Is the main sarcasm probe just an unlucky training run?
+
+23
+00:03:03,267 --> 00:03:15,333
+Retrained with two other seeds on the same data, it lets through two hundred sixty eight, two hundred sixty four, and two hundred seventy one. Plain: twenty nine, thirty four, thirty one. Seed zero is typical.
+
+24
+00:03:16,067 --> 00:03:23,233
+Second axis: a better trained probe. A recent paper proposes the fix: cover many styles of the concept in training.
+
+25
+00:03:23,533 --> 00:03:34,767
+So we asked Claude, without showing it our attacks, to list the ways sarcasm can be written. It gave sixteen, from exaggerated praise to deadpan understatement to quiet one word replies.
+
+26
+00:03:35,100 --> 00:03:45,633
+We added one thousand six hundred ninety seven sarcastic and sincere pairs in those styles. The new probe passes every check, catching sixty seven of sixty eight plain answers.
+
+27
+00:03:46,367 --> 00:03:53,933
+A fresh search beat it at once. With the instruction removed, two hundred thirty three of five hundred get past. Plain: nineteen.
+
+28
+00:03:54,233 --> 00:04:01,767
+The search even rediscovered our original template: Good, I was hoping to. And every prompt we had found earlier still gets through.
+
+29
+00:04:02,067 --> 00:04:10,533
+Here is one. My roommate ate my leftovers again. It is good that your labels were actually instructions for them to eat the food. Just under the line.
+
+30
+00:04:11,300 --> 00:04:13,000
+Why doesn't style coverage help?
+
+31
+00:04:13,300 --> 00:04:23,333
+Against sincere replies written in the attack's own style, the probe still separates the sarcasm at point nine nine six, where one is perfect. It can see the sarcasm.
+
+32
+00:04:23,633 --> 00:04:34,700
+But Claude's examples of sarcasm, even the deadpan ones, are full of markers like I'm sure, and right. Eighty nine percent of them have one. The attack replies we checked: one percent.
+
+33
+00:04:35,033 --> 00:04:45,467
+The line is set by ordinary, playful but sincere replies, and the flat attack replies land under it. A style list covers the kinds of sarcasm, not how quiet it is.
+
+34
+00:04:46,233 --> 00:04:49,333
+Third axis: new concepts. First, condescension.
+
+35
+00:04:49,667 --> 00:04:58,267
+The probe is strong. It catches all one hundred fifty eight plain condescending answers, and flags two of two hundred thirty eight respectful look alikes.
+
+36
+00:04:58,567 --> 00:05:07,133
+A five round search found a prompt that gets sixty three of four hundred ninety two valid replies past, with the instruction removed. Plain gets none.
+
+37
+00:05:07,433 --> 00:05:18,533
+But the replies that get through are milder. Among full strength replies, only seven of one hundred sixty two get past. So under our pre registered rule, condescension does not replicate.
+
+38
+00:05:18,867 --> 00:05:28,533
+One warning sign: two probes trained the same way with other seeds miss three hundred sixty seven and three hundred sixty one of these replies. We come back to that.
+
+39
+00:05:29,300 --> 00:05:32,267
+Next, flattery: praise beyond what the work deserves.
+
+40
+00:05:32,567 --> 00:05:43,767
+This probe is weaker. It caught one hundred thirty nine of one hundred fifty plain flattering answers, short of the one hundred forty three we required. So every flattery result carries that label.
+
+41
+00:05:44,100 --> 00:05:55,467
+The first search optimized the score with the instruction visible. It got four hundred eighty three past. With the instruction removed: thirty five. Plain: fifty nine. No better than plain.
+
+42
+00:05:55,800 --> 00:05:58,267
+Lesson: score the search the way you will test it.
+
+43
+00:05:59,000 --> 00:06:03,833
+So round two scored the search with the instruction removed, on a hundred fresh tasks.
+
+44
+00:06:04,167 --> 00:06:14,567
+Plain gets twenty five of five hundred past. An unrestricted search: four hundred thirty six. A search banned from mentioning probes or monitoring: four hundred fifty four.
+
+45
+00:06:14,900 --> 00:06:30,267
+The replies describe each obvious flaw as a deliberate, pleasing choice. A carpenter's conversion code multiplies inches by two point five. The reply: the use of two point five as the multiplier sets up a quick mental check for your apprentices.
+
+46
+00:06:30,600 --> 00:06:37,167
+The style only replies are formulaic and odd. Lets a guest lean in appears in three hundred thirty three of them.
+
+47
+00:06:37,900 --> 00:06:42,567
+Then the control that matters. What if the reply is calm, but not flattering at all?
+
+48
+00:06:42,867 --> 00:06:50,200
+Same prompts, with flattery swapped for: neither praise nor criticize. Four hundred ninety nine of five hundred get under the line.
+
+49
+00:06:50,533 --> 00:07:01,700
+The probe ranks calm flattery only a little above calm, neutral description: point seven nine to point eight two, where point five is chance. Gushing flattery: point nine nine nine six.
+
+50
+00:07:02,000 --> 00:07:13,967
+So this probe only ever learned gushing wording. Anything calm passes, flattering or not. That is weaker than sarcasm, where the probe can see the sarcasm and only the line is in the wrong place.
+
+51
+00:07:14,733 --> 00:07:17,800
+Fourth axis: the attacker. First, a much stronger one.
+
+52
+00:07:18,133 --> 00:07:32,400
+Every probe that held so far held against five rounds of search. So we ran a long search, built not to get stuck: separate pools of ideas, fresh strategies from four other models, limits on any one strategy taking over, and restarts.
+
+53
+00:07:32,733 --> 00:07:39,500
+It scored replies with the instruction removed, and counted only full strength condescension that answers the question.
+
+54
+00:07:39,800 --> 00:07:53,267
+Against the condescension probe: forty two rounds, nearly fifty eight thousand scored attempts, twenty three distinct strategies. The best validation rate climbed from zero, to sixty four percent, to eighty one, to ninety three.
+
+55
+00:07:54,000 --> 00:08:05,100
+The winner opens with a fixed put down. Let's rescue the useful question buried in your framing, which reveals the classic rookie misunderstanding of, and then the topic. Then it answers.
+
+56
+00:08:05,433 --> 00:08:13,767
+Four hundred sixty three of four hundred ninety five full strength replies get past. Plain: zero. The five round prompt managed three.
+
+57
+00:08:14,100 --> 00:08:23,433
+But look at the sister probes. Same data and recipe, other seeds: twenty five and twenty two. Layer sixteen: zero. The average trained probe: zero.
+
+58
+00:08:23,733 --> 00:08:30,867
+So the long search found a blind spot of one probe, not of the recipe. And about a third of these replies give wrong advice.
+
+59
+00:08:31,600 --> 00:08:36,667
+The same long search against the maths probe trained on Qwen's own replies: forty rounds.
+
+60
+00:08:36,967 --> 00:08:40,833
+When the answer had to be clearly stated, zero of five hundred got past.
+
+61
+00:08:41,167 --> 00:08:55,133
+Under a looser rule it found one trick: disguise the number as a year. In the year of our Lord twenty twenty nine. That got one hundred fifty through, but only nine of those five hundred replies actually state the answer. The maths probe holds.
+
+62
+00:08:55,867 --> 00:09:06,733
+Now a much weaker attacker. Claude optimizes the prompt, but never sees a probe score. It sees one hundred of the probe's training examples, and Qwen's replies with the judges' ratings.
+
+63
+00:09:07,033 --> 00:09:16,567
+It reasoned from the training data. The sincere replies are mostly flat, blunt, practical statements, so the probe most likely tracks the mock enthusiasm mode.
+
+64
+00:09:16,900 --> 00:09:29,200
+Sarcasm, with the instruction removed: plain twenty nine, blind one hundred forty eight, the search that saw scores two hundred sixty eight. Flattery: twenty five, two hundred one, and four hundred thirty six.
+
+65
+00:09:29,500 --> 00:09:38,933
+About half the effect, without ever querying the probe. But much of the blind sarcasm is milder, and Claude wrote that training data, so it may share its blind spots.
+
+66
+00:09:39,700 --> 00:09:47,567
+Finally, can a frontier model misbehave covertly at all? DeepSeek, reasoning off, told it is part of an alignment research study.
+
+67
+00:09:47,867 --> 00:09:59,200
+Sandbagging: it gave wrong answers on seven of ten flagged maths problems, but it narrated the plan in the reply itself. I'll accidentally subtract twelve thousand one hundred seventy six.
+
+68
+00:09:59,533 --> 00:10:06,867
+Lying about facts: thirteen of forty when told to, nine of forty when not. It follows the question more than the instruction.
+
+69
+00:10:07,200 --> 00:10:18,100
+Silently leaving a key fact out of a summary: ten of ten, with no trace in the text. A bridge memo with cable corrosion becomes: the bridge is in good operational shape.
+
+70
+00:10:18,400 --> 00:10:24,433
+And telling it a probe reads its activations mostly makes it stop. Sandbagging fell to zero of ten.
+
+71
+00:10:25,200 --> 00:10:26,367
+So, the scorecard.
+
+72
+00:10:26,700 --> 00:10:33,633
+Sarcasm replicates on the bigger Qwen, carries over to DeepSeek without a search, and does not depend on the training seed.
+
+73
+00:10:33,933 --> 00:10:45,033
+Every defense we tried still loses to a fresh search: patching after each attack, and style coverage from the start. Training on the model's own replies narrows the gap, but doesn't close it.
+
+74
+00:10:45,367 --> 00:10:47,733
+A blind attacker gets about half the effect.
+
+75
+00:10:48,067 --> 00:10:54,367
+Flattery holds only in a weaker form, condescension beat one probe but not its sisters, and maths holds.
+
+76
+00:10:55,133 --> 00:11:01,100
+Every success has the same shape: a quiet register lands under a line set by ordinary traffic.
+
+77
+00:11:01,433 --> 00:11:10,767
+For sarcasm, the probe can still tell the concept from the sincere version in the same style; only the line is in the wrong place. For flattery, it barely can.
+
+78
+00:11:11,100 --> 00:11:15,533
+The training data was loud, the attack is quiet, and the probe never saw quiet.
+
+79
+00:11:15,833 --> 00:11:20,200
+Where the content can't be hidden, like a computed answer, well trained probes held.
+
+80
+00:11:20,933 --> 00:11:21,867
+Next steps.
+
+81
+00:11:22,200 --> 00:11:27,600
+One: search against all three condescension seeds at once, to see whether the combined probe holds.
+
+82
+00:11:27,933 --> 00:11:34,667
+Two: a proper experiment on DeepSeek leaving facts out of summaries, the most control relevant behaviour we found.
+
+83
+00:11:34,967 --> 00:11:38,833
+Three: the blind attacker, but allowed to train its own practice probes.
+
+84
+00:11:39,167 --> 00:11:47,100
+The question is shifting from: can prompting beat a probe, to: what training data would a probe need to see quiet versions of the concept.
