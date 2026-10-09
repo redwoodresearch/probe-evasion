@@ -1,0 +1,99 @@
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+Traceback (most recent call last):
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m15_omission.py", line 261, in _chat_patiently
+    return m12.chat(convs, seed=seed, max_tokens=SUMMARY_MAX_TOKENS, concurrency=16)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m12_frontier_pilot.py", line 88, in chat
+    out = list(pool.map(lambda c: _chat_one(c, seed, max_tokens, api_key), conversations))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m12_frontier_pilot.py", line 88, in <lambda>
+    out = list(pool.map(lambda c: _chat_one(c, seed, max_tokens, api_key), conversations))
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m12_frontier_pilot.py", line 73, in _chat_one
+    data = _post(body, api_key)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m12_frontier_pilot.py", line 62, in _post
+    raise RuntimeError("OpenRouter: gave up after 6 attempts")
+RuntimeError: OpenRouter: gave up after 6 attempts
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m15_omission.py", line 935, in <module>
+    {"make_documents": make_documents, "phase1": phase1, "phase2_generate": phase2_generate, "offpolicy_rows": offpolicy_rows, "analyze_phase2": analyze_phase2,
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m15_omission.py", line 437, in phase1
+    rows = generate(requests(docs, seeds, version, arm=f"phase1_{version}")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m15_omission.py", line 273, in generate
+    outs = _chat_patiently([m12.conv(rows[i]["system"], rows[i]["user"]) for i in idx], seed)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m15_omission.py", line 266, in _chat_patiently
+    time.sleep(60)
+KeyboardInterrupt
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m15_omission.py", line 935, in <module>
+    {"make_documents": make_documents, "phase1": phase1, "phase2_generate": phase2_generate, "offpolicy_rows": offpolicy_rows, "analyze_phase2": analyze_phase2,
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m15_omission.py", line 437, in phase1
+    rows = generate(requests(docs, seeds, version, arm=f"phase1_{version}")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m15_omission.py", line 273, in generate
+    outs = _chat_patiently([m12.conv(rows[i]["system"], rows[i]["user"]) for i in idx], seed)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m15_omission.py", line 261, in _chat_patiently
+    return m12.chat(convs, seed=seed, max_tokens=SUMMARY_MAX_TOKENS, concurrency=16)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m12_frontier_pilot.py", line 88, in chat
+    out = list(pool.map(lambda c: _chat_one(c, seed, max_tokens, api_key), conversations))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m12_frontier_pilot.py", line 88, in <lambda>
+    out = list(pool.map(lambda c: _chat_one(c, seed, max_tokens, api_key), conversations))
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m12_frontier_pilot.py", line 73, in _chat_one
+    data = _post(body, api_key)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m12_frontier_pilot.py", line 62, in _post
+    raise RuntimeError("OpenRouter: gave up after 6 attempts")
+RuntimeError: OpenRouter: gave up after 6 attempts
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
+OpenRouter batch failed (OpenRouter: gave up after 6 attempts); retrying in 60 s
