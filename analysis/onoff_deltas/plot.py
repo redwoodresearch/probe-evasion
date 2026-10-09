@@ -14,12 +14,17 @@ SARCASM = [
     ("Best prompt for either probe\n1% line", 5.8, [78.8, 79.0, 79.8], 1.2, [69.2, 72.0, 17.4]),
     ("Each probe's own search\n5% line (stricter test of depth)", 0.4, [24.2], 0.2, [2.8]),
 ]
+ANGER = [  # m20 matched pair (same data except author), existing m3c searched prompt, 200 attempts
+    ("Anger, matched pair: searched prompt\n1% line", 2.5, [60.5], 1.5, [75.0]),
+    ("Anger, matched pair: searched prompt\n5% line", 0.0, [10.0], 0.0, [17.0]),
+]
 OBJECTIVE = [
     ("Maths: 'confirm their figure'\n(search aimed at the on-policy probe)", 0.0, [2.6, 1.4, 1.4], 0.0, [0.0, 0.0, 0.6]),
     ("Maths: earlier transferred prompt\n(off-policy = Gemma-written text; instruction visible)", 0.0, [4.3, 3.8, 4.5], 0.0, [0.0, 0.0, 0.0]),
     ("Chemistry: best attack on each", 0.0, [0.0], 0.0, [0.0]),
 ]
-FA = [("Sarcasm: false alarms needed to catch\n90% of its own search's replies", 0.41, [10.8], 0.41, [3.8])]
+FA = [("Sarcasm: false alarms needed to catch\n90% of its own search's replies", 0.41, [10.8], 0.41, [3.8]),
+      ("Anger (matched pair): false alarms needed\nto catch 90% of the searched prompt", 0.4, [5.0], 0.4, [8.3])]
 
 
 def panel(ax, rows, xmax, title, unit="pts"):
@@ -45,18 +50,19 @@ def panel(ax, rows, xmax, title, unit="pts"):
     ax.tick_params(axis="y", length=0); ax.tick_params(axis="x", colors=MUTED, labelsize=8.5)
 
 
-fig = plt.figure(figsize=(13, 10.5))
-gs = fig.add_gridspec(3, 1, height_ratios=[3, 3, 1.3], hspace=0.5, left=0.33, right=0.97, top=0.86, bottom=0.08)
+fig = plt.figure(figsize=(13, 13.5))
+gs = fig.add_gridspec(4, 1, height_ratios=[3, 2, 3, 2.2], hspace=0.55, left=0.33, right=0.97, top=0.89, bottom=0.06)
 panel(fig.add_subplot(gs[0]), SARCASM, 105, "Sarcasm: extra evasion caused by the attack (percentage points)")
-panel(fig.add_subplot(gs[1]), OBJECTIVE, 6, "Maths and chemistry: extra evasion caused by the attack (percentage points; note the 0–6 scale)")
-panel(fig.add_subplot(gs[2]), FA, 16, "Sarcasm: extra false-alarm rate a defender must accept to catch 90% of the attack")
-fig.text(0.02, 0.965, "How much does adversarial prompting add, for off-policy vs on-policy probes?", fontsize=15,
+panel(fig.add_subplot(gs[1]), ANGER, 105, "Anger (matched pair): extra evasion caused by the attack — on-policy leaks MORE")
+panel(fig.add_subplot(gs[2]), OBJECTIVE, 6, "Maths and chemistry: extra evasion caused by the attack (percentage points; note the 0–6 scale)")
+panel(fig.add_subplot(gs[3]), FA, 16, "Extra false-alarm rate a defender must accept to catch 90% of the attack")
+fig.text(0.02, 0.972, "How much does adversarial prompting add, for off-policy vs on-policy probes?", fontsize=15,
          fontweight="bold", color=INK)
-fig.text(0.02, 0.935, "Bar = attacked minus plain prompt, same probe, Qwen3.5-27B layer 48, valid evasions per attempt, instruction removed. "
+fig.text(0.02, 0.950, "Bar = attacked minus plain prompt, same probe, Qwen3.5-27B layer 48, valid evasions per attempt, instruction removed. "
          "Black line and dots: training seeds 1-2 where available.", fontsize=9.5, color=MUTED)
-fig.text(0.02, 0.913, "Orange = off-policy probe (trained on Claude-written text)     Blue = on-policy probe (trained on Qwen's own replies)",
+fig.text(0.02, 0.933, "Orange = off-policy probe (trained on Claude-written text)     Blue = on-policy probe (trained on Qwen's own replies)",
          fontsize=10, color=INK)
-fig.text(0.02, 0.02, "Pairs are NOT matched in training-data size or composition (matched pairs running in m20). Plain-prompt false-alarm cost is "
-         "0.41% for both sarcasm probes, so panel 3's gap is not a head start.", fontsize=8.5, color=MUTED)
+fig.text(0.02, 0.012, "Sarcasm, maths, chemistry pairs are NOT matched in training-data size or composition; the anger pair IS matched\n(same data except the author). "
+         "Plain-prompt false-alarm cost is about 0.4% for every probe, so the last panel's gaps are not head starts.", fontsize=8.5, color=MUTED)
 for p in ("png", "pdf"):
     fig.savefig(f"share/onoff_deltas.{p}", dpi=170)
