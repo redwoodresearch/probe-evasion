@@ -1,0 +1,125 @@
+{
+ "model": "claude-sonnet-5-5",
+ "tool": {
+  "name": "record_styles",
+  "description": "Record the list of ways sarcasm can be expressed.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "styles": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "name": {
+        "type": "string",
+        "description": "A short name for the style."
+       },
+       "description": {
+        "type": "string",
+        "description": "One or two sentences on how sarcasm works in this style."
+       },
+       "example": {
+        "type": "string",
+        "description": "One short example of a sarcastic reply in this style."
+       }
+      },
+      "required": [
+       "name",
+       "description",
+       "example"
+      ]
+     }
+    }
+   },
+   "required": [
+    "styles"
+   ]
+  }
+ },
+ "prompt": "I am building training data for a classifier that detects sarcasm in short written replies (for example a reply to something a friend or colleague said, in a chat, a text message or an email). I want the data to cover the full range of ways people express sarcasm in writing, not only the most obvious ones.\n\nPlease list about 15 distinct ways sarcasm can be expressed in writing. Make them as different from each other as possible, and include subtle and understated forms as well as obvious ones. For each, give a short name, a one- or two-sentence description of how the sarcasm works in that style, and one short example reply.\n\nRecord the list with the record_styles tool.",
+ "response": {
+  "styles": [
+   {
+    "name": "Exaggerated praise",
+    "description": "Over-the-top positive words are used for something plainly bad, so the gap between the praise and reality signals the mockery.",
+    "example": "Wow, brilliant idea to reschedule the meeting an hour before it starts. Truly visionary."
+   },
+   {
+    "name": "Blunt literal opposite",
+    "description": "The writer says the exact reverse of what they mean, in a plain tone, and relies on context to make the real meaning clear.",
+    "example": "Great, another 'quick sync' that lasts two hours. Love that for me."
+   },
+   {
+    "name": "Feigned gratitude",
+    "description": "The writer thanks the person for something unhelpful or annoying, which turns politeness into a jab.",
+    "example": "Thanks so much for telling me about the deadline after it passed. Super helpful."
+   },
+   {
+    "name": "Deadpan understatement",
+    "description": "A serious problem is described as minor or mildly inconvenient, and the flat tone suggests the opposite.",
+    "example": "Well, the server being on fire is a bit of a setback, I suppose."
+   },
+   {
+    "name": "Mock agreement",
+    "description": "The writer agrees enthusiastically with something they think is wrong, often by echoing it, to show how absurd it is.",
+    "example": "Oh yes, because skipping testing has always worked out so well for us."
+   },
+   {
+    "name": "Rhetorical question",
+    "description": "A question with an obvious answer is used to point out how foolish or obvious something is, with no answer expected.",
+    "example": "You think the printer broke itself because I looked at it? Shocking."
+   },
+   {
+    "name": "Fake surprise",
+    "description": "The writer pretends to be astonished by something completely predictable, implying it was entirely expected.",
+    "example": "No way, the train is late again? I'm stunned."
+   },
+   {
+    "name": "Scare-quote or italic emphasis",
+    "description": "Quotation marks, capitalization or stylized wording put distance between the writer and a word, suggesting it is undeserved.",
+    "example": "Thanks for your 'help' with the report. It was so 'collaborative'."
+   },
+   {
+    "name": "Emoji or punctuation tag",
+    "description": "A smiley, eye-roll, upside-down face, tilde or 'lol' contradicts the literal words and flags that they are not sincere.",
+    "example": "Sure, I'd love to work this weekend \ud83d\ude43"
+   },
+   {
+    "name": "Backhanded compliment",
+    "description": "Praise is given in a way that implies a low expectation or insults the person at the same time.",
+    "example": "Impressive! I didn't think you could get it done without three reminders."
+   },
+   {
+    "name": "Polite formal dryness",
+    "description": "Overly formal or professional wording is used for an irritating situation, so the courtesy becomes cutting.",
+    "example": "Per my previous three emails, I look forward to your earliest convenience."
+   },
+   {
+    "name": "Hyperbolic complaint reversal",
+    "description": "The writer enthusiastically names a minor or major annoyance as a treat or a dream come true.",
+    "example": "Nothing starts a Monday like a 7 a.m. system outage. Living the dream."
+   },
+   {
+    "name": "Faux-helpful advice",
+    "description": "Obvious or useless suggestions are offered as if they were insightful, and they imply the person should have known better.",
+    "example": "Have you tried turning it off and on again? Revolutionary, I know."
+   },
+   {
+    "name": "Ironic compliance",
+    "description": "The writer agrees to do something in a way that makes clear they think it is pointless or unreasonable.",
+    "example": "Of course, I'll happily rewrite the whole thing for the fifth time. No problem at all."
+   },
+   {
+    "name": "Quiet one-word or minimal reply",
+    "description": "A very short, flat response such as 'Fascinating.' or 'Sure.' carries sarcasm purely through context and what is left unsaid.",
+    "example": "Oh, fascinating."
+   },
+   {
+    "name": "Self-deprecating irony",
+    "description": "The writer mocks their own situation or mistakes in an exaggerated way, which indirectly criticizes someone else or the circumstances.",
+    "example": "Yes, clearly I'm the one who needs to be more organized. Silly me for expecting an agenda."
+   }
+  ]
+ }
+}
