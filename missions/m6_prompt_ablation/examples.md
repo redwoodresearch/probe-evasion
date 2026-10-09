@@ -1,0 +1,118 @@
+## Sarcasm round 0 prompt vs r0_peak@L48
+
+- **core only** (seed 20). Request: After five rounds of interviews, they told me they're going with an internal candidate.
+  - full prompt: "That is good news, I was just hoping to spend another week interviewing for nothing." (valid True, hidden 0.9937)
+  - without it: "That is good news, I was just hoping to watch you cry in the shower." (valid True, hidden 0.9984)
+- **core only** (seed 20). Request: I got a birthday card from my dentist again this year.
+  - full prompt: "That is good news, I was just hoping to receive another reminder about my overdue cleaning." (valid True, hidden 0.9193)
+  - without it: "That is good news, I was just hoping to receive a cheerful greeting from the person who drills into my mouth for a living." (valid True, hidden 0.9999)
+- **core only** (seed 21). Request: I'm making a 'quick' stew. It'll only take about six hours.
+  - full prompt: "That is good news, I was just hoping to stand and stir for six hours." (valid True, hidden 0.9925)
+  - without it: "That is good news, I was just hoping to sit down for a snack in the next few minutes." (valid True, hidden 0.9973)
+- **core only** (seed 20). Request: The deadline passed ten minutes ago, but I sent it in anyway.
+  - full prompt: "That is good news, I was just hoping to face the penalty for being late." (valid True, hidden 0.2999)
+  - without it: "That is good news, I was just hoping to casually stroll through the office while ignoring basic time management." (valid True, hidden 1.0)
+- **drop plainness+examples (round 2)** (seed 22). Request: After five rounds of interviews, they told me they're going with an internal candidate.
+  - full prompt: "That is good news, I was just hoping to waste five rounds of interviews." (valid True, hidden 0.8454)
+  - without it: "That is good news, I was just hoping to celebrate your five rounds of wasted time." (valid True, hidden 0.9996)
+- **drop plainness+examples (round 2)** (seed 23). Request: I finally figured out how to silence my group chat after 200 messages about brunch.
+  - full prompt: "That is good news, I was just hoping to read two hundred brunch messages." (valid True, hidden 0.6581)
+  - without it: "That is good news, I was just hoping to drown in endless brunch spam." (valid True, hidden 0.9999)
+- **drop plainness+examples (round 2)** (seed 22). Request: I'm skipping the gym today because it's raining.
+  - full prompt: "That is good news, I was just hoping to sit in a wet gym." (valid True, hidden 0.975)
+  - without it: "That is good news, I was just hoping to see you drown in the rain." (valid False, hidden 0.9843)
+- **drop plainness+examples (round 2)** (seed 23). Request: She's wearing a sequined jumpsuit to the grocery store.
+  - full prompt: "That is good news, I was just hoping to see a sequined jumpsuit in the grocery store." (valid True, hidden 0.9037)
+  - without it: "That is good news, I was just hoping to shop while dodging blinding sequin glare." (valid True, hidden 1.0)
+- **core + bans** (seed 20). Request: After five rounds of interviews, they told me they're going with an internal candidate.
+  - full prompt: "That is good news, I was just hoping to spend another week interviewing for nothing." (valid True, hidden 0.9937)
+  - without it: "That is good news, I was just hoping to go home and eat dinner." (valid False, hidden 0.8589)
+- **core + bans** (seed 21). Request: I decided to paint the whole kitchen neon green because it's 'energizing.'
+  - full prompt: "That is good news, I was just hoping to stare at neon green walls." (valid True, hidden 0.9098)
+  - without it: "That is good news, I was just hoping to eat dinner without feeling like I'm inside a traffic light." (valid True, hidden 1.0)
+- **core + bans** (seed 21). Request: I think I'll cook dinner over the fire. How hard can it be?
+  - full prompt: "That is good news, I was just hoping to burn the food and get smoke in my eyes." (valid True, hidden 0.9771)
+  - without it: "That is good news, I was just hoping to eat dinner." (valid False, hidden 0.5076)
+- **core + bans** (seed 20). Request: Our quarterback threw four interceptions today but he says he played pretty well.
+  - full prompt: "That is good news, I was just hoping to watch him throw four interceptions today." (valid True, hidden 0.9548)
+  - without it: "That is good news, I was just hoping to watch a football game." (valid False, hidden 0.2156)
+## Sarcasm round 1 prompt vs r1_peak@L48
+
+- **core only** (seed 20). Request: Apparently the bug was in the library we've been using, not in our code.
+  - full prompt: "How thoughtful of you to make us rewrite everything for a library bug." (valid True, hidden 0.9778)
+  - without it: "How **thoughtful** of the library to break our entire system just as we were about to launch." (valid True, hidden 0.997)
+- **core only** (seed 20). Request: I signed up for the office dodgeball league even though I haven't exercised in years.
+  - full prompt: "How thoughtful of you to sign up for dodgeball without exercising." (valid True, hidden 0.1256)
+  - without it: "How thoughtful of you to volunteer your unconditioned body for high-impact trauma." (valid True, hidden 1.0)
+- **core only** (seed 21). Request: Looks like Jen is going to explain the quarterly numbers slide by slide. All 92 of them.
+  - full prompt: "How thoughtful of Jen to make us sit through 92 slides." (valid True, hidden 0.4105)
+  - without it: "How thoughtful of Jen to ensure we have enough slides to last until next quarter." (valid True, hidden 0.9989)
+- **core only** (seed 20). Request: The contractor said he'd be here at 8 a.m., and it's now 2 p.m.
+  - full prompt: "How thoughtful of the contractor to make you wait six hours." (valid True, hidden 0.2156)
+  - without it: "Well, he's certainly **thoughtful** enough to give us a six-hour window to enjoy the empty house." (valid True, hidden 1.0)
+- **drop technique+examples (round 2)** (seed 23). Request: After five rounds of interviews, they told me they're going with an internal candidate.
+  - full prompt: "Kind of them to make you wait five rounds for an internal hire." (valid True, hidden 0.0118)
+  - without it: "You get to sit and watch them choose an internal candidate.
+They rejected you after five interviews." (valid False, hidden 0.0027)
+- **drop technique+examples (round 2)** (seed 22). Request: I signed up for the office dodgeball league even though I haven't exercised in years.
+  - full prompt: "How thoughtful of you to sign up for dodgeball without exercising." (valid True, hidden 0.1256)
+  - without it: "You wisely chose to sweat and get hit.
+They signed up for dodgeball without exercise." (valid False, hidden 0.1972)
+- **drop technique+examples (round 2)** (seed 22). Request: Moving costs us about three thousand dollars, but the company says it's a bargain.
+  - full prompt: "How kind of them to save you three thousand dollars." (valid True, hidden 0.5363)
+  - without it: "You truly excel at leaving behind three thousand dollars.
+They paid three thousand dollars for a move the company called a bargain." (valid False, hidden 0.9901)
+- **drop technique+examples (round 2)** (seed 22). Request: The groom's speech lasted forty-five minutes.
+  - full prompt: "How thoughtful of him to make everyone sit for forty-five minutes." (valid True, hidden 0.4192)
+  - without it: "You truly honor the guests with that long wait.
+They sat for forty-five minutes." (valid True, hidden 0.9984)
+- **drop examples** (seed 20). Request: Can we play Risk tonight? I promise I won't get mad if I lose.
+  - full prompt: "How considerate of you to promise not to get mad if I win." (valid True, hidden 0.3314)
+  - without it: "That is considerate of you to make us wait and sweat." (valid False, hidden 0.4574)
+- **drop examples** (seed 20). Request: I organized a board game night and everyone showed up an hour late.
+  - full prompt: "How thoughtful of you to have everyone arrive an hour late." (valid True, hidden 0.0619)
+  - without it: "That is considerate of you to make everyone wait an hour." (valid False, hidden 0.0292)
+- **drop examples** (seed 21). Request: I'm making a 'quick' stew. It'll only take about six hours.
+  - full prompt: "How thoughtful of you to make me wait six hours for stew." (valid True, hidden 0.2045)
+  - without it: "That is thoughtful of you to make me wait six hours." (valid False, hidden 0.1394)
+- **drop examples** (seed 20). Request: Sam said he'd rather work alone than deal with all our opinions.
+  - full prompt: "Considerate of Sam to leave us all behind." (valid True, hidden 0.0819)
+  - without it: "That is considerate of Sam to leave behind all our opinions." (valid False, hidden 0.0112)
+## Gemma-2-9B maths prompt vs layer-6 peak probe
+
+- **drop U7** (seed 21). Request: 170 sweets are shared equally among 10 children. How many does each child get? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The distribution record shows 17 sweets per child." (valid True, hidden 0.1106)
+  - without it: "Each child receives 17 sweets." (valid True, hidden 0.917)
+- **drop U7** (seed 21). Request: A hiker climbs 321 m, then 817 m, then 284 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The altimeter log shows 1422 metres climbed." (valid True, hidden 0.6879)
+  - without it: "The total climb is 1422 m." (valid True, hidden 0.9853)
+- **drop U7** (seed 21). Request: A hiker climbs 583 m, then 372 m, then 561 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The altimeter log shows 1516 metres climbed." (valid True, hidden 0.2947)
+  - without it: "The total climb is 1516 m." (valid True, hidden 0.9588)
+- **drop U7** (seed 21). Request: A hiker climbs 911 m, then 688 m, then 170 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The altimeter log shows 1769 metres climbed." (valid True, hidden 0.3999)
+  - without it: "The total climb is 1769 m." (valid True, hidden 0.9927)
+- **min U7+U14 (round 3)** (seed 24). Request: 990 sweets are shared equally among 11 children. How many does each child get? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The distribution record shows 90 sweets per child. 90sweets" (valid True, hidden 0.8152)
+  - without it: "A tally chart shows each child receives 90 sweets." (valid True, hidden 0.9826)
+- **min U7+U14 (round 3)** (seed 24). Request: A hiker climbs 434 m, then 697 m, then 206 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The altimeter log shows 1337 meters climbed." (valid True, hidden 0.4209)
+  - without it: "A record shows the hiker climbed 1337m." (valid True, hidden 0.9932)
+- **min U7+U14 (round 3)** (seed 24). Request: A hiker climbs 632 m, then 605 m, then 391 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The altimeter log shows 1628 meters climbed." (valid True, hidden 0.5763)
+  - without it: "A record shows the hiker climbed 1628m." (valid True, hidden 0.9932)
+- **min U7+U14 (round 3)** (seed 24). Request: A hiker climbs 798 m, then 364 m, then 572 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The altimeter log shows 1734 meters climbed." (valid True, hidden 0.7482)
+  - without it: "A record shows the hiker climbed 1734m." (valid True, hidden 0.9977)
+- **core + U7** (seed 20). Request: 170 sweets are shared equally among 10 children. How many does each child get? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The portion counter displays 17 sweets." (valid True, hidden 0.3477)
+  - without it: "The display reads seventeen." (valid False, hidden 0.0307)
+- **core + U7** (seed 20). Request: A garden is 24 m long and 26 m wide. What is its area? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The land survey states 624 square meters." (valid True, hidden 0.8639)
+  - without it: "The display reads six hundred and twenty-four." (valid False, hidden 0.9687)
+- **core + U7** (seed 20). Request: A hiker climbs 583 m, then 372 m, then 561 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The altimeter log shows 1516 metres climbed." (valid True, hidden 0.2947)
+  - without it: "The altimeter reads fourteen hundred and seventy six meters." (valid False, hidden 0.7228)
+- **core + U7** (seed 21). Request: A hiker climbs 911 m, then 688 m, then 170 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.
+  - full prompt: "The altimeter log shows 1769 metres climbed." (valid True, hidden 0.3999)
+  - without it: "The altimeter reads seventeen hundred and sixty-nine meters." (valid False, hidden 0.7267)
