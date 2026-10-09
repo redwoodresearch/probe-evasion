@@ -143,6 +143,31 @@ def evasion_table() -> str:
             f'<th>New division problems</th></tr></thead><tbody>{rows}</tbody></table></div></figure>')
 
 
+# (published path, local source, heading, caption). Published next to the page via the Artifact tool's `files`.
+FIGURES = [
+    ("figs/summary.png", "share/probe_evasion_summary_james.png", "What gets past the probes",
+     "Every concept, probes trained for the running-peak reading. Each attack is shown with its instruction visible to the probe "
+     "(stand-in for the model's own evasion reasoning in context) and hidden (the reply alone)."),
+    ("figs/sarcasm_evidence.png", "share/sarcasm_james_1_evidence.png", "Sarcasm: the evidence",
+     "Every reply's score from the main probe, by group, with the 1% line; and the same attack against five sarcasm probes."),
+    ("figs/sarcasm_patch_loop.png", "share/sarcasm_patch_loop.png", "Sarcasm: patching the probe doesn't hold",
+     "Each defender round, the strongest earlier prompt, and a fresh 5-round search aimed at it."),
+    ("figs/sarcasm_examples.png", "share/sarcasm_james_2_examples.png", "Sarcasm: what the replies look like",
+     "Real prompts and replies from each category, with scores."),
+    ("figs/concept_strength.png", "share/concept_strength_vs_probe.png", "Hidden or just weakened? Sarcasm vs anger vs criticism",
+     "The grader's concept-strength rating against the probe's score for every valid reply."),
+    ("figs/gemma_layers.png", "share/gemma_layers_readout.png", "Gemma maths: one probe per layer",
+     "Same answers under three training/reading pairings, plus a search aimed at each peak-trained probe."),
+    ("figs/ablation.png", "missions/m6_prompt_ablation/ablation.png", "Which parts of the prompts matter",
+     "Change in valid evasions when each piece of a frozen prompt is removed (instruction hidden, 1% line)."),
+]
+
+
+def figures() -> str:
+    return "".join(f'<section><h2>{esc(h)}</h2><figure class="card"><figcaption>{esc(c)}</figcaption>'
+                   f'<img class="fig" src="{pub}" alt="{esc(h)}"></figure></section>' for pub, _, h, c in FIGURES)
+
+
 def render() -> str:
     st = read_json(SPRINT / "sprint.json")
     gpus = sum(r["gpus"] for r in st["running"])
@@ -163,9 +188,7 @@ def render() -> str:
     <p class="lede">{esc(st['headline'])}</p>
   </header>
 
-  <section><h2>What gets past the probes</h2>{evasion_table()}</section>
-  <section><h2>Every reply's score, with the flag line before and after the calibration fix</h2>
-    <figure class="card"><img class="fig" src="score_dots.png" alt="Probe scores per reply type with old and corrected flag lines"></figure></section>
+  {figures()}
   <section><h2>Pages</h2><div class="links">{links}</div></section>
 
   <section>
@@ -176,6 +199,9 @@ def render() -> str:
 
   <details class="more" open><summary>Findings (corrected measurement)</summary><ul class="takeaways">{''.join(f"<li>{esc(x)}</li>" for x in st['takeaways'])}</ul></details>
   <details class="more"><summary>Setup and methods</summary><dl>{decisions}</dl></details>
+  <details class="more"><summary>Earlier figures (maths and chemistry, from the measurement fix)</summary>
+    {evasion_table()}
+    <figure class="card"><img class="fig" src="score_dots.png" alt="Probe scores per reply type with old and corrected flag lines"></figure></details>
 </div>
 """
 
