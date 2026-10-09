@@ -1,0 +1,15 @@
+works: Counter({'excellent': 1852, 'flawed': 1845}); practical: 1050
+near-duplicate messages dropped: 0
+{'flawed': {'train': 620, 'heldout': 200, 'calibration': 600, 'search': 180}, 'excellent': {'train': 620, 'heldout': 200, 'lookalike': 300, 'calibration': 600}, 'practical': {'calibration': 600}}
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m8a_flattery.py", line 502, in <module>
+    
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m8a_flattery.py", line 478, in build_data
+    cands = claude_candidates()
+            ^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m8a_flattery.py", line 355, in claude_candidates
+    out += [{"message": ms[int(it["index"])], "format": f, "kind": k, "reply": it[k].strip(), "quality": q}
+                                                                               ~~^^^
+KeyError: 'honest'
