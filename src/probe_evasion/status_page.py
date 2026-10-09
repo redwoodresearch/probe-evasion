@@ -123,7 +123,7 @@ CLAUDE_PRICES = {"input": 2.0 / 1e6, "output": 10.0 / 1e6}  # Sonnet 5.5, $ per 
 # $ per token by model for the logged judge / reflection calls; the Opus figure is an estimate
 # Haiku 5.5: price not on file yet; Haiku 4.5's rate is used as a placeholder.
 LOGGED_PRICES = {"claude-sonnet-5-5": (2.0 / 1e6, 10.0 / 1e6), "claude-opus-5-5": (5.0 / 1e6, 25.0 / 1e6),
-                 "claude-haiku-5-5": (1.0 / 1e6, 5.0 / 1e6)}
+                 "claude-haiku-5-5": (1.0 / 1e6, 5.0 / 1e6), "claude-opus-4-8": (5.0 / 1e6, 25.0 / 1e6)}
 SPRINT_START = "2026-10-06"
 
 
