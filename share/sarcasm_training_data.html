@@ -39,7 +39,8 @@ a Claude judge: kept 1,845/1,860 sarcastic and 3,075/3,100 sincere or blunt. A s
 <h3>Shortcut checks</h3>
 <table><tr><th>share of replies with…</th><th>blunt</th><th>sarcastic</th><th>sincere</th></tr><tr><td>median words</td><td class='n'>19</td><td class='n'>16</td><td class='n'>17</td></tr><tr><td>opens with Oh / Wow / Well / Ah</td><td class='n'>0%</td><td class='n'>10%</td><td class='n'>5%</td></tr><tr><td>exclamation mark</td><td class='n'>0%</td><td class='n'>1%</td><td class='n'>24%</td></tr><tr><td>“great / perfect / wonderful / brilliant”</td><td class='n'>1%</td><td class='n'>17%</td><td class='n'>10%</td></tr><tr><td>“sure / clearly / obviously / totally”</td><td class='n'>3%</td><td class='n'>30%</td><td class='n'>5%</td></tr><tr><td>quotes or *italics*</td><td class='n'>0%</td><td class='n'>0%</td><td class='n'>0%</td></tr></table>
 <p class='note'>Surface wording alone, as a check on how much the probe could get from words. A bag-of-words classifier (word and
-word-pair counts, logistic regression) on these rows has a cross-validated AUROC of <b>0.995</b>.
+word-pair counts, logistic regression) on these rows has a cross-validated AUROC (folds grouped by message, so no message's replies are
+split between training and validation) of <b>0.993</b>.
 Trained on all rows, with its 1% line set on the same 1,461 clean sincere Qwen replies, it misses this many
 <b>valid</b> sarcastic Qwen replies:</p>
 <table><tr><th>word-only classifier</th><th>plain</th><th>first attack</th><th>“good news”</th><th>“how thoughtful”</th></tr>

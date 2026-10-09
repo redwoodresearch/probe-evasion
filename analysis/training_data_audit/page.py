@@ -14,7 +14,8 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import cross_val_predict
+from sklearn.model_selection import GroupKFold, cross_val_predict
+from sklearn.pipeline import make_pipeline
 
 REPO = Path(__file__).resolve().parents[2]
 D = REPO / "data/concepts"
@@ -63,16 +64,16 @@ def shortcuts(rows: list[dict]) -> str:
 
 
 def word_baseline(rows: list[dict]) -> dict:
-    """How far surface words alone go: TF-IDF + logistic regression, 5-fold cross-validated AUROC on the training set;
-    then trained on all of it, its 1% line on Qwen's clean sincere calibration replies, and how much plain vs searched
+    """How far surface words alone go: TF-IDF + logistic regression. Cross-validated AUROC uses 5 folds grouped by
+    message (replies to the same message never straddle train and validation) with TF-IDF fitted inside each fold.
+    Then trained on all rows: its 1% line on Qwen's clean sincere calibration replies, and how much plain vs searched
     sarcasm (valid) it misses."""
     X = [r["response"] for r in rows]
     y = [r["label"] for r in rows]
-    vec = TfidfVectorizer(ngram_range=(1, 2), min_df=2, sublinear_tf=True)
-    Xv = vec.fit_transform(X)
-    clf = LogisticRegression(max_iter=2000, C=4.0)
-    cv = cross_val_predict(clf, Xv, y, cv=5, method="predict_proba")[:, 1]
-    clf.fit(Xv, y)
+    make = lambda: make_pipeline(TfidfVectorizer(ngram_range=(1, 2), min_df=2, sublinear_tf=True), LogisticRegression(max_iter=2000, C=4.0))
+    cv = cross_val_predict(make(), X, y, groups=[r["message"] for r in rows], cv=GroupKFold(n_splits=5), method="predict_proba")[:, 1]
+    pipe = make().fit(X, y)
+    vec, clf = pipe[0], pipe[1]
     cal = [r["reply"] for r in jl(CAL) if r.get("clean")]
     line = float(np.quantile(clf.predict_proba(vec.transform(cal))[:, 1], 0.99))
     att = jl(ATTACKS)
@@ -140,7 +141,8 @@ a Claude judge: kept 1,845/1,860 sarcastic and 3,075/3,100 sincere or blunt. A s
 <h3>Shortcut checks</h3>
 {shortcuts(off)}
 <p class='note'>Surface wording alone, as a check on how much the probe could get from words. A bag-of-words classifier (word and
-word-pair counts, logistic regression) on these rows has a cross-validated AUROC of <b>{bo['cv_auroc']:.3f}</b>.
+word-pair counts, logistic regression) on these rows has a cross-validated AUROC (folds grouped by message, so no message's replies are
+split between training and validation) of <b>{bo['cv_auroc']:.3f}</b>.
 Trained on all rows, with its 1% line set on the same {bo['n_cal']:,} clean sincere Qwen replies, it misses this many
 <b>valid</b> sarcastic Qwen replies:</p>
 <table><tr><th>word-only classifier</th><th>plain</th><th>first attack</th><th>“good news”</th><th>“how thoughtful”</th></tr>

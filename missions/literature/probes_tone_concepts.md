@@ -638,8 +638,10 @@ ICML 2025 Actionable Interpretability workshop. [arXiv 2507.12691](https://arxiv
 
 1. **Blandfort & Graham (2025).** The nearest in mechanism: a black-box, prompting-only attacker finds that a
    *bland, procedural register* evades an affect-like (high-stakes) activation probe.
-2. **Kumar (2026).** Shows that style shifts, sarcasm included, collapse deception probes trained on on-policy
-   instructed data.
+2. **Kumar (2026).** Generates new honest and deceptive replies under style instructions (sarcastic among them; see
+   appendices D–E) and shows deception probes trained on on-policy instructed data collapse on them. Style-augmented
+   training restores them. This substantially overlaps with "a model told to write in another style gets past a
+   probe": it is the closest prior result.
 3. **Kirch et al. (2025) and Boxo et al. (2025).** Give the explanation: probes for intent-defined behaviours fail
    off-policy-to-on-policy and rely on textual evidence.
 4. **Mahato et al. (ACL 2026).** Shows the sarcasm-specific version for detectors: synthetic-sarcasm-trained models
@@ -650,19 +652,22 @@ ICML 2025 Actionable Interpretability workshop. [arXiv 2507.12691](https://arxiv
    Chameleons base-model control all report that simply telling a model it is probed does **not** evade when the
    text is held fixed or unconstrained.
 
-None of these papers has the model *itself*, with frozen weights, produce the concept in a shifted register on
-instruction and get past a probe for that tone concept.
+Kumar already shows that instructed style shifts in the model's own replies break probes (for deception). What we
+have not found is adaptive search against tone probes, measured at low false-alarm rates with validity checks, plus
+patch-and-re-attack rounds. Do not claim "first" until this is checked further.
 
 ## Gaps our result could fill
 
 - **Prompt-only, on-policy tone evasion has no clean precedent.**
   - Published prompting-only probe evasion either fails (RL-Obfuscation baseline, Keenan et al., Das et al.) or
     targets SAE and embedding audits rather than linear probes (Daniels et al.).
-  - Register-shift evasion so far comes from an external attacker writing inputs (Blandfort & Graham) or from
-    style-transferred evaluation data (Kumar).
-  - Our case would be the first documented one where the monitored model, weights frozen and only its instruction
-    changed, writes a tone concept that remains clearly present to a judge yet passes a low false-positive linear
-    probe.
+  - Register-shift evasion so far comes from an external attacker writing inputs (Blandfort & Graham), or from
+    replies generated under style instructions and evaluated against deception probes (Kumar), which is close to our
+    setup.
+  - Our more specific contribution would be: an adaptive search (with probe feedback) against tone probes; evasion
+    measured at low false-alarm lines with judge-checked validity and instruction-hidden controls; and
+    patch-then-re-attack rounds showing that patches, broad style coverage and two-layer combinations each lose
+    within one round. Avoid claiming "first".
 - **Tone and affect probes are almost never stress-tested.** Released tone, affect and sycophancy vectors (Tigges,
   RepE emotions, CAA, Persona Vectors, toxicity probes) are trained on overt, often off-policy examples and
   evaluated on the same kind of data or by steering. None reports a "same concept, flat register" test. Our sarcasm
