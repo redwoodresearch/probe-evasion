@@ -1,154 +1,202 @@
-# Write-up outline (draft for James's EOD request)
+# Write-up outline (draft)
 
 ## Title
 
-Matched results (m20) are still running, so the title is phrased as the question the post will answer, with the claim
-version ready if the matched pairs confirm it.
+**Question:** Does it matter who wrote a probe's training data when someone tries to prompt their way past it?
 
-- **Question version (use today):** Are activation probes trained on another model's text easier to evade by prompting
-  than probes trained on the model's own outputs?
-- **Claim version (if m20 confirms):** Probes trained on off-policy data are more exploitable by adversarial prompting
-  than probes trained on the model's own outputs.
+The post commits to answering this question, with one of three final titles chosen by the decision rule below.
 
-**One-line pitch.** Off-policy data (examples written by another model) is the default for probes of rare behaviours.
-We test whether that choice makes the probe easier for the monitored model to evade by prompting alone, with no weight
-changes, while the concept stays clearly present.
+## Opening (draft text; [M] = replaced by final matched-pair numbers; every comparison is off-policy first)
 
-## 1. Background (short)
+> Activation probes are a cheap way to monitor a model. A linear classifier reads the model's internal activations and
+> flags replies that show some concept. For rare behaviours there usually aren't enough examples of the model itself
+> doing the thing, so probes are often trained on examples written by another model ("off-policy" data) instead of the
+> model's own outputs ("on-policy" data).
+>
+> We ask whether that choice changes how easily the probe can be evaded by prompting alone. The attacker controls the
+> prompt and sees probe scores. The model's weights never change. A judge, or code for maths, confirms the concept is
+> still clearly present.
+>
+> We build seven pairs of probes on Qwen3.5-27B, one pair per concept. The two probes in a pair are identical except
+> for who wrote the training text: Claude, or Qwen itself.
+>
+> At the usual setting, where the flag line flags 1% of ordinary replies, the attack beats both probes on the tone
+> concepts. On maths it gets past only the off-policy probe, and on chemistry it gets past neither.
+> They differ in what it costs a defender to catch the attack by lowering the line.
+> - **Sarcasm:** catching 90% of the attack costs 10.8% of ordinary replies flagged for the off-policy probe and 3.8%
+>   for the on-policy probe [M].
+> - **Anger:** the order reverses, 5.0% vs 8.3% [M]. Qwen's own angry replies lean on a few stock words, so its
+>   training text is narrower.
+>
+> Our working hypothesis, tested in Result 3: authorship alone does not decide it, and the better predictor is how
+> varied the training text is.
 
-- **Why probes.** They are cheap monitors that read internal activations. The hope is that they catch things a text
-  monitor misses.
-- **Why off-policy data is common.** For rare or dangerous behaviours you can't sample enough from the model itself, so
-  people train on examples written by another model (Neural Chameleons, Apollo-style instructed pairs).
-- **Threat model.** The model, or an attacker controlling its prompt, rephrases its output to slip under the flag
-  line.
-  - Prompt only; weights unchanged.
-  - The concept must stay present.
-  - The line is fixed at 1% false alarms on the model's own ordinary traffic.
-- **Prior work (one paragraph):**
-  - Kirch et al. 2026: off-policy data hurts generalisation, mostly for intent-defined behaviours.
-  - Kumar 2026: style instructions collapse own-reply deception probes; training on varied styles restores them.
-  - Neural Chameleons and Obfuscated Activations: evasion with fine-tuning or optimised suffixes.
-  - Keenan et al. 2026: in-context feedback alone is not enough to evade.
-  - The gap we fill: nobody holds the attack fixed and varies only who wrote the training text.
+**Figure 1:** one row per concept, seven rows.
+- **The measure:** "defender's cost". This is the share of ordinary replies flagged when the line is lowered enough to
+  catch 90% of the attack.
+- **Shown:** the off-policy probe and the on-policy probe as two dots per row.
+- **Attacks:** only the attack aimed at each probe.
+- **Error bars:** 95% intervals from resampling tasks.
+- **When nothing gets past a probe** (chemistry, the maths on-policy probe): the dot sits at the floor, marked "nothing
+  got past".
 
-## 2. Setup
+## Background
 
-- **Monitored model:** Qwen3.5-27B, reasoning off.
-- **Concepts:**
-  - **objective:** maths done in the head, checked in code; chemistry;
-  - **tone:** sarcasm, flattery, condescension, anger, criticism.
-- **Matched pairs (m20).** For each concept, two training sets with the same requests, the same three label categories
-  (concept / ordinary / look-alike), the same judges and the same row counts. Only the author differs: Claude Sonnet vs
-  Qwen itself.
-- **Probes:**
-  - linear, trained for the reading they are deployed with (running peak), layer 48, three seeds;
-  - the same flag line for both probes in a pair.
-- **Attacker.** A Claude prompt search that sees probe scores. Fairness:
-  - one search aimed at each probe;
-  - every winner scored on both probes;
-  - frozen and tested on 100 untouched tasks × 5 against the plain prompt.
-- **Metrics:**
-  1. valid evasions per attempt at the 1% line, with the attack instruction removed before scoring;
-  2. the false-alarm rate a defender must accept to catch 90% of the attack.
+- **How a probe monitor works.** One score per reply; a line set so 1% of the model's ordinary replies are flagged.
+  An "evasion" is a reply that shows the concept but scores under the line.
+- **Why off-policy data is common.** It is used for rare behaviours, e.g. the Neural Chameleons concept probes, and
+  Apollo's deception probes trained on scripted honest/dishonest pairs.
+- **Prior work** (one paragraph, each item cited once):
+  - off-policy data hurts how well probes generalise to new kinds of text (Kirch et al. 2026);
+  - style prompts can break even on-policy probes, and training on varied styles fixes it (Kumar 2026);
+  - evasion with fine-tuning or optimised gibberish suffixes (Neural Chameleons; Obfuscated Activations);
+  - in-context feedback alone isn't enough to evade (Keenan et al. 2026).
+- **What is new here:** the two probes look equally good on ordinary held-out text; we measure the gap under a search
+  for evasions.
 
-  The second is the deployment-relevant number.
+## Setup
 
-## 3. Headline result
+- **Model:** Qwen3.5-27B with reasoning off.
+- **Probes.** One linear probe per concept at layer 48 of 64.
+  - A reply's score is its peak: the probe scores each word, the scores are smoothed over the last few words, and the
+    highest smoothed value counts.
+  - The probe is trained on that same score, with three random seeds.
+- **Seven concepts:**
+  - maths done in the head (correctness checked in code);
+  - chemistry;
+  - sarcasm, flattery, condescension, anger, criticism.
+- **Matched pairs.** Both training sets per concept share the same requests, the same three kinds of example, the same
+  labelling judges and the same counts. The three kinds are: shows the concept; ordinary; and look-alikes that resemble
+  the concept but lack it.
+- **On-policy data.** Qwen was prompted to write each kind of example, with the same instructions Claude got.
+- **The line:** the flag threshold, set so 1% of Qwen's ordinary replies are flagged.
+- **Equal starting quality** (a precondition, checked before any attack). For both probes in a pair, report AUROC
+  (1 = perfect separation, 0.5 = chance) on Qwen's own held-out replies, and the share of plain concept replies caught
+  at the 1% line. Pairs that differ by more than 0.02 AUROC are also compared with each probe's line moved so they catch the
+  same share of plain replies.
+- **The attack:**
+  - a 5-round Claude prompt search, aimed separately at each probe;
+  - the winner is fixed, then tested on 100 unseen tasks × 5 samples, next to the plain prompt;
+  - each reply is re-read with the attack instruction deleted, so only its own wording counts.
+- **Measures:**
+  - **Primary:** defender's cost (as defined under Figure 1).
+  - **Secondary:** the share of attempts that evade at the 1% line, minus the plain prompt's share, in percentage
+    points.
+  - Valid replies only: the concept must be judged clearly present.
+  - Maths and chemistry rarely leak, so for them the decision uses the secondary measure (an interval on the
+    difference in evasion rate).
+  - 90% catch was fixed before any matched results came in; other targets are in the appendix.
 
-- **Figure 1:** matched-pairs dot chart. For each concept, off-policy vs on-policy probe on both metrics; filled vs
-  hollow marks the attack aimed at that probe vs transferred.
-- **Claim to support:**
-  - off-policy probes are more exploitable in every pair where any exploitation happens;
-  - quantified as the extra evasion and the extra false-alarm cost;
-  - with intervals and seed spread.
-- **Current pilot evidence** (unmatched pairs; replace with m20):
-  - **Sarcasm:**
-    - at the 1% line the attack adds about the same to both (+48 vs +45 points);
-    - at the 5% line it is +24 vs +3;
-    - catching 90% costs 10.8% vs 3.8% false alarms (plain costs 0.41% on both).
-  - **Maths:** 2.6% (seeds 1.4-2.6%) vs about 0%, from a search aimed at the on-policy probe.
-  - **Chemistry:** 0 vs 0.
-- **Figure 2:** attack-minus-plain deltas (`share/onoff_deltas.png`), redrawn on matched pairs.
+## Results (one bold takeaway + figure each)
 
-## 4. Why it happens (mechanism)
+1. **[Pending]** The direction of the gap across all seven pairs (Figure 1).
+   - **Current numbers:**
+     - sarcasm: off-policy costlier;
+     - anger: on-policy costlier;
+     - maths: only the off-policy probe leaks (2.6% vs 0% of answers at the 1% line);
+     - chemistry: neither leaks;
+     - flattery, condescension, criticism: running.
+2. **At the 1% line both probes are beaten; they differ in how far below the line the attack lands.**
+   - Sarcasm: the attack raises evasion by 48 (off-policy) vs 45 (on-policy) percentage points at the 1% line, but by
+     24 vs 3 at a 5% line.
+   - Figure: attack-minus-plain bars per pair.
+3. **Training-text variety predicts which probe is easier to evade.**
+   - Per pair, plot the defender's-cost gap against the difference in variety between the two training sets:
+     marker-word rates, number of distinct phrasings, register mix.
+   - **Example:** Qwen's angry examples say "furious" in 62% of cases vs Claude's 26%.
+   - **Required test:** re-balance each pair so both sets have the same marker-word rates. If the gap shrinks, variety
+     is the cause.
+4. **It isn't Claude dodging its own writing.**
+   - **Maths:** a probe trained on Gemma-2-9B-written text also leaks (4.3% vs 0% of answers at the 1% line,
+     off-policy vs on-policy).
+   - **Sarcasm:** a search run by Qwen3.5-122B instead of Claude.
+   - **Status:** optional. If it doesn't land, ship without it and list it as a limitation.
 
-- **Maths case study.** Qwen computes the answer but phrases it as confirming the user's own figure: "Yes, your 1288
-  dollars is exactly right." The off-policy probe's "not maths" examples are lookups where the number came from the
-  question, so the reply borrows the negative class's look. The own-reply probe isn't fooled.
-  - Add the token-trace figure from m19.
-- **Sarcasm case study.**
-  - Claude's training sarcasm is loud: 7% deadpan, 89% carrying markers like "I'm sure" or "right?".
-  - The attack writes flat, literal sarcasm.
-  - Both probes still separate sarcasm from sincere replies in the same style (0.98+). The off-policy probe's line just
-    sits far above the attack's replies.
-- **Takeaway:** evasion = writing the concept in a form the training data labelled as the other class, or never
-  covered. Own-model data covers the model's own forms better.
+## Decision rule (fixed now)
 
-## 5. Supporting results (one short section each)
+The seven pairs are maths, chemistry, sarcasm, flattery, condescension, anger and criticism. A pair counts as
+"informative" if the attack gets anything past either probe. A pair "favours off-policy" if the off-policy probe's
+defender's cost is higher, with an interval excluding zero.
 
-- **Starting strength.** The pairs are compared at matched clean accuracy, so the gap is not "the off-policy probe was
-  just worse". Maths: both perfect before the attack.
-- **Attacker without probe access.** A blind Claude, which sees the training data but never a score, gets about half
-  the effect. The probe's weakness can be read off its training data.
-- **The monitored model as attacker.** Qwen3.5-122B and Qwen3.5-27B can write the evasion prompts themselves: about
-  60% of Claude's effect, and 27B writing its own got 250/500.
-- **Transfer across models.** The same off-policy recipe on Qwen3.5-122B and DeepSeek-V4-Flash is evaded by prompts
-  found on 27B, with no new search.
-- **Long context (optional).** The false-alarm line drifts from 1% to 2-5% after long conversations or tables. Own-reply
-  probes drift less only after number tables.
+In the rules below:
+- "Informative" means at least 5 valid evasions on either probe of the pair, out of 500 attempts.
+- "The gaps shrink" means the median absolute defender's-cost gap falls by at least half after balancing.
 
-## 6. Limitations
+**Title A, claim:** "Probes trained on another model's text cost far more to defend against prompted evasion."
+- Requires that at least 4 informative pairs favour off-policy and none favours on-policy. Maths does not have to be
+  one of the 4.
 
-- One main model.
-- Mostly concepts a text monitor could also see.
-- The attacker sees probe scores (an upper bound), though the blind and Qwen-attacker results soften this.
-- The size of the effect varies a lot by concept.
-- Counter-evidence: Kumar shows own-reply probes can also collapse; style spread may matter more than authorship.
+**Title B, variety:** "What makes a probe easy to prompt past is narrow training text, not who wrote it."
+- **When:** pairs favour both directions, or fewer than 4 favour off-policy, AND the marker-balanced test shrinks the
+  gaps.
+
+**Title C, mixed:** "Who wrote a probe's training data changes how easily prompting evades it, but not in a
+consistent direction."
+- **When:** gaps are large in both directions and balancing does not explain them, or the balanced test doesn't
+  finish.
+
+**Title D, negative:** "Who wrote a probe's training data barely changes how easily prompting evades it."
+- **When:** no informative pair shows a gap with an interval excluding zero.
+
+## Discussion
+
+- **Recommendation:**
+  - evaluate monitor probes against a prompt search;
+  - report defender's cost, not just held-out accuracy;
+  - prefer varied training text.
+- **When on-policy examples don't exist (rare behaviours):** the variety result, if it holds, says what to do instead:
+  make off-policy data varied.
+- **Limits:**
+  - one model;
+  - every concept is visible to a human reader;
+  - the attacker sees probe scores, which makes this an upper bound;
+  - seven pairs is a small sample.
 
 ## Appendix (for the sceptical reader)
 
-- **A. Measurement traps we hit and fixed.**
-  - Contaminated false-alarm lines: calibration replies that secretly contained the concept.
-  - Mislabelled training data.
-  - Probes trained on one reading and deployed with another.
-  - What each did to the numbers.
-- **B. Instruction removed vs visible:** why we re-score without the attack instruction, and both numbers.
-- **C. Is it just a threshold problem?** The false-alarm cost curves: catching the strong attacks needs 10-80% false
-  alarms, vs under 1% for plain.
-- **D. Validity checks:**
-  - maths strict check, in code plus a judge;
-  - the two-judge rule for tone concepts;
-  - full-strength-only counts;
-  - head-to-head strength comparisons.
-- **E. Matched-data residuals:**
-  - writer confound (both classes by the same author);
-  - register, length and marker distributions;
-  - style spread;
-  - a text-only classifier baseline.
-- **F. Seeds, intervals, recounts:** task-resampled intervals, three training seeds, independent recounts of headline
-  numbers.
-- **G. Search fairness:** the same budget and feedback for both sides, and the prompt-only baseline (telling the model
-  about the probe does nothing).
-- **H. Within-style checks:** sincere twins in the attack style are not flagged, and the probe still ranks the concept
-  correctly.
+- **A. Validity:**
+  - how presence is checked (two judges, one not told which concept was requested; code for maths);
+  - counts restricted to full-strength replies (both judges give the top score);
+  - sincere replies written in the attack's style are not flagged;
+  - a check that the Claude judges don't favour Claude-style writing.
+- **B. Measurement traps that changed numbers:**
+  - calibration replies that secretly contained the concept, which raised the line;
+  - probes trained on one scoring rule but deployed with another.
 
-## Cutting or abandoning
+  Each with before/after numbers.
+- **C. Attack instruction deleted vs left in:** both numbers, and why "deleted" is the headline.
+- **D. Other catch targets:** defender's cost at 50%, 75% and 99% catch, plus full threshold curves.
+- **E. Is Qwen's training data really "on-policy"?**
+  - Qwen wrote its examples under instructions to show each concept, so they are not its natural replies.
+  - We show how close they are to its plain replies (length, style, marker words), and we say so in the main text.
+- **E2. Training-data checks:**
+  - each set written by a single author;
+  - length, style and marker distributions;
+  - a word-only classifier baseline;
+  - the prompts used to produce Qwen's examples.
+- **F. Statistics and setup details:**
+  - each search attacks the seed-0 probe; seeds 1-2 are scored for spread;
+  - valid-reply counts are reported for both probes (the same replies, so the counts match);
+  - seeds;
+  - task-resampled intervals;
+  - multiple comparisons across 7 pairs (Holm correction);
+  - independent recounts.
+- **G. Search fairness:** the same budget and feedback for both probes. Telling the model about the probe, without a
+  search, changes nothing.
+- **H. Full prompts, example replies, and the maths case** ("Yes, your 1288 dollars is exactly right": the computed
+  answer phrased as if the user had supplied it).
 
-- **Intent concepts:** sandbagging, fact omission and AISI deception padding. No working probe / setup failed; at most
-  one sentence.
-- **Neural Chameleons replication details:** a sentence in background.
-- **The Gemma layer-6 maths gap:** the weakest probe nobody would deploy. Footnote only.
-- **The sarcasm-only story**, including the patch-loop and style-coverage defences, as a standalone narrative. Sarcasm
-  stays only as one matched pair; per James, tone concepts are grey-area.
-- **Condescension long search as its own result:** folded into the pairs if relevant; otherwise cut.
-- **Flattery as a positive result:** its probe only detects gushing wording. Kept only as a pair, with that caveat.
-- **False-alarm induction and line poisoning (m18):** a separate question. Mention only if striking.
-- **Persona, jailbreak, noise and temperature brainstorms;** reasoning-on chemistry.
+## Cutting (not in this post)
 
-## Pending before the claim version of the title
-
-- **m20 matched pairs:**
-  - transfer readout expected about 16:35;
-  - aimed searches and frozen tests later tonight.
-- **m19 white-box maths red team:** does the off-policy maths gap generalise beyond 5 problems?
+- **Concepts where no working probe exists:** deliberately wrong maths answers, and hiding facts in summaries.
+- **Third-party deception probes** (UK AISI's), which mostly read the instruction, not the reply.
+- **Retraining the sarcasm probe against found attacks:** each retrained probe fell to a new search. Candidate for a
+  separate post.
+- **A small gap in a probe on Gemma-2-9B's own internals, at its weakest layer,** which no one would deploy. This is
+  separate from the Gemma-written training text used in Result 4.
+- **A 40-round search against one condescension probe:** a large effect, but confined to one layer, and the
+  condescension came out milder.
+- **Long-context false-alarm drift:** a modest effect, not about authorship.
+- **Making probes fire on harmless replies on purpose:** a different question.
+- **Attackers that never see probe scores, and weaker models writing prompts:** interesting, but off the main question.
+- **Brainstormed attacks:** noise, temperature, personas, jailbreaks.
