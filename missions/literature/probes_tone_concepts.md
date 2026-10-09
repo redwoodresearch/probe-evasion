@@ -92,7 +92,9 @@ valence-arousal subspace paper [arXiv 2604.03147](https://arxiv.org/abs/2604.031
     entangled with literal text.
   - Entropy analysis (Min-K%++) and causal ablation point to shortcut learning of "low-entropy generative
     signatures".
-- **Not checked:** the full PDF was too large to fetch, so models and layers were not confirmed.
+- **Authors:** IISER Kolkata. Published at ACL 2026, July.
+- **Not checked:** the PDF exceeds the fetch tool's size limit on retry too, and no arXiv version was found, so
+  models and layers are **[unverified]**.
 - **Relevance to our sarcasm result:** **the closest tone-specific result.**
   - Sarcasm detectors trained on machine-written sarcasm learn the generator's surface signature rather than ironic
     intent.
@@ -214,8 +216,11 @@ valence-arousal subspace paper [arXiv 2604.03147](https://arxiv.org/abs/2604.031
 
 **Politeness:** no released linear politeness probe for chat LLMs was found.
 - Persona Vectors includes politeness, and an informal-register SAE subspace exists (above).
-- A 2026 SoCon workshop paper probes Japanese honorific levels in pretrained encoders layer by layer
-  ([ACL Anthology 2026.socon-1.7](https://aclanthology.org/2026.socon-1.7/)) **[unverified beyond search snippet]**.
+- Hashimoto & Shi (2026), "Where Is Politeness in Japanese BERT? A Layerwise Probing and CLS Activation Patching
+  Study" ([ACL Anthology 2026.socon-1.7](https://aclanthology.org/2026.socon-1.7/)).
+  - Encoder only: LineDistilBERT on the KeiCO corpus, which has four honorific levels.
+  - Honorific level is linearly decodable at all layers, and patching the CLS activation steers it.
+  - Relevance to our result: low, since this is an encoder rather than a chat LLM.
 
 ### 1d. Deception and honesty
 
