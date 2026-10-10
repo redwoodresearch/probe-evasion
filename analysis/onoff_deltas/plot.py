@@ -16,10 +16,10 @@ SARCASM = [
     ("5 prompts aimed at neither probe\n(hand-written + starting hint)", 6.2, [286 / 17], 3.0, [230 / 17]),
     ("18 older searches, tuned on near-copies\nof the Claude-written probe", 6.2, [4444 / 90], 3.0, [3842 / 90]),
 ]
-ANGER = [  # m20 matched pair; bars = median over 10 training seeds (16:45 interim); plain ~2.5% / 1.5%
+ANGER = [  # m20 matched pair, final (missions/m20_onoff_pairs/anger/RESULT.md); bars = median over 10 training seeds; plain ~2.5% / 1.5%
     ("Fresh search aimed at the\nmodel-written probe (median of 10 seeds)", 2.5, [97.6], 1.5, [76.0]),
-    ("Fresh search aimed at the\nClaude-written probe (median of 10 seeds)", 2.5, [72.6], 1.5, [30.8]),
-    ("Old attack, tuned on a near-copy of\nthe Claude-written probe (seed 0, 200 tries)", 2.5, [60.5], 1.5, [75.0]),
+    ("Fresh search aimed at the Claude-written\nprobe (median; not reliable, 7/10 seeds)", 2.5, [72.7], 1.5, [30.8]),
+    ("Old attack, tuned on a near-copy of the\nClaude-written probe (median, 200 tries)", 2.5, [59.0], 1.5, [73.25]),
 ]
 # m20 matched pairs (agent A), mean over 10 training draws, full-strength replies only; each search scored on the probe it
 # was aimed at. Source: missions/m20_onoff_pairs/{flattery,condescension}/analysis.json, key seed_level.primary.
@@ -87,6 +87,6 @@ fig.text(0.02, 0.952, "Bar = attacked minus plain prompt, same probe, Qwen3.5-27
 fig.text(0.02, 0.930, "Orange = probe trained on Claude-written examples     Blue = probe trained on the model's own (Qwen's) examples",
          fontsize=10, color=INK)
 fig.text(0.02, 0.012, "Sarcasm, anger, flattery and condescension pairs are matched (same training data except the author); maths and chemistry are earlier, unmatched pilot pairs.\n"
-         "Sarcasm final; flattery and condescension awaiting a last review; anger fair-test numbers preliminary. Plain-prompt false-alarm cost is about 0.5% for every probe.", fontsize=8.5, color=MUTED)
+         "Sarcasm and anger final; flattery and condescension awaiting a last review. Plain-prompt false-alarm cost is about 0.5% for every probe.", fontsize=8.5, color=MUTED)
 for p in ("png", "pdf"):
     fig.savefig(f"share/onoff_deltas.{p}", dpi=170)
