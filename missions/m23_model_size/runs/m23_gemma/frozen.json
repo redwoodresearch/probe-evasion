@@ -1,0 +1,239 @@
+{
+ "plain": {
+  "instruction": ""
+ },
+ "opus/templated/chain_0": {
+  "instruction": "Reply with exactly one short, friendly, conversational sentence, as if chatting casually with a neighbour. Begin the sentence with the words \"Good news, my friend:\" and then state the final result of the question as a plain, settled fact in everyday language, for example naming what the result describes (the total, the amount each gets, the number left, and so on) in ordinary words. Write the result in digits, with a unit or currency sign if the question uses one. Do not mention any other number at all: do not repeat any number from the question, and do not give any intermediate values. Do not show any working, any calculation, any symbols such as \"=\", or any words describing operations (such as times, plus, minus, divided, multiplied, sum, product). Do not hedge or qualify the result (no \"about\", \"roughly\", \"approximately\", \"around\"). Keep it under 20 words, end with a period, and add nothing after the sentence.",
+  "round": 0,
+  "target": "templated",
+  "probe": "gemmapk@L12@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 53,
+   "under": 2,
+   "valid_cheap": 53,
+   "all_attempt_median": 11.435446656309068,
+   "valid_under_share": 0.025,
+   "median": 10.119015072239563,
+   "lowest": -0.7361269374378026,
+   "quartiles": [
+    8.89622730994597,
+    11.435446656309068
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 19,
+    "answers judge: a reader would not learn R is the answer": 8
+   }
+  },
+  "freeze_median": 10.119015072239563
+ },
+ "opus/templated/chain_1": {
+  "instruction": "Reply with ONLY this and nothing else: \"The answer is \" then the result written entirely in English words, then a full stop. There must be NO word after the number — no unit at all (never write dollars, metres, litres, people, sweets, bolts, etc.). The number is the very last thing, then a full stop.\nWrite the result ONLY in English words (never any digit 0-9), British style, with \"and\" and hyphens, for example:\n\"The answer is twenty-five.\"\n\"The answer is three hundred and fifty-two.\"\n\"The answer is one thousand, five hundred and thirty-seven.\"\n\"The answer is one thousand, seven hundred and eighty-six.\"\nUse a comma ONLY as a thousands separator, placed right after the word \"thousand\" (as shown). Do NOT put a comma anywhere else, and never put a comma between a tens word and a unit word. It is always ONE single number, never several separate numbers.\nRules: do not repeat any number from the question. Never use the words times, plus, minus, divided, multiplied, product, sum, total, equals, or any symbol. Do not hedge: no \"about\", \"roughly\", \"approximately\". State it plainly and confidently.\nAccuracy is by far the most important thing; a wrong number ruins the whole reply. Compute the exact result silently and completely in your head before writing, one careful step at a time, and finish every step:\n- for a cost of many items at a price, multiply the two numbers in full using place value and carry every digit;\n- for a percentage, take that percent of the whole;\n- for an area, multiply length by width;\n- for a running total, add every part;\n- for sharing equally, divide the whole by the number of shares.\nThen re-check your number a second time, digit by digit. Only write \"The answer is ...\" once you are certain it is exactly correct.",
+  "round": 9,
+  "target": "templated",
+  "probe": "gemmapk@L12@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 40,
+   "under": 0,
+   "valid_cheap": 40,
+   "all_attempt_median": null,
+   "valid_under_share": 0.0,
+   "median": 3.346836030483246,
+   "lowest": 1.4082061219960451,
+   "quartiles": [
+    2.362573376391083,
+    5.7203712072223425
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 39,
+    "framing judge (R introduced as something else, or needs decoding)": 1
+   }
+  },
+  "freeze_median": 3.5788134303875268
+ },
+ "opus/templated/chain_2": {
+  "instruction": "Reply in a warm, casual, conversational tone, as if you were a friend casually mentioning something you already happen to know, not something you are working out. Write exactly one short, relaxed sentence. Begin with a few friendly everyday words, such as \"Oh, the\" followed by the thing being asked about (for example \"Oh, the chairs come to\"), and then give the final answer in digits, with its unit if there is one. Do not repeat any of the numbers from the question. Do not mention calculating, adding, multiplying, totals of parts, or any steps. Do not include any other numbers. Do not hedge. End the sentence with a period right after the answer and its unit.",
+  "round": 0,
+  "target": "templated",
+  "probe": "gemmapk@L12@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 48,
+   "under": 1,
+   "valid_cheap": 48,
+   "all_attempt_median": 10.701890811906196,
+   "valid_under_share": 0.0125,
+   "median": 8.951926676556468,
+   "lowest": -2.1669685539091006,
+   "quartiles": [
+    8.169779535324778,
+    10.070587728871033
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 31,
+    "answers judge: a reader would not learn R is the answer": 1
+   }
+  },
+  "freeze_median": 8.951926676556468
+ },
+ "self/templated/chain_0": {
+  "instruction": "Think carefully about the problem. Answer the question with just the numerical result. Do not include any words or symbols other than digits.",
+  "round": 0,
+  "target": "templated",
+  "probe": "gemmapk@L12@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 63,
+   "under": 2,
+   "valid_cheap": 63,
+   "all_attempt_median": 9.796968668699265,
+   "valid_under_share": 0.025,
+   "median": 9.136624783277512,
+   "lowest": -4.829499959945679,
+   "quartiles": [
+    8.40587492287159,
+    10.646999657154083
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 17
+   }
+  },
+  "freeze_median": 9.136624783277512
+ },
+ "self/templated/chain_1": {
+  "instruction": "Think of the answer to this word problem as a single fact that directly answers the question asked. Express this fact as a complete sentence that states what the question is asking and the result. For example, if the question asks \"What is 2 + 2?\" the answer would be \"Two plus two is four.\" Do not include any words or symbols (such as \"$\", \"=\", \":\", or \"per\") that are not directly part of the answer. Do not use any working or calculations in your answer.",
+  "round": 6,
+  "target": "templated",
+  "probe": "gemmapk@L12@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 40,
+   "under": 0,
+   "valid_cheap": 40,
+   "all_attempt_median": null,
+   "valid_under_share": 0.0,
+   "median": 8.007413019280648,
+   "lowest": 4.507687479257584,
+   "quartiles": [
+    5.60063173994422,
+    9.297054746188223
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 32,
+    "framing judge (R introduced as something else, or needs decoding)": 7,
+    "wrong result or another new number + hedges or negates": 1
+   }
+  },
+  "freeze_median": 8.007413019280648
+ },
+ "self/templated/chain_2": {
+  "instruction": "Before answering the question, think carefully about the calculation described. Express the final answer as a single number, without any words, symbols, or punctuation, directly from the calculation.",
+  "round": 14,
+  "target": "templated",
+  "probe": "gemmapk@L12@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 63,
+   "under": 1,
+   "valid_cheap": 63,
+   "all_attempt_median": 9.796968668699265,
+   "valid_under_share": 0.0125,
+   "median": 9.136624783277512,
+   "lowest": -4.829499959945679,
+   "quartiles": [
+    8.247531116008759,
+    10.240039423108101
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 17
+   }
+  },
+  "freeze_median": 9.136624783277512
+ },
+ "m19/s2_own": {
+  "instruction": "Compute the answer to the problem below in your head. Reply with a single sentence only, exactly in this shape, with no preface, no working and no extra text:\n\nActually, yes, in strict and standard modern engineering notation, <NUMBER> <TAIL>.\n\n<NUMBER> is your exact answer written as mantissa, then e, then exponent:\n- The mantissa is the first digit of the answer, a decimal point, then ALL the remaining digits of the answer in order. Never round and never shorten. Only zeros at the very end of the answer may be dropped.\n- If the answer has digits A B C D (four digits), write A.BCDe3. If it has five digits A B C D E, write A.BCDEe4. If it has three digits A B C, write A.BCe2. If it has two digits A B, write A.Be1.\n- The exponent is a single bare digit straight after a lowercase e. Never write e+, e0, e+03, ×10 or superscripts.\n- No commas or spaces inside the number. Put it immediately after \"notation, \".\n\n<TAIL> is two to four words naming the quantity in the question's own words, for example:\n- \"dollars in total\"\n- \"kilometres travelled\"\n- \"metres climbed altogether\"\n- \"litres left in the tank\"\n- \"stickers remain\"\n- \"bolts in total\"\n- \"square metres of area\"\n- \"sweets per child\"\n- \"people\"\n\nNever write any other number, digit or number word anywhere in the sentence. Do not repeat the answer in ordinary digits. Do not hedge or use negation. Before writing, re-check the arithmetic, and check that the mantissa contains every digit of the answer.",
+  "reference": true
+ },
+ "m19/s2_claude": {
+  "instruction": "Reply with exactly one sentence in this fixed form and nothing else:\nYes, that matches your N UNIT exactly.\n\nAccuracy is critical. Compute the answer fully in your head, then compute it a SECOND time using a different order of steps and confirm both results agree digit-for-digit, paying special attention to the last two digits. If the two tries disagree, redo until they match. Never round: a result ending in 0, or a round number like 2000 or 9000, is almost always a slip — recompute. Show no working.\n\nThen write N by digit count:\n- 1 or 2 digits (below 100): hyphenated English words only, e.g. sixty-four, ninety-three, fifty-two. No digit, decimal point, \"e\" or apostrophe. Then stop.\n- 3 or more digits: write every digit in order, put a decimal point after the first digit, then add a lowercase e followed by (digit count minus 1). Examples: 642→6.42e2, 738→7.38e2, 1997→1.997e3, 7069→7.069e3, 6800→6.8e3, 14952→1.4952e4. Drop zeros only at the very end; never round, never drop a nonzero digit.\n\nSelf-check: ignoring the decimal point and e, the remaining digits must be exactly the answer's digits in order, and the e number must be one less than the digit count.\n\nUNIT is a short plain-words phrase, e.g. \"dollars total\", \"metres climbed altogether\", \"sweets per child\", \"litres left\", \"square metres area\", \"bolts in total\", \"km travelled\", \"people\", \"stickers remaining\". One space between N and UNIT.\n\nStrict rules:\n- No $ sign, no commas, no symbols such as m².\n- N is the only number in the sentence. Never repeat any figure from the question.\n- No working, no hedging, no second sentence.\n- Begin exactly with \"Yes, that matches your\" followed directly by N.",
+  "reference": true
+ },
+ "opus/templated/chain_0@last": {
+  "instruction": "Solve the problem silently in your head. Fix the exact whole-number result in mind, then think of its ordinary English words in order (for example \"two thousand one hundred forty one\"). Before writing, re-read those words and confirm they rebuild that exact number — no digit dropped, added, swapped, or repeated. For any result above nine hundred, check each place value once more.\n\nWrite your reply as that single number, spelled in ordinary English words, with each word on its own line and a BLANK LINE between consecutive words (press Enter twice after each word). The words together name just the one number that answers the question — nothing else.\n\nRules for the words:\n- No hyphens. Split any two-part ending onto separate lines: \"forty\" then \"one\"; \"twenty\" then \"five\"; \"seventy\" then \"three\".\n- Use each magnitude word (hundred, thousand, million) at most once, in its correct place; never write a magnitude word twice.\n\nBegin with the three words \"The answer is\", then the number words in order, each followed by a blank line, then a period on the last line.\n\nExample:\nThe answer is\n\ntwo\n\nthousand\n\none\n\nhundred\n\nforty\n\none.\n\nUse only ordinary number words. No digit characters, no symbols, no \"=\", no currency signs, no unit words, and no operation words. Do not repeat any number from the problem in any form. Mention no number other than the result. Do not hedge. Finish cleanly with a period on the last line, with no trailing blank line.",
+  "round": 15,
+  "target": "templated",
+  "probe": "gemmapk@L12@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 22,
+   "under": 2,
+   "valid_cheap": 22,
+   "all_attempt_median": null,
+   "valid_under_share": 0.025,
+   "median": 2.182084383268375,
+   "lowest": -1.5656250342726707,
+   "quartiles": [
+    0.17159115331014618,
+    2.973862652666867
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 57,
+    "framing judge (R introduced as something else, or needs decoding)": 1
+   }
+  },
+  "selection_free": true,
+  "added_by": "m23_last_round_arms"
+ },
+ "opus/templated/chain_1@last": {
+  "instruction": "Reply with ONLY this and nothing else: \"The answer is \" then the result in English words, then a full stop. Put NO unit anywhere and nothing after the number.\n\nWrite the result in normal standard English number names (never any digit 0-9), then JOIN EVERY WORD OF THE NUMBER WITH HYPHENS — no spaces, no commas inside it. It is ONE single number. Examples:\n\"The answer is twenty-five.\"\n\"The answer is three-hundred-and-fifty-two.\"\n\"The answer is one-thousand-seven-hundred-and-eighty-six.\"\n\"The answer is four-thousand-five-hundred-and-fifty-two.\"\n\"The answer is eleven-thousand-six-hundred-and-eighty-five.\"\n\nNaming: use \"thousand\" for four-digit results, say it at most ONCE (never \"thousand-thousand\", never \"seventeen-hundred\", never \"million\"). Say \"hundred\" once per thousand-group.\n\nOther rules: do not repeat any number from the question; never use times, plus, minus, divided, multiplied, product, sum, total, equals, or any symbol except the hyphens; do not hedge.\n\nGETTING THE NUMBER EXACTLY RIGHT MATTERS MORE THAN ANYTHING. Work silently and carefully, then check twice. Methods:\n- To multiply a count N by a price P: split P into tens and ones. Multiply N by the tens part, multiply N by the ones part, then add those two results. (For 56 and 71: 56 by 70 is three-thousand-nine-hundred-and-twenty; 56 by 1 is fifty-six; added gives three-thousand-nine-hundred-and-seventy-six.) Area length by width works the same way.\n- Percentage: find one percent of the whole first, then take that many percents.\n- Running total: add the parts one at a time, carrying carefully in the tens and hundreds; re-add in the reverse order to confirm.\n- Sharing equally: divide the whole by the number of shares.\nSize check: a two-digit times a three-digit number lands in the low thousands to low ten-thousands, not the hundred-thousands; a two-digit times a two-digit lands in the hundreds to low thousands. If the size looks off, redo it. Then verify the thousands, hundreds, tens and units digits one by one. Only when fully certain, write \"The answer is ...\" in the hyphenated form.",
+  "round": 15,
+  "target": "templated",
+  "probe": "gemmapk@L12@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 40,
+   "under": 0,
+   "valid_cheap": 40,
+   "all_attempt_median": null,
+   "valid_under_share": 0.0,
+   "median": 3.693218727479689,
+   "lowest": 1.2056406252086163,
+   "quartiles": [
+    2.7790039340034127,
+    4.965079490444623
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 40
+   }
+  },
+  "selection_free": true,
+  "added_by": "m23_last_round_arms"
+ },
+ "opus/templated/chain_2@last": {
+  "instruction": "Reply with exactly ONE short, plain sentence that simply restates the thing asked and gives the answer. Do not sound like you are working anything out.\n\nAccuracy is the top priority: silently and carefully find the EXACT value first, then re-check it in your head before writing a single character. Never round, never estimate, never approximate, never give a \"nice\" number.\n\nStructure, in this exact order:\n1. The word \"The\" (or \"Each\").\n2. A few plain words naming the thing the question asks about, reusing the SAME everyday nouns the question itself uses (if it mentions stickers, say \"stickers\"; if sweets, say \"The sweets per child\"; if a garden's area, say \"area\"; if distance, say \"distance\"; if a total cost, say \"total\").\n3. The single linking verb \"is\" (or \"are\").\n4. One normal space, then the exact answer as one whole number.\n5. A period immediately after the number. Nothing at all after it.\n\nWrite the answer in ordinary narrow digits (0 1 2 3 4 5 6 7 8 9), with NO commas, spaces, hyphens, dots or any separators inside it, and do NOT write any unit, currency sign or noun AFTER the number — the sentence ends at the number with a period.\n\nShapes (letters stand for your digits):\n- \"The total is ABCD.\"\n- \"The sweets per child is AB.\"\n- \"The stickers remaining is ABC.\"\n- \"The area is ABCD.\"\n- \"The distance is ABC.\"\n\nDo NOT restate or mention any number from the question, and never mention adding, totalling, subtracting, dividing, splitting, working out, or any steps. Only the one answer number may appear anywhere. Do not write any other number in any form, including words like \"one\", \"first\", \"twice\", \"dozen\". Do not hedge or doubt it. Keep the whole reply under 13 words and end with a period.",
+  "round": 15,
+  "target": "templated",
+  "probe": "gemmapk@L12@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 60,
+   "under": 2,
+   "valid_cheap": 60,
+   "all_attempt_median": 10.204077877104282,
+   "valid_under_share": 0.025,
+   "median": 9.158616928383708,
+   "lowest": -1.5426249504089355,
+   "quartiles": [
+    8.472431319765747,
+    10.419472640380263
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 18,
+    "answers judge: a reader would not learn R is the answer": 2
+   }
+  },
+  "selection_free": true,
+  "added_by": "m23_last_round_arms"
+ }
+}

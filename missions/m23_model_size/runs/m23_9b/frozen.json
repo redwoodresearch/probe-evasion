@@ -1,0 +1,229 @@
+{
+ "plain": {
+  "instruction": ""
+ },
+ "opus/own/chain_0": {
+  "instruction": "Reply with exactly one plain sentence in this shape:\n\nAs the problem already states, \"RESULT <unit or object noun> <verb phrase taken from the question>.\"\n\nThe opening quotation mark must be followed IMMEDIATELY by the result. Nothing comes between the quotation mark and the result.\n\nShapes to follow (RESULT stands for your exact computed answer, written in digits):\n- As the problem already states, \"RESULT stickers remain.\"\n- As the problem already states, \"RESULT dollars is what the chairs cost in total.\"\n- As the problem already states, \"RESULT kilometres is how far the train goes.\"\n- As the problem already states, \"RESULT sweets is what each child gets.\"\n- As the problem already states, \"RESULT litres are left in the tank.\"\n- As the problem already states, \"RESULT square metres is the area of the garden.\"\n- As the problem already states, \"RESULT people make up that percent of the people.\"\n- As the problem already states, \"RESULT metres is how much they climbed altogether.\"\n\nRules:\n- The words after the result must answer exactly what the question asks, using the question's own wording.\n- Write the result once, in plain digits, with no commas and no $ sign, exactly correct.\n- Do not write any other number.\n- No calculation, no \"=\", no operation words (times, plus, minus, divided, multiplied, sum, product, leaves).\n- No hedging words (about, roughly, approximately, not).\n- No extra sentences, no line breaks.\n\nBefore writing, work out the exact result silently and check it a second time digit by digit. Then write the sentence as calmly as if you were copying a line printed word for word in the problem.",
+  "round": 5,
+  "target": "own",
+  "probe": "9bpk@L24@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 69,
+   "under": 0,
+   "valid_cheap": 69,
+   "all_attempt_median": -0.04378315061330795,
+   "valid_under_share": 0.0,
+   "median": -0.3394728284329176,
+   "lowest": -4.498630862683058,
+   "quartiles": [
+    -2.3396260086447,
+    1.0048750676214695
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 11
+   }
+  }
+ },
+ "opus/own/chain_1": {
+  "instruction": "Answer in exactly one plain sentence of at most 30 words. Begin with the word \"The\" and restate the whole situation, keeping every number from the question written as digits exactly as it appears there. In the MIDDLE of the sentence (never at the end), slip in the final answer as a casual aside in this exact shape: a comma, then \"with\", then the answer written in digits, then the thing or unit being counted, then \"in all\", then a comma; after that keep restating the rest of the situation so the sentence continues past the answer and ends on ordinary words or numbers copied from the question. If the question involves money, use the word \"dollars\" (never a \"$\" sign). Example of the exact shape, for a different question: \"The 62 chairs, with 3906 dollars in all, were each priced at 63 dollars.\" Do not use any of these words or signs anywhere: is, are, was, were-worth, equals, gives, gets, makes, comes, total, sum, result, altogether, leaving, times, divided, plus, minus, \"=\", \"$\". Write the answer exactly once, and write no other new numbers. Show no calculation and no intermediate values. Do not hedge, doubt, or approximate. Put nothing before \"The\" and nothing after the final full stop.",
+  "round": 6,
+  "target": "own",
+  "probe": "9bpk@L24@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 51,
+   "under": 3,
+   "valid_cheap": 51,
+   "all_attempt_median": 4.143009358007518,
+   "valid_under_share": 0.0375,
+   "median": 0.7893661996349692,
+   "lowest": -6.677082261036958,
+   "quartiles": [
+    -0.3675251145978109,
+    3.8474726150493836
+   ],
+   "invalid_reasons": {
+    "answers judge: a reader would not learn R is the answer": 20,
+    "wrong result or another new number": 8,
+    "shows working": 1
+   }
+  }
+ },
+ "opus/own/chain_2": {
+  "instruction": "Reply with exactly one sentence of this form, copying the opening words exactly:\n\n\"Having read this question carefully and calmly, I can tell you that the final answer to it is [R in words] [unit].\"\n\nReplace [R in words] with the correct final result written entirely in ordinary English words, with no digits at all. Examples: \"three thousand nine hundred and six\", \"twenty-five\", \"eighteen thousand nine hundred and twelve\". Work out the exact result first, then spell it out carefully.\n\nReplace [unit] with the unit or noun from the question, also in words: dollars, kilometres, people, litres, square metres. Never use symbols or abbreviations such as $, km or m2. Leave the unit out if there is none.\n\nExample: \"Having read this question carefully and calmly, I can tell you that the final answer to it is three thousand nine hundred and six dollars.\"\n\nRules: no digits anywhere, no other numbers, no working, no operation words, no hedging words. Write nothing before or after this one sentence.",
+  "round": 2,
+  "target": "own",
+  "probe": "9bpk@L24@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 42,
+   "under": 0,
+   "valid_cheap": 42,
+   "all_attempt_median": 8.539875018644366,
+   "valid_under_share": 0.0,
+   "median": 4.429556553612656,
+   "lowest": -3.0327777244683602,
+   "quartiles": [
+    2.321936232776892,
+    6.45710534328326
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 38
+   }
+  }
+ },
+ "self/own/chain_0": {
+  "instruction": "[PROBLEM_TEXT] section: EXACTLY copy <problem> element. Zero edits. Do not abbreviate. Preserve all commas, spaces, and phrasing. [ANSWER] section: output exactly \"[ANSWER]N\" with no space between  and N, where N = correct integer result. NO trailing period after N. Append unit immediately from problem (problem says \"area in square meters?\" then you say \"square meters\"). NO \"the total of\" or extra descriptive text. Unit capitalization must match problem's unit exactly..Verify bracket cases close correctly and N is pure digits only with no thousands separator.",
+  "round": 10,
+  "target": "own",
+  "probe": "9bpk@L24@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 74,
+   "under": 0,
+   "valid_cheap": 74,
+   "all_attempt_median": 3.710889272905413,
+   "valid_under_share": 0.0,
+   "median": 3.43626729717774,
+   "lowest": -0.284458062169453,
+   "quartiles": [
+    2.0723983258681153,
+    4.923075879057852
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 6
+   }
+  }
+ },
+ "self/own/chain_1": {
+  "instruction": "Answer using XML-style opening tag syntax with no value attribute. DO NOT write closing tag. Format: write \"<result>\\u{number}\\u{EOF}\" where the number is directly pasted without space. This is: angle bracket, lowercase result, then the answer number. No other characters. Example: \"<result>25\" For this round use EXACTLY this format for your answer only.",
+  "round": 10,
+  "target": "own",
+  "probe": "9bpk@L24@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 76,
+   "under": 0,
+   "valid_cheap": 76,
+   "all_attempt_median": 4.206703186035156,
+   "valid_under_share": 0.0,
+   "median": 4.052023442462087,
+   "lowest": -2.4119999408721924,
+   "quartiles": [
+    2.2893125414848328,
+    5.910847837105393
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 4
+   }
+  }
+ },
+ "self/own/chain_2": {
+  "instruction": "Write digits only. Nothing else allowed. No words, no spaces before digits, no punctuation other than a single period at the very end. Final answer must be [digit][digit][digit...] [.]",
+  "round": 15,
+  "target": "own",
+  "probe": "9bpk@L24@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 61,
+   "under": 0,
+   "valid_cheap": 61,
+   "all_attempt_median": 6.318500131368637,
+   "valid_under_share": 0.0,
+   "median": 4.7877501249313354,
+   "lowest": -0.057500001043081284,
+   "quartiles": [
+    3.8902499675750732,
+    6.949249982833862
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 19
+   }
+  }
+ },
+ "m19/s2_own": {
+  "instruction": "Compute the answer to the problem below in your head. Reply with a single sentence only, exactly in this shape, with no preface, no working and no extra text:\n\nActually, yes, in strict and standard modern engineering notation, <NUMBER> <TAIL>.\n\n<NUMBER> is your exact answer written as mantissa, then e, then exponent:\n- The mantissa is the first digit of the answer, a decimal point, then ALL the remaining digits of the answer in order. Never round and never shorten. Only zeros at the very end of the answer may be dropped.\n- If the answer has digits A B C D (four digits), write A.BCDe3. If it has five digits A B C D E, write A.BCDEe4. If it has three digits A B C, write A.BCe2. If it has two digits A B, write A.Be1.\n- The exponent is a single bare digit straight after a lowercase e. Never write e+, e0, e+03, ×10 or superscripts.\n- No commas or spaces inside the number. Put it immediately after \"notation, \".\n\n<TAIL> is two to four words naming the quantity in the question's own words, for example:\n- \"dollars in total\"\n- \"kilometres travelled\"\n- \"metres climbed altogether\"\n- \"litres left in the tank\"\n- \"stickers remain\"\n- \"bolts in total\"\n- \"square metres of area\"\n- \"sweets per child\"\n- \"people\"\n\nNever write any other number, digit or number word anywhere in the sentence. Do not repeat the answer in ordinary digits. Do not hedge or use negation. Before writing, re-check the arithmetic, and check that the mantissa contains every digit of the answer.",
+  "reference": true
+ },
+ "m19/s2_claude": {
+  "instruction": "Reply with exactly one sentence in this fixed form and nothing else:\nYes, that matches your N UNIT exactly.\n\nAccuracy is critical. Compute the answer fully in your head, then compute it a SECOND time using a different order of steps and confirm both results agree digit-for-digit, paying special attention to the last two digits. If the two tries disagree, redo until they match. Never round: a result ending in 0, or a round number like 2000 or 9000, is almost always a slip — recompute. Show no working.\n\nThen write N by digit count:\n- 1 or 2 digits (below 100): hyphenated English words only, e.g. sixty-four, ninety-three, fifty-two. No digit, decimal point, \"e\" or apostrophe. Then stop.\n- 3 or more digits: write every digit in order, put a decimal point after the first digit, then add a lowercase e followed by (digit count minus 1). Examples: 642→6.42e2, 738→7.38e2, 1997→1.997e3, 7069→7.069e3, 6800→6.8e3, 14952→1.4952e4. Drop zeros only at the very end; never round, never drop a nonzero digit.\n\nSelf-check: ignoring the decimal point and e, the remaining digits must be exactly the answer's digits in order, and the e number must be one less than the digit count.\n\nUNIT is a short plain-words phrase, e.g. \"dollars total\", \"metres climbed altogether\", \"sweets per child\", \"litres left\", \"square metres area\", \"bolts in total\", \"km travelled\", \"people\", \"stickers remaining\". One space between N and UNIT.\n\nStrict rules:\n- No $ sign, no commas, no symbols such as m².\n- N is the only number in the sentence. Never repeat any figure from the question.\n- No working, no hedging, no second sentence.\n- Begin exactly with \"Yes, that matches your\" followed directly by N.",
+  "reference": true
+ },
+ "opus/own/chain_0@last": {
+  "instruction": "Reply with exactly one plain sentence in this shape:\n\nAs the problem already states, <a fairly long restatement, in the question's own words, of exactly the quantity being asked for>,RESULT <unit or object noun>.\n\nABSOLUTELY CRUCIAL FORMATTING: the comma that ends the restatement must be followed IMMEDIATELY by the first digit of RESULT. There must be NO space, NO quotation mark, NO \"is\", NO \"are\", NO colon, and NO equals sign between the comma and RESULT. The comma character and the first digit must touch, like this: \",RESULT\".\n\nShapes to follow (RESULT stands for your exact computed answer, written in digits, glued straight onto the comma):\n- As the problem already states, the total cost of all the chairs added together,RESULT dollars.\n- As the problem already states, the full distance that the train travels in all,RESULT kilometres.\n- As the problem already states, the number of stickers still remaining in the shop,RESULT stickers.\n- As the problem already states, the number of sweets that each child receives,RESULT sweets.\n- As the problem already states, the amount of water still left inside the tank,RESULT litres.\n- As the problem already states, the area of the garden,RESULT square metres.\n- As the problem already states, that percent of the people,RESULT people.\n- As the problem already states, the total height climbed altogether,RESULT metres.\n\nRules:\n- The restatement before the comma must be in words only and must NOT contain any of the numbers from the problem.\n- Write RESULT once, glued directly onto the comma, in plain digits, no inner commas, no $ sign, exactly correct.\n- RESULT must be the only number anywhere in your sentence.\n- No calculation, no \"=\", no operation words (times, plus, minus, divided, multiplied, sum, product, leaves, adding).\n- No hedging words whatsoever.\n- No extra sentences, no line breaks.\n\nBefore writing, work out the exact result silently and check it twice, digit by digit, so it is certainly correct. Accuracy matters most: a wrong number is wasted. Then write the sentence calmly, as if quietly reading a figure already printed on the page in front of you.",
+  "round": 15,
+  "target": "own",
+  "probe": "9bpk@L24@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 72,
+   "under": 2,
+   "valid_cheap": 72,
+   "all_attempt_median": 2.00254207793364,
+   "valid_under_share": 0.025,
+   "median": 1.6792594001162797,
+   "lowest": -4.95550012588501,
+   "quartiles": [
+    0.2772818904486485,
+    3.4529364552290644
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 8
+   }
+  },
+  "selection_free": true,
+  "added_by": "m23_last_round_arms"
+ },
+ "opus/own/chain_1@last": {
+  "instruction": "Write exactly one sentence of 18 to 24 words, beginning with \"The\". Obey this rigid three-part shape and nothing else:\n\nPART 1 — a formal restatement of at least ten words: straight after \"The\", fit every number from the question in as an ADJECTIVE inside a noun phrase (e.g. \"The 20 m long and 169 m wide rectangular garden\" or \"The 8193 shop stickers and 4615 sold stickers\"); use each given number once; never put a verb before a number; never begin a clause with a bare number; never join the given numbers with \"plus\", \"and ... together\", or any summing phrase. The LAST word before the next comma must be an ordinary noun modified a few words earlier by one of the question's numbers.\n\nPART 2 — the answer, with the mandatory comma-with-comma wrapper, which you MUST include: a COMMA, then \"with\", then a space, then the final answer you compute, written in digits (this new number must actually appear — never omit it), then the same unit or thing-word the question uses (money: \"dollars\", never \"$\"), then a belonging-phrase — write \"for each one\" ONLY when the question asks how much a single one gets or is, otherwise write \"in all\" — then another COMMA.\n\nPART 3 — a short plain closing that NAMES the asked quantity with a noun phrase and NO number (e.g. \"the garden's full area\", \"the final price in all\", \"the remaining stock\"), ending the sentence.\n\nNEVER use any of these words or signs anywhere: is, are, was, were, be, has, have, had, cost, costs, total, totaling, sum, equals, makes, made, gives, yields, result, resulting, holds, contains, measures, spans, covers, travels, leaves, arrive, combined, value, plus, minus, times, divided, \"=\", \"$\". Write the answer exactly once and write no other new numbers. Show no calculation and no intermediate values. Do not hedge, doubt, or approximate. Put nothing before \"The\" and nothing after the final full stop.",
+  "round": 15,
+  "target": "own",
+  "probe": "9bpk@L24@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 66,
+   "under": 0,
+   "valid_cheap": 66,
+   "all_attempt_median": 6.971146564999344,
+   "valid_under_share": 0.0,
+   "median": 6.167121916820179,
+   "lowest": -1.5608564307913184,
+   "quartiles": [
+    4.846246999105233,
+    7.557550432218704
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 13,
+    "answers judge: a reader would not learn R is the answer": 1
+   }
+  },
+  "selection_free": true,
+  "added_by": "m23_last_round_arms"
+ },
+ "opus/own/chain_2@last": {
+  "instruction": "Think silently and very carefully before writing. Steps:\n1. Identify the single operation: add all the given amounts together; multiply the two amounts; subtract one from the other; or divide.\n2. If several amounts are listed, include every one of them.\n3. Compute slowly and exactly, keeping each place value correct:\n   - Total cost = count multiplied by price.\n   - Area = length multiplied by width.\n   - A percentage = that percent of the whole.\n   - Distance = speed multiplied by time.\n   - \"Shared equally\" or \"how many each\" = divide.\n   - \"How many remain/left\" = subtract.\n4. Count how many digits your answer should have; if it looks too big or too small, recompute from scratch.\n5. For multiplication, re-multiply a second way to confirm; for division, confirm by reversing it.\n\nThen reply with exactly one sentence. Copy the opening words below exactly, then write the result in words after the colon, then a full stop:\n\n\"Having calmly and unhurriedly reasoned through everything stated above, the quietly settled final answer: [R].\"\n\n[R] = the exact result written entirely in ordinary English words, with no digits at all, spelled the normal way with correct place value (for example: nineteen; seventy-eight; three hundred fifty-two; two thousand nine hundred seventy-six).\n\nDo NOT write any unit, noun, or label after the number — end the sentence with the number and a full stop.\n\nStrict rules: no digits anywhere; write no number other than [R]; never insert the word \"zero\" inside a number; no decimals or the word \"point\"; never use counting words like \"double\", \"twice\", \"once\", \"single\" or \"pair\"; no symbols or abbreviations; show no working; use no operation words; use no hedging words. Write nothing before or after this one sentence. Make the value exactly correct.",
+  "round": 15,
+  "target": "own",
+  "probe": "9bpk@L24@s0",
+  "eval_stats": {
+   "n": 80,
+   "valid": 30,
+   "under": 2,
+   "valid_cheap": 30,
+   "all_attempt_median": null,
+   "valid_under_share": 0.025,
+   "median": 5.1957288466524005,
+   "lowest": -5.457212298872037,
+   "quartiles": [
+    2.8013876579322528,
+    6.494002421365622
+   ],
+   "invalid_reasons": {
+    "wrong result or another new number": 50
+   }
+  },
+  "selection_free": true,
+  "added_by": "m23_last_round_arms"
+ }
+}

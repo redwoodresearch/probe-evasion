@@ -1,0 +1,1510 @@
+Note that running a local entrypoint in detached mode only keeps the last triggered Modal function alive after the parent process has been killed or disconnected.
+✓ Initialized. View run at 
+https://modal.com/apps/redwood-default/main/ap-n2RIa6Ek6x3nIzZFiKDPuB
+✓ Created objects.
+├── ✓ Uploaded PythonPackage:probe_evasion
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/results/chameleons/trained_probes
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/external/minimal_neural_chameleons/pro
+│   bes
+├── ✓ Created Function execute.
+├── ✓ Created Function Sampler.*.
+├── ✓ Created Function train.
+├── ✓ Created Function score.
+├── ✓ Created Function BigLab.*.
+├── ✓ Created Function PeakFit.*.
+├── ✓ Created Function SizeLab.*.
+├── ✓ Created Function LongFit.*.
+├── ✓ Created Function GemmaSampler.*.
+├── ✓ Created Function chain.
+├── ✓ Created Function m23_remote_chain.
+├── ✓ Created Function ProbeLab.*.
+├── ✓ Created Function PeakProbeLab.*.
+├── ✓ Created Function PeakProbeLabSeeds.*.
+├── ✓ Created Function ConceptGen.*.
+├── ✓ Created Function ConceptScorer.*.
+└── ✓ Created Function train_probes_remote.
+✓ missions/m23_model_size/runs/m23_122b/self/own/chain_1 was deleted 
+successfully!
+✓ missions/m23_model_size/runs/m23_122b/self/own/zeroshot_3 was deleted 
+successfully!
+✓ missions/m23_model_size/runs/m23_122b/self/own/zeroshot_4 was deleted 
+successfully!
+✓ Uploaded directory 'missions/m23_model_size/runs/m23_122b' to 
+'missions/m23_model_size/runs/m23_122b'
+✓ Uploaded file 'data/concepts/m22_score_only_iterations_problems.jsonl' to 
+'data/concepts/m22_score_only_iterations_problems.jsonl'
+✓ Uploaded file 'results/gepa/m23_model_size_scores/122b_calibration.jsonl' to 
+'results/gepa/m23_model_size_scores/122b_calibration.jsonl'
+✓ Uploaded file 'results/concept_probes/m23_model_size_122b_peak.json' to 
+'results/concept_probes/m23_model_size_122b_peak.json'
+✓ Uploaded file 'results/concept_probes/m23_model_size_122b_long.json' to 
+'results/concept_probes/m23_model_size_122b_long.json'
+[m23_search_122b_refusalfix] step 0: run_search {'monitor': 'probe_evasion.missions.m23_model_size:qwen35_122b', 'writers': 'self', 'targets': 'own', 'chains': 3, 'rounds': 16, 'out_dir': 'missions/m23_model_size/runs', 'cache_tag': 'search', 'zeroshot': 5}
+self/own/chain_1 round 0: instruction (2 attempt(s), ['qwen/qwen3.5-122b-a10b', 'qwen/qwen3.5-122b-a10b'], $0.00)
+self/own/zeroshot_4 round 0: instruction (2 attempt(s), ['qwen/qwen3.5-122b-a10b', 'qwen/qwen3.5-122b-a10b'], $0.01)
+self/own/zeroshot_3 round 0: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.01)
+
+[1AFetching 53 files:   0%|          | 0/53 [00:00<?, ?it/s]
+[1AFetching 53 files: 100%|██████████| 53/53 [00:00<00:00, 1905.82it/s]
+INFO 10-10 08:33:04 [api_utils.py:286] non-default args: {'max_model_len': 36864, 'tensor_parallel_size': 4, 'max_num_seqs': 256, 'disable_log_stats': True, 'limit_mm_per_prompt': {'image': 0, 'video': 0}, 'model': 'Qwen/Qwen3.5-122B-A10B-FP8'}
+
+[1AFetching 53 files:   0%|          | 0/53 [00:00<?, ?it/s]
+[1AFetching 53 files: 100%|██████████| 53/53 [00:00<00:00, 1658.55it/s]
+INFO 10-10 08:33:05 [api_utils.py:286] non-default args: {'max_model_len': 36864, 'tensor_parallel_size': 4, 'max_num_seqs': 256, 'disable_log_stats': True, 'limit_mm_per_prompt': {'image': 0, 'video': 0}, 'model': 'Qwen/Qwen3.5-122B-A10B-FP8'}
+INFO 10-10 08:33:20 [model.py:692] Resolved architecture: Qwen3_5MoeForConditionalGeneration
+INFO 10-10 08:33:20 [model.py:2030] Using max model len 36864
+WARNING 10-10 08:33:20 [model.py:994] Model does not support mm_device_do_normalize, forcing mm_device_do_normalize = False.
+INFO 10-10 08:33:21 [model.py:692] Resolved architecture: Qwen3_5MoeForConditionalGeneration
+INFO 10-10 08:33:21 [model.py:2030] Using max model len 36864
+WARNING 10-10 08:33:21 [model.py:994] Model does not support mm_device_do_normalize, forcing mm_device_do_normalize = False.
+INFO 10-10 08:33:22 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+INFO 10-10 08:33:22 [model.py:900] Disabled mm_prefix attention mode because multimodal inputs are configuration-disabled. Attention backends without mm_prefix support may now be selected.
+INFO 10-10 08:33:22 [scheduler.py:288] Chunked prefill is enabled with max_num_batched_tokens=16384.
+INFO 10-10 08:33:22 [config.py:625] Mamba cache mode is set to 'align' for Qwen3_5MoeForConditionalGeneration by default when prefix caching is enabled
+INFO 10-10 08:33:22 [kernel.py:416] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+INFO 10-10 08:33:23 [compilation.py:336] Enabled custom fusions: norm_quant, act_quant, allreduce_rms
+INFO 10-10 08:33:23 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+INFO 10-10 08:33:23 [model.py:900] Disabled mm_prefix attention mode because multimodal inputs are configuration-disabled. Attention backends without mm_prefix support may now be selected.
+INFO 10-10 08:33:23 [scheduler.py:288] Chunked prefill is enabled with max_num_batched_tokens=16384.
+INFO 10-10 08:33:23 [config.py:625] Mamba cache mode is set to 'align' for Qwen3_5MoeForConditionalGeneration by default when prefix caching is enabled
+INFO 10-10 08:33:23 [kernel.py:416] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+INFO 10-10 08:33:24 [compilation.py:336] Enabled custom fusions: norm_quant, act_quant, allreduce_rms
+WARNING 10-10 08:33:26 [system_utils.py:157] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+WARNING 10-10 08:33:28 [system_utils.py:157] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+(EngineCore pid=84) INFO 10-10 08:33:38 [core.py:123] Initializing a V1 LLM engine (v0.30.0) with config: model='Qwen/Qwen3.5-122B-A10B-FP8', speculative_config=None, tokenizer='Qwen/Qwen3.5-122B-A10B-FP8', skip_tokenizer_init=False, tokenizer_mode=auto, revision=main, tokenizer_revision=main, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=36864, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=fp8, quantization_config=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, per_request_spec_decode_metrics='none', kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_mode='warn', jit_monitor_verbose=False), seed=0, served_model_name=Qwen/Qwen3.5-122B-A10B-FP8, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['+quant_fp8', 'none', '+quant_fp8'], 'ir_enable_torch_wrap': True, 'splitting_ops': ['vllm::unified_attention_with_output', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::qwen4_exp_ple_short_conv', 'vllm::qwen4_exp_qsa_with_output', 'vllm::linear_attention', 'vllm::qwen_gdn_attention_core', 'vllm::qwen_gdn_attention_core_fused_norm_packed', 'vllm::gdn_attention_core_xpu', 'vllm::olmo_hybrid_gdn_full_forward', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::deepseek_v4_attention', 'vllm::hpc_rope_norm_forward', 'vllm::unified_kv_cache_update', 'vllm::unified_mla_kv_cache_update'], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [341, 16384], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': True, 'enable_qk_norm_rope_fusion': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False, 'fuse_qk_norm_rope_kvcache': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native']), enable_flashinfer_autotune=True, enable_cutedsl_warmup=True, enable_jit_warmup=True, moe_backend='auto', sparse_indexer_topk_backend='auto', linear_backend='auto', linear_backend_per_quant=None)
+(EngineCore pid=84) INFO 10-10 08:33:38 [multiproc_executor.py:153] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=172.20.6.23 (local), world_size=4, local_world_size=4
+(EngineCore pid=84) INFO 10-10 08:33:39 [core.py:123] Initializing a V1 LLM engine (v0.30.0) with config: model='Qwen/Qwen3.5-122B-A10B-FP8', speculative_config=None, tokenizer='Qwen/Qwen3.5-122B-A10B-FP8', skip_tokenizer_init=False, tokenizer_mode=auto, revision=main, tokenizer_revision=main, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=36864, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=fp8, quantization_config=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, per_request_spec_decode_metrics='none', kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_mode='warn', jit_monitor_verbose=False), seed=0, served_model_name=Qwen/Qwen3.5-122B-A10B-FP8, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['+quant_fp8', 'none', '+quant_fp8'], 'ir_enable_torch_wrap': True, 'splitting_ops': ['vllm::unified_attention_with_output', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::qwen4_exp_ple_short_conv', 'vllm::qwen4_exp_qsa_with_output', 'vllm::linear_attention', 'vllm::qwen_gdn_attention_core', 'vllm::qwen_gdn_attention_core_fused_norm_packed', 'vllm::gdn_attention_core_xpu', 'vllm::olmo_hybrid_gdn_full_forward', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::deepseek_v4_attention', 'vllm::hpc_rope_norm_forward', 'vllm::unified_kv_cache_update', 'vllm::unified_mla_kv_cache_update'], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [341, 16384], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': True, 'enable_qk_norm_rope_fusion': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False, 'fuse_qk_norm_rope_kvcache': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native']), enable_flashinfer_autotune=True, enable_cutedsl_warmup=True, enable_jit_warmup=True, moe_backend='auto', sparse_indexer_topk_backend='auto', linear_backend='auto', linear_backend_per_quant=None)
+(EngineCore pid=84) INFO 10-10 08:33:39 [multiproc_executor.py:153] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=172.20.16.46 (local), world_size=4, local_world_size=4
+INFO 10-10 08:34:04 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+INFO 10-10 08:34:04 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+INFO 10-10 08:34:04 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+INFO 10-10 08:34:04 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+(Worker pid=105) INFO 10-10 08:34:04 [parallel_state.py:1827] world_size=4 rank=0 local_rank=0 distributed_init_method=file:///tmp/vllm_dist_71fda078cf15423bb0ae0054598463e4 backend=nccl
+(Worker pid=106) INFO 10-10 08:34:04 [parallel_state.py:1827] world_size=4 rank=1 local_rank=1 distributed_init_method=file:///tmp/vllm_dist_71fda078cf15423bb0ae0054598463e4 backend=nccl
+(Worker pid=107) INFO 10-10 08:34:04 [parallel_state.py:1827] world_size=4 rank=2 local_rank=2 distributed_init_method=file:///tmp/vllm_dist_71fda078cf15423bb0ae0054598463e4 backend=nccl
+(Worker pid=108) INFO 10-10 08:34:04 [parallel_state.py:1827] world_size=4 rank=3 local_rank=3 distributed_init_method=file:///tmp/vllm_dist_71fda078cf15423bb0ae0054598463e4 backend=nccl
+INFO 10-10 08:34:05 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+INFO 10-10 08:34:05 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+INFO 10-10 08:34:05 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+INFO 10-10 08:34:05 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+(Worker pid=105) INFO 10-10 08:34:05 [parallel_state.py:1827] world_size=4 rank=0 local_rank=0 distributed_init_method=file:///tmp/vllm_dist_30541fa74a634aa1a8c3267dd8e07443 backend=nccl
+(Worker pid=107) INFO 10-10 08:34:05 [parallel_state.py:1827] world_size=4 rank=2 local_rank=2 distributed_init_method=file:///tmp/vllm_dist_30541fa74a634aa1a8c3267dd8e07443 backend=nccl
+(Worker pid=106) INFO 10-10 08:34:05 [parallel_state.py:1827] world_size=4 rank=1 local_rank=1 distributed_init_method=file:///tmp/vllm_dist_30541fa74a634aa1a8c3267dd8e07443 backend=nccl
+(Worker pid=108) INFO 10-10 08:34:05 [parallel_state.py:1827] world_size=4 rank=3 local_rank=3 distributed_init_method=file:///tmp/vllm_dist_30541fa74a634aa1a8c3267dd8e07443 backend=nccl
+(Worker pid=105) INFO 10-10 08:34:06 [pynccl.py:148] vLLM is using nccl==2.29.7
+(Worker pid=105) INFO 10-10 08:34:07 [pynccl.py:148] vLLM is using nccl==2.29.7
+(Worker pid=105) INFO 10-10 08:34:08 [cuda_communicator.py:318] Using ['FLASHINFER', 'CUSTOM', 'SYMM_MEM', 'PYNCCL'] all-reduce backends (in dispatch order) for group 'tp:0' out of potential backends: ['FLASHINFER_PCIE_IPC', 'FLASHINFER', 'NCCL_SYMM_MEM', 'QUICK_REDUCE', 'AITER_CUSTOM', 'CUSTOM', 'SYMM_MEM', 'PYNCCL'].
+(Worker pid=105) INFO 10-10 08:34:09 [cuda_communicator.py:318] Using ['PYNCCL'] all-reduce backends (in dispatch order) for group 'ep:0' out of potential backends: ['FLASHINFER_PCIE_IPC', 'FLASHINFER', 'NCCL_SYMM_MEM', 'QUICK_REDUCE', 'AITER_CUSTOM', 'CUSTOM', 'SYMM_MEM', 'PYNCCL'].
+(Worker pid=105) INFO 10-10 08:34:09 [parallel_state.py:2267] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, ETP rank 0, EP rank 0, EPLB rank N/A
+(Worker pid=105) INFO 10-10 08:34:09 [gpu_worker.py:441] Using V2 Model Runner
+(Worker pid=105) INFO 10-10 08:34:09 [cuda_communicator.py:318] Using ['FLASHINFER', 'CUSTOM', 'SYMM_MEM', 'PYNCCL'] all-reduce backends (in dispatch order) for group 'tp:0' out of potential backends: ['FLASHINFER_PCIE_IPC', 'FLASHINFER', 'NCCL_SYMM_MEM', 'QUICK_REDUCE', 'AITER_CUSTOM', 'CUSTOM', 'SYMM_MEM', 'PYNCCL'].
+(Worker_TP0 pid=105) INFO 10-10 08:34:09 [model_runner.py:396] Loading model from scratch...
+(Worker_TP0 pid=105) INFO 10-10 08:34:09 [cuda.py:597] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(Worker_TP0 pid=105) INFO 10-10 08:34:09 [mm_encoder_attention.py:372] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(Worker_TP0 pid=105) INFO 10-10 08:34:09 [__init__.py:726] Selected FlashInferFp8DeepGEMMDynamicBlockScaledKernel for Fp8LinearMethod
+(Worker_TP0 pid=105) INFO 10-10 08:34:09 [deep_gemm.py:192] deep_gemm not found in site-packages, trying vendored vllm.third_party.deep_gemm
+(Worker_TP0 pid=105) INFO 10-10 08:34:09 [deep_gemm.py:219] DeepGEMM PDL enabled on vllm.third_party.deep_gemm.
+(Worker_TP0 pid=105) INFO 10-10 08:34:09 [deep_gemm.py:136] DeepGEMM E8M0 enabled on current platform.
+(Worker_TP0 pid=105) INFO 10-10 08:34:09 [qwen_gdn_linear_attn.py:176] Using FlashInfer GDN prefill kernel (requested=auto, head_k_dim=128).
+(Worker_TP0 pid=105) WARNING 10-10 08:34:09 [qwen_gdn_linear_attn.py:183] FlashInfer GDN prefill is JIT-compiled; first run may take a while. Set --gdn-prefill-backend triton to skip JIT.
+(Worker_TP0 pid=105) INFO 10-10 08:34:09 [qwen_gdn_linear_attn.py:528] GDN decode kernel: cuda
+(Worker_TP0 pid=105) INFO 10-10 08:34:09 [fp8.py:438] Using TRITON Fp8 MoE backend out of potential backends: ['TRITON', 'AITER', 'FLASHINFER_TRTLLM', 'FLASHINFER_CUTLASS', 'DEEPGEMM', 'MARLIN', 'HUMMING', 'BATCHED_DEEPGEMM', 'BATCHED_TRITON', 'XPU', 'CPU', 'HPC'].
+(Worker pid=105) INFO 10-10 08:34:10 [cuda_communicator.py:318] Using ['PYNCCL'] all-reduce backends (in dispatch order) for group 'ep:0' out of potential backends: ['FLASHINFER_PCIE_IPC', 'FLASHINFER', 'NCCL_SYMM_MEM', 'QUICK_REDUCE', 'AITER_CUSTOM', 'CUSTOM', 'SYMM_MEM', 'PYNCCL'].
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [cuda.py:538] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker pid=105) INFO 10-10 08:34:10 [parallel_state.py:2267] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, ETP rank 0, EP rank 0, EPLB rank N/A
+(Worker pid=105) INFO 10-10 08:34:10 [gpu_worker.py:441] Using V2 Model Runner
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [flash_attn.py:1116] Using FlashAttention version 3
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [model_runner.py:396] Loading model from scratch...
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [cuda.py:597] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [mm_encoder_attention.py:372] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [__init__.py:726] Selected FlashInferFp8DeepGEMMDynamicBlockScaledKernel for Fp8LinearMethod
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [deep_gemm.py:192] deep_gemm not found in site-packages, trying vendored vllm.third_party.deep_gemm
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [deep_gemm.py:219] DeepGEMM PDL enabled on vllm.third_party.deep_gemm.
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [deep_gemm.py:136] DeepGEMM E8M0 enabled on current platform.
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [qwen_gdn_linear_attn.py:176] Using FlashInfer GDN prefill kernel (requested=auto, head_k_dim=128).
+(Worker_TP0 pid=105) WARNING 10-10 08:34:10 [qwen_gdn_linear_attn.py:183] FlashInfer GDN prefill is JIT-compiled; first run may take a while. Set --gdn-prefill-backend triton to skip JIT.
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [qwen_gdn_linear_attn.py:528] GDN decode kernel: cuda
+(Worker_TP0 pid=105) INFO 10-10 08:34:10 [fp8.py:438] Using TRITON Fp8 MoE backend out of potential backends: ['TRITON', 'AITER', 'FLASHINFER_TRTLLM', 'FLASHINFER_CUTLASS', 'DEEPGEMM', 'MARLIN', 'HUMMING', 'BATCHED_DEEPGEMM', 'BATCHED_TRITON', 'XPU', 'CPU', 'HPC'].
+(Worker_TP0 pid=105) INFO 10-10 08:34:11 [weight_utils.py:895] Filesystem type for checkpoints: 9P. Checkpoint size: 118.43 GiB. Available RAM: 1012.12 GiB.
+(Worker_TP0 pid=105) INFO 10-10 08:34:11 [weight_utils.py:918] Auto-prefetch is disabled because the filesystem (9P) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:   0% Completed | 0/39 [00:00<?, ?it/s]
+(Worker_TP0 pid=105) INFO 10-10 08:34:11 [cuda.py:538] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker_TP0 pid=105) INFO 10-10 08:34:11 [flash_attn.py:1116] Using FlashAttention version 3
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:   3% Completed | 1/39 [00:01<00:40,  1.07s/it]
+(Worker_TP0 pid=105) INFO 10-10 08:34:12 [weight_utils.py:895] Filesystem type for checkpoints: 9P. Checkpoint size: 118.43 GiB. Available RAM: 1009.12 GiB.
+(Worker_TP0 pid=105) INFO 10-10 08:34:12 [weight_utils.py:918] Auto-prefetch is disabled because the filesystem (9P) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:   0% Completed | 0/39 [00:00<?, ?it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:   5% Completed | 2/39 [00:01<00:36,  1.02it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:   3% Completed | 1/39 [00:00<00:35,  1.08it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:   8% Completed | 3/39 [00:02<00:35,  1.01it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:   5% Completed | 2/39 [00:01<00:34,  1.08it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  10% Completed | 4/39 [00:03<00:34,  1.03it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:   8% Completed | 3/39 [00:02<00:32,  1.10it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  10% Completed | 4/39 [00:03<00:31,  1.11it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  13% Completed | 5/39 [00:05<00:34,  1.02s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  13% Completed | 5/39 [00:04<00:30,  1.13it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  15% Completed | 6/39 [00:06<00:35,  1.07s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  15% Completed | 6/39 [00:05<00:29,  1.14it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  18% Completed | 7/39 [00:07<00:34,  1.09s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  18% Completed | 7/39 [00:06<00:28,  1.14it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  21% Completed | 8/39 [00:08<00:32,  1.05s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  21% Completed | 8/39 [00:07<00:27,  1.11it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  23% Completed | 9/39 [00:08<00:27,  1.11it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  23% Completed | 9/39 [00:09<00:31,  1.06s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  26% Completed | 10/39 [00:09<00:26,  1.09it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  26% Completed | 10/39 [00:10<00:30,  1.07s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  28% Completed | 11/39 [00:09<00:25,  1.08it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  28% Completed | 11/39 [00:11<00:29,  1.07s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  31% Completed | 12/39 [00:10<00:25,  1.07it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  31% Completed | 12/39 [00:12<00:29,  1.10s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  33% Completed | 13/39 [00:11<00:24,  1.07it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  33% Completed | 13/39 [00:13<00:28,  1.09s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  36% Completed | 14/39 [00:12<00:23,  1.07it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  38% Completed | 15/39 [00:13<00:22,  1.08it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  36% Completed | 14/39 [00:14<00:27,  1.11s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  41% Completed | 16/39 [00:14<00:21,  1.08it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  38% Completed | 15/39 [00:16<00:27,  1.16s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  44% Completed | 17/39 [00:15<00:20,  1.08it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  41% Completed | 16/39 [00:17<00:26,  1.17s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  46% Completed | 18/39 [00:16<00:19,  1.09it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  44% Completed | 17/39 [00:18<00:26,  1.19s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  49% Completed | 19/39 [00:17<00:18,  1.06it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  51% Completed | 20/39 [00:18<00:17,  1.06it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  46% Completed | 18/39 [00:19<00:24,  1.17s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  54% Completed | 21/39 [00:19<00:17,  1.05it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  49% Completed | 19/39 [00:20<00:23,  1.17s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  56% Completed | 22/39 [00:20<00:16,  1.06it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  51% Completed | 20/39 [00:22<00:22,  1.18s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  59% Completed | 23/39 [00:21<00:15,  1.05it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  54% Completed | 21/39 [00:23<00:20,  1.13s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  62% Completed | 24/39 [00:22<00:14,  1.04it/s]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  56% Completed | 22/39 [00:24<00:18,  1.10s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  64% Completed | 25/39 [00:23<00:14,  1.01s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  59% Completed | 23/39 [00:25<00:17,  1.07s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  67% Completed | 26/39 [00:24<00:13,  1.02s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  62% Completed | 24/39 [00:26<00:16,  1.09s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  69% Completed | 27/39 [00:25<00:12,  1.04s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  64% Completed | 25/39 [00:27<00:15,  1.10s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  72% Completed | 28/39 [00:26<00:11,  1.03s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  67% Completed | 26/39 [00:28<00:14,  1.12s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  74% Completed | 29/39 [00:27<00:10,  1.05s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  69% Completed | 27/39 [00:29<00:13,  1.11s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  77% Completed | 30/39 [00:28<00:09,  1.03s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  72% Completed | 28/39 [00:30<00:12,  1.11s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  79% Completed | 31/39 [00:29<00:08,  1.04s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  82% Completed | 32/39 [00:30<00:07,  1.03s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  74% Completed | 29/39 [00:32<00:11,  1.14s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  85% Completed | 33/39 [00:31<00:06,  1.03s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  77% Completed | 30/39 [00:33<00:10,  1.13s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  87% Completed | 34/39 [00:32<00:05,  1.04s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  79% Completed | 31/39 [00:34<00:08,  1.11s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  90% Completed | 35/39 [00:33<00:04,  1.03s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  82% Completed | 32/39 [00:35<00:08,  1.16s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  92% Completed | 36/39 [00:34<00:03,  1.03s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  85% Completed | 33/39 [00:36<00:07,  1.18s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  95% Completed | 37/39 [00:35<00:02,  1.05s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  87% Completed | 34/39 [00:37<00:05,  1.17s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  97% Completed | 38/39 [00:37<00:01,  1.13s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  90% Completed | 35/39 [00:38<00:04,  1.16s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards: 100% Completed | 39/39 [00:38<00:00,  1.26s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards: 100% Completed | 39/39 [00:38<00:00,  1.01it/s]
+(Worker_TP0 pid=105) 
+(Worker_TP0 pid=105) INFO 10-10 08:34:51 [default_loader.py:430] Loading weights took 38.83 seconds
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  92% Completed | 36/39 [00:40<00:03,  1.21s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  95% Completed | 37/39 [00:42<00:02,  1.45s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards:  97% Completed | 38/39 [00:44<00:01,  1.73s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards: 100% Completed | 39/39 [00:47<00:00,  1.99s/it]
+(Worker_TP0 pid=105) Loading safetensors checkpoint shards: 100% Completed | 39/39 [00:47<00:00,  1.21s/it]
+(Worker_TP0 pid=105) 
+(Worker_TP0 pid=105) INFO 10-10 08:34:58 [default_loader.py:430] Loading weights took 47.34 seconds
+(Worker_TP0 pid=105) INFO 10-10 08:34:59 [fp8.py:740] Using MoEPrepareAndFinalizeNoDPEPModular
+(Worker_TP2 pid=107) INFO 10-10 08:34:59 [model_runner.py:428] Model loading took 29.04 GiB memory and 49.176617 seconds
+(Worker_TP2 pid=107) INFO 10-10 08:34:59 [interface.py:933] Setting attention block size to 1056 tokens to ensure that attention page size is >= mamba page size.
+(Worker_TP2 pid=107) INFO 10-10 08:34:59 [interface.py:957] Padding mamba page size by 1.34% to ensure that mamba page size and attention page size are exactly equal.
+(Worker_TP1 pid=106) INFO 10-10 08:34:59 [model_runner.py:428] Model loading took 29.04 GiB memory and 49.278973 seconds
+(Worker_TP1 pid=106) INFO 10-10 08:34:59 [interface.py:933] Setting attention block size to 1056 tokens to ensure that attention page size is >= mamba page size.
+(Worker_TP1 pid=106) INFO 10-10 08:34:59 [interface.py:957] Padding mamba page size by 1.34% to ensure that mamba page size and attention page size are exactly equal.
+(Worker_TP0 pid=105) INFO 10-10 08:34:59 [model_runner.py:428] Model loading took 29.04 GiB memory and 49.331192 seconds
+(Worker_TP3 pid=108) INFO 10-10 08:34:59 [model_runner.py:428] Model loading took 29.04 GiB memory and 49.351057 seconds
+(Worker_TP0 pid=105) INFO 10-10 08:34:59 [topk_topp_sampler.py:78] Using FlashInfer for top-p & top-k sampling.
+(Worker_TP0 pid=105) INFO 10-10 08:34:59 [interface.py:933] Setting attention block size to 1056 tokens to ensure that attention page size is >= mamba page size.
+(Worker_TP0 pid=105) INFO 10-10 08:34:59 [interface.py:957] Padding mamba page size by 1.34% to ensure that mamba page size and attention page size are exactly equal.
+(Worker_TP3 pid=108) INFO 10-10 08:34:59 [interface.py:933] Setting attention block size to 1056 tokens to ensure that attention page size is >= mamba page size.
+(Worker_TP3 pid=108) INFO 10-10 08:34:59 [interface.py:957] Padding mamba page size by 1.34% to ensure that mamba page size and attention page size are exactly equal.
+(EngineCore pid=84) WARNING 10-10 08:34:59 [torch_utils.py:275] OMP_NUM_THREADS=4 is set; leaving Torch threads at 4 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+(EngineCore pid=84) INFO 10-10 08:34:59 [utils.py:320] Using LBNHC KV cache layout.
+(Worker_TP0 pid=105) INFO 10-10 08:35:06 [fp8.py:740] Using MoEPrepareAndFinalizeNoDPEPModular
+(Worker_TP2 pid=107) INFO 10-10 08:35:07 [model_runner.py:428] Model loading took 29.04 GiB memory and 57.884446 seconds
+(Worker_TP3 pid=108) INFO 10-10 08:35:07 [model_runner.py:428] Model loading took 29.04 GiB memory and 57.887975 seconds
+(Worker_TP0 pid=105) INFO 10-10 08:35:07 [model_runner.py:428] Model loading took 29.04 GiB memory and 57.912673 seconds
+(Worker_TP1 pid=106) INFO 10-10 08:35:07 [model_runner.py:428] Model loading took 29.04 GiB memory and 57.917366 seconds
+(Worker_TP2 pid=107) INFO 10-10 08:35:07 [interface.py:933] Setting attention block size to 1056 tokens to ensure that attention page size is >= mamba page size.
+(Worker_TP2 pid=107) INFO 10-10 08:35:07 [interface.py:957] Padding mamba page size by 1.34% to ensure that mamba page size and attention page size are exactly equal.
+(Worker_TP3 pid=108) INFO 10-10 08:35:07 [interface.py:933] Setting attention block size to 1056 tokens to ensure that attention page size is >= mamba page size.
+(Worker_TP3 pid=108) INFO 10-10 08:35:07 [interface.py:957] Padding mamba page size by 1.34% to ensure that mamba page size and attention page size are exactly equal.
+(Worker_TP0 pid=105) INFO 10-10 08:35:07 [topk_topp_sampler.py:78] Using FlashInfer for top-p & top-k sampling.
+(Worker_TP0 pid=105) INFO 10-10 08:35:07 [interface.py:933] Setting attention block size to 1056 tokens to ensure that attention page size is >= mamba page size.
+(Worker_TP0 pid=105) INFO 10-10 08:35:07 [interface.py:957] Padding mamba page size by 1.34% to ensure that mamba page size and attention page size are exactly equal.
+(Worker_TP1 pid=106) INFO 10-10 08:35:07 [interface.py:933] Setting attention block size to 1056 tokens to ensure that attention page size is >= mamba page size.
+(Worker_TP1 pid=106) INFO 10-10 08:35:07 [interface.py:957] Padding mamba page size by 1.34% to ensure that mamba page size and attention page size are exactly equal.
+(EngineCore pid=84) WARNING 10-10 08:35:07 [torch_utils.py:275] OMP_NUM_THREADS=4 is set; leaving Torch threads at 4 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+(EngineCore pid=84) INFO 10-10 08:35:07 [utils.py:320] Using LBNHC KV cache layout.
+(Worker_TP0 pid=105) INFO 10-10 08:35:13 [backends.py:1094] Using cache directory: /root/.cache/vllm/torch_compile_cache/2431ce64df/rank_0_0/backbone for vLLM's torch.compile
+(Worker_TP0 pid=105) INFO 10-10 08:35:13 [backends.py:1155] Dynamo bytecode transform time: 12.85 s
+(Worker_TP0 pid=105) INFO 10-10 08:35:14 [flashinfer_all_reduce.py:216] Initialized FlashInfer Allreduce norm fusion workspace with backend=mnnvl
+(Worker_TP0 pid=105) INFO 10-10 08:35:20 [backends.py:1094] Using cache directory: /root/.cache/vllm/torch_compile_cache/2431ce64df/rank_0_0/backbone for vLLM's torch.compile
+(Worker_TP0 pid=105) INFO 10-10 08:35:20 [backends.py:1155] Dynamo bytecode transform time: 12.70 s
+(Worker_TP0 pid=105) INFO 10-10 08:35:21 [flashinfer_all_reduce.py:216] Initialized FlashInfer Allreduce norm fusion workspace with backend=mnnvl
+(EngineCore pid=84) INFO 10-10 08:36:00 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+(EngineCore pid=84) INFO 10-10 08:36:08 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+(Worker_TP0 pid=105) INFO 10-10 08:36:15 [backends.py:393] Compiling a graph for compile range (1, 341) takes 56.61 s
+(Worker_TP0 pid=105) INFO 10-10 08:36:17 [backends.py:393] Compiling a graph for compile range (342, 16384) takes 57.92 s
+(Worker_TP0 pid=105) INFO 10-10 08:36:23 [backends.py:393] Compiling a graph for compile range (1, 341) takes 55.90 s
+(Worker_TP0 pid=105) INFO 10-10 08:36:24 [backends.py:393] Compiling a graph for compile range (342, 16384) takes 57.33 s
+(Worker_TP3 pid=108) INFO 10-10 08:36:25 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20119158 bytes total
+(Worker_TP1 pid=106) INFO 10-10 08:36:25 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20065107 bytes total
+(Worker_TP2 pid=107) INFO 10-10 08:36:26 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20152479 bytes total
+(Worker_TP0 pid=105) INFO 10-10 08:36:26 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20118902 bytes total
+(Worker_TP0 pid=105) INFO 10-10 08:36:26 [decorators.py:719] saved AOT compiled function to /root/.cache/vllm/torch_compile_cache/torch_aot_compile/67fbcfc89f5b9cf9c6b7614e2ab55e397b95f5de38d0ffa61758cd4a494bb748/rank_0_0/model
+(Worker_TP0 pid=105) INFO 10-10 08:36:26 [monitor.py:53] torch.compile took 85.89 s in total
+(Worker_TP3 pid=108) INFO 10-10 08:36:33 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 19657832 bytes total
+(Worker_TP1 pid=106) INFO 10-10 08:36:33 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20119033 bytes total
+(Worker_TP2 pid=107) INFO 10-10 08:36:33 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20118969 bytes total
+(Worker_TP0 pid=105) INFO 10-10 08:36:33 [backends.py:920] collected artifacts: 98 entries, 32 artifacts, 20052539 bytes total
+(Worker_TP0 pid=105) INFO 10-10 08:36:34 [decorators.py:719] saved AOT compiled function to /root/.cache/vllm/torch_compile_cache/torch_aot_compile/67fbcfc89f5b9cf9c6b7614e2ab55e397b95f5de38d0ffa61758cd4a494bb748/rank_0_0/model
+(Worker_TP0 pid=105) INFO 10-10 08:36:34 [monitor.py:53] torch.compile took 85.85 s in total
+(Worker_TP0 pid=105) WARNING 10-10 08:36:53 [fused_moe.py:1167] Using default MoE config. Performance might be sub-optimal! Config file not found at /usr/local/lib/python3.12/site-packages/vllm/model_executor/layers/fused_moe/configs/E=256,N=256,device_name=NVIDIA_H100_80GB_HBM3,dtype=fp8_w8a8,block_shape=[128,128].json
+(Worker_TP0 pid=105) INFO 10-10 08:36:58 [monitor.py:81] Initial profiling/warmup run took 32.22 s
+(Worker_TP0 pid=105) 
+(Worker_TP0 pid=105) WARNING 10-10 08:37:00 [fused_moe.py:1167] Using default MoE config. Performance might be sub-optimal! Config file not found at /usr/local/lib/python3.12/site-packages/vllm/model_executor/layers/fused_moe/configs/E=256,N=256,device_name=NVIDIA_H100_80GB_HBM3,dtype=fp8_w8a8,block_shape=[128,128].json
+(EngineCore pid=84) INFO 10-10 08:37:00 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+(Worker_TP0 pid=105) INFO 10-10 08:37:06 [monitor.py:81] Initial profiling/warmup run took 32.14 s
+(EngineCore pid=84) INFO 10-10 08:37:08 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s](Worker_TP0 pid=105) 
+[1ACapturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   2%|▏         | 1/51 [00:23<19:11, 23.03s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   4%|▍         | 2/51 [00:23<08:03,  9.86s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   6%|▌         | 3/51 [00:24<04:24,  5.51s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   8%|▊         | 4/51 [00:24<02:43,  3.47s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  10%|▉         | 5/51 [00:24<01:49,  2.37s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  12%|█▏        | 6/51 [00:25<01:15,  1.67s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  14%|█▎        | 7/51 [00:25<00:54,  1.24s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  16%|█▌        | 8/51 [00:25<00:41,  1.05it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   2%|▏         | 1/51 [00:22<19:06, 22.93s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   4%|▍         | 2/51 [00:23<08:02,  9.85s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   6%|▌         | 3/51 [00:23<04:23,  5.49s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   8%|▊         | 4/51 [00:24<02:41,  3.44s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  10%|▉         | 5/51 [00:24<01:47,  2.33s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  12%|█▏        | 6/51 [00:24<01:13,  1.64s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  14%|█▎        | 7/51 [00:25<00:54,  1.24s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  16%|█▌        | 8/51 [00:25<00:40,  1.05it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:36<02:52,  4.11s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:37<02:00,  2.94s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:37<01:26,  2.16s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:36<02:54,  4.15s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:37<02:03,  3.00s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:37<01:27,  2.19s/it](EngineCore pid=84) INFO 10-10 08:38:01 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+(EngineCore pid=84) INFO 10-10 08:38:08 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+
+[1ACapturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [01:38<13:07, 20.20s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [01:37<12:54, 19.86s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [01:50<11:12, 17.69s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [01:51<07:39, 12.43s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [01:51<05:15,  8.78s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [01:51<03:37,  6.22s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [01:49<11:04, 17.50s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [01:50<07:35, 12.30s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [01:50<05:12,  8.68s/it]
+(EngineCore pid=84) INFO 10-10 08:39:01 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [01:50<03:35,  6.16s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [02:07<05:05,  8.97s/it]
+(EngineCore pid=84) INFO 10-10 08:39:08 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [02:07<03:32,  6.44s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [02:07<02:26,  4.58s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [02:08<01:41,  3.28s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [02:08<01:11,  2.37s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [02:08<00:50,  1.74s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [02:08<00:36,  1.29s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [02:09<00:26,  1.02it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [02:06<05:03,  8.92s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [02:06<03:31,  6.40s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [02:06<02:25,  4.55s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [02:07<01:41,  3.26s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [02:07<01:10,  2.36s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [02:07<00:49,  1.72s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [02:07<00:35,  1.28s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [02:08<00:26,  1.03it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [02:20<01:42,  3.95s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [02:20<01:10,  2.84s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [02:20<00:49,  2.06s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [02:20<00:34,  1.52s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [02:21<00:24,  1.14s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [02:21<00:18,  1.15it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [02:21<00:13,  1.46it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [02:21<00:10,  1.81it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [02:18<01:41,  3.92s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [02:19<01:10,  2.82s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [02:19<00:49,  2.05s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [02:19<00:34,  1.51s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [02:19<00:24,  1.13s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [02:20<00:18,  1.16it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [02:20<00:13,  1.46it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [02:20<00:10,  1.81it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [02:32<01:02,  3.47s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [02:32<00:42,  2.50s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [02:32<00:29,  1.83s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [02:32<00:20,  1.35s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [02:33<00:14,  1.02s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [02:33<00:10,  1.27it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [02:33<00:07,  1.59it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [02:33<00:05,  1.95it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [02:31<01:03,  3.54s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [02:31<00:43,  2.55s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [02:31<00:29,  1.86s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [02:31<00:20,  1.38s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [02:32<00:14,  1.04s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [02:32<00:10,  1.24it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [02:32<00:07,  1.56it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [02:32<00:05,  1.92it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [02:44<00:35,  3.56s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [02:44<00:23,  2.57s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [02:44<00:14,  1.87s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [02:45<00:09,  1.38s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [02:43<00:36,  3.63s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [02:44<00:23,  2.62s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [02:44<00:15,  1.91s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [02:44<00:09,  1.41s/it]
+(EngineCore pid=84) INFO 10-10 08:40:01 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [02:57<00:27,  4.66s/it]
+(EngineCore pid=84) INFO 10-10 08:40:08 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [02:57<00:28,  4.82s/it](EngineCore pid=84) INFO 10-10 08:41:01 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+(EngineCore pid=84) INFO 10-10 08:41:08 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+
+[1ACapturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [04:21<02:22, 28.41s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [04:22<01:20, 20.21s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [04:23<00:43, 14.40s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [04:24<00:20, 10.34s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [04:24<00:07,  7.31s/it]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [04:26<00:00,  5.81s/it]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [04:26<00:00,  5.23s/it]
+(Worker_TP0 pid=105) 
+[1ACapturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (FULL):  50%|█████     | 1/2 [00:00<00:00,  4.38it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [04:19<02:19, 27.90s/it]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  4.49it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  4.47it/s]
+(Worker_TP1 pid=106) INFO 10-10 08:41:28 [model_runner.py:1066] Graph capturing finished in 268 secs, took 1.08 GiB
+(Worker_TP0 pid=105) INFO 10-10 08:41:28 [model_runner.py:1066] Graph capturing finished in 268 secs, took 1.08 GiB
+(Worker_TP2 pid=107) INFO 10-10 08:41:28 [model_runner.py:1066] Graph capturing finished in 268 secs, took 1.08 GiB
+(Worker_TP3 pid=108) INFO 10-10 08:41:28 [model_runner.py:1066] Graph capturing finished in 268 secs, took 1.08 GiB
+
+(Worker_TP2 pid=107) INFO 10-10 08:41:29 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP1 pid=106) INFO 10-10 08:41:29 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP0 pid=105) INFO 10-10 08:41:29 [gpu_worker.py:640] Available KV cache memory: 39.41 GiB
+(Worker_TP0 pid=105) INFO 10-10 08:41:29 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP3 pid=108) INFO 10-10 08:41:29 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(EngineCore pid=84) INFO 10-10 08:41:29 [kv_cache_utils.py:2395] GPU KV cache size: 2,931,137 tokens, Maximum concurrency for 36,864 tokens per request: 79.51x
+(Worker_TP3 pid=108) INFO 10-10 08:41:29 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP1 pid=106) INFO 10-10 08:41:29 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP2 pid=107) INFO 10-10 08:41:29 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP3 pid=108) INFO 10-10 08:41:29 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP1 pid=106) INFO 10-10 08:41:29 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP0 pid=105) INFO 10-10 08:41:29 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP2 pid=107) INFO 10-10 08:41:29 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP0 pid=105) INFO 10-10 08:41:29 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP0 pid=105) INFO 10-10 08:41:29 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP3 pid=108) INFO 10-10 08:41:29 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP1 pid=106) INFO 10-10 08:41:29 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP2 pid=107) INFO 10-10 08:41:29 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+[1ACapturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [04:20<01:19, 19.85s/it]
+(Worker_TP2 pid=107) INFO 10-10 08:41:30 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP0 pid=105) INFO 10-10 08:41:30 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP1 pid=106) INFO 10-10 08:41:30 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP3 pid=108) INFO 10-10 08:41:30 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP1 pid=106) INFO 10-10 08:41:30 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP0 pid=105) INFO 10-10 08:41:30 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP2 pid=107) INFO 10-10 08:41:30 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP3 pid=108) INFO 10-10 08:41:30 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+[1ACapturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [04:21<00:42, 14.13s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [04:21<00:20, 10.14s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [04:22<00:07,  7.17s/it](Worker_TP0 pid=105) 
+[1ADeepGEMM warmup:   0%|          | 0/1887 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [04:24<00:00,  5.68s/it]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [04:24<00:00,  5.18s/it]
+(Worker_TP0 pid=105) 
+[1ACapturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (FULL):  50%|█████     | 1/2 [00:00<00:00,  4.57it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  4.71it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  4.69it/s]
+(Worker_TP1 pid=106) INFO 10-10 08:41:33 [model_runner.py:1066] Graph capturing finished in 266 secs, took 1.08 GiB
+(Worker_TP3 pid=108) INFO 10-10 08:41:33 [model_runner.py:1066] Graph capturing finished in 266 secs, took 1.08 GiB
+(Worker_TP0 pid=105) INFO 10-10 08:41:33 [model_runner.py:1066] Graph capturing finished in 266 secs, took 1.08 GiB
+(Worker_TP2 pid=107) INFO 10-10 08:41:34 [model_runner.py:1066] Graph capturing finished in 266 secs, took 1.08 GiB
+(Worker_TP1 pid=106) INFO 10-10 08:41:34 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP3 pid=108) INFO 10-10 08:41:34 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP0 pid=105) INFO 10-10 08:41:34 [gpu_worker.py:640] Available KV cache memory: 39.41 GiB
+(Worker_TP0 pid=105) INFO 10-10 08:41:34 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(Worker_TP2 pid=107) INFO 10-10 08:41:34 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9056 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9344. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(EngineCore pid=84) INFO 10-10 08:41:34 [kv_cache_utils.py:2395] GPU KV cache size: 2,931,137 tokens, Maximum concurrency for 36,864 tokens per request: 79.51x
+(Worker_TP1 pid=106) INFO 10-10 08:41:34 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP2 pid=107) INFO 10-10 08:41:34 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP0 pid=105) INFO 10-10 08:41:34 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP3 pid=108) INFO 10-10 08:41:34 [kernel_warmup.py:172] JIT kernel warmup starting.
+(Worker_TP1 pid=106) INFO 10-10 08:41:34 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP2 pid=107) INFO 10-10 08:41:34 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP0 pid=105) INFO 10-10 08:41:34 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP3 pid=108) INFO 10-10 08:41:34 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(Worker_TP0 pid=105) INFO 10-10 08:41:34 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP2 pid=107) INFO 10-10 08:41:34 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP1 pid=106) INFO 10-10 08:41:34 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+(Worker_TP3 pid=108) INFO 10-10 08:41:34 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_moe_text.
+
+(Worker_TP1 pid=106) INFO 10-10 08:41:35 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP3 pid=108) INFO 10-10 08:41:35 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP0 pid=105) INFO 10-10 08:41:35 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP2 pid=107) INFO 10-10 08:41:35 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(Worker_TP3 pid=108) INFO 10-10 08:41:35 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP1 pid=106) INFO 10-10 08:41:35 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP2 pid=107) INFO 10-10 08:41:35 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(Worker_TP0 pid=105) INFO 10-10 08:41:35 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+[1ADeepGEMM warmup:   0%|          | 1/1887 [00:04<2:12:55,  4.23s/it](Worker_TP0 pid=105) 
+[1ADeepGEMM warmup:   0%|          | 0/1887 [00:00<?, ?it/s]
+[1ADeepGEMM warmup:   3%|▎         | 48/1887 [00:06<03:36,  8.50it/s] 
+[1ADeepGEMM warmup:   0%|          | 1/1887 [00:04<2:11:14,  4.18s/it]
+[1ADeepGEMM warmup:   3%|▎         | 57/1887 [00:10<05:24,  5.65it/s]
+[1ADeepGEMM warmup:   3%|▎         | 48/1887 [00:06<03:31,  8.71it/s] 
+[1ADeepGEMM warmup:   3%|▎         | 64/1887 [00:13<06:42,  4.53it/s]
+[1ADeepGEMM warmup:   3%|▎         | 57/1887 [00:10<05:08,  5.92it/s]
+[1ADeepGEMM warmup:   3%|▎         | 64/1887 [00:12<06:19,  4.80it/s]
+[1ADeepGEMM warmup:   4%|▎         | 70/1887 [00:19<11:02,  2.74it/s]
+[1ADeepGEMM warmup:   4%|▎         | 70/1887 [00:18<10:52,  2.79it/s]
+[1ADeepGEMM warmup:   4%|▍         | 78/1887 [00:24<12:58,  2.32it/s]
+[1ADeepGEMM warmup:   5%|▍         | 85/1887 [00:27<13:33,  2.22it/s]
+[1ADeepGEMM warmup:   4%|▍         | 78/1887 [00:23<12:30,  2.41it/s]
+[1ADeepGEMM warmup:  22%|██▏       | 418/1887 [00:31<00:53, 27.33it/s]
+[1ADeepGEMM warmup:   5%|▍         | 85/1887 [00:26<12:51,  2.34it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 451/1887 [00:34<01:00, 23.84it/s]
+[1ADeepGEMM warmup:  22%|██▏       | 418/1887 [00:30<00:50, 28.84it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 454/1887 [00:37<01:18, 18.35it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 451/1887 [00:32<00:57, 25.17it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 457/1887 [00:39<01:44, 13.63it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 454/1887 [00:35<01:14, 19.12it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 457/1887 [00:38<01:40, 14.23it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 461/1887 [00:45<03:02,  7.80it/s]
+[1ADeepGEMM warmup:  24%|██▍       | 461/1887 [00:44<02:56,  8.10it/s]
+[1ADeepGEMM warmup:  25%|██▍       | 463/1887 [00:50<04:30,  5.26it/s]
+[1ADeepGEMM warmup:  25%|██▌       | 472/1887 [00:53<04:48,  4.90it/s]
+[1ADeepGEMM warmup:  25%|██▍       | 463/1887 [00:48<04:21,  5.44it/s]
+[1ADeepGEMM warmup:  25%|██▌       | 472/1887 [00:51<04:39,  5.06it/s]
+[1ADeepGEMM warmup:  25%|██▌       | 477/1887 [00:56<06:00,  3.91it/s]
+(EngineCore pid=84) INFO 10-10 08:42:30 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ADeepGEMM warmup:  26%|██▌       | 483/1887 [00:59<06:38,  3.52it/s]
+[1ADeepGEMM warmup:  25%|██▌       | 477/1887 [00:54<05:50,  4.02it/s]
+[1ADeepGEMM warmup:  26%|██▌       | 487/1887 [01:02<07:51,  2.97it/s]
+(EngineCore pid=84) INFO 10-10 08:42:35 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ADeepGEMM warmup:  26%|██▌       | 483/1887 [00:57<06:23,  3.66it/s]
+[1ADeepGEMM warmup:  26%|██▌       | 487/1887 [00:59<07:36,  3.07it/s]
+[1ADeepGEMM warmup:  26%|██▌       | 491/1887 [01:08<12:01,  1.94it/s]
+[1ADeepGEMM warmup:  26%|██▌       | 491/1887 [01:05<11:38,  2.00it/s]
+[1ADeepGEMM warmup:  26%|██▌       | 494/1887 [01:13<15:35,  1.49it/s]
+[1ADeepGEMM warmup:  26%|██▌       | 494/1887 [01:10<15:10,  1.53it/s]
+[1ADeepGEMM warmup:  27%|██▋       | 507/1887 [01:16<11:08,  2.06it/s]
+[1ADeepGEMM warmup:  27%|██▋       | 507/1887 [01:13<10:44,  2.14it/s]
+[1ADeepGEMM warmup:  42%|████▏     | 799/1887 [01:19<00:41, 26.05it/s]
+[1ADeepGEMM warmup:  42%|████▏     | 799/1887 [01:16<00:40, 27.07it/s]
+[1ADeepGEMM warmup:  43%|████▎     | 818/1887 [01:21<00:48, 21.97it/s]
+[1ADeepGEMM warmup:  43%|████▎     | 818/1887 [01:18<00:46, 23.09it/s]
+[1ADeepGEMM warmup:  44%|████▎     | 823/1887 [01:23<01:01, 17.31it/s]
+[1ADeepGEMM warmup:  44%|████▎     | 823/1887 [01:20<01:00, 17.72it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 828/1887 [01:26<01:19, 13.24it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 828/1887 [01:23<01:17, 13.63it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 831/1887 [01:30<02:00,  8.77it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 831/1887 [01:26<01:57,  9.01it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 837/1887 [01:32<02:26,  7.18it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 837/1887 [01:29<02:22,  7.35it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 839/1887 [01:35<03:16,  5.33it/s]
+[1ADeepGEMM warmup:  44%|████▍     | 839/1887 [01:32<03:15,  5.37it/s]
+[1ADeepGEMM warmup:  45%|████▍     | 842/1887 [01:37<04:09,  4.19it/s]
+[1ADeepGEMM warmup:  45%|████▍     | 842/1887 [01:34<04:08,  4.20it/s]
+[1ADeepGEMM warmup:  45%|████▌     | 851/1887 [01:40<04:21,  3.96it/s]
+[1ADeepGEMM warmup:  45%|████▌     | 851/1887 [01:36<04:10,  4.13it/s]
+[1ADeepGEMM warmup:  45%|████▌     | 854/1887 [01:42<05:22,  3.20it/s]
+[1ADeepGEMM warmup:  45%|████▌     | 854/1887 [01:39<05:11,  3.32it/s]
+[1ADeepGEMM warmup:  45%|████▌     | 855/1887 [01:46<08:17,  2.07it/s]
+[1ADeepGEMM warmup:  45%|████▌     | 855/1887 [01:42<07:54,  2.17it/s]
+[1ADeepGEMM warmup:  46%|████▌     | 865/1887 [01:49<06:39,  2.56it/s]
+[1ADeepGEMM warmup:  46%|████▌     | 865/1887 [01:45<06:22,  2.67it/s]
+[1ADeepGEMM warmup:  46%|████▋     | 874/1887 [01:51<06:04,  2.78it/s]
+[1ADeepGEMM warmup:  46%|████▋     | 874/1887 [01:47<05:48,  2.91it/s]
+[1ADeepGEMM warmup:  47%|████▋     | 891/1887 [01:54<04:16,  3.88it/s]
+(EngineCore pid=84) INFO 10-10 08:43:30 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ADeepGEMM warmup:  47%|████▋     | 891/1887 [01:50<04:01,  4.13it/s]
+[1ADeepGEMM warmup:  48%|████▊     | 899/1887 [01:59<05:48,  2.83it/s]
+[1ADeepGEMM warmup:  48%|████▊     | 899/1887 [01:55<05:26,  3.02it/s]
+[1ADeepGEMM warmup:  49%|████▊     | 917/1887 [02:02<04:10,  3.87it/s]
+(EngineCore pid=84) INFO 10-10 08:43:35 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ADeepGEMM warmup:  49%|████▊     | 917/1887 [01:57<03:57,  4.08it/s]
+[1ADeepGEMM warmup:  49%|████▉     | 934/1887 [02:05<03:46,  4.21it/s]
+[1ADeepGEMM warmup:  49%|████▉     | 934/1887 [02:00<03:38,  4.35it/s]
+[1ADeepGEMM warmup:  51%|█████     | 965/1887 [02:10<03:02,  5.05it/s]
+[1ADeepGEMM warmup:  51%|█████     | 965/1887 [02:05<02:58,  5.17it/s]
+[1ADeepGEMM warmup:  54%|█████▎    | 1013/1887 [02:13<01:55,  7.56it/s]
+[1ADeepGEMM warmup:  54%|█████▎    | 1013/1887 [02:09<01:53,  7.71it/s]
+[1ADeepGEMM warmup:  58%|█████▊    | 1098/1887 [02:17<01:05, 11.96it/s]
+[1ADeepGEMM warmup:  58%|█████▊    | 1098/1887 [02:12<01:03, 12.34it/s]
+[1ADeepGEMM warmup:  60%|█████▉    | 1131/1887 [02:20<01:01, 12.29it/s]
+[1ADeepGEMM warmup:  60%|█████▉    | 1131/1887 [02:15<00:59, 12.65it/s]
+[1ADeepGEMM warmup:  60%|██████    | 1134/1887 [02:22<01:16,  9.87it/s]
+[1ADeepGEMM warmup:  60%|██████    | 1134/1887 [02:17<01:15, 10.03it/s]
+[1ADeepGEMM warmup:  60%|██████    | 1137/1887 [02:24<01:37,  7.72it/s]
+[1ADeepGEMM warmup:  60%|██████    | 1137/1887 [02:20<01:36,  7.76it/s]
+[1ADeepGEMM warmup:  60%|██████    | 1140/1887 [02:27<02:05,  5.97it/s]
+[1ADeepGEMM warmup:  60%|██████    | 1140/1887 [02:22<02:04,  5.99it/s]
+[1ADeepGEMM warmup:  60%|██████    | 1141/1887 [02:30<02:58,  4.17it/s]
+[1ADeepGEMM warmup:  60%|██████    | 1141/1887 [02:25<02:54,  4.28it/s]
+[1ADeepGEMM warmup:  61%|██████    | 1143/1887 [02:33<03:57,  3.14it/s]
+[1ADeepGEMM warmup:  61%|██████    | 1143/1887 [02:28<03:51,  3.21it/s]
+[1ADeepGEMM warmup:  61%|██████    | 1152/1887 [02:35<03:38,  3.37it/s]
+[1ADeepGEMM warmup:  61%|██████    | 1152/1887 [02:30<03:37,  3.38it/s]
+[1ADeepGEMM warmup:  61%|██████▏   | 1157/1887 [02:37<04:05,  2.97it/s]
+[1ADeepGEMM warmup:  61%|██████▏   | 1157/1887 [02:32<04:05,  2.97it/s]
+[1ADeepGEMM warmup:  62%|██████▏   | 1163/1887 [02:40<04:14,  2.84it/s]
+[1ADeepGEMM warmup:  62%|██████▏   | 1163/1887 [02:35<04:12,  2.86it/s]
+[1ADeepGEMM warmup:  62%|██████▏   | 1167/1887 [02:42<04:51,  2.47it/s]
+[1ADeepGEMM warmup:  62%|██████▏   | 1167/1887 [02:37<04:46,  2.51it/s]
+[1ADeepGEMM warmup:  62%|██████▏   | 1171/1887 [02:45<05:41,  2.10it/s]
+[1ADeepGEMM warmup:  62%|██████▏   | 1171/1887 [02:40<05:43,  2.08it/s]
+[1ADeepGEMM warmup:  62%|██████▏   | 1174/1887 [02:48<06:41,  1.77it/s]
+[1ADeepGEMM warmup:  62%|██████▏   | 1174/1887 [02:43<06:41,  1.78it/s]
+[1ADeepGEMM warmup:  63%|██████▎   | 1187/1887 [02:50<04:14,  2.75it/s]
+[1ADeepGEMM warmup:  63%|██████▎   | 1187/1887 [02:45<04:12,  2.77it/s]
+[1ADeepGEMM warmup:  66%|██████▌   | 1243/1887 [02:53<01:18,  8.19it/s]
+[1ADeepGEMM warmup:  66%|██████▌   | 1243/1887 [02:48<01:19,  8.15it/s]
+[1ADeepGEMM warmup:  78%|███████▊  | 1479/1887 [02:56<00:12, 33.01it/s]
+(EngineCore pid=84) INFO 10-10 08:44:30 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ADeepGEMM warmup:  78%|███████▊  | 1479/1887 [02:51<00:12, 32.65it/s]
+[1ADeepGEMM warmup:  80%|████████  | 1519/1887 [03:01<00:16, 22.01it/s]
+[1ADeepGEMM warmup:  80%|████████  | 1519/1887 [02:56<00:17, 21.53it/s]
+[1ADeepGEMM warmup:  81%|████████  | 1527/1887 [03:03<00:21, 16.94it/s]
+(EngineCore pid=84) INFO 10-10 08:44:35 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ADeepGEMM warmup:  81%|████████  | 1527/1887 [02:58<00:21, 17.13it/s]
+[1ADeepGEMM warmup:  81%|████████  | 1531/1887 [03:06<00:27, 12.90it/s]
+[1ADeepGEMM warmup:  81%|████████  | 1531/1887 [03:01<00:27, 12.98it/s]
+[1ADeepGEMM warmup:  82%|████████▏ | 1539/1887 [03:09<00:34, 10.05it/s]
+[1ADeepGEMM warmup:  82%|████████▏ | 1539/1887 [03:04<00:33, 10.25it/s]
+[1ADeepGEMM warmup:  82%|████████▏ | 1544/1887 [03:10<00:59,  5.78it/s]
+[1ADeepGEMM warmup:  82%|████████▏ | 1544/1887 [03:15<01:00,  5.63it/s]
+[1ADeepGEMM warmup:  82%|████████▏ | 1548/1887 [03:14<01:24,  4.02it/s]
+[1ADeepGEMM warmup:  82%|████████▏ | 1548/1887 [03:20<01:26,  3.94it/s]
+[1ADeepGEMM warmup:  83%|████████▎ | 1560/1887 [03:18<01:22,  3.96it/s]
+[1ADeepGEMM warmup: 100%|██████████| 1887/1887 [03:18<00:00,  9.53it/s]
+(Worker_TP0 pid=105) INFO 10-10 08:44:54 [kernel_warmup.py:438] Using FlashInfer autotune cache file: /root/.cache/vllm/flashinfer_autotune_cache/0.6.18.post1/90a/a65ec6b099765cab1e6d75c3e29a1566381ab3f7b504485a85dd60e9e9113741/autotune_configs.json
+(Worker_TP2 pid=107) 2026-10-10 08:44:54,294 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP2 pid=107) INFO 10-10 08:44:54 [kernel_warmup.py:359] Running FlashInfer autotune with 16384 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096, 8192, 16384).
+(Worker_TP0 pid=105) 2026-10-10 08:44:54,334 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP1 pid=106) 2026-10-10 08:44:54,335 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP3 pid=108) 2026-10-10 08:44:54,335 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP0 pid=105) INFO 10-10 08:44:54 [kernel_warmup.py:359] Running FlashInfer autotune with 16384 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096, 8192, 16384).
+(Worker_TP1 pid=106) INFO 10-10 08:44:54 [kernel_warmup.py:359] Running FlashInfer autotune with 16384 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096, 8192, 16384).
+(Worker_TP3 pid=108) INFO 10-10 08:44:54 [kernel_warmup.py:359] Running FlashInfer autotune with 16384 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096, 8192, 16384).
+
+[1ADeepGEMM warmup:  83%|████████▎ | 1560/1887 [03:23<01:24,  3.87it/s](Worker_TP3 pid=108) 2026-10-10 08:44:54,444 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP0 pid=105) 2026-10-10 08:44:54,445 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP2 pid=107) 2026-10-10 08:44:54,446 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP1 pid=106) 2026-10-10 08:44:54,447 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+
+[1ADeepGEMM warmup: 100%|██████████| 1887/1887 [03:23<00:00,  9.27it/s]
+(Worker_TP0 pid=105) INFO 10-10 08:44:54 [kernel_warmup.py:438] Using FlashInfer autotune cache file: /root/.cache/vllm/flashinfer_autotune_cache/0.6.18.post1/90a/a65ec6b099765cab1e6d75c3e29a1566381ab3f7b504485a85dd60e9e9113741/autotune_configs.json
+(Worker_TP0 pid=105) 2026-10-10 08:44:54,490 - INFO - autotuner.py:2652 - flashinfer.jit: [Autotuner]: Saved 0 configs to /root/.cache/vllm/flashinfer_autotune_cache/0.6.18.post1/90a/a65ec6b099765cab1e6d75c3e29a1566381ab3f7b504485a85dd60e9e9113741/autotune_configs.json (0 new, 0 from previous config)
+(Worker_TP0 pid=105) 2026-10-10 08:44:54,562 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP1 pid=106) 2026-10-10 08:44:54,562 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP2 pid=107) 2026-10-10 08:44:54,562 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP3 pid=108) 2026-10-10 08:44:54,562 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP0 pid=105) INFO 10-10 08:44:54 [kernel_warmup.py:359] Running FlashInfer autotune with 16384 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096, 8192, 16384).
+(Worker_TP1 pid=106) INFO 10-10 08:44:54 [kernel_warmup.py:359] Running FlashInfer autotune with 16384 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096, 8192, 16384).
+(Worker_TP2 pid=107) INFO 10-10 08:44:54 [kernel_warmup.py:359] Running FlashInfer autotune with 16384 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096, 8192, 16384).
+(Worker_TP3 pid=108) INFO 10-10 08:44:54 [kernel_warmup.py:359] Running FlashInfer autotune with 16384 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096, 8192, 16384).
+(Worker_TP1 pid=106) 2026-10-10 08:44:54,679 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP2 pid=107) 2026-10-10 08:44:54,679 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP3 pid=108) 2026-10-10 08:44:54,680 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP0 pid=105) 2026-10-10 08:44:54,681 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP0 pid=105) 2026-10-10 08:44:54,727 - INFO - autotuner.py:2652 - flashinfer.jit: [Autotuner]: Saved 0 configs to /root/.cache/vllm/flashinfer_autotune_cache/0.6.18.post1/90a/a65ec6b099765cab1e6d75c3e29a1566381ab3f7b504485a85dd60e9e9113741/autotune_configs.json (0 new, 0 from previous config)
+(EngineCore pid=84) INFO 10-10 08:45:30 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+(EngineCore pid=84) INFO 10-10 08:45:35 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+(Worker_TP0 pid=105) 
+[1ACapturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   2%|▏         | 1/51 [00:00<00:21,  2.30it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   4%|▍         | 2/51 [00:00<00:17,  2.76it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   6%|▌         | 3/51 [00:01<00:17,  2.79it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   8%|▊         | 4/51 [00:01<00:16,  2.86it/s](Worker_TP0 pid=105) 
+[1ACapturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  10%|▉         | 5/51 [00:01<00:15,  2.90it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   2%|▏         | 1/51 [00:00<00:19,  2.57it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  12%|█▏        | 6/51 [00:02<00:15,  2.83it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   4%|▍         | 2/51 [00:00<00:16,  3.03it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  14%|█▎        | 7/51 [00:02<00:14,  2.97it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   6%|▌         | 3/51 [00:01<00:15,  3.02it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  16%|█▌        | 8/51 [00:02<00:14,  3.04it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   8%|▊         | 4/51 [00:01<00:16,  2.91it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:03<00:14,  2.92it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  10%|▉         | 5/51 [00:01<00:15,  3.00it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:03<00:13,  3.01it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  12%|█▏        | 6/51 [00:01<00:14,  3.12it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:03<00:13,  2.97it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  14%|█▎        | 7/51 [00:02<00:14,  3.11it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [00:04<00:13,  2.89it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  16%|█▌        | 8/51 [00:02<00:14,  2.99it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [00:04<00:12,  2.96it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:03<00:14,  2.90it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [00:04<00:11,  3.12it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:03<00:14,  2.90it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [00:05<00:11,  3.26it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:03<00:13,  3.04it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [00:05<00:10,  3.35it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [00:04<00:13,  2.87it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [00:05<00:09,  3.47it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [00:05<00:09,  3.45it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [00:04<00:13,  2.90it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [00:04<00:11,  3.09it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [00:06<00:10,  3.11it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [00:04<00:11,  3.25it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [00:06<00:09,  3.15it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [00:05<00:10,  3.36it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [00:06<00:09,  3.30it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [00:05<00:09,  3.50it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [00:07<00:08,  3.27it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [00:05<00:09,  3.62it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [00:07<00:08,  3.39it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [00:05<00:08,  3.67it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [00:07<00:07,  3.50it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [00:06<00:08,  3.54it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [00:07<00:07,  3.55it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [00:06<00:08,  3.54it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [00:08<00:07,  3.30it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [00:06<00:07,  3.67it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [00:08<00:07,  3.41it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [00:07<00:07,  3.50it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [00:08<00:06,  3.47it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [00:07<00:07,  3.41it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [00:07<00:07,  3.48it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [00:09<00:06,  3.31it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [00:09<00:06,  3.33it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [00:08<00:07,  3.51it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [00:09<00:06,  3.31it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [00:08<00:07,  3.33it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [00:08<00:06,  3.42it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [00:10<00:05,  3.17it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [00:08<00:06,  3.48it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [00:10<00:05,  3.28it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [00:10<00:05,  3.38it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [00:09<00:06,  3.31it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [00:09<00:05,  3.44it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [00:10<00:04,  3.39it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [00:11<00:04,  3.50it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [00:09<00:05,  3.55it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [00:10<00:04,  3.61it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [00:11<00:04,  3.41it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [00:10<00:04,  3.50it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [00:11<00:03,  3.32it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [00:10<00:04,  3.56it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [00:12<00:03,  3.04it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [00:10<00:04,  3.54it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [00:12<00:03,  3.18it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [00:11<00:04,  3.19it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [00:12<00:03,  3.32it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [00:11<00:03,  3.30it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [00:13<00:02,  3.31it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [00:11<00:03,  3.42it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [00:13<00:02,  3.37it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [00:12<00:03,  3.53it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [00:13<00:02,  3.49it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [00:12<00:03,  3.24it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [00:13<00:01,  3.57it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [00:12<00:02,  3.36it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [00:14<00:01,  3.39it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [00:13<00:02,  3.36it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [00:14<00:01,  3.54it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [00:14<00:00,  3.68it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [00:13<00:02,  3.27it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [00:15<00:00,  3.66it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [00:13<00:01,  3.41it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [00:15<00:00,  3.69it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [00:13<00:01,  3.53it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:15<00:00,  3.78it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [00:14<00:01,  3.61it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:15<00:00,  3.28it/s]
+(Worker_TP0 pid=105) 
+[1ACapturing CUDA graphs (FULL):   0%|          | 0/35 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (FULL):   3%|▎         | 1/35 [00:00<00:07,  4.42it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [00:14<00:00,  3.58it/s]
+[1ACapturing CUDA graphs (FULL):   6%|▌         | 2/35 [00:00<00:07,  4.54it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [00:14<00:00,  3.65it/s]
+[1ACapturing CUDA graphs (FULL):   9%|▊         | 3/35 [00:00<00:07,  4.49it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [00:14<00:00,  3.77it/s]
+[1ACapturing CUDA graphs (FULL):  11%|█▏        | 4/35 [00:00<00:06,  4.52it/s]
+[1ACapturing CUDA graphs (FULL):  14%|█▍        | 5/35 [00:01<00:06,  4.48it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:15<00:00,  3.58it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:15<00:00,  3.35it/s]
+(Worker_TP0 pid=105) 
+[1ACapturing CUDA graphs (FULL):   0%|          | 0/35 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (FULL):  17%|█▋        | 6/35 [00:01<00:06,  4.51it/s]
+[1ACapturing CUDA graphs (FULL):   3%|▎         | 1/35 [00:00<00:07,  4.33it/s]
+[1ACapturing CUDA graphs (FULL):  20%|██        | 7/35 [00:01<00:06,  4.53it/s]
+(EngineCore pid=84) INFO 10-10 08:46:30 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (FULL):   6%|▌         | 2/35 [00:00<00:07,  4.57it/s]
+[1ACapturing CUDA graphs (FULL):  23%|██▎       | 8/35 [00:01<00:05,  4.54it/s]
+[1ACapturing CUDA graphs (FULL):   9%|▊         | 3/35 [00:00<00:07,  4.56it/s]
+[1ACapturing CUDA graphs (FULL):  26%|██▌       | 9/35 [00:01<00:05,  4.56it/s]
+[1ACapturing CUDA graphs (FULL):  11%|█▏        | 4/35 [00:00<00:06,  4.61it/s]
+[1ACapturing CUDA graphs (FULL):  29%|██▊       | 10/35 [00:02<00:05,  4.57it/s]
+[1ACapturing CUDA graphs (FULL):  14%|█▍        | 5/35 [00:01<00:06,  4.50it/s]
+[1ACapturing CUDA graphs (FULL):  31%|███▏      | 11/35 [00:02<00:05,  4.59it/s]
+[1ACapturing CUDA graphs (FULL):  17%|█▋        | 6/35 [00:01<00:06,  4.55it/s]
+[1ACapturing CUDA graphs (FULL):  34%|███▍      | 12/35 [00:02<00:05,  4.32it/s]
+[1ACapturing CUDA graphs (FULL):  20%|██        | 7/35 [00:01<00:06,  4.59it/s]
+[1ACapturing CUDA graphs (FULL):  37%|███▋      | 13/35 [00:02<00:05,  4.39it/s]
+[1ACapturing CUDA graphs (FULL):  23%|██▎       | 8/35 [00:01<00:06,  4.49it/s]
+[1ACapturing CUDA graphs (FULL):  26%|██▌       | 9/35 [00:02<00:05,  4.36it/s]
+[1ACapturing CUDA graphs (FULL):  40%|████      | 14/35 [00:03<00:04,  4.44it/s]
+[1ACapturing CUDA graphs (FULL):  43%|████▎     | 15/35 [00:03<00:04,  4.48it/s]
+[1ACapturing CUDA graphs (FULL):  29%|██▊       | 10/35 [00:02<00:05,  4.46it/s]
+[1ACapturing CUDA graphs (FULL):  46%|████▌     | 16/35 [00:03<00:04,  4.51it/s]
+[1ACapturing CUDA graphs (FULL):  31%|███▏      | 11/35 [00:02<00:05,  4.56it/s]
+[1ACapturing CUDA graphs (FULL):  49%|████▊     | 17/35 [00:03<00:03,  4.52it/s]
+[1ACapturing CUDA graphs (FULL):  34%|███▍      | 12/35 [00:02<00:04,  4.62it/s]
+[1ACapturing CUDA graphs (FULL):  51%|█████▏    | 18/35 [00:03<00:03,  4.57it/s]
+[1ACapturing CUDA graphs (FULL):  37%|███▋      | 13/35 [00:02<00:04,  4.68it/s]
+[1ACapturing CUDA graphs (FULL):  40%|████      | 14/35 [00:03<00:04,  4.58it/s]
+[1ACapturing CUDA graphs (FULL):  54%|█████▍    | 19/35 [00:04<00:03,  4.54it/s]
+[1ACapturing CUDA graphs (FULL):  57%|█████▋    | 20/35 [00:04<00:03,  4.52it/s]
+[1ACapturing CUDA graphs (FULL):  43%|████▎     | 15/35 [00:03<00:04,  4.49it/s]
+[1ACapturing CUDA graphs (FULL):  60%|██████    | 21/35 [00:04<00:03,  4.46it/s]
+[1ACapturing CUDA graphs (FULL):  46%|████▌     | 16/35 [00:03<00:04,  4.59it/s]
+[1ACapturing CUDA graphs (FULL):  49%|████▊     | 17/35 [00:03<00:03,  4.62it/s]
+[1ACapturing CUDA graphs (FULL):  63%|██████▎   | 22/35 [00:04<00:02,  4.49it/s]
+[1ACapturing CUDA graphs (FULL):  66%|██████▌   | 23/35 [00:05<00:02,  4.56it/s]
+[1ACapturing CUDA graphs (FULL):  51%|█████▏    | 18/35 [00:03<00:03,  4.51it/s]
+[1ACapturing CUDA graphs (FULL):  69%|██████▊   | 24/35 [00:05<00:02,  4.58it/s]
+[1ACapturing CUDA graphs (FULL):  54%|█████▍    | 19/35 [00:04<00:03,  4.56it/s]
+[1ACapturing CUDA graphs (FULL):  71%|███████▏  | 25/35 [00:05<00:02,  4.61it/s]
+[1ACapturing CUDA graphs (FULL):  57%|█████▋    | 20/35 [00:04<00:03,  4.61it/s]
+[1ACapturing CUDA graphs (FULL):  74%|███████▍  | 26/35 [00:05<00:01,  4.61it/s]
+[1ACapturing CUDA graphs (FULL):  60%|██████    | 21/35 [00:04<00:03,  4.66it/s]
+[1ACapturing CUDA graphs (FULL):  63%|██████▎   | 22/35 [00:04<00:02,  4.69it/s]
+[1ACapturing CUDA graphs (FULL):  77%|███████▋  | 27/35 [00:05<00:01,  4.61it/s]
+[1ACapturing CUDA graphs (FULL):  66%|██████▌   | 23/35 [00:05<00:02,  4.73it/s]
+[1ACapturing CUDA graphs (FULL):  80%|████████  | 28/35 [00:06<00:01,  4.54it/s]
+[1ACapturing CUDA graphs (FULL):  69%|██████▊   | 24/35 [00:05<00:02,  4.72it/s]
+[1ACapturing CUDA graphs (FULL):  83%|████████▎ | 29/35 [00:06<00:01,  4.61it/s]
+[1ACapturing CUDA graphs (FULL):  71%|███████▏  | 25/35 [00:05<00:02,  4.73it/s]
+[1ACapturing CUDA graphs (FULL):  86%|████████▌ | 30/35 [00:06<00:01,  4.72it/s]
+[1ACapturing CUDA graphs (FULL):  74%|███████▍  | 26/35 [00:05<00:01,  4.75it/s]
+[1ACapturing CUDA graphs (FULL):  89%|████████▊ | 31/35 [00:06<00:00,  4.77it/s]
+[1ACapturing CUDA graphs (FULL):  91%|█████████▏| 32/35 [00:07<00:00,  4.85it/s]
+(EngineCore pid=84) INFO 10-10 08:46:35 [shm_broadcast.py:801] No available shared memory broadcast block found in 60 seconds. This typically happens when some processes are hanging or doing some time-consuming work (e.g. compilation, weight/kv cache quantization).
+[1ACapturing CUDA graphs (FULL):  77%|███████▋  | 27/35 [00:05<00:01,  4.66it/s]
+[1ACapturing CUDA graphs (FULL):  94%|█████████▍| 33/35 [00:07<00:00,  4.92it/s]
+[1ACapturing CUDA graphs (FULL):  80%|████████  | 28/35 [00:06<00:01,  4.73it/s]
+[1ACapturing CUDA graphs (FULL):  97%|█████████▋| 34/35 [00:07<00:00,  4.82it/s]
+[1ACapturing CUDA graphs (FULL):  83%|████████▎ | 29/35 [00:06<00:01,  4.80it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 35/35 [00:07<00:00,  4.95it/s]
+[1ACapturing CUDA graphs (FULL):  86%|████████▌ | 30/35 [00:06<00:01,  4.93it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 35/35 [00:07<00:00,  4.60it/s]
+
+[1ACapturing CUDA graphs (FULL):  89%|████████▊ | 31/35 [00:06<00:00,  5.02it/s]
+(Worker_TP3 pid=108) INFO 10-10 08:46:36 [model_runner.py:1066] Graph capturing finished in 24 secs, took 0.62 GiB
+(Worker_TP3 pid=108) INFO 10-10 08:46:36 [gpu_worker.py:825] CUDA graph pool memory: 0.62 GiB (actual), 1.14 GiB (estimated), difference: 0.51 GiB (82.2%).
+(Worker_TP3 pid=108) INFO 10-10 08:46:36 [gpu_worker.py:888] Free memory on device (77.04/79.18 GiB) on startup. Desired GPU memory utilization is (0.92, 72.84 GiB). Actual usage is 31.43 GiB for consumed memory (weights + non-torch), 2.01 GiB for peak activation, and 0.62 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=41486614610` (38.64 GiB) to fit into requested memory, or `--kv-cache-memory=45986465792` (42.83 GiB) to fully utilize gpu memory. Current kv cache memory in use is 39.41 GiB.
+[1ACapturing CUDA graphs (FULL):  91%|█████████▏| 32/35 [00:06<00:00,  5.09it/s]
+(Worker_TP0 pid=105) INFO 10-10 08:46:37 [model_runner.py:1066] Graph capturing finished in 24 secs, took 0.62 GiB
+(Worker_TP0 pid=105) INFO 10-10 08:46:37 [gpu_worker.py:825] CUDA graph pool memory: 0.62 GiB (actual), 1.14 GiB (estimated), difference: 0.51 GiB (82.2%).
+(Worker_TP0 pid=105) INFO 10-10 08:46:37 [gpu_worker.py:888] Free memory on device (77.04/79.18 GiB) on startup. Desired GPU memory utilization is (0.92, 72.84 GiB). Actual usage is 31.43 GiB for consumed memory (weights + non-torch), 2.01 GiB for peak activation, and 0.62 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=41486614610` (38.64 GiB) to fit into requested memory, or `--kv-cache-memory=45986465792` (42.83 GiB) to fully utilize gpu memory. Current kv cache memory in use is 39.41 GiB.
+(Worker_TP2 pid=107) INFO 10-10 08:46:37 [model_runner.py:1066] Graph capturing finished in 24 secs, took 0.62 GiB
+(Worker_TP2 pid=107) INFO 10-10 08:46:37 [gpu_worker.py:825] CUDA graph pool memory: 0.62 GiB (actual), 1.14 GiB (estimated), difference: 0.51 GiB (82.2%).
+(Worker_TP2 pid=107) INFO 10-10 08:46:37 [gpu_worker.py:888] Free memory on device (77.04/79.18 GiB) on startup. Desired GPU memory utilization is (0.92, 72.84 GiB). Actual usage is 31.43 GiB for consumed memory (weights + non-torch), 2.01 GiB for peak activation, and 0.62 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=41486614610` (38.64 GiB) to fit into requested memory, or `--kv-cache-memory=45986465792` (42.83 GiB) to fully utilize gpu memory. Current kv cache memory in use is 39.41 GiB.
+(Worker_TP1 pid=106) INFO 10-10 08:46:37 [model_runner.py:1066] Graph capturing finished in 24 secs, took 0.62 GiB
+(Worker_TP1 pid=106) INFO 10-10 08:46:37 [gpu_worker.py:825] CUDA graph pool memory: 0.62 GiB (actual), 1.14 GiB (estimated), difference: 0.51 GiB (82.2%).
+(Worker_TP1 pid=106) INFO 10-10 08:46:37 [gpu_worker.py:888] Free memory on device (77.04/79.18 GiB) on startup. Desired GPU memory utilization is (0.92, 72.84 GiB). Actual usage is 31.43 GiB for consumed memory (weights + non-torch), 2.01 GiB for peak activation, and 0.62 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=41486614610` (38.64 GiB) to fit into requested memory, or `--kv-cache-memory=45986465792` (42.83 GiB) to fully utilize gpu memory. Current kv cache memory in use is 39.41 GiB.
+[1ACapturing CUDA graphs (FULL):  94%|█████████▍| 33/35 [00:07<00:00,  4.95it/s]
+[1ACapturing CUDA graphs (FULL):  97%|█████████▋| 34/35 [00:07<00:00,  5.08it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 35/35 [00:07<00:00,  5.15it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 35/35 [00:07<00:00,  4.71it/s]
+(Worker_TP1 pid=106) INFO 10-10 08:46:38 [model_runner.py:1066] Graph capturing finished in 24 secs, took 0.62 GiB
+(Worker_TP1 pid=106) INFO 10-10 08:46:38 [gpu_worker.py:825] CUDA graph pool memory: 0.62 GiB (actual), 1.14 GiB (estimated), difference: 0.51 GiB (82.2%).
+(Worker_TP1 pid=106) INFO 10-10 08:46:38 [gpu_worker.py:888] Free memory on device (77.04/79.18 GiB) on startup. Desired GPU memory utilization is (0.92, 72.84 GiB). Actual usage is 31.43 GiB for consumed memory (weights + non-torch), 2.01 GiB for peak activation, and 0.62 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=41486614610` (38.64 GiB) to fit into requested memory, or `--kv-cache-memory=45986465792` (42.83 GiB) to fully utilize gpu memory. Current kv cache memory in use is 39.41 GiB.
+(Worker_TP3 pid=108) INFO 10-10 08:46:38 [model_runner.py:1066] Graph capturing finished in 24 secs, took 0.62 GiB
+(Worker_TP3 pid=108) INFO 10-10 08:46:38 [gpu_worker.py:825] CUDA graph pool memory: 0.62 GiB (actual), 1.14 GiB (estimated), difference: 0.51 GiB (82.2%).
+(Worker_TP3 pid=108) INFO 10-10 08:46:38 [gpu_worker.py:888] Free memory on device (77.04/79.18 GiB) on startup. Desired GPU memory utilization is (0.92, 72.84 GiB). Actual usage is 31.43 GiB for consumed memory (weights + non-torch), 2.01 GiB for peak activation, and 0.62 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=41486614610` (38.64 GiB) to fit into requested memory, or `--kv-cache-memory=45986465792` (42.83 GiB) to fully utilize gpu memory. Current kv cache memory in use is 39.41 GiB.
+(Worker_TP0 pid=105) INFO 10-10 08:46:38 [model_runner.py:1066] Graph capturing finished in 24 secs, took 0.62 GiB
+(Worker_TP0 pid=105) INFO 10-10 08:46:38 [gpu_worker.py:825] CUDA graph pool memory: 0.62 GiB (actual), 1.14 GiB (estimated), difference: 0.51 GiB (82.2%).
+(Worker_TP0 pid=105) INFO 10-10 08:46:38 [gpu_worker.py:888] Free memory on device (77.04/79.18 GiB) on startup. Desired GPU memory utilization is (0.92, 72.84 GiB). Actual usage is 31.43 GiB for consumed memory (weights + non-torch), 2.01 GiB for peak activation, and 0.62 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=41486614610` (38.64 GiB) to fit into requested memory, or `--kv-cache-memory=45986465792` (42.83 GiB) to fully utilize gpu memory. Current kv cache memory in use is 39.41 GiB.
+(Worker_TP2 pid=107) INFO 10-10 08:46:38 [model_runner.py:1066] Graph capturing finished in 24 secs, took 0.62 GiB
+(Worker_TP2 pid=107) INFO 10-10 08:46:38 [gpu_worker.py:825] CUDA graph pool memory: 0.62 GiB (actual), 1.14 GiB (estimated), difference: 0.51 GiB (82.2%).
+(Worker_TP2 pid=107) INFO 10-10 08:46:38 [gpu_worker.py:888] Free memory on device (77.04/79.18 GiB) on startup. Desired GPU memory utilization is (0.92, 72.84 GiB). Actual usage is 31.43 GiB for consumed memory (weights + non-torch), 2.01 GiB for peak activation, and 0.62 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=41486614610` (38.64 GiB) to fit into requested memory, or `--kv-cache-memory=45986465792` (42.83 GiB) to fully utilize gpu memory. Current kv cache memory in use is 39.41 GiB.
+(Worker_TP3 pid=108) INFO 10-10 08:46:38 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(Worker_TP0 pid=105) INFO 10-10 08:46:38 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(Worker_TP1 pid=106) INFO 10-10 08:46:38 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(Worker_TP2 pid=107) INFO 10-10 08:46:38 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:39 [torch_utils.py:275] OMP_NUM_THREADS=4 is set; leaving Torch threads at 4 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+(EngineCore pid=84) INFO 10-10 08:46:39 [core.py:372] init engine (profile, create kv cache, warmup model) took 699.20 s (compilation: 85.89 s)
+(Worker_TP1 pid=106) INFO 10-10 08:46:39 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(Worker_TP0 pid=105) INFO 10-10 08:46:39 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(Worker_TP2 pid=107) INFO 10-10 08:46:39 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(Worker_TP3 pid=108) INFO 10-10 08:46:39 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:40 [torch_utils.py:275] OMP_NUM_THREADS=4 is set; leaving Torch threads at 4 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+(EngineCore pid=84) INFO 10-10 08:46:40 [core.py:372] init engine (profile, create kv cache, warmup model) took 692.70 s (compilation: 85.85 s)
+(EngineCore pid=84) INFO 10-10 08:46:40 [kv_cache_utils.py:748] kv cache group sizes [1056, 1056, 1056, 1056]
+(EngineCore pid=84) INFO 10-10 08:46:40 [kv_cache_utils.py:749] kv lcm block sizes 1056
+(EngineCore pid=84) INFO 10-10 08:46:41 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+(EngineCore pid=84) INFO 10-10 08:46:41 [kernel.py:416] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+(EngineCore pid=84) INFO 10-10 08:46:41 [kv_cache_utils.py:748] kv cache group sizes [1056, 1056, 1056, 1056]
+(EngineCore pid=84) INFO 10-10 08:46:41 [kv_cache_utils.py:749] kv lcm block sizes 1056
+(EngineCore pid=84) INFO 10-10 08:46:42 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+(EngineCore pid=84) INFO 10-10 08:46:42 [kernel.py:416] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+(EngineCore pid=84) INFO 10-10 08:46:42 [compilation.py:336] Enabled custom fusions: norm_quant, act_quant, allreduce_rms
+(EngineCore pid=84) INFO 10-10 08:46:43 [compilation.py:336] Enabled custom fusions: norm_quant, act_quant, allreduce_rms
+INFO 10-10 08:46:43 [hf.py:642] Detected the chat template content format to be 'openai'. You can set `--chat-template-content-format` to override this.
+
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations:   2%|▏         | 1/48 [00:00<00:14,  3.14it/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 136.62it/s]
+
+INFO 10-10 08:46:44 [hf.py:642] Detected the chat template content format to be 'openai'. You can set `--chat-template-content-format` to override this.
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations:  31%|███▏      | 15/48 [00:00<00:00, 36.28it/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 107.73it/s]
+
+(Worker_TP0 pid=105) WARNING 10-10 08:46:48 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topk_topp_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:48 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_stats_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:49 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_step_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:49 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topk_topp_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:49 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_stats_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:49 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_step_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:50 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_mask_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:51 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _gumbel_sample_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:51 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_mask_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:51 [jit_monitor.py:141] Triton kernel JIT compilation during inference: fused_moe_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:51 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _gumbel_sample_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(Worker_TP0 pid=105) WARNING 10-10 08:46:52 [jit_monitor.py:141] Triton kernel JIT compilation during inference: fused_moe_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:14<11:36, 14.81s/it, est. speed input: 5.67 toks/s, output: 0.47 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:14<11:11, 14.29s/it, est. speed input: 5.88 toks/s, output: 0.49 toks/s]
+[1AProcessed prompts:  12%|█▎        | 6/48 [00:19<01:48,  2.59s/it, est. speed input: 26.47 toks/s, output: 2.50 toks/s]
+[1AProcessed prompts:  10%|█         | 5/48 [00:18<02:11,  3.05s/it, est. speed input: 22.55 toks/s, output: 2.15 toks/s]
+[1AProcessed prompts:  31%|███▏      | 15/48 [00:18<00:25,  1.31it/s, est. speed input: 72.61 toks/s, output: 7.42 toks/s]
+[1AProcessed prompts:  40%|███▉      | 19/48 [00:21<00:21,  1.33it/s, est. speed input: 80.25 toks/s, output: 8.45 toks/s]
+[1AProcessed prompts:  44%|████▍     | 21/48 [00:21<00:16,  1.62it/s, est. speed input: 90.34 toks/s, output: 10.30 toks/s]
+[1AProcessed prompts:  83%|████████▎ | 40/48 [00:24<00:02,  2.90it/s, est. speed input: 149.59 toks/s, output: 20.93 toks/s]
+[1AProcessed prompts:  94%|█████████▍| 45/48 [00:23<00:00,  3.88it/s, est. speed input: 171.69 toks/s, output: 25.49 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:23<00:00,  3.88it/s, est. speed input: 183.17 toks/s, output: 28.02 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:23<00:00,  2.05it/s, est. speed input: 183.17 toks/s, output: 28.02 toks/s]
+
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 1391.69it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:00<00:10,  4.44it/s, est. speed input: 515.11 toks/s, output: 31.08 toks/s]
+[1AProcessed prompts:  90%|████████▉ | 43/48 [00:00<00:00, 164.07it/s, est. speed input: 14096.49 toks/s, output: 1622.84 toks/s]
+[1AProcessed prompts:  98%|█████████▊| 47/48 [00:26<00:00,  2.92it/s, est. speed input: 158.60 toks/s, output: 23.78 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:26<00:00,  2.92it/s, est. speed input: 162.68 toks/s, output: 24.70 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:26<00:00,  1.82it/s, est. speed input: 162.68 toks/s, output: 24.70 toks/s]
+
+[1ARendering conversations:   0%|          | 0/24 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 24/24 [00:00<00:00, 1512.26it/s]
+
+[1AProcessed prompts:   0%|          | 0/24 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   4%|▍         | 1/24 [00:00<00:05,  4.16it/s, est. speed input: 358.00 toks/s, output: 29.14 toks/s]
+[1AProcessed prompts: 100%|██████████| 24/24 [00:00<00:00,  4.16it/s, est. speed input: 6426.11 toks/s, output: 884.82 toks/s]
+[1AProcessed prompts: 100%|██████████| 24/24 [00:00<00:00, 74.21it/s, est. speed input: 6426.11 toks/s, output: 884.82 toks/s]
+
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 1509.14it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:00<00:11,  4.21it/s, est. speed input: 488.64 toks/s, output: 29.49 toks/s]
+[1AProcessed prompts:  98%|█████████▊| 47/48 [00:00<00:00, 174.60it/s, est. speed input: 14873.08 toks/s, output: 1759.75 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:00<00:00, 174.60it/s, est. speed input: 14042.31 toks/s, output: 1697.97 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:00<00:00, 131.61it/s, est. speed input: 14042.31 toks/s, output: 1697.97 toks/s]
+
+[1ARendering conversations:   0%|          | 0/24 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 24/24 [00:00<00:00, 1533.33it/s]
+
+[1AProcessed prompts:   0%|          | 0/24 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:02<00:00, 164.07it/s, est. speed input: 1868.74 toks/s, output: 227.80 toks/s]  
+[1AProcessed prompts: 100%|██████████| 48/48 [00:02<00:00, 17.52it/s, est. speed input: 1868.74 toks/s, output: 227.80 toks/s] 
+
+[1AProcessed prompts:   4%|▍         | 1/24 [00:00<00:04,  4.69it/s, est. speed input: 403.55 toks/s, output: 32.85 toks/s]
+[1AProcessed prompts: 100%|██████████| 24/24 [00:00<00:00,  4.69it/s, est. speed input: 7033.12 toks/s, output: 971.66 toks/s]
+[1AProcessed prompts: 100%|██████████| 24/24 [00:00<00:00, 81.20it/s, est. speed input: 7033.12 toks/s, output: 971.66 toks/s]
+
+[1AFetching 53 files:   0%|          | 0/53 [00:00<?, ?it/s]Fetching 53 files: 100%|██████████| 53/53 [00:00<00:00, 1176.51it/s]
+
+[1AFetching 53 files:   0%|          | 0/53 [00:00<?, ?it/s]
+[1AFetching 53 files: 100%|██████████| 53/53 [00:00<00:00, 785.15it/s]
+
+[1ALoading weights:   0%|          | 0/1560 [00:00<?, ?it/s]
+[1ALoading weights:   1%|          | 16/1560 [00:00<01:21, 18.86it/s]
+[1ALoading weights:   1%|          | 18/1560 [00:00<01:24, 18.35it/s]
+[1ALoading weights:   1%|▏         | 20/1560 [00:01<01:23, 18.53it/s]
+[1ALoading weights:   3%|▎         | 42/1560 [00:02<01:16, 19.81it/s]
+[1ALoading weights:   3%|▎         | 44/1560 [00:02<01:19, 18.99it/s]
+[1ALoading weights:   4%|▍         | 68/1560 [00:03<01:15, 19.69it/s]
+[1ALoading weights:   4%|▍         | 70/1560 [00:03<01:16, 19.44it/s]
+[1ALoading weights:   0%|          | 0/1560 [00:00<?, ?it/s]
+[1ALoading weights:   1%|          | 16/1560 [00:00<00:48, 31.69it/s]
+[1ALoading weights:   1%|▏         | 20/1560 [00:00<00:50, 30.79it/s]
+[1ALoading weights:   5%|▌         | 82/1560 [00:04<01:42, 14.43it/s]
+[1ALoading weights:   5%|▌         | 84/1560 [00:05<01:44, 14.09it/s]
+[1ALoading weights:   7%|▋         | 106/1560 [00:05<00:49, 29.24it/s]
+[1ALoading weights:   3%|▎         | 42/1560 [00:01<01:00, 25.04it/s]
+[1ALoading weights:   3%|▎         | 45/1560 [00:01<01:05, 23.13it/s]
+[1ALoading weights:   8%|▊         | 118/1560 [00:06<01:16, 18.83it/s]
+[1ALoading weights:   4%|▍         | 68/1560 [00:02<01:02, 23.71it/s]
+[1ALoading weights:   8%|▊         | 124/1560 [00:06<01:15, 18.98it/s]
+[1ALoading weights:   5%|▍         | 71/1560 [00:02<01:06, 22.52it/s]
+[1ALoading weights:   5%|▌         | 82/1560 [00:03<01:23, 17.69it/s]
+[1ALoading weights:   5%|▌         | 84/1560 [00:03<01:25, 17.25it/s]
+[1ALoading weights:   9%|▉         | 144/1560 [00:07<01:16, 18.54it/s]
+[1ALoading weights:   9%|▉         | 148/1560 [00:07<01:14, 18.91it/s]
+[1ALoading weights:   8%|▊         | 118/1560 [00:05<00:57, 25.11it/s]
+[1ALoading weights:   8%|▊         | 121/1560 [00:05<01:01, 23.28it/s]
+[1ALoading weights:  11%|█         | 170/1560 [00:09<01:15, 18.48it/s]
+[1ALoading weights:  11%|█         | 173/1560 [00:09<01:14, 18.68it/s]
+[1ALoading weights:   9%|▉         | 144/1560 [00:06<00:57, 24.48it/s]
+[1ALoading weights:  10%|▉         | 153/1560 [00:06<00:49, 28.60it/s]
+[1ALoading weights:  12%|█▏        | 184/1560 [00:10<01:34, 14.50it/s]
+[1ALoading weights:  12%|█▏        | 187/1560 [00:10<01:33, 14.73it/s]
+[1ALoading weights:  11%|█         | 170/1560 [00:07<01:02, 22.12it/s]
+[1ALoading weights:  11%|█▏        | 176/1560 [00:07<00:56, 24.35it/s]
+[1ALoading weights:  14%|█▍        | 220/1560 [00:11<01:03, 21.06it/s]
+[1ALoading weights:  14%|█▍        | 223/1560 [00:11<01:05, 20.57it/s]
+[1ALoading weights:  12%|█▏        | 184/1560 [00:08<01:26, 15.92it/s]
+[1ALoading weights:  12%|█▏        | 187/1560 [00:08<01:26, 15.91it/s]
+[1ALoading weights:  16%|█▌        | 246/1560 [00:12<01:01, 21.50it/s]
+[1ALoading weights:  16%|█▌        | 249/1560 [00:13<01:01, 21.37it/s]
+[1ALoading weights:  14%|█▍        | 220/1560 [00:09<00:59, 22.57it/s]
+[1ALoading weights:  14%|█▍        | 223/1560 [00:09<00:58, 22.70it/s]
+[1ALoading weights:  17%|█▋        | 272/1560 [00:14<00:58, 22.01it/s]
+[1ALoading weights:  18%|█▊        | 283/1560 [00:14<00:47, 27.14it/s]
+[1ALoading weights:  16%|█▌        | 246/1560 [00:11<01:00, 21.75it/s]
+[1ALoading weights:  16%|█▌        | 249/1560 [00:11<01:00, 21.68it/s]
+[1ALoading weights:  18%|█▊        | 288/1560 [00:15<01:18, 16.11it/s]
+[1ALoading weights:  19%|█▊        | 292/1560 [00:15<01:14, 17.12it/s]
+[1ALoading weights:  17%|█▋        | 272/1560 [00:12<00:59, 21.48it/s]
+[1ALoading weights:  18%|█▊        | 275/1560 [00:12<00:59, 21.68it/s]
+[1ALoading weights:  21%|██        | 322/1560 [00:16<00:57, 21.36it/s]
+[1ALoading weights:  21%|██        | 326/1560 [00:16<00:57, 21.49it/s]
+[1ALoading weights:  18%|█▊        | 286/1560 [00:13<01:19, 16.02it/s]
+[1ALoading weights:  18%|█▊        | 288/1560 [00:13<01:19, 15.92it/s]
+[1ALoading weights:  19%|█▊        | 290/1560 [00:13<01:19, 15.93it/s]
+[1ALoading weights:  22%|██▏       | 348/1560 [00:17<01:00, 20.14it/s]
+[1ALoading weights:  22%|██▎       | 351/1560 [00:18<01:00, 19.98it/s]
+[1ALoading weights:  21%|██        | 322/1560 [00:14<00:54, 22.90it/s]
+[1ALoading weights:  21%|██        | 325/1560 [00:15<00:56, 21.80it/s]
+[1ALoading weights:  24%|██▍       | 374/1560 [00:19<01:01, 19.20it/s]
+[1ALoading weights:  24%|██▍       | 377/1560 [00:19<01:04, 18.33it/s]
+[1ALoading weights:  22%|██▏       | 348/1560 [00:16<00:59, 20.53it/s]
+[1ALoading weights:  22%|██▎       | 351/1560 [00:16<01:01, 19.67it/s]
+[1ALoading weights:  25%|██▍       | 388/1560 [00:20<01:21, 14.29it/s]
+[1ALoading weights:  25%|██▌       | 390/1560 [00:20<01:20, 14.48it/s]
+[1ALoading weights:  25%|██▌       | 392/1560 [00:21<01:18, 14.82it/s]
+[1ALoading weights:  24%|██▍       | 374/1560 [00:17<01:01, 19.14it/s]
+[1ALoading weights:  24%|██▍       | 376/1560 [00:17<01:02, 18.87it/s]
+[1ALoading weights:  27%|██▋       | 424/1560 [00:22<00:53, 21.09it/s]
+[1ALoading weights:  27%|██▋       | 427/1560 [00:22<00:54, 20.63it/s]
+[1ALoading weights:  25%|██▍       | 388/1560 [00:19<01:20, 14.48it/s]
+[1ALoading weights:  25%|██▌       | 391/1560 [00:19<01:21, 14.26it/s]
+[1ALoading weights:  29%|██▉       | 450/1560 [00:23<00:51, 21.59it/s]
+[1ALoading weights:  29%|██▉       | 453/1560 [00:23<00:52, 21.04it/s]
+[1ALoading weights:  27%|██▋       | 424/1560 [00:20<00:53, 21.08it/s]
+[1ALoading weights:  27%|██▋       | 426/1560 [00:20<00:54, 20.87it/s]
+[1ALoading weights:  28%|██▊       | 429/1560 [00:20<00:52, 21.38it/s]
+[1ALoading weights:  31%|███       | 476/1560 [00:24<00:53, 20.20it/s]
+[1ALoading weights:  31%|███       | 479/1560 [00:24<00:52, 20.46it/s]
+[1ALoading weights:  29%|██▉       | 450/1560 [00:21<00:52, 20.98it/s]
+[1ALoading weights:  29%|██▉       | 453/1560 [00:21<00:51, 21.40it/s]
+[1ALoading weights:  31%|███▏      | 490/1560 [00:26<01:11, 14.90it/s]
+[1ALoading weights:  32%|███▏      | 493/1560 [00:26<01:12, 14.81it/s]
+[1ALoading weights:  31%|███       | 476/1560 [00:23<00:53, 20.40it/s]
+[1ALoading weights:  31%|███       | 479/1560 [00:23<00:54, 19.68it/s]
+[1ALoading weights:  34%|███▎      | 526/1560 [00:27<00:50, 20.42it/s]
+[1ALoading weights:  34%|███▍      | 529/1560 [00:27<00:53, 19.26it/s]
+[1ALoading weights:  31%|███▏      | 490/1560 [00:24<01:08, 15.60it/s]
+[1ALoading weights:  32%|███▏      | 493/1560 [00:24<01:06, 16.03it/s]
+[1ALoading weights:  35%|███▌      | 552/1560 [00:28<00:51, 19.66it/s]
+[1ALoading weights:  36%|███▌      | 554/1560 [00:29<00:52, 19.19it/s]
+[1ALoading weights:  34%|███▎      | 526/1560 [00:25<00:46, 22.02it/s]
+[1ALoading weights:  34%|███▍      | 529/1560 [00:25<00:46, 22.05it/s]
+[1ALoading weights:  37%|███▋      | 578/1560 [00:30<00:50, 19.59it/s]
+[1ALoading weights:  37%|███▋      | 581/1560 [00:30<00:49, 19.81it/s]
+[1ALoading weights:  35%|███▌      | 552/1560 [00:26<00:48, 21.00it/s]
+[1ALoading weights:  36%|███▌      | 555/1560 [00:27<00:48, 20.70it/s]
+[1ALoading weights:  38%|███▊      | 592/1560 [00:31<01:00, 16.13it/s]
+[1ALoading weights:  37%|███▋      | 578/1560 [00:28<00:47, 20.66it/s]
+[1ALoading weights:  37%|███▋      | 581/1560 [00:28<00:47, 20.81it/s]
+[1ALoading weights:  40%|████      | 628/1560 [00:32<00:42, 21.74it/s]
+[1ALoading weights:  40%|████      | 631/1560 [00:32<00:42, 21.64it/s]
+[1ALoading weights:  38%|███▊      | 592/1560 [00:29<01:01, 15.69it/s]
+[1ALoading weights:  40%|████      | 625/1560 [00:29<00:28, 33.32it/s]
+[1ALoading weights:  42%|████▏     | 654/1560 [00:34<00:44, 20.52it/s]
+[1ALoading weights:  42%|████▏     | 657/1560 [00:34<00:44, 20.36it/s]
+[1ALoading weights:  41%|████      | 636/1560 [00:31<00:48, 18.96it/s]
+[1ALoading weights:  44%|████▎     | 680/1560 [00:35<00:45, 19.39it/s]
+[1ALoading weights:  44%|████▎     | 682/1560 [00:35<00:45, 19.12it/s]
+[1ALoading weights:  42%|████▏     | 654/1560 [00:32<00:48, 18.62it/s]
+[1ALoading weights:  42%|████▏     | 661/1560 [00:32<00:43, 20.60it/s]
+[1ALoading weights:  44%|████▍     | 694/1560 [00:36<00:55, 15.73it/s]
+[1ALoading weights:  45%|████▍     | 697/1560 [00:36<00:53, 16.11it/s]
+[1ALoading weights:  44%|████▎     | 680/1560 [00:33<00:46, 18.84it/s]
+[1ALoading weights:  44%|████▍     | 685/1560 [00:33<00:43, 20.30it/s]
+[1ALoading weights:  47%|████▋     | 730/1560 [00:37<00:36, 22.61it/s]
+[1ALoading weights:  47%|████▋     | 733/1560 [00:38<00:36, 22.75it/s]
+[1ALoading weights:  44%|████▍     | 694/1560 [00:34<00:58, 14.85it/s]
+[1ALoading weights:  45%|████▍     | 698/1560 [00:34<00:55, 15.53it/s]
+[1ALoading weights:  48%|████▊     | 756/1560 [00:39<00:35, 22.38it/s]
+[1ALoading weights:  49%|████▊     | 759/1560 [00:39<00:36, 22.05it/s]
+[1ALoading weights:  47%|████▋     | 730/1560 [00:35<00:39, 20.90it/s]
+[1ALoading weights:  47%|████▋     | 733/1560 [00:36<00:39, 20.85it/s]
+[1ALoading weights:  50%|█████     | 782/1560 [00:40<00:34, 22.63it/s]
+[1ALoading weights:  50%|█████     | 785/1560 [00:40<00:37, 20.78it/s]
+[1ALoading weights:  48%|████▊     | 756/1560 [00:37<00:38, 20.82it/s]
+[1ALoading weights:  49%|████▊     | 759/1560 [00:37<00:39, 20.35it/s]
+[1ALoading weights:  51%|█████     | 796/1560 [00:41<00:45, 16.76it/s]
+[1ALoading weights:  51%|█████     | 799/1560 [00:41<00:45, 16.72it/s]
+[1ALoading weights:  50%|█████     | 782/1560 [00:38<00:36, 21.03it/s]
+[1ALoading weights:  50%|█████     | 785/1560 [00:38<00:37, 20.77it/s]
+[1ALoading weights:  53%|█████▎    | 832/1560 [00:42<00:34, 20.95it/s]
+[1ALoading weights:  54%|█████▎    | 835/1560 [00:43<00:35, 20.62it/s]
+[1ALoading weights:  51%|█████     | 796/1560 [00:39<00:48, 15.62it/s]
+[1ALoading weights:  55%|█████▌    | 858/1560 [00:44<00:34, 20.42it/s]
+[1ALoading weights:  55%|█████▌    | 861/1560 [00:44<00:34, 20.46it/s]
+[1ALoading weights:  53%|█████▎    | 832/1560 [00:40<00:34, 21.18it/s]
+[1ALoading weights:  54%|█████▎    | 835/1560 [00:41<00:34, 21.13it/s]
+[1ALoading weights:  57%|█████▋    | 884/1560 [00:45<00:32, 20.70it/s]
+[1ALoading weights:  57%|█████▋    | 887/1560 [00:45<00:32, 21.03it/s]
+[1ALoading weights:  55%|█████▌    | 858/1560 [00:42<00:33, 20.70it/s]
+[1ALoading weights:  56%|█████▌    | 871/1560 [00:42<00:26, 26.08it/s]
+[1ALoading weights:  58%|█████▊    | 898/1560 [00:46<00:41, 15.95it/s]
+[1ALoading weights:  58%|█████▊    | 900/1560 [00:46<00:40, 16.12it/s]
+[1ALoading weights:  58%|█████▊    | 906/1560 [00:46<00:33, 19.40it/s]
+[1ALoading weights:  57%|█████▋    | 884/1560 [00:43<00:35, 19.15it/s]
+[1ALoading weights:  57%|█████▋    | 888/1560 [00:43<00:35, 19.18it/s]
+[1ALoading weights:  60%|█████▉    | 934/1560 [00:47<00:26, 23.75it/s]
+[1ALoading weights:  60%|██████    | 937/1560 [00:48<00:27, 22.53it/s]
+[1ALoading weights:  58%|█████▊    | 898/1560 [00:44<00:43, 15.17it/s]
+[1ALoading weights:  58%|█████▊    | 901/1560 [00:44<00:42, 15.37it/s]
+[1ALoading weights:  62%|██████▏   | 960/1560 [00:49<00:25, 23.85it/s]
+[1ALoading weights:  62%|██████▏   | 963/1560 [00:49<00:25, 23.32it/s]
+[1ALoading weights:  60%|█████▉    | 934/1560 [00:46<00:29, 21.54it/s]
+[1ALoading weights:  60%|██████    | 937/1560 [00:46<00:28, 21.52it/s]
+[1ALoading weights:  63%|██████▎   | 986/1560 [00:50<00:26, 21.62it/s]
+[1ALoading weights:  63%|██████▎   | 989/1560 [00:50<00:27, 20.44it/s]
+[1ALoading weights:  62%|██████▏   | 960/1560 [00:47<00:28, 21.24it/s]
+[1ALoading weights:  62%|██████▏   | 963/1560 [00:47<00:28, 21.16it/s]
+[1ALoading weights:  64%|██████▍   | 1000/1560 [00:51<00:39, 14.14it/s]
+[1ALoading weights:  64%|██████▍   | 1003/1560 [00:52<00:38, 14.36it/s]
+[1ALoading weights:  63%|██████▎   | 986/1560 [00:48<00:27, 20.60it/s]
+[1ALoading weights:  63%|██████▎   | 989/1560 [00:48<00:28, 19.95it/s]
+[1ALoading weights:  66%|██████▋   | 1036/1560 [00:53<00:24, 21.55it/s]
+[1ALoading weights:  67%|██████▋   | 1039/1560 [00:53<00:24, 21.36it/s]
+[1ALoading weights:  64%|██████▍   | 1000/1560 [00:49<00:34, 16.06it/s]
+[1ALoading weights:  64%|██████▍   | 1003/1560 [00:50<00:35, 15.91it/s]
+[1ALoading weights:  68%|██████▊   | 1062/1560 [00:54<00:22, 21.92it/s]
+[1ALoading weights:  68%|██████▊   | 1065/1560 [00:54<00:23, 21.10it/s]
+[1ALoading weights:  66%|██████▋   | 1036/1560 [00:51<00:23, 22.54it/s]
+[1ALoading weights:  67%|██████▋   | 1039/1560 [00:51<00:23, 21.79it/s]
+[1ALoading weights:  70%|██████▉   | 1088/1560 [00:55<00:23, 20.05it/s]
+[1ALoading weights:  70%|██████▉   | 1091/1560 [00:55<00:23, 20.05it/s]
+[1ALoading weights:  68%|██████▊   | 1062/1560 [00:52<00:23, 21.11it/s]
+[1ALoading weights:  68%|██████▊   | 1064/1560 [00:52<00:24, 20.51it/s]
+[1ALoading weights:  71%|███████   | 1102/1560 [00:57<00:31, 14.32it/s]
+[1ALoading weights:  71%|███████   | 1104/1560 [00:57<00:31, 14.25it/s]
+[1ALoading weights:  71%|███████   | 1107/1560 [00:57<00:29, 15.17it/s]
+[1ALoading weights:  70%|██████▉   | 1088/1560 [00:53<00:23, 20.08it/s]
+[1ALoading weights:  70%|██████▉   | 1091/1560 [00:54<00:23, 19.78it/s]
+[1ALoading weights:  71%|███████   | 1102/1560 [00:55<00:29, 15.48it/s]
+[1ALoading weights:  73%|███████▎  | 1138/1560 [00:58<00:21, 19.81it/s]
+[1ALoading weights:  71%|███████   | 1104/1560 [00:55<00:29, 15.60it/s]
+[1ALoading weights:  73%|███████▎  | 1141/1560 [00:59<00:21, 19.18it/s]
+[1ALoading weights:  73%|███████▎  | 1138/1560 [00:56<00:19, 21.15it/s]
+[1ALoading weights:  73%|███████▎  | 1141/1560 [00:56<00:19, 21.36it/s]
+[1ALoading weights:  75%|███████▍  | 1164/1560 [01:00<00:22, 17.26it/s]
+[1ALoading weights:  75%|███████▍  | 1166/1560 [01:00<00:23, 17.04it/s]
+[1ALoading weights:  75%|███████▍  | 1168/1560 [01:00<00:22, 17.07it/s]
+[1ALoading weights:  75%|███████▍  | 1164/1560 [00:57<00:18, 20.88it/s]
+[1ALoading weights:  75%|███████▍  | 1167/1560 [00:57<00:19, 20.13it/s]
+[1ALoading weights:  76%|███████▋  | 1190/1560 [01:02<00:23, 16.08it/s]
+[1ALoading weights:  76%|███████▋  | 1192/1560 [01:02<00:22, 16.20it/s]
+[1ALoading weights:  76%|███████▋  | 1190/1560 [00:59<00:18, 20.38it/s]
+[1ALoading weights:  76%|███████▋  | 1193/1560 [00:59<00:17, 20.42it/s]
+[1ALoading weights:  77%|███████▋  | 1204/1560 [01:03<00:31, 11.46it/s]
+[1ALoading weights:  81%|████████  | 1257/1560 [01:04<00:08, 35.39it/s]
+[1ALoading weights:  77%|███████▋  | 1204/1560 [01:00<00:22, 15.51it/s]
+[1ALoading weights:  84%|████████▍ | 1312/1560 [01:04<00:03, 67.26it/s]
+[1ALoading weights:  80%|████████  | 1255/1560 [01:00<00:07, 42.83it/s]
+[1ALoading weights:  87%|████████▋ | 1364/1560 [01:04<00:01, 103.96it/s]
+[1ALoading weights:  85%|████████▍ | 1325/1560 [01:00<00:02, 90.95it/s]
+[1ALoading weights:  92%|█████████▏| 1432/1560 [01:04<00:00, 163.86it/s]
+[1ALoading weights:  89%|████████▉ | 1389/1560 [01:00<00:01, 142.82it/s]
+[1ALoading weights:  97%|█████████▋| 1511/1560 [01:04<00:00, 243.27it/s]
+[1ALoading weights:  94%|█████████▍| 1471/1560 [01:00<00:00, 223.42it/s]
+[1ALoading weights: 100%|█████████▉| 1553/1560 [01:00<00:00, 298.12it/s]Loading weights: 100%|██████████| 1560/1560 [01:04<00:00, 24.20it/s] 
+
+[1ALoading weights: 100%|██████████| 1560/1560 [01:00<00:00, 25.62it/s] 
+[transformers] This FP8 model spans multiple CUDA devices in one process; routing its FP8 linear and experts layers through Triton/grouped_mm instead of DeepGEMM (DeepGEMM's cached kernels are bound to a single CUDA context and corrupt across devices). Run tensor/expert parallel (one device per process) to use the faster DeepGEMM path.
+
+[1AFetching 11 files:   0%|          | 0/11 [00:00<?, ?it/s]Fetching 11 files: 100%|██████████| 11/11 [00:00<00:00, 868.58it/s]
+[transformers] This FP8 model spans multiple CUDA devices in one process; routing its FP8 linear and experts layers through Triton/grouped_mm instead of DeepGEMM (DeepGEMM's cached kernels are bound to a single CUDA context and corrupt across devices). Run tensor/expert parallel (one device per process) to use the faster DeepGEMM path.
+
+[1AFetching 11 files:   0%|          | 0/11 [00:00<?, ?it/s]
+[1AFetching 11 files: 100%|██████████| 11/11 [00:00<00:00, 818.39it/s]
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+self/own/chain_1 round 0: valid 80/80, median 4.258605222858023, under 0
+self/own/zeroshot_3 round 0: valid 80/80, median 4.237202386953868, under 0
+self/own/zeroshot_4 round 0: valid 80/80, median 4.241379413499089, under 0
+round 0: 3 instructions run in 1219s; writer spend so far {'self': 0.56}; judge calls 10062 (~$30); Claude total ~$30
+self/own/chain_1 round 1: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.01)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1459.51it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1442.37it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.60it/s, est. speed input: 464.18 toks/s, output: 41.36 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.60it/s, est. speed input: 14346.59 toks/s, output: 1472.65 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:10,  3.76it/s, est. speed input: 379.79 toks/s, output: 37.60 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  3.76it/s, est. speed input: 13544.69 toks/s, output: 1333.13 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 127.20it/s, est. speed input: 13544.69 toks/s, output: 1333.13 toks/s]
+
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 134.73it/s, est. speed input: 14346.59 toks/s, output: 1472.65 toks/s]
+self/own/chain_1 round 1: valid 80/80, median 4.395294921239838, under 0
+round 1: 1 instructions run in 29s; writer spend so far {'self': 0.56}; judge calls 10156 (~$30); Claude total ~$30
+self/own/chain_1 round 2: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.01)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1360.52it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1373.32it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:10,  3.82it/s, est. speed input: 427.35 toks/s, output: 30.52 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  3.82it/s, est. speed input: 13330.22 toks/s, output: 1401.43 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:09,  4.15it/s, est. speed input: 481.62 toks/s, output: 37.37 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 117.47it/s, est. speed input: 13330.22 toks/s, output: 1401.43 toks/s]
+
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.15it/s, est. speed input: 14919.55 toks/s, output: 1545.53 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 131.47it/s, est. speed input: 14919.55 toks/s, output: 1545.53 toks/s]
+self/own/chain_1 round 2: valid 79/80, median 4.369558516889811, under 0
+round 2: 1 instructions run in 37s; writer spend so far {'self': 0.57}; judge calls 10231 (~$31); Claude total ~$31
+self/own/chain_1 round 3: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.02)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1437.98it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1442.28it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.73it/s, est. speed input: 463.47 toks/s, output: 33.10 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.58it/s, est. speed input: 448.46 toks/s, output: 32.03 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.73it/s, est. speed input: 14606.78 toks/s, output: 1569.06 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.58it/s, est. speed input: 14285.24 toks/s, output: 1548.07 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 138.47it/s, est. speed input: 14606.78 toks/s, output: 1569.06 toks/s]
+
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 135.42it/s, est. speed input: 14285.24 toks/s, output: 1548.07 toks/s]
+self/own/chain_1 round 3: valid 71/80, median 2.9388671941123903, under 0
+round 3: 1 instructions run in 31s; writer spend so far {'self': 0.58}; judge calls 10365 (~$31); Claude total ~$31
+self/own/chain_1 round 4: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.01)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1407.33it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1397.12it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.73it/s, est. speed input: 525.08 toks/s, output: 33.11 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.62it/s, est. speed input: 540.93 toks/s, output: 32.36 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 146.67it/s, est. speed input: 13701.61 toks/s, output: 1400.82 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 131.99it/s, est. speed input: 12518.27 toks/s, output: 1312.73 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 146.67it/s, est. speed input: 13701.61 toks/s, output: 1400.82 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 119.63it/s, est. speed input: 13701.61 toks/s, output: 1400.82 toks/s]
+
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 131.99it/s, est. speed input: 12518.27 toks/s, output: 1312.73 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 109.32it/s, est. speed input: 12518.27 toks/s, output: 1312.73 toks/s]
+self/own/chain_1 round 4: valid 69/80, median 2.9434219263494015, under 0
+round 4: 1 instructions run in 36s; writer spend so far {'self': 0.59}; judge calls 10482 (~$31); Claude total ~$31
+self/own/chain_1 round 5: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.01)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1384.34it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1371.75it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.74it/s, est. speed input: 615.94 toks/s, output: 33.16 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.74it/s, est. speed input: 18839.96 toks/s, output: 1600.42 toks/s]Processed prompts: 100%|██████████| 40/40 [00:00<00:00, 147.76it/s, est. speed input: 18839.96 toks/s, output: 1600.42 toks/s]
+
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:10,  3.88it/s, est. speed input: 505.10 toks/s, output: 27.20 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  3.88it/s, est. speed input: 15541.07 toks/s, output: 1323.25 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 121.90it/s, est. speed input: 15541.07 toks/s, output: 1323.25 toks/s]
+self/own/chain_1 round 5: valid 65/80, median 2.60479688225314, under 0
+round 5: 1 instructions run in 37s; writer spend so far {'self': 0.6}; judge calls 10586 (~$32); Claude total ~$32
+self/own/chain_1 round 6: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.01)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1286.78it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1361.70it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:07,  5.14it/s, est. speed input: 642.66 toks/s, output: 30.85 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  5.14it/s, est. speed input: 21394.09 toks/s, output: 1653.33 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 166.48it/s, est. speed input: 21394.09 toks/s, output: 1653.33 toks/s]
+
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:07,  5.02it/s, est. speed input: 627.13 toks/s, output: 30.10 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  5.02it/s, est. speed input: 20494.74 toks/s, output: 1559.82 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 159.44it/s, est. speed input: 20494.74 toks/s, output: 1559.82 toks/s]
+self/own/chain_1 round 6: valid 49/80, median 3.1351836398243904, under 0
+round 6: 1 instructions run in 28s; writer spend so far {'self': 0.62}; judge calls 10703 (~$32); Claude total ~$32
+self/own/chain_1 round 7: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.01)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1214.29it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1236.25it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.76it/s, est. speed input: 780.70 toks/s, output: 33.32 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.76it/s, est. speed input: 24803.05 toks/s, output: 1592.49 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 148.05it/s, est. speed input: 24803.05 toks/s, output: 1592.49 toks/s]
+
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.66it/s, est. speed input: 764.12 toks/s, output: 32.61 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.66it/s, est. speed input: 25056.40 toks/s, output: 1586.34 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 149.56it/s, est. speed input: 25056.40 toks/s, output: 1586.34 toks/s]
+self/own/chain_1 round 7: valid 50/80, median 2.557505877688527, under 0
+round 7: 1 instructions run in 35s; writer spend so far {'self': 0.63}; judge calls 10804 (~$32); Claude total ~$32
+self/own/chain_1 round 8: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.01)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]Rendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1181.34it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Rendering conversations: 100%|██████████| 40/40 [00:00<00:00, 971.43it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:07,  5.01it/s, est. speed input: 896.52 toks/s, output: 25.04 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  5.01it/s, est. speed input: 27093.44 toks/s, output: 1440.58 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 148.43it/s, est. speed input: 27093.44 toks/s, output: 1440.58 toks/s]
+
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.81it/s, est. speed input: 860.98 toks/s, output: 24.05 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.81it/s, est. speed input: 26377.72 toks/s, output: 1380.82 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 144.49it/s, est. speed input: 26377.72 toks/s, output: 1380.82 toks/s]
+self/own/chain_1 round 8: valid 57/80, median 2.6491913152858615, under 0
+round 8: 1 instructions run in 35s; writer spend so far {'self': 0.64}; judge calls 10914 (~$33); Claude total ~$33
+self/own/chain_1 round 9: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.02)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1242.73it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1275.32it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.76it/s, est. speed input: 776.58 toks/s, output: 33.35 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.81it/s, est. speed input: 779.86 toks/s, output: 28.88 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.76it/s, est. speed input: 24075.95 toks/s, output: 1448.84 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 148.14it/s, est. speed input: 24075.95 toks/s, output: 1448.84 toks/s]
+
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.81it/s, est. speed input: 23734.88 toks/s, output: 1490.35 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 146.03it/s, est. speed input: 23734.88 toks/s, output: 1490.35 toks/s]
+self/own/chain_1 round 9: valid 45/80, median 2.2638255472120363, under 0
+round 9: 1 instructions run in 22s; writer spend so far {'self': 0.66}; judge calls 11094 (~$33); Claude total ~$33
+self/own/chain_1 round 10: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.02)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1256.13it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1249.71it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:07,  4.89it/s, est. speed input: 801.87 toks/s, output: 34.22 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.89it/s, est. speed input: 25262.07 toks/s, output: 1667.23 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 150.81it/s, est. speed input: 25262.07 toks/s, output: 1667.23 toks/s]
+
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.80it/s, est. speed input: 816.68 toks/s, output: 33.63 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.80it/s, est. speed input: 24937.04 toks/s, output: 1619.68 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 148.85it/s, est. speed input: 24937.04 toks/s, output: 1619.68 toks/s]
+self/own/chain_1 round 10: valid 55/80, median 2.88574992492795, under 0
+round 10: 1 instructions run in 23s; writer spend so far {'self': 0.68}; judge calls 11171 (~$34); Claude total ~$34
+self/own/chain_1 round 11: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.02)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1227.41it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1260.09it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:07,  4.94it/s, est. speed input: 810.11 toks/s, output: 34.58 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.94it/s, est. speed input: 25337.80 toks/s, output: 1702.49 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 151.24it/s, est. speed input: 25337.80 toks/s, output: 1702.49 toks/s]
+
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.84it/s, est. speed input: 793.41 toks/s, output: 33.86 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.84it/s, est. speed input: 25012.78 toks/s, output: 1643.31 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 149.31it/s, est. speed input: 25012.78 toks/s, output: 1643.31 toks/s]
+self/own/chain_1 round 11: valid 58/80, median 2.5760430439841002, under 0
+round 11: 1 instructions run in 14s; writer spend so far {'self': 0.7}; judge calls 11207 (~$34); Claude total ~$34
+self/own/chain_1 round 12: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.02)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1201.14it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1215.38it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.66it/s, est. speed input: 870.82 toks/s, output: 32.60 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:09,  4.31it/s, est. speed input: 792.77 toks/s, output: 25.85 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.66it/s, est. speed input: 28223.29 toks/s, output: 1569.79 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 150.49it/s, est. speed input: 28223.29 toks/s, output: 1569.79 toks/s]
+
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.31it/s, est. speed input: 25621.58 toks/s, output: 1421.65 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 136.62it/s, est. speed input: 25621.58 toks/s, output: 1421.65 toks/s]
+self/own/chain_1 round 12: valid 64/80, median 2.5747313947649673, under 0
+round 12: 1 instructions run in 22s; writer spend so far {'self': 0.72}; judge calls 11338 (~$34); Claude total ~$34
+self/own/chain_1 round 13: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.02)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1207.38it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1200.07it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.54it/s, est. speed input: 849.93 toks/s, output: 31.81 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.54it/s, est. speed input: 27145.65 toks/s, output: 1571.60 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 142.47it/s, est. speed input: 27145.65 toks/s, output: 1571.60 toks/s]
+
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.53it/s, est. speed input: 846.38 toks/s, output: 31.68 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.53it/s, est. speed input: 26494.82 toks/s, output: 1579.09 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 139.05it/s, est. speed input: 26494.82 toks/s, output: 1579.09 toks/s]
+self/own/chain_1 round 13: valid 57/80, median 2.442938537802547, under 0
+round 13: 1 instructions run in 18s; writer spend so far {'self': 0.74}; judge calls 11401 (~$34); Claude total ~$34
+self/own/chain_1 round 14: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.02)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1164.30it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1131.21it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:09,  4.13it/s, est. speed input: 806.36 toks/s, output: 28.94 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.13it/s, est. speed input: 24770.83 toks/s, output: 1591.64 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 124.77it/s, est. speed input: 24770.83 toks/s, output: 1591.64 toks/s]
+
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:08,  4.36it/s, est. speed input: 851.14 toks/s, output: 30.55 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  4.36it/s, est. speed input: 25263.92 toks/s, output: 1616.95 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 127.25it/s, est. speed input: 25263.92 toks/s, output: 1616.95 toks/s]
+self/own/chain_1 round 14: valid 65/80, median 2.506973637267947, under 0
+round 14: 1 instructions run in 18s; writer spend so far {'self': 0.77}; judge calls 11537 (~$35); Claude total ~$35
+self/own/chain_1 round 15: instruction (1 attempt(s), ['qwen/qwen3.5-122b-a10b'], $0.03)
+
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/40 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1106.36it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 40/40 [00:00<00:00, 1064.30it/s]
+
+[1AProcessed prompts:   0%|          | 0/40 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:11,  3.48it/s, est. speed input: 765.69 toks/s, output: 41.76 toks/s]
+[1AProcessed prompts:   2%|▎         | 1/40 [00:00<00:10,  3.68it/s, est. speed input: 817.25 toks/s, output: 36.81 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  3.48it/s, est. speed input: 24911.45 toks/s, output: 1610.62 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 110.46it/s, est. speed input: 24911.45 toks/s, output: 1610.62 toks/s]
+
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00,  3.68it/s, est. speed input: 25915.89 toks/s, output: 1730.05 toks/s]
+[1AProcessed prompts: 100%|██████████| 40/40 [00:00<00:00, 114.90it/s, est. speed input: 25915.89 toks/s, output: 1730.05 toks/s]
+self/own/chain_1 round 15: valid 60/80, median 2.5780086843733443, under 0
+round 15: 1 instructions run in 35s; writer spend so far {'self': 0.8}; judge calls 11723 (~$35); Claude total ~$35
+finished m23_search_122b_refusalfix
+Exception ignored in atexit callback: <function _exit_function at 0x2ab9a9877d80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=84) INFO 10-10 09:04:42 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=84) INFO 10-10 09:04:42 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=84) INFO 10-10 09:04:42 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=84) INFO 10-10 09:04:42 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+(Worker_TP0 pid=105) INFO 10-10 09:04:42 [multiproc_executor.py:836] Parent process exited, terminating worker queues
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+(EngineCore pid=84) INFO 10-10 09:04:42 [multiproc_executor.py:472] [shutdown] Executor: waiting for worker exit count=4
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-10 09:04:42 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-10 09:04:42 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-10 09:04:42 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-10 09:04:42 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-10 09:04:42 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-10 09:04:42 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-10 09:04:42 [core_client.py:751] [shutdown] MPClient: complete
+Exception ignored in atexit callback: <function _exit_function at 0x2ad46d78bd80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=84) INFO 10-10 09:04:43 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=84) INFO 10-10 09:04:43 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=84) INFO 10-10 09:04:43 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=84) INFO 10-10 09:04:43 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+(Worker_TP0 pid=105) INFO 10-10 09:04:43 [multiproc_executor.py:836] Parent process exited, terminating worker queues
+    res = self._popen.wait(timeout)
+(EngineCore pid=84) INFO 10-10 09:04:43 [multiproc_executor.py:472] [shutdown] Executor: waiting for worker exit count=4
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-10 09:04:43 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-10 09:04:43 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-10 09:04:43 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-10 09:04:43 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-10 09:04:43 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-10 09:04:43 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-10 09:04:43 [core_client.py:751] [shutdown] MPClient: complete
+[modal-client] 2026-10-10T02:04:48-0700 Timed out waiting for final app logs.
+✓ App completed. View run at 
+https://modal.com/apps/redwood-default/main/ap-n2RIa6Ek6x3nIzZFiKDPuB
