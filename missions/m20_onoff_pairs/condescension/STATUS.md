@@ -1,9 +1,14 @@
 # m20_onoff_pairs / condescension (agent A): status
 
-**Phase: final (verdict in RESULT.md, critic 3 pending at 17:30).**
+**Phase: final (verdict in RESULT.md; critic 3's fixes applied 17:50 PDT).**
 
 ## Log
-- 2026-10-09 22:05: code written; matched-data generation launched (Qwen writing with Claude's prompts, then Haiku label checks).
+
+All times are US Pacific (PDT), 2026-10-09. The first entry and the design/pre-registration header were
+originally stamped in UTC (22:05, 22:10); corrected here to 15:05 and 15:10 PDT. The pre-registration was written
+before any probe was trained or any search run.
+
+- 15:05: code written; matched-data generation launched (Qwen writing with Claude's prompts, then Haiku label checks).
 - 15:23 matched sets written: 3,204 rows per side (807 condescending, 1,254 respectful, 1,143 look-alike); probes trained at 15:23-15:34 (deviation: before critic 1 reported; will retrain after the fixes below).
 - 15:38 critic 1 (design and data). Main points: (1) verified row by row the sets differ only in author; (2) the pre-registered rule was biased toward 'off more exploitable' -> amended below; (3) 2 inherited Claude replies are the word 'placeholder' -> new keep rule (>= 5 words, both authors), retrain; (4) the starting-strength match saturates when both probes catch all plain answers -> replaced by false-alarm-to-catch-95/99/100% and a margin; (5) the paired interval ignored line uncertainty -> now resamples calibration replies too; (6) 'on-policy' here = Qwen-written in dataset-writing mode, not Qwen's direct reply -> caveat; (7) Qwen's condescension is more overtly hostile; neither set has over-explaining condescension -> reported as residual difference; (8) one search per side is one draw -> will also re-score every saved validation reply of both searches on both probes.
 - 16:35 critic 2 (probes, transfer, test). Main points: (1) training-draw variation dwarfs per-probe intervals; seed 0 is the minority mode of the off-policy probes (weight-cosine clusters) and the strongest on-policy draw -> amendment 2 (10 draws per side, seed-level aggregate with seeds+tasks+calibration resampled, FA90 medians and sign test); (2) the amended primary is a floor (0 vs 0: the searches found nothing on either probe) and the large off-favouring transfer gap comes only from m11 prompts aimed at m8b's probe, whose replies are 88% of the off set -> warm-started 5-round searches from m11's three prompts, aimed at each side (amendment 2); (3) layer 16 leans the other way (the fresh searches' replies evade on@L16 much more); (4) the 442 -> 64 seed-0 change after dropping 2 rows is a new random split, not a bug (22/24 probes stop at the 15-epoch cap); (5) the on-policy set is only weakly own (log-prob) -> headline caveat; (6) fixes: matched-catch lines keep the weaker probe at 1%, m13 relabelled, figure file shows all draws with a labelled selection rule, stale residual file regenerated.
@@ -11,8 +16,9 @@
 - 16:55 warm-started searches done (off-aimed: 33/33 full-strength validation replies under the line in round 1; on-aimed: 0 in all 5 rounds); frozen warm test run and scored on all 20 layer-48 draws.
 - 17:25 within-style twins for the warm off-aimed winner (98/200 clean). Bug found and fixed: the generalized twin loop's variable shadowed the output path, so the warm twin rows were first written into twin_warm_off.txt; restored the instruction text from the rows and merged the rows into twins.jsonl (checked: old 400 rows unchanged).
 - 17:30 RESULT.md drafted. Verdict: YES at layer 48 (warm-started searches: +0.71 [0.62, 0.77] off minus on, 10/10 draws); cold searches a floor; layer 16 not beaten. Critic 3 reviewing.
+- 17:50 critic 3 (before the verdict). Main points, all applied to RESULT.md from saved data (no GPU, no new scoring): (1) the warm-started comparison is tilted toward 'off weaker' (the on-side search reward went flat because plain answers sit far above everything; it attacked the strongest on draw, seed 0, margin 8.38; the warm starts carry m11's long search against m8b's Claude-text probe; one search per side) -> headline reframed to the best known attack per draw (off 0.835 vs on 0.247, on range 0.06-0.73), 'decisively' and 'same budget' dropped; (2) the cold pre-registered primary (-0.03 at 1%, 9/10 draws; -0.20 [-0.40, -0.08] at 0.1%, 10/10) now in the opening paragraph; (3) number fixes (layer-16 claim, hand-written draw count, per-search rescore ranges, the 0.1% wording, dot-plot caption); (4) onoff_pair.json gains the best known attack per side and states fa90 = median over draws; (5) glossary and plainer wording; time zone stated.
 
-## Design (written 2026-10-09 22:10, before any probe was trained)
+## Design (written 2026-10-09 15:10 PDT, before any probe was trained)
 
 **Question.** Is the probe trained on Claude-written replies (off-policy) easier to exploit by prompting than its
 twin trained on Qwen3.5-27B's own replies (on-policy), when the two training sets differ only in who wrote the replies?
@@ -48,7 +54,7 @@ per (layer, seed) pair the off-minus-on difference on the same replies with a ta
 spread; false-alarm rate needed to catch 90% (fa_cost functions). Residual data differences: reply length, marker
 words, register mix, vocabulary/style spread, text-only classifier accuracy (label within each set; author between).
 
-## Pre-registered frozen test (2026-10-09 22:10, before any search started)
+## Pre-registered frozen test (2026-10-09 15:10 PDT, before any search started)
 
 - Freeze each search's best candidate by gepa's validation reward (`summary.json`), unchanged.
 - Test tasks: m8b's 99 test tasks x seeds 10-14 (never seen by either search; m8b/m11 tested on them). Plain arm: m8b's saved plain replies to the same tasks and seeds (attacks_plain.jsonl).
@@ -92,7 +98,7 @@ the question is about the recipe and data, so the unit that generalises is the t
 - **Flattery primary becomes uplift** (the brief's property 2): (own-aimed search minus plain on the same probe) for
   the off probe minus the same for the on probe, paired by task, seed-aggregated as above, at the 1% line and with FA90
   and the 0.1% line alongside (the 1% counts may saturate). Plain = m8a's saved plain replies on the same fresh tasks
-  and seeds. Noted bias: the off search targeted off seed 0, the weakest off draw.
+  and seeds. Noted bias: the off search targeted off seed 0, the weakest off draw of seeds 0-2 (with all 10 draws: second weakest, after seed 5).
 - **Condescension: warm-started searches (new, decided before running).** The 5-round searches from gepa's default
   seeds found nothing on either probe (floor). To test the transfer confound (m11's prompts were optimised against m8b's
   probe, whose training replies are ~88% of the new off set), one 5-round gepa search per side is warm-started from

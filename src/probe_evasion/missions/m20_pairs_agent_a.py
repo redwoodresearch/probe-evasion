@@ -812,10 +812,11 @@ def onoff_pair_json(pc: PairConcept, report: dict, label: str) -> dict:
             extra = {"fa90": f[f"median_{side}"]} if f"median_{side}" in f else {}
             note = ("full strength (" + ("both judges 5" if pc.concept == "flattery" else "both judges 5 and answers the question") +
                     f"), instruction removed; {len(seeds(e, side))} training draws" +
-                    (f"; FA90 over draws {min(f['fa90'][side]):.4f}-{max(f['fa90'][side]):.4f}" if extra else ""))
+                    (f"; fa90 = median over draws, range {min(f['fa90'][side]):.4f}-{max(f['fa90'][side]):.4f}, seed 0 {f['fa90'][side][0]:.4f}" if extra else ""))
             probes.append({"kind": kind, "probe": plabel, "searched": searched_side == side, "evasions": seeds(e, side), "attempts": e["attempts"],
                            "visible_only": False, **extra, "source": str(pc.out / "analysis.json"), "note": note})
-        return {"attack": name, "probes": probes}
+        return {"attack": name, "key": key, "probes": probes,
+                "note": "fa90 is the MEDIAN over the 10 training draws, not seed 0's value; evasions count full-strength replies"}
 
     groups = []
     for kind, what in (("search", "5-round search"), ("warm", "5-round search warm-started from m11's prompts")):
@@ -829,6 +830,15 @@ def onoff_pair_json(pc: PairConcept, report: dict, label: str) -> dict:
         if ks:
             best = max(ks, key=mean_max)
             groups.append(group(f"{label_} ({best}; picked by highest draw-mean count on either probe)", best, None))
+    shown = {g["key"] for g in groups}
+    attacks = [k for k in arms if not k.endswith("/plain") and arms[k]["counted"]]
+    for side, who in (("off", "Claude-text"), ("on", "own-reply")):  # critic 3: the most damaging known prompt per side
+        by_count = max(attacks, key=lambda k: np.mean(seeds(arms[k], side)))
+        by_fa90 = max((k for k in attacks if f"median_{side}" in fa90.get(k, {})), key=lambda k: fa90[k][f"median_{side}"])
+        for key, rule in ((by_count, "highest draw-mean evasion count"), (by_fa90, "highest median FA90, i.e. hardest to catch")):
+            if key not in shown:
+                shown.add(key)
+                groups.append(group(f"best known attack against the {who} probe by {rule} ({key})", key, None))
     plain = "m20_test/plain" if "m20_test/plain" in arms else next(k for k in arms if k.endswith("/plain"))
     groups.append(group("plain prompt", plain, None))
     out = {"concept": label, "groups": groups}

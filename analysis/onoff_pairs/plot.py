@@ -296,7 +296,10 @@ def seed_label(r: ProbeResult) -> str:
     n = f"{r.attempts:,}"
     if len(r.evasions) == 1:
         return f"{r.evasions[0]}/{n}"
-    return f"{r.evasions[0]}/{n} · seeds 1-2: {', '.join(map(str, r.evasions[1:]))}"
+    others = r.evasions[1:]
+    if len(others) <= 2:
+        return f"{r.evasions[0]}/{n} · seeds 1-{len(others)}: {', '.join(map(str, others))}"
+    return f"{r.evasions[0]}/{n} · seeds 1-{len(others)}: {min(others)}–{max(others)}"
 
 
 def draw_rows(fig, ax_a, ax_b, groups: list[Group], top: float, xmax: float, H: float, draw_header_rule: bool):
@@ -397,7 +400,7 @@ def legend(fig, x: float, y: float, H: float):
     xx = entry(xx, m("o", INK_2, True), "Filled: the attack was searched against this probe")
     xx = entry(xx, m("o", INK_2, False), "Hollow: transferred (found against another probe)")
     seeds = Line2D([], [], color=INK_2, lw=1.6, alpha=0.55, marker="o", ms=4.2, markevery=[1])
-    xx = entry(xx, seeds, "Line and small dots: training seeds 1-2 (big marker = seed 0, the one attacked)")
+    xx = entry(xx, seeds, "Line and small dots: other training seeds (big marker = seed 0, the one attacked)")
 
 
 def footnotes(fig, x: float, y: float, H: float, width: int):

@@ -1,17 +1,23 @@
 # m20_onoff_pairs / flattery (agent A): status
 
-**Phase: final (verdict in RESULT.md, critic 3 pending at 17:30).**
+**Phase: final (verdict in RESULT.md; critic 3's fixes applied 17:50 PDT).**
 
 ## Log
-- 2026-10-09 22:05: code written; matched-data generation launched (Qwen writing with Claude's prompts, then Haiku label checks).
+
+All times are US Pacific (PDT), 2026-10-09. The first entry and the design/pre-registration header were
+originally stamped in UTC (22:05, 22:10); corrected here to 15:05 and 15:10 PDT. The pre-registration was written
+before any probe was trained or any search run.
+
+- 15:05: code written; matched-data generation launched (Qwen writing with Claude's prompts, then Haiku label checks).
 - 15:18 parser bug: Qwen's flattery outputs often slip tags (no <praise> tag, <flattering>...</honest>, <message> for <item>); the first run lost about half the items. Stopped it, made the parser tolerant, restarted; raw Qwen outputs are now saved.
 - 15:38 critic 1: (1) the stopped bad-parser process was still alive and overwriting the candidates file -> killed (PID checked as mine); (2) the tolerant parser still merged an honest reply into the flattering one when Qwen wrote <flattering>...</honest>, and could keep a message echo -> parser rewritten (a reply ends at the first tag of any kind; tagless blocks ignored; replies repeating 12+ consecutive message words dropped; misspelt tags stripped), Qwen side rebuilt from the saved raw outputs; (3) Qwen's deserved praise of excellent work passes the label check ~5% of the time (Claude ~39%), so look-alikes would nearly vanish -> up to 6 attempts per author for flattery; (4) pre-registered rule biased -> amended below; plus the shared fixes listed in the condescension STATUS.
 - 16:35 critic 2. Main points: (1) seed variation dominates; off seed 0 is the weakest off draw (plain caught 68% vs 85-86%) and was the off search's target -> amendment 2 (10 draws, seed-level aggregate) and uplift-over-plain primary; (2) the answer depends on style: on-policy probes leak far more on flat-register flattery (m8a searched, m13 blind, flat) on all seeds, off-policy more on seed_hint and hidden_a/b; (3) suspected mechanism: '!' is in 78% of Qwen-written flattering vs 2.6% of Qwen-written honest training replies (Claude: 76% vs 19%) -> exclamation re-scoring check launched; (4) code fixes as listed in the condescension STATUS.
 - 16:40 frozen test generated (scores not yet looked at); seeds 3-9 trained; twins generated (200/200 and 199/200 clean).
 - 17:00 frozen test scored on all draws; exclamation check negative (replacing '!' barely moves either probe); analysis with the pre-registered seed aggregate.
 - 17:15 RESULT.md drafted. Verdict: NO (uplift primary -0.06 [-0.16, +0.04], off higher in 3/10 draws); failures are style-dependent. Critic 3 reviewing.
+- 17:50 critic 3 (before the verdict). Main points, all applied to RESULT.md from saved data (no GPU, no new scoring): (1) report the share of full-strength replies evading (79% off vs 88% on), own-search FA90 (12% vs 17%) and best-attack FA90 (about 75% vs about 29%); (2) layer 16 is beaten on essentially every reply on both sides, so its +0.08 is just the full-strength-rate gap; the raw 0.1% +0.07 is mostly the same artefact; (3) fixes: seed 5, not seed 0, is the weakest off draw; the on search attacked the second-strongest on draw (the tilt favours 'off weaker', which strengthens the 'no'); m8a_test vs m8a_fresh rows separated; line 0.988; AUROC median 0.992; (4) onoff_pair.json gains each side's hardest-to-catch arm (hidden_a, m13 blind) and states fa90 = median over draws; (5) glossary and plainer wording; time zone stated.
 
-## Design (written 2026-10-09 22:10, before any probe was trained)
+## Design (written 2026-10-09 15:10 PDT, before any probe was trained)
 
 **Question.** Is the probe trained on Claude-written replies (off-policy) easier to exploit by prompting than its
 twin trained on Qwen3.5-27B's own replies (on-policy), when the two training sets differ only in who wrote the replies?
@@ -47,7 +53,7 @@ per (layer, seed) pair the off-minus-on difference on the same replies with a ta
 spread; false-alarm rate needed to catch 90% (fa_cost functions). Residual data differences: reply length, marker
 words, register mix, vocabulary/style spread, text-only classifier accuracy (label within each set; author between).
 
-## Pre-registered frozen test (2026-10-09 22:10, before any search started)
+## Pre-registered frozen test (2026-10-09 15:10 PDT, before any search started)
 
 - Freeze each search's best candidate by gepa's validation reward (`summary.json`), unchanged.
 - Test tasks: m8a's 100 fresh tasks x seeds 20-24 (never seen by either search). Plain arm: m8a's saved plain replies to the same tasks and seeds (fresh_all.jsonl), as m13 did.
@@ -91,4 +97,4 @@ the question is about the recipe and data, so the unit that generalises is the t
 - **Flattery primary becomes uplift** (the brief's property 2): (own-aimed search minus plain on the same probe) for
   the off probe minus the same for the on probe, paired by task, seed-aggregated as above, at the 1% line and with FA90
   and the 0.1% line alongside (the 1% counts may saturate). Plain = m8a's saved plain replies on the same fresh tasks
-  and seeds. Noted bias: the off search targeted off seed 0, the weakest off draw.
+  and seeds. Noted bias: the off search targeted off seed 0, the weakest off draw of seeds 0-2 (with all 10 draws: second weakest, after seed 5).
