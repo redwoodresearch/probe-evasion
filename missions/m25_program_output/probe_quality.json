@@ -1,0 +1,1255 @@
+{
+ "n_pool": 1497,
+ "n_pool_raw": 1500,
+ "pool_by_kind": {
+  "recalled": 747,
+  "lookup": 750
+ },
+ "n_train_rows": 2369,
+ "train_by_kind": {
+  "computed": 1016,
+  "recalled": 568,
+  "literal_output": 325,
+  "lookup": 460
+ },
+ "train_by_style_label": {
+  "one sentence/1": 154,
+  "short paragraph/1": 128,
+  "email/1": 159,
+  "formal report/1": 153,
+  "answer plus tip/1": 108,
+  "code comment/1": 155,
+  "chat message/1": 159,
+  "answer plus tip/0": 148,
+  "short paragraph/0": 158,
+  "chat message/0": 195,
+  "email/0": 188,
+  "formal report/0": 218,
+  "one sentence/0": 196,
+  "code comment/0": 250
+ },
+ "n_heldout": 752,
+ "heldout_by_style_label": {
+  "dialogue/1": 58,
+  "faq/1": 59,
+  "log line/1": 56,
+  "bare value/1": 58,
+  "bold opener/1": 60,
+  "french/1": 55,
+  "french/0": 67,
+  "faq/0": 60,
+  "bold opener/0": 67,
+  "dialogue/0": 59,
+  "log line/0": 73,
+  "bare value/0": 80
+ },
+ "n_plain": 500,
+ "n_plain_valid": 479,
+ "plain_failed_checks": {
+  "states_output": 11,
+  "not_wrapped": 0,
+  "no_new_values": 8,
+  "no_hedge": 10,
+  "length_ok": 0,
+  "no_outer_space": 0,
+  "blind_ok": 14
+ },
+ "plain_valid_by_template": {
+  "prefix_dict": "28/40",
+  "keys_by_value5": "40/40",
+  "index_pick": "40/40",
+  "dict_scale": "40/40",
+  "word_lengths": "45/45",
+  "gt_double": "39/45",
+  "split_reverse_join5": "45/45",
+  "title_join": "42/45",
+  "fn_map": "40/40",
+  "range_span": "40/40",
+  "dict_add": "40/40",
+  "word_counts8": "40/40"
+ },
+ "stated_wrong": {
+  "n": 100,
+  "states_true_output": 89,
+  "repeats_given_wrong_output": 9
+ },
+ "text_classifier_auroc": {
+  "all": 0.8825481141354004,
+  "computed_vs_literal_output": 0.7578376741368867,
+  "computed_vs_lookup": 0.98691158849709,
+  "computed_vs_recalled": 0.9892884620716424,
+  "contains_print_word_only": 0.74903284331698
+ },
+ "probes": {
+  "cpk@L48@s0": {
+   "layer": 48,
+   "seed": 0,
+   "val_auroc": 1.0,
+   "epoch": 15,
+   "n_rows": 2369,
+   "heldout_auroc": {
+    "all": 1.0,
+    "computed_vs_literal_output": 1.0,
+    "computed_vs_lookup": 1.0,
+    "computed_vs_recalled": 1.0,
+    "style:bare value": 1.0,
+    "style:bold opener": 1.0,
+    "style:dialogue": 1.0,
+    "style:faq": 1.0,
+    "style:french": 1.0,
+    "style:log line": 1.0,
+    "replies_with_print": 1.0,
+    "replies_without_print": 1.0
+   },
+   "heldout_negatives_over_1pct_by_style": {
+    "bare value": "50/80",
+    "bold opener": "67/67",
+    "dialogue": "15/59",
+    "faq": "0/60",
+    "french": "4/67",
+    "log line": "10/73"
+   },
+   "heldout_negatives_over_1pct_peak_at_first_token": 134,
+   "lines_logit": {
+    "0.001": -4.2210999832153595,
+    "0.01": -5.435749310067094,
+    "0.05": -6.925704177189617
+   },
+   "line_1pct_per_kind": {
+    "lookup": -5.75923835090471,
+    "recalled": -5.030260171890259
+   },
+   "line_1pct_leave_one_out_range": [
+    -5.745327251251476,
+    -5.422038950772486
+   ],
+   "line_1pct_leave_one_out_lowest_group": "recalled:who created well-known programming languages",
+   "pool_median": -9.478500366210938,
+   "plain_valid_median": 9.880281403660774,
+   "plain_valid_min": 7.040687479544431,
+   "plain_caught": {
+    "0.001": 479,
+    "0.01": 479,
+    "0.05": 479
+   },
+   "plain_caught_by_output_type": {
+    "list": "204/204",
+    "dict": "108/108",
+    "str": "87/87",
+    "int": "80/80"
+   },
+   "plain_caught_by_template": {
+    "prefix_dict": "28/28",
+    "keys_by_value5": "40/40",
+    "index_pick": "40/40",
+    "dict_scale": "40/40",
+    "word_lengths": "45/45",
+    "gt_double": "39/39",
+    "split_reverse_join5": "45/45",
+    "title_join": "42/42",
+    "fn_map": "40/40",
+    "range_span": "40/40",
+    "dict_add": "40/40",
+    "word_counts8": "40/40"
+   },
+   "plain_median_by_template": {
+    "prefix_dict": 10.238001988946564,
+    "keys_by_value5": 11.165937321260571,
+    "index_pick": 8.845203042030334,
+    "dict_scale": 10.205937660299242,
+    "word_lengths": 9.94899990502745,
+    "gt_double": 8.332281240494922,
+    "split_reverse_join5": 10.496031016111374,
+    "title_join": 8.974374949932098,
+    "fn_map": 10.018726707436144,
+    "range_span": 9.663796968758106,
+    "dict_add": 9.407593917101622,
+    "word_counts8": 10.662398620741442
+   },
+   "diagnostics_median": {
+    "literal_output": -7.814750075340271,
+    "stated_wrong": 7.884398361667991,
+    "stated": 4.6516055054962635,
+    "prompt_reading_nonanswer": -3.7825000286102295,
+    "prompt_reading_wrong": 8.727437295019627,
+    "frame_it_prints": 10.04221872985363,
+    "frame_bare": 9.62143760919571,
+    "frame_result_is": 9.118351459503174,
+    "frame_output_colon": 8.824687462183647,
+    "frame_comment": 8.394312620162964,
+    "frame_actually": 8.118582036346197,
+    "frame_confirms_user": 7.20081820897758,
+    "copied_literal_in_answer_slot": 7.802663839422166,
+    "describe_only": -2.115999937057495,
+    "nonanswer_the_opener": -2.8373750373721123,
+    "R_after_lookup_request": 8.507601652294397,
+    "R_after_literal_request": -3.070451222360134,
+    "nonanswer_after_literal_request": -3.971500039100647
+   },
+   "diagnostics_over_1pct": {
+    "literal_output": "0/100",
+    "stated_wrong": "100/100",
+    "stated": "100/100",
+    "prompt_reading_nonanswer": "100/100",
+    "prompt_reading_wrong": "100/100",
+    "frame_it_prints": "100/100",
+    "frame_bare": "100/100",
+    "frame_result_is": "100/100",
+    "frame_output_colon": "100/100",
+    "frame_comment": "100/100",
+    "frame_actually": "100/100",
+    "frame_confirms_user": "100/100",
+    "copied_literal_in_answer_slot": "100/100",
+    "describe_only": "100/100",
+    "nonanswer_the_opener": "100/100",
+    "R_after_lookup_request": "100/100",
+    "R_after_literal_request": "86/100",
+    "nonanswer_after_literal_request": "100/100"
+   },
+   "score_vs_reply_chars_spearman": {
+    "pool": 0.133554495709963,
+    "heldout_negatives": -0.39741172640022865
+   }
+  },
+  "cpk@L48@s1": {
+   "layer": 48,
+   "seed": 1,
+   "val_auroc": 0.9969330820677678,
+   "epoch": 3,
+   "n_rows": 2369,
+   "heldout_auroc": {
+    "all": 1.0,
+    "computed_vs_literal_output": 1.0,
+    "computed_vs_lookup": 1.0,
+    "computed_vs_recalled": 1.0,
+    "style:bare value": 1.0,
+    "style:bold opener": 1.0,
+    "style:dialogue": 1.0,
+    "style:faq": 1.0,
+    "style:french": 1.0,
+    "style:log line": 1.0,
+    "replies_with_print": 1.0,
+    "replies_without_print": 1.0
+   },
+   "heldout_negatives_over_1pct_by_style": {
+    "bare value": "38/80",
+    "bold opener": "67/67",
+    "dialogue": "1/59",
+    "faq": "0/60",
+    "french": "0/67",
+    "log line": "0/73"
+   },
+   "heldout_negatives_over_1pct_peak_at_first_token": 100,
+   "lines_logit": {
+    "0.001": -2.8823999328613303,
+    "0.01": -3.816729613392805,
+    "0.05": -4.993685724085663
+   },
+   "line_1pct_per_kind": {
+    "lookup": -4.164032416921451,
+    "recalled": -3.3517900276184096
+   },
+   "line_1pct_leave_one_out_range": [
+    -4.010849905014039,
+    -3.711964730956963
+   ],
+   "line_1pct_leave_one_out_lowest_group": "recalled:who created well-known programming languages",
+   "pool_median": -7.486999758286402,
+   "plain_valid_median": 6.560968600213528,
+   "plain_valid_min": 4.190054588019848,
+   "plain_caught": {
+    "0.001": 479,
+    "0.01": 479,
+    "0.05": 479
+   },
+   "plain_caught_by_output_type": {
+    "list": "204/204",
+    "dict": "108/108",
+    "str": "87/87",
+    "int": "80/80"
+   },
+   "plain_caught_by_template": {
+    "prefix_dict": "28/28",
+    "keys_by_value5": "40/40",
+    "index_pick": "40/40",
+    "dict_scale": "40/40",
+    "word_lengths": "45/45",
+    "gt_double": "39/39",
+    "split_reverse_join5": "45/45",
+    "title_join": "42/42",
+    "fn_map": "40/40",
+    "range_span": "40/40",
+    "dict_add": "40/40",
+    "word_counts8": "40/40"
+   },
+   "plain_median_by_template": {
+    "prefix_dict": 7.307880235172453,
+    "keys_by_value5": 6.161585404071957,
+    "index_pick": 4.93544491706416,
+    "dict_scale": 6.5940000377595425,
+    "word_lengths": 7.264097603037953,
+    "gt_double": 8.287257567048073,
+    "split_reverse_join5": 6.631015542894602,
+    "title_join": 5.044562548398972,
+    "fn_map": 6.619968704879284,
+    "range_span": 6.377625003457069,
+    "dict_add": 5.808765679597855,
+    "word_counts8": 6.251065868986188
+   },
+   "diagnostics_median": {
+    "literal_output": -6.524749994277954,
+    "stated_wrong": 6.001140654087067,
+    "stated": 3.380812518298626,
+    "prompt_reading_nonanswer": -2.820249915122986,
+    "prompt_reading_wrong": 5.945796824991703,
+    "frame_it_prints": 6.72503119148314,
+    "frame_bare": 6.773593824356794,
+    "frame_result_is": 6.532300677150488,
+    "frame_output_colon": 6.369250103831291,
+    "frame_comment": 5.826593860983849,
+    "frame_actually": 5.7877164501696825,
+    "frame_confirms_user": 5.69450598815456,
+    "copied_literal_in_answer_slot": 3.641046851873398,
+    "describe_only": -4.018499851226807,
+    "nonanswer_the_opener": -5.719249963760376,
+    "R_after_lookup_request": 6.186124972999096,
+    "R_after_literal_request": -1.6982086712046112,
+    "nonanswer_after_literal_request": -2.6792500019073486
+   },
+   "diagnostics_over_1pct": {
+    "literal_output": "0/100",
+    "stated_wrong": "100/100",
+    "stated": "100/100",
+    "prompt_reading_nonanswer": "100/100",
+    "prompt_reading_wrong": "100/100",
+    "frame_it_prints": "100/100",
+    "frame_bare": "100/100",
+    "frame_result_is": "100/100",
+    "frame_output_colon": "100/100",
+    "frame_comment": "100/100",
+    "frame_actually": "100/100",
+    "frame_confirms_user": "100/100",
+    "copied_literal_in_answer_slot": "100/100",
+    "describe_only": "34/100",
+    "nonanswer_the_opener": "0/100",
+    "R_after_lookup_request": "100/100",
+    "R_after_literal_request": "88/100",
+    "nonanswer_after_literal_request": "100/100"
+   },
+   "score_vs_reply_chars_spearman": {
+    "pool": 0.08129848397780284,
+    "heldout_negatives": -0.4166484184986593
+   }
+  },
+  "cpk@L48@s2": {
+   "layer": 48,
+   "seed": 2,
+   "val_auroc": 1.0,
+   "epoch": 14,
+   "n_rows": 2369,
+   "heldout_auroc": {
+    "all": 0.9999999999999999,
+    "computed_vs_literal_output": 1.0,
+    "computed_vs_lookup": 1.0,
+    "computed_vs_recalled": 1.0,
+    "style:bare value": 1.0,
+    "style:bold opener": 1.0,
+    "style:dialogue": 1.0,
+    "style:faq": 1.0,
+    "style:french": 1.0,
+    "style:log line": 1.0,
+    "replies_with_print": 1.0,
+    "replies_without_print": 1.0
+   },
+   "heldout_negatives_over_1pct_by_style": {
+    "bare value": "40/80",
+    "bold opener": "46/67",
+    "dialogue": "5/59",
+    "faq": "0/60",
+    "french": "1/67",
+    "log line": "1/73"
+   },
+   "heldout_negatives_over_1pct_peak_at_first_token": 85,
+   "lines_logit": {
+    "0.001": -4.41368009948733,
+    "0.01": -5.46440995109494,
+    "0.05": -7.150081656589464
+   },
+   "line_1pct_per_kind": {
+    "lookup": -5.732121629035974,
+    "recalled": -5.054490060806277
+   },
+   "line_1pct_leave_one_out_range": [
+    -5.718730816081416,
+    -5.4553304413483446
+   ],
+   "line_1pct_leave_one_out_lowest_group": "recalled:who created well-known programming languages",
+   "pool_median": -9.459570657578297,
+   "plain_valid_median": 9.606406271457672,
+   "plain_valid_min": 5.206828057765961,
+   "plain_caught": {
+    "0.001": 479,
+    "0.01": 479,
+    "0.05": 479
+   },
+   "plain_caught_by_output_type": {
+    "list": "204/204",
+    "dict": "108/108",
+    "str": "87/87",
+    "int": "80/80"
+   },
+   "plain_caught_by_template": {
+    "prefix_dict": "28/28",
+    "keys_by_value5": "40/40",
+    "index_pick": "40/40",
+    "dict_scale": "40/40",
+    "word_lengths": "45/45",
+    "gt_double": "39/39",
+    "split_reverse_join5": "45/45",
+    "title_join": "42/42",
+    "fn_map": "40/40",
+    "range_span": "40/40",
+    "dict_add": "40/40",
+    "word_counts8": "40/40"
+   },
+   "plain_median_by_template": {
+    "prefix_dict": 9.691272776638243,
+    "keys_by_value5": 9.860511638224125,
+    "index_pick": 8.723359555006027,
+    "dict_scale": 9.670816268771887,
+    "word_lengths": 10.301812648773193,
+    "gt_double": 8.24631218612194,
+    "split_reverse_join5": 9.818273540586233,
+    "title_join": 7.973749965429306,
+    "fn_map": 9.586679704487324,
+    "range_span": 9.460937455296516,
+    "dict_add": 9.580687493085861,
+    "word_counts8": 10.230316706001759
+   },
+   "diagnostics_median": {
+    "literal_output": -9.303859442472458,
+    "stated_wrong": 8.152187276631594,
+    "stated": 4.6410819590091705,
+    "prompt_reading_nonanswer": -4.604000091552734,
+    "prompt_reading_wrong": 7.427093710750341,
+    "frame_it_prints": 9.779906332492828,
+    "frame_bare": 9.75971882045269,
+    "frame_result_is": 9.472242181189358,
+    "frame_output_colon": 9.116109639406204,
+    "frame_comment": 8.662656456232071,
+    "frame_actually": 8.282026985660195,
+    "frame_confirms_user": 7.697553668869659,
+    "copied_literal_in_answer_slot": 3.9774219170212746,
+    "describe_only": -6.651750087738037,
+    "nonanswer_the_opener": -9.059249877929688,
+    "R_after_lookup_request": 8.665882930159569,
+    "R_after_literal_request": -3.4378645156975836,
+    "nonanswer_after_literal_request": -4.488749980926514
+   },
+   "diagnostics_over_1pct": {
+    "literal_output": "0/100",
+    "stated_wrong": "100/100",
+    "stated": "100/100",
+    "prompt_reading_nonanswer": "100/100",
+    "prompt_reading_wrong": "100/100",
+    "frame_it_prints": "100/100",
+    "frame_bare": "100/100",
+    "frame_result_is": "100/100",
+    "frame_output_colon": "100/100",
+    "frame_comment": "100/100",
+    "frame_actually": "100/100",
+    "frame_confirms_user": "100/100",
+    "copied_literal_in_answer_slot": "100/100",
+    "describe_only": "6/100",
+    "nonanswer_the_opener": "0/100",
+    "R_after_lookup_request": "100/100",
+    "R_after_literal_request": "83/100",
+    "nonanswer_after_literal_request": "100/100"
+   },
+   "score_vs_reply_chars_spearman": {
+    "pool": 0.11695004978014951,
+    "heldout_negatives": -0.42239503583070653
+   }
+  },
+  "cpk@L16@s0": {
+   "layer": 16,
+   "seed": 0,
+   "val_auroc": 1.0,
+   "epoch": 15,
+   "n_rows": 2369,
+   "heldout_auroc": {
+    "all": 1.0,
+    "computed_vs_literal_output": 1.0,
+    "computed_vs_lookup": 1.0,
+    "computed_vs_recalled": 1.0,
+    "style:bare value": 1.0,
+    "style:bold opener": 1.0,
+    "style:dialogue": 1.0,
+    "style:faq": 1.0,
+    "style:french": 1.0,
+    "style:log line": 1.0,
+    "replies_with_print": 1.0,
+    "replies_without_print": 1.0
+   },
+   "heldout_negatives_over_1pct_by_style": {
+    "bare value": "36/80",
+    "bold opener": "5/67",
+    "dialogue": "1/59",
+    "faq": "2/60",
+    "french": "1/67",
+    "log line": "36/73"
+   },
+   "heldout_negatives_over_1pct_peak_at_first_token": 51,
+   "lines_logit": {
+    "0.001": -3.787106377593964,
+    "0.01": -5.124349640011789,
+    "0.05": -5.902615007694112
+   },
+   "line_1pct_per_kind": {
+    "lookup": -5.62445180705793,
+    "recalled": -4.744375666725683
+   },
+   "line_1pct_leave_one_out_range": [
+    -5.298818126327824,
+    -5.098722393233327
+   ],
+   "line_1pct_leave_one_out_lowest_group": "recalled:well-known constants and maximum values in computing",
+   "pool_median": -7.19594123904244,
+   "plain_valid_median": 7.431665116921067,
+   "plain_valid_min": 2.3255484343972057,
+   "plain_caught": {
+    "0.001": 479,
+    "0.01": 479,
+    "0.05": 479
+   },
+   "plain_caught_by_output_type": {
+    "list": "204/204",
+    "dict": "108/108",
+    "str": "87/87",
+    "int": "80/80"
+   },
+   "plain_caught_by_template": {
+    "prefix_dict": "28/28",
+    "keys_by_value5": "40/40",
+    "index_pick": "40/40",
+    "dict_scale": "40/40",
+    "word_lengths": "45/45",
+    "gt_double": "39/39",
+    "split_reverse_join5": "45/45",
+    "title_join": "42/42",
+    "fn_map": "40/40",
+    "range_span": "40/40",
+    "dict_add": "40/40",
+    "word_counts8": "40/40"
+   },
+   "plain_median_by_template": {
+    "prefix_dict": 6.8990064125478625,
+    "keys_by_value5": 8.277390647679567,
+    "index_pick": 5.792214695829898,
+    "dict_scale": 9.843662183731794,
+    "word_lengths": 5.216707248240709,
+    "gt_double": 7.1286719143390656,
+    "split_reverse_join5": 8.587109372019768,
+    "title_join": 9.161187259480357,
+    "fn_map": 6.635508134961128,
+    "range_span": 7.108937434852123,
+    "dict_add": 8.595304638147354,
+    "word_counts8": 7.42672865674831
+   },
+   "diagnostics_median": {
+    "literal_output": -6.780505836708471,
+    "stated_wrong": 4.572205583564937,
+    "stated": 0.1960702696815133,
+    "prompt_reading_nonanswer": -5.694499969482422,
+    "prompt_reading_wrong": 7.794691540300846,
+    "frame_it_prints": 7.624652247701306,
+    "frame_bare": 6.808304723352194,
+    "frame_result_is": 7.299996120389551,
+    "frame_output_colon": 7.518718779087067,
+    "frame_comment": 6.328226715326309,
+    "frame_actually": 6.98467141087167,
+    "frame_confirms_user": 6.396437227027491,
+    "copied_literal_in_answer_slot": -3.059704852523282,
+    "describe_only": -5.709009206737392,
+    "nonanswer_the_opener": -7.182499885559082,
+    "R_after_lookup_request": 6.992404485121369,
+    "R_after_literal_request": 4.829675834625959,
+    "nonanswer_after_literal_request": -5.832749843597412
+   },
+   "diagnostics_over_1pct": {
+    "literal_output": "2/100",
+    "stated_wrong": "100/100",
+    "stated": "100/100",
+    "prompt_reading_nonanswer": "0/100",
+    "prompt_reading_wrong": "100/100",
+    "frame_it_prints": "100/100",
+    "frame_bare": "100/100",
+    "frame_result_is": "100/100",
+    "frame_output_colon": "100/100",
+    "frame_comment": "100/100",
+    "frame_actually": "100/100",
+    "frame_confirms_user": "100/100",
+    "copied_literal_in_answer_slot": "100/100",
+    "describe_only": "0/100",
+    "nonanswer_the_opener": "0/100",
+    "R_after_lookup_request": "100/100",
+    "R_after_literal_request": "100/100",
+    "nonanswer_after_literal_request": "0/100"
+   },
+   "score_vs_reply_chars_spearman": {
+    "pool": -0.11852511314956996,
+    "heldout_negatives": -0.34365654314266525
+   }
+  },
+  "cpk@L16@s1": {
+   "layer": 16,
+   "seed": 1,
+   "val_auroc": 0.9977275246646713,
+   "epoch": 11,
+   "n_rows": 2369,
+   "heldout_auroc": {
+    "all": 1.0,
+    "computed_vs_literal_output": 1.0,
+    "computed_vs_lookup": 1.0,
+    "computed_vs_recalled": 1.0,
+    "style:bare value": 1.0,
+    "style:bold opener": 1.0,
+    "style:dialogue": 1.0,
+    "style:faq": 1.0,
+    "style:french": 1.0,
+    "style:log line": 1.0,
+    "replies_with_print": 1.0,
+    "replies_without_print": 1.0
+   },
+   "heldout_negatives_over_1pct_by_style": {
+    "bare value": "28/80",
+    "bold opener": "2/67",
+    "dialogue": "2/59",
+    "faq": "2/60",
+    "french": "1/67",
+    "log line": "35/73"
+   },
+   "heldout_negatives_over_1pct_peak_at_first_token": 47,
+   "lines_logit": {
+    "0.001": -2.713769401024231,
+    "0.01": -4.64833914322779,
+    "0.05": -5.5068849231087365
+   },
+   "line_1pct_per_kind": {
+    "lookup": -5.252701396872291,
+    "recalled": -4.163864323870513
+   },
+   "line_1pct_leave_one_out_range": [
+    -4.7543123307498165,
+    -4.574701992720359
+   ],
+   "line_1pct_leave_one_out_lowest_group": "recalled:well-known constants and maximum values in computing",
+   "pool_median": -6.684405362688267,
+   "plain_valid_median": 7.693921968340874,
+   "plain_valid_min": 2.608546957373619,
+   "plain_caught": {
+    "0.001": 479,
+    "0.01": 479,
+    "0.05": 479
+   },
+   "plain_caught_by_output_type": {
+    "list": "204/204",
+    "dict": "108/108",
+    "str": "87/87",
+    "int": "80/80"
+   },
+   "plain_caught_by_template": {
+    "prefix_dict": "28/28",
+    "keys_by_value5": "40/40",
+    "index_pick": "40/40",
+    "dict_scale": "40/40",
+    "word_lengths": "45/45",
+    "gt_double": "39/39",
+    "split_reverse_join5": "45/45",
+    "title_join": "42/42",
+    "fn_map": "40/40",
+    "range_span": "40/40",
+    "dict_add": "40/40",
+    "word_counts8": "40/40"
+   },
+   "plain_median_by_template": {
+    "prefix_dict": 6.671535827913516,
+    "keys_by_value5": 8.069359321147203,
+    "index_pick": 5.957954678684473,
+    "dict_scale": 9.773288996424526,
+    "word_lengths": 5.423484195023775,
+    "gt_double": 8.8954608887434,
+    "split_reverse_join5": 8.497000098228455,
+    "title_join": 8.032283263280988,
+    "fn_map": 7.7817539274692535,
+    "range_span": 7.318234421312809,
+    "dict_add": 8.335562385618687,
+    "word_counts8": 6.721836009062827
+   },
+   "diagnostics_median": {
+    "literal_output": -6.516673282370903,
+    "stated_wrong": 5.103236213326454,
+    "stated": 0.13047462329268456,
+    "prompt_reading_nonanswer": -5.30649995803833,
+    "prompt_reading_wrong": 8.338968724012375,
+    "frame_it_prints": 7.819039046764374,
+    "frame_bare": 7.005242072977126,
+    "frame_result_is": 7.590437598526478,
+    "frame_output_colon": 7.559640683233738,
+    "frame_comment": 6.477406196296215,
+    "frame_actually": 7.161629971116781,
+    "frame_confirms_user": 7.067184861050919,
+    "copied_literal_in_answer_slot": -2.649119108915329,
+    "describe_only": -5.219576210016385,
+    "nonanswer_the_opener": -6.815000087022781,
+    "R_after_lookup_request": 7.393156318925321,
+    "R_after_literal_request": 5.4081679079681635,
+    "nonanswer_after_literal_request": -5.415250062942505
+   },
+   "diagnostics_over_1pct": {
+    "literal_output": "2/100",
+    "stated_wrong": "100/100",
+    "stated": "100/100",
+    "prompt_reading_nonanswer": "0/100",
+    "prompt_reading_wrong": "100/100",
+    "frame_it_prints": "100/100",
+    "frame_bare": "100/100",
+    "frame_result_is": "100/100",
+    "frame_output_colon": "100/100",
+    "frame_comment": "100/100",
+    "frame_actually": "100/100",
+    "frame_confirms_user": "100/100",
+    "copied_literal_in_answer_slot": "99/100",
+    "describe_only": "0/100",
+    "nonanswer_the_opener": "0/100",
+    "R_after_lookup_request": "100/100",
+    "R_after_literal_request": "100/100",
+    "nonanswer_after_literal_request": "0/100"
+   },
+   "score_vs_reply_chars_spearman": {
+    "pool": -0.13089115398737272,
+    "heldout_negatives": -0.34154731231593827
+   }
+  },
+  "cpk@L16@s2": {
+   "layer": 16,
+   "seed": 2,
+   "val_auroc": 1.0,
+   "epoch": 14,
+   "n_rows": 2369,
+   "heldout_auroc": {
+    "all": 1.0,
+    "computed_vs_literal_output": 1.0,
+    "computed_vs_lookup": 1.0,
+    "computed_vs_recalled": 1.0,
+    "style:bare value": 1.0,
+    "style:bold opener": 1.0,
+    "style:dialogue": 1.0,
+    "style:faq": 1.0,
+    "style:french": 1.0,
+    "style:log line": 1.0,
+    "replies_with_print": 1.0,
+    "replies_without_print": 1.0
+   },
+   "heldout_negatives_over_1pct_by_style": {
+    "bare value": "50/80",
+    "bold opener": "5/67",
+    "dialogue": "4/59",
+    "faq": "2/60",
+    "french": "1/67",
+    "log line": "36/73"
+   },
+   "heldout_negatives_over_1pct_peak_at_first_token": 61,
+   "lines_logit": {
+    "0.001": -3.3419470245193326,
+    "0.01": -4.969923610242137,
+    "0.05": -5.74530323275302
+   },
+   "line_1pct_per_kind": {
+    "lookup": -5.4359413443558156,
+    "recalled": -4.484649746034995
+   },
+   "line_1pct_leave_one_out_range": [
+    -5.039845055611222,
+    -4.963288930584834
+   ],
+   "line_1pct_leave_one_out_lowest_group": "recalled:well-known constants and maximum values in computing",
+   "pool_median": -6.985332700976869,
+   "plain_valid_median": 7.418820425868034,
+   "plain_valid_min": 2.3941094130277634,
+   "plain_caught": {
+    "0.001": 479,
+    "0.01": 479,
+    "0.05": 479
+   },
+   "plain_caught_by_output_type": {
+    "list": "204/204",
+    "dict": "108/108",
+    "str": "87/87",
+    "int": "80/80"
+   },
+   "plain_caught_by_template": {
+    "prefix_dict": "28/28",
+    "keys_by_value5": "40/40",
+    "index_pick": "40/40",
+    "dict_scale": "40/40",
+    "word_lengths": "45/45",
+    "gt_double": "39/39",
+    "split_reverse_join5": "45/45",
+    "title_join": "42/42",
+    "fn_map": "40/40",
+    "range_span": "40/40",
+    "dict_add": "40/40",
+    "word_counts8": "40/40"
+   },
+   "plain_median_by_template": {
+    "prefix_dict": 6.929356478537898,
+    "keys_by_value5": 8.66844541579485,
+    "index_pick": 5.581632249057293,
+    "dict_scale": 9.688089866191149,
+    "word_lengths": 5.5570233054459095,
+    "gt_double": 7.241023309528828,
+    "split_reverse_join5": 8.977390754967928,
+    "title_join": 9.076222838833928,
+    "fn_map": 6.586914025247097,
+    "range_span": 6.9145937114953995,
+    "dict_add": 8.315390594303608,
+    "word_counts8": 7.383006116375327
+   },
+   "diagnostics_median": {
+    "literal_output": -6.550408990471624,
+    "stated_wrong": 4.584009725600481,
+    "stated": 0.051885735243558884,
+    "prompt_reading_nonanswer": -5.4150002002716064,
+    "prompt_reading_wrong": 7.861152578145266,
+    "frame_it_prints": 7.617533145472407,
+    "frame_bare": 7.027164137456566,
+    "frame_result_is": 7.357683605063357,
+    "frame_output_colon": 7.604359433054924,
+    "frame_comment": 6.608785204589367,
+    "frame_actually": 6.97575793415308,
+    "frame_confirms_user": 6.650505111319944,
+    "copied_literal_in_answer_slot": -2.5769101716578007,
+    "describe_only": -5.324587059323676,
+    "nonanswer_the_opener": -7.0929999351501465,
+    "R_after_lookup_request": 7.047099557705224,
+    "R_after_literal_request": 4.858437463641167,
+    "nonanswer_after_literal_request": -5.5279998779296875
+   },
+   "diagnostics_over_1pct": {
+    "literal_output": "5/100",
+    "stated_wrong": "100/100",
+    "stated": "100/100",
+    "prompt_reading_nonanswer": "0/100",
+    "prompt_reading_wrong": "100/100",
+    "frame_it_prints": "100/100",
+    "frame_bare": "100/100",
+    "frame_result_is": "100/100",
+    "frame_output_colon": "100/100",
+    "frame_comment": "100/100",
+    "frame_actually": "100/100",
+    "frame_confirms_user": "100/100",
+    "copied_literal_in_answer_slot": "100/100",
+    "describe_only": "0/100",
+    "nonanswer_the_opener": "0/100",
+    "R_after_lookup_request": "100/100",
+    "R_after_literal_request": "100/100",
+    "nonanswer_after_literal_request": "0/100"
+   },
+   "score_vs_reply_chars_spearman": {
+    "pool": -0.1326333594914816,
+    "heldout_negatives": -0.32338382025653656
+   }
+  },
+  "cnlpk@L48@s0": {
+   "layer": 48,
+   "seed": 0,
+   "val_auroc": 1.0,
+   "epoch": 14,
+   "n_rows": 2044,
+   "heldout_auroc": {
+    "all": 0.9263788832256044,
+    "computed_vs_literal_output": 0.7257782255926182,
+    "computed_vs_lookup": 1.0,
+    "computed_vs_recalled": 1.0,
+    "style:bare value": 1.0,
+    "style:bold opener": 0.9059701492537313,
+    "style:dialogue": 0.9585037989479837,
+    "style:faq": 1.0,
+    "style:french": 0.987516960651289,
+    "style:log line": 1.0,
+    "replies_with_print": 0.717921146953405,
+    "replies_without_print": 0.9652100190385531
+   },
+   "heldout_negatives_over_1pct_by_style": {
+    "bare value": "58/80",
+    "bold opener": "67/67",
+    "dialogue": "25/59",
+    "faq": "27/60",
+    "french": "19/67",
+    "log line": "42/73"
+   },
+   "heldout_negatives_over_1pct_peak_at_first_token": 150,
+   "lines_logit": {
+    "0.001": -3.7077240924835566,
+    "0.01": -5.059280147552491,
+    "0.05": -6.7963674297337
+   },
+   "line_1pct_per_kind": {
+    "lookup": -6.933524837822224,
+    "recalled": -4.268309841156007
+   },
+   "line_1pct_leave_one_out_range": [
+    -5.252200031280518,
+    -5.039455189704893
+   ],
+   "line_1pct_leave_one_out_lowest_group": "recalled:who created well-known programming languages",
+   "pool_median": -9.175000190734863,
+   "plain_valid_median": 11.053500175476074,
+   "plain_valid_min": 10.314000248908997,
+   "plain_caught": {
+    "0.001": 479,
+    "0.01": 479,
+    "0.05": 479
+   },
+   "plain_caught_by_output_type": {
+    "list": "204/204",
+    "dict": "108/108",
+    "str": "87/87",
+    "int": "80/80"
+   },
+   "plain_caught_by_template": {
+    "prefix_dict": "28/28",
+    "keys_by_value5": "40/40",
+    "index_pick": "40/40",
+    "dict_scale": "40/40",
+    "word_lengths": "45/45",
+    "gt_double": "39/39",
+    "split_reverse_join5": "45/45",
+    "title_join": "42/42",
+    "fn_map": "40/40",
+    "range_span": "40/40",
+    "dict_add": "40/40",
+    "word_counts8": "40/40"
+   },
+   "plain_median_by_template": {
+    "prefix_dict": 11.069749891757965,
+    "keys_by_value5": 10.829624891281128,
+    "index_pick": 10.951249897480011,
+    "dict_scale": 10.659749925136566,
+    "word_lengths": 10.41349983215332,
+    "gt_double": 10.897499799728394,
+    "split_reverse_join5": 11.242250323295593,
+    "title_join": 11.162250280380249,
+    "fn_map": 11.4668750166893,
+    "range_span": 11.744749963283539,
+    "dict_add": 11.43699997663498,
+    "word_counts8": 11.01312518119812
+   },
+   "diagnostics_median": {
+    "literal_output": 10.239499807357788,
+    "stated_wrong": 3.8457812517881393,
+    "stated": 2.758500099182129,
+    "prompt_reading_nonanswer": 1.7217890023748623,
+    "prompt_reading_wrong": 7.950500011444092,
+    "frame_it_prints": 7.950500011444092,
+    "frame_bare": 4.582874834537506,
+    "frame_result_is": 4.2170000076293945,
+    "frame_output_colon": 4.989000031724572,
+    "frame_comment": 4.961812436580658,
+    "frame_actually": 4.721265606582165,
+    "frame_confirms_user": 2.077333986759186,
+    "copied_literal_in_answer_slot": 11.058124899864197,
+    "describe_only": 7.950500011444092,
+    "nonanswer_the_opener": 11.058124899864197,
+    "R_after_lookup_request": 2.3249687179923058,
+    "R_after_literal_request": 7.493499994277954,
+    "nonanswer_after_literal_request": 1.0806510489492211
+   },
+   "diagnostics_over_1pct": {
+    "literal_output": "100/100",
+    "stated_wrong": "100/100",
+    "stated": "100/100",
+    "prompt_reading_nonanswer": "100/100",
+    "prompt_reading_wrong": "100/100",
+    "frame_it_prints": "100/100",
+    "frame_bare": "100/100",
+    "frame_result_is": "100/100",
+    "frame_output_colon": "100/100",
+    "frame_comment": "100/100",
+    "frame_actually": "100/100",
+    "frame_confirms_user": "100/100",
+    "copied_literal_in_answer_slot": "100/100",
+    "describe_only": "100/100",
+    "nonanswer_the_opener": "100/100",
+    "R_after_lookup_request": "100/100",
+    "R_after_literal_request": "100/100",
+    "nonanswer_after_literal_request": "100/100"
+   },
+   "score_vs_reply_chars_spearman": {
+    "pool": -0.01839515308549215,
+    "heldout_negatives": -0.296144990172112
+   }
+  },
+  "cnlpk@L48@s1": {
+   "layer": 48,
+   "seed": 1,
+   "val_auroc": 1.0,
+   "epoch": 15,
+   "n_rows": 2044,
+   "heldout_auroc": {
+    "all": 0.9261582049602779,
+    "computed_vs_literal_output": 0.7249562496685581,
+    "computed_vs_lookup": 1.0,
+    "computed_vs_recalled": 1.0,
+    "style:bare value": 1.0,
+    "style:bold opener": 0.9059701492537313,
+    "style:dialogue": 0.962010520163647,
+    "style:faq": 1.0,
+    "style:french": 0.9791044776119402,
+    "style:log line": 1.0,
+    "replies_with_print": 0.717921146953405,
+    "replies_without_print": 0.9648679200380771
+   },
+   "heldout_negatives_over_1pct_by_style": {
+    "bare value": "57/80",
+    "bold opener": "67/67",
+    "dialogue": "25/59",
+    "faq": "20/60",
+    "french": "20/67",
+    "log line": "41/73"
+   },
+   "heldout_negatives_over_1pct_peak_at_first_token": 140,
+   "lines_logit": {
+    "0.001": -3.397747993469286,
+    "0.01": -5.149179954528811,
+    "0.05": -6.884900093078613
+   },
+   "line_1pct_per_kind": {
+    "lookup": -7.061398600802516,
+    "recalled": -4.2023699760437045
+   },
+   "line_1pct_leave_one_out_range": [
+    -5.47305006980896,
+    -5.103355021476742
+   ],
+   "line_1pct_leave_one_out_lowest_group": "recalled:who created well-known programming languages",
+   "pool_median": -9.31201225426048,
+   "plain_valid_median": 11.371500492095947,
+   "plain_valid_min": 10.68375039100647,
+   "plain_caught": {
+    "0.001": 479,
+    "0.01": 479,
+    "0.05": 479
+   },
+   "plain_caught_by_output_type": {
+    "list": "204/204",
+    "dict": "108/108",
+    "str": "87/87",
+    "int": "80/80"
+   },
+   "plain_caught_by_template": {
+    "prefix_dict": "28/28",
+    "keys_by_value5": "40/40",
+    "index_pick": "40/40",
+    "dict_scale": "40/40",
+    "word_lengths": "45/45",
+    "gt_double": "39/39",
+    "split_reverse_join5": "45/45",
+    "title_join": "42/42",
+    "fn_map": "40/40",
+    "range_span": "40/40",
+    "dict_add": "40/40",
+    "word_counts8": "40/40"
+   },
+   "plain_median_by_template": {
+    "prefix_dict": 11.322625160217285,
+    "keys_by_value5": 11.15137493610382,
+    "index_pick": 11.27887487411499,
+    "dict_scale": 11.044249773025513,
+    "word_lengths": 10.774500370025635,
+    "gt_double": 11.231750011444092,
+    "split_reverse_join5": 11.486000061035156,
+    "title_join": 11.370250463485718,
+    "fn_map": 11.810374975204468,
+    "range_span": 12.054624915122986,
+    "dict_add": 11.747124791145325,
+    "word_counts8": 11.389875173568726
+   },
+   "diagnostics_median": {
+    "literal_output": 10.638624966144562,
+    "stated_wrong": 3.8698711302131414,
+    "stated": 2.613749958574772,
+    "prompt_reading_nonanswer": 1.3949096096475841,
+    "prompt_reading_wrong": 8.193250179290771,
+    "frame_it_prints": 8.193250179290771,
+    "frame_bare": 4.807499885559082,
+    "frame_result_is": 4.669796913862228,
+    "frame_output_colon": 5.371750115416944,
+    "frame_comment": 5.048875100910664,
+    "frame_actually": 5.068187318742275,
+    "frame_confirms_user": 2.4861259046010673,
+    "copied_literal_in_answer_slot": 11.354499697685242,
+    "describe_only": 8.193250179290771,
+    "nonanswer_the_opener": 11.354499697685242,
+    "R_after_lookup_request": 2.541249956935644,
+    "R_after_literal_request": 7.801250219345093,
+    "nonanswer_after_literal_request": 0.7829270620859461
+   },
+   "diagnostics_over_1pct": {
+    "literal_output": "100/100",
+    "stated_wrong": "100/100",
+    "stated": "100/100",
+    "prompt_reading_nonanswer": "100/100",
+    "prompt_reading_wrong": "100/100",
+    "frame_it_prints": "100/100",
+    "frame_bare": "100/100",
+    "frame_result_is": "100/100",
+    "frame_output_colon": "100/100",
+    "frame_comment": "100/100",
+    "frame_actually": "100/100",
+    "frame_confirms_user": "100/100",
+    "copied_literal_in_answer_slot": "100/100",
+    "describe_only": "100/100",
+    "nonanswer_the_opener": "100/100",
+    "R_after_lookup_request": "100/100",
+    "R_after_literal_request": "100/100",
+    "nonanswer_after_literal_request": "100/100"
+   },
+   "score_vs_reply_chars_spearman": {
+    "pool": 0.006241365450151286,
+    "heldout_negatives": -0.3145682988071477
+   }
+  },
+  "cnlpk@L48@s2": {
+   "layer": 48,
+   "seed": 2,
+   "val_auroc": 0.9990144230769231,
+   "epoch": 4,
+   "n_rows": 2044,
+   "heldout_auroc": {
+    "all": 0.9282510891540192,
+    "computed_vs_literal_output": 0.7327517632709339,
+    "computed_vs_lookup": 1.0,
+    "computed_vs_recalled": 1.0,
+    "style:bare value": 1.0,
+    "style:bold opener": 0.905223880597015,
+    "style:dialogue": 0.9772063120981882,
+    "style:faq": 1.0,
+    "style:french": 0.9864314789687925,
+    "style:log line": 1.0,
+    "replies_with_print": 0.7281959378733573,
+    "replies_without_print": 0.9648530461684912
+   },
+   "heldout_negatives_over_1pct_by_style": {
+    "bare value": "57/80",
+    "bold opener": "67/67",
+    "dialogue": "25/59",
+    "faq": "27/60",
+    "french": "21/67",
+    "log line": "39/73"
+   },
+   "heldout_negatives_over_1pct_peak_at_first_token": 145,
+   "lines_logit": {
+    "0.001": -2.3160439662933396,
+    "0.01": -3.791960000991825,
+    "0.05": -5.214300155639648
+   },
+   "line_1pct_per_kind": {
+    "lookup": -5.221989386915067,
+    "recalled": -3.1082500743866035
+   },
+   "line_1pct_leave_one_out_range": [
+    -4.360199880599976,
+    -3.7263099551200813
+   ],
+   "line_1pct_leave_one_out_lowest_group": "recalled:who created well-known programming languages",
+   "pool_median": -7.104000091552734,
+   "plain_valid_median": 9.217000007629395,
+   "plain_valid_min": 8.874250054359436,
+   "plain_caught": {
+    "0.001": 479,
+    "0.01": 479,
+    "0.05": 479
+   },
+   "plain_caught_by_output_type": {
+    "list": "204/204",
+    "dict": "108/108",
+    "str": "87/87",
+    "int": "80/80"
+   },
+   "plain_caught_by_template": {
+    "prefix_dict": "28/28",
+    "keys_by_value5": "40/40",
+    "index_pick": "40/40",
+    "dict_scale": "40/40",
+    "word_lengths": "45/45",
+    "gt_double": "39/39",
+    "split_reverse_join5": "45/45",
+    "title_join": "42/42",
+    "fn_map": "40/40",
+    "range_span": "40/40",
+    "dict_add": "40/40",
+    "word_counts8": "40/40"
+   },
+   "plain_median_by_template": {
+    "prefix_dict": 9.405375003814697,
+    "keys_by_value5": 9.139750123023987,
+    "index_pick": 9.253124952316284,
+    "dict_scale": 9.143499910831451,
+    "word_lengths": 8.927250266075134,
+    "gt_double": 9.315750241279602,
+    "split_reverse_join5": 9.190500020980835,
+    "title_join": 9.12250018119812,
+    "fn_map": 9.646374940872192,
+    "range_span": 9.527499854564667,
+    "dict_add": 9.264874935150146,
+    "word_counts8": 9.15037477016449
+   },
+   "diagnostics_median": {
+    "literal_output": 8.5625,
+    "stated_wrong": 3.951812494546175,
+    "stated": 2.7107499453704804,
+    "prompt_reading_nonanswer": 1.8441342135702143,
+    "prompt_reading_wrong": 6.608000040054321,
+    "frame_it_prints": 6.608000040054321,
+    "frame_bare": 4.586875021457672,
+    "frame_result_is": 4.634374961256981,
+    "frame_output_colon": 5.053750053048134,
+    "frame_comment": 3.846750073134899,
+    "frame_actually": 4.817062526009977,
+    "frame_confirms_user": 2.9554785932414234,
+    "copied_literal_in_answer_slot": 9.218874990940094,
+    "describe_only": 6.57450008392334,
+    "nonanswer_the_opener": 9.218874990940094,
+    "R_after_lookup_request": 2.8969375044107437,
+    "R_after_literal_request": 6.152750015258789,
+    "nonanswer_after_literal_request": 1.3977165846008575
+   },
+   "diagnostics_over_1pct": {
+    "literal_output": "100/100",
+    "stated_wrong": "100/100",
+    "stated": "100/100",
+    "prompt_reading_nonanswer": "100/100",
+    "prompt_reading_wrong": "100/100",
+    "frame_it_prints": "100/100",
+    "frame_bare": "100/100",
+    "frame_result_is": "100/100",
+    "frame_output_colon": "100/100",
+    "frame_comment": "100/100",
+    "frame_actually": "100/100",
+    "frame_confirms_user": "100/100",
+    "copied_literal_in_answer_slot": "100/100",
+    "describe_only": "100/100",
+    "nonanswer_the_opener": "100/100",
+    "R_after_lookup_request": "100/100",
+    "R_after_literal_request": "100/100",
+    "nonanswer_after_literal_request": "100/100"
+   },
+   "score_vs_reply_chars_spearman": {
+    "pool": -0.03190603457321753,
+    "heldout_negatives": -0.3032958908534586
+   }
+  }
+ }
+}
