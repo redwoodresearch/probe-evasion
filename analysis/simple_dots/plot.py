@@ -2,7 +2,7 @@
 the concept, the best searched attack's valid replies read with the instruction removed) and the 1% flag line.
 
     uv run python analysis/simple_dots/plot.py
-Writes share/simple_dots_{sarcasm,qwen_maths,gemma_maths}.png. Saved score caches only (no GPU).
+Writes share/simple_dots_{sarcasm,qwen_maths,gemma_maths,condescension,flattery,anger}.png. Saved score caches only (no GPU).
 """
 
 import importlib.util
@@ -121,7 +121,72 @@ def gemma_maths() -> None:
     save(fig, "gemma_maths")
 
 
+def three_strips(cal, plain, attack, line: float, normal_label: str, concept_label: str) -> list:
+    """Probabilities in; strips in log-odds with the counts the deck quotes."""
+    to = lambda xs: np.array([logit(x) for x in xs])
+    return [(normal_label, to(cal), NORMAL, f"{sum(x > line for x in cal)} of {len(cal):,}\nflagged"),
+            (concept_label, to(plain), PLAIN, f"{sum(x > line for x in plain)} of {len(plain)}\ncaught"),
+            ("Best attack prompt", to(attack), ATTACK, f"{sum(x <= line for x in attack)} of {len(attack)}\nget past")]
+
+
+def condescension() -> None:
+    from probe_evasion.missions import m11_long_search as m11
+
+    m8b = m11.m8b
+    probes = {m8b.PRIMARY: m8b.all_probes()[m8b.PRIMARY]}
+    line = json.loads((m11.OUT / "cond_report.json").read_text())["lines"][m8b.PRIMARY]["0.01"]
+    cal = [r for r in m8b.eval_sets()["calibration"] if r["clean"]]
+    cal_s = [x[m8b.PRIMARY]["ema"] for x in m11.score([(r["prompt"], r["reply"]) for r in cal], probes)]
+    rows = [r for r in m11.cond_test_rows() if r["present"]]
+    hidden = lambda arm: [x[m8b.PRIMARY]["ema"] for x in m11.score([(r["task"]["task"], r["reply"]) for r in rows if r["arm"] == arm], probes)]
+    plain, attack = hidden("plain"), hidden("m11_free")
+    assert sum(x <= line for x in attack) == 492 and len(attack) == 494, (sum(x <= line for x in attack), len(attack))
+    fig, ax = plt.subplots(figsize=(16, 7.3))
+    panel(ax, three_strips(cal_s, plain, attack, line, "Normal replies", "Plain condescension"), logit(line))
+    save(fig, "condescension")
+
+
+def flattery() -> None:
+    from probe_evasion.missions import m3a2_sarcasm_patch as m3a2
+    from probe_evasion.missions import m8a_flattery as m8a
+
+    probes = {m8a.PRIMARY: m8a.all_probes()[m8a.PRIMARY]}
+    cache = m3a2.load_cache()
+    line = m8a.thresholds(probes, cache)[m8a.PRIMARY][0.01]
+    cal = [r for r in m8a.jl(m8a.FILES["calibration"]) if r["clean"]]
+    cal_s = [x[m8a.PRIMARY]["ema"] for x in m8a.score_rows(cal, probes, cache)]
+    rows = [r for r in m8a.jl(m8a.OUT / "fresh_all.jsonl") if r["present"]]
+    removed = lambda arm: [x[m8a.PRIMARY]["ema"] for x in m8a.score_rows([r for r in rows if r["arm"] == arm], probes, cache, removed=True)]
+    plain, attack = removed("plain"), removed("hidden_b")
+    assert (len(plain), len(attack), sum(x <= line for x in attack)) == (478, 456, 454), (len(plain), len(attack), sum(x <= line for x in attack))
+    fig, ax = plt.subplots(figsize=(16, 7.3))
+    panel(ax, three_strips(cal_s, plain, attack, line, "Normal replies", "Plain flattery"), logit(line))
+    save(fig, "flattery")
+
+
+def anger() -> None:
+    from probe_evasion.generation import read_jsonl
+    from probe_evasion.missions.m3c_anger import FILES, OUT, V
+
+    probe = "claude_peak:anger@L48"
+    line = json.loads((OUT / f"{V}_probe_eval.json").read_text())["probes"][probe]["ema"]["lines"]["0.01"]
+    ev = sorted((e for e in read_jsonl(OUT / f"{V}_eval_scores.jsonl") if e["group"] == "calibration"), key=lambda e: e["i"])
+    cal = read_jsonl(FILES["calibration"])
+    assert len(cal) == len(ev)
+    cal_s = [e["scores"][probe]["ema"] for r, e in zip(cal, ev) if not r["any_anger"]]
+    rows = [r for r in read_jsonl(OUT / f"{V}_frozen_search_replies.jsonl") if r["present"]]
+    removed = lambda arm: [r["scores_no_instruction"][probe]["ema"] for r in rows if r["arm"] == arm]
+    plain, attack = removed("plain"), removed("optimized (frozen search #4)")
+    assert (len(cal_s), len(attack), sum(x <= line for x in attack)) == (1030, 196, 126), (len(cal_s), len(attack), sum(x <= line for x in attack))
+    fig, ax = plt.subplots(figsize=(16, 7.3))
+    panel(ax, three_strips(cal_s, plain, attack, line, "Normal replies", "Plain anger"), logit(line))
+    save(fig, "anger")
+
+
 if __name__ == "__main__":
     sarcasm()
     qwen_maths()
     gemma_maths()
+    condescension()
+    flattery()
+    anger()
