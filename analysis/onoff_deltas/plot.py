@@ -21,6 +21,13 @@ ANGER = [  # m20 matched pair; bars = median over 10 training seeds (16:45 inter
     ("Fresh search aimed at the\nClaude-written probe (median of 10 seeds)", 2.5, [72.6], 1.5, [30.8]),
     ("Old attack, tuned on a near-copy of\nthe Claude-written probe (seed 0, 200 tries)", 2.5, [60.5], 1.5, [75.0]),
 ]
+# m20 matched pairs (agent A), mean over 10 training draws, full-strength replies only; each search scored on the probe it
+# was aimed at. Source: missions/m20_onoff_pairs/{flattery,condescension}/analysis.json, key seed_level.primary.
+OTHER_TONE = [
+    ("Flattery: fresh search aimed at each\nprobe (gap −6 pts [−16, +4])", 10.9, [69.4], 5.4, [70.0]),
+    ("Condescension: search warm-started from\nm11 prompts, aimed at each (gap +71 pts [+62, +77])", 0.0, [70.8], 0.0, [0.0]),
+    ("Condescension: cold search from\ndefault seeds, aimed at each", 0.0, [0.0], 0.0, [2.8]),
+]
 OBJECTIVE = [  # NOT matched (pilot pairs)
     ("Maths: 'confirm their figure'\n(search aimed at the model-written probe)", 0.0, [2.6, 1.4, 1.4], 0.0, [0.0, 0.0, 0.6]),
     ("Maths: earlier transferred prompt\n(off-policy = Gemma-written text; instruction visible)", 0.0, [4.3, 3.8, 4.5], 0.0, [0.0, 0.0, 0.0]),
@@ -66,19 +73,20 @@ def panel(ax, rows, xmax, title, unit="pts"):
     ax.tick_params(axis="y", length=0); ax.tick_params(axis="x", colors=MUTED, labelsize=8.5)
 
 
-fig = plt.figure(figsize=(13, 15))
-gs = fig.add_gridspec(4, 1, height_ratios=[3, 3, 3, 4.2], hspace=0.55, left=0.33, right=0.97, top=0.89, bottom=0.06)
+fig = plt.figure(figsize=(13, 18.5))
+gs = fig.add_gridspec(5, 1, height_ratios=[3, 3, 3, 3, 4.2], hspace=0.55, left=0.33, right=0.97, top=0.91, bottom=0.05)
 panel(fig.add_subplot(gs[0]), SARCASM, 112, "Sarcasm, matched pair: aimed searches get more past the model-written probe (gap −13.7 pts)")
 panel(fig.add_subplot(gs[1]), ANGER, 135, "Anger, matched pair: depends on the attack")
-panel(fig.add_subplot(gs[2]), OBJECTIVE, 8, "Maths and chemistry (pilot pairs, not matched): note the 0–8 scale")
-panel(fig.add_subplot(gs[3]), FA, 45, "Extra false-alarm rate a defender must accept to catch 90% of the attack")
-fig.text(0.02, 0.972, "Does it matter who wrote the probe's training examples?", fontsize=15,
+panel(fig.add_subplot(gs[2]), OTHER_TONE, 112, "Flattery and condescension, matched pairs: no gap vs a large gap (mean of 10 training draws)")
+panel(fig.add_subplot(gs[3]), OBJECTIVE, 8, "Maths and chemistry (pilot pairs, not matched): note the 0–8 scale")
+panel(fig.add_subplot(gs[4]), FA, 45, "Extra false-alarm rate a defender must accept to catch 90% of the attack")
+fig.text(0.02, 0.978, "Does it matter who wrote the probe's training examples?", fontsize=15,
          fontweight="bold", color=INK)
-fig.text(0.02, 0.940, "Bar = attacked minus plain prompt, same probe, Qwen3.5-27B layer 48, valid evasions per attempt, instruction removed. "
+fig.text(0.02, 0.952, "Bar = attacked minus plain prompt, same probe, Qwen3.5-27B layer 48, valid evasions per attempt, instruction removed. "
          "\nWhisker = 95% interval from resampling tasks. Hollow diamonds = the same probe retrained with a different random seed (seeds 1 and 2); not an interval.", fontsize=9.5, color=MUTED)
-fig.text(0.02, 0.912, "Orange = probe trained on Claude-written examples     Blue = probe trained on the model's own (Qwen's) examples",
+fig.text(0.02, 0.930, "Orange = probe trained on Claude-written examples     Blue = probe trained on the model's own (Qwen's) examples",
          fontsize=10, color=INK)
-fig.text(0.02, 0.012, "Sarcasm and anger pairs are matched (same training data except the author); maths and chemistry are earlier, unmatched pilot pairs.\n"
-         "Sarcasm numbers are final (reviewed); anger fair-test numbers are preliminary. Plain-prompt false-alarm cost is about 0.5% for every probe.", fontsize=8.5, color=MUTED)
+fig.text(0.02, 0.012, "Sarcasm, anger, flattery and condescension pairs are matched (same training data except the author); maths and chemistry are earlier, unmatched pilot pairs.\n"
+         "Sarcasm final; flattery and condescension awaiting a last review; anger fair-test numbers preliminary. Plain-prompt false-alarm cost is about 0.5% for every probe.", fontsize=8.5, color=MUTED)
 for p in ("png", "pdf"):
     fig.savefig(f"share/onoff_deltas.{p}", dpi=170)
