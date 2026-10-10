@@ -336,10 +336,11 @@ def draw_rows(fig, ax_a, ax_b, groups: list[Group], top: float, xmax: float, H: 
                           fontsize=9, color=MUTED, va="center", annotation_clip=False)
             # panel (b)
             if r.fa90 is not None:
-                lo, hi = (100 * c for c in r.fa90_ci95)
-                ax_b.plot([lo, hi], [mid, mid], color=colour, lw=1.6, zorder=2)
-                for x in (lo, hi):
-                    ax_b.plot([x, x], [mid - 0.06, mid + 0.06], color=colour, lw=1.6, zorder=2)
+                lo, hi = (100 * c for c in r.fa90_ci95) if r.fa90_ci95 else (100 * r.fa90, 100 * r.fa90)
+                if r.fa90_ci95:  # the flattery pair reports no interval
+                    ax_b.plot([lo, hi], [mid, mid], color=colour, lw=1.6, zorder=2)
+                    for x in (lo, hi):
+                        ax_b.plot([x, x], [mid - 0.06, mid + 0.06], color=colour, lw=1.6, zorder=2)
                 marker(ax_b, 100 * r.fa90, mid, r)
                 ax_b.text(hi * 1.25, mid, fmt_pct(100 * r.fa90), fontsize=11, weight="bold", color=INK, va="center")
             y += ROW_H
@@ -521,8 +522,8 @@ def write_table(groups: tuple[Group, ...]) -> None:
     for g in groups:
         for i, r in enumerate(g.probes):
             seeds = " / ".join(map(str, r.evasions)) if len(r.evasions) > 1 else "one seed"
-            fa = "" if r.fa90 is None else (f"{100 * r.fa90:.1f}% [{100 * r.fa90_ci95[0]:.1f}, "
-                                             f"{100 * r.fa90_ci95[1]:.1f}]")
+            fa = "" if r.fa90 is None else f"{100 * r.fa90:.1f}%" + (
+                f" [{100 * r.fa90_ci95[0]:.1f}, {100 * r.fa90_ci95[1]:.1f}]" if r.fa90_ci95 else "")
             notes = " ".join(n for n in (r.note, g.note if i == len(g.probes) - 1 else "") if n)
             concept = g.concept + (" (matched, m20)" if g.matched else "")
             out.append(f"| {concept if i == 0 else ''} | {g.attack if i == 0 else ''} | "

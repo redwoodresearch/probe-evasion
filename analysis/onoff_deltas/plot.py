@@ -9,12 +9,12 @@ OFF, ON = "#eb6834", "#2a78d6"  # dataviz slots 2 and 1, validated as a pair in 
 INK, MUTED, GRID = "#0b0b0b", "#6b6a66", "#e1e0d9"
 
 # (label, plain off, attacked off [seeds], plain on, attacked on [seeds]) in % of attempts
-# Sarcasm: m20 MATCHED pair (same 4,807 rows except the author), fair test = a fresh 5-round Opus search aimed at each
-# probe, frozen, 100 untouched tasks x 5 (preliminary, 16:30 interim before critic review). Plain: 31 vs 15 of 500.
+# Sarcasm: m20 MATCHED pair (same 4,807 rows except the author), final critic-reviewed result
+# (missions/m20_onoff_pairs/sarcasm/RESULT.md). Plain: 31 vs 15 of 500 missed (seed 0).
 SARCASM = [
-    ("Fresh search aimed at the\nClaude-written probe (1% line)", 6.2, [49.4, 47.4, 47.4], 3.0, [62.2, 65.0, 62.6]),
-    ("Fresh search aimed at the\nmodel-written probe (1% line)", 6.2, [44.8, 44.2, 42.0], 3.0, [59.6, 61.0, 61.4]),
-    ("Old attack, tuned on a near-copy of\nthe Claude-written probe (1% line)", 6.2, [44.0], 3.0, [24.2]),
+    ("6 fresh searches, each scored on the\nprobe it was aimed at (pooled, seed 0)", 6.2, [726 / 15], 3.0, [883 / 15]),
+    ("5 prompts aimed at neither probe\n(hand-written + starting hint)", 6.2, [286 / 17], 3.0, [230 / 17]),
+    ("18 older searches, tuned on near-copies\nof the Claude-written probe", 6.2, [4444 / 90], 3.0, [3842 / 90]),
 ]
 ANGER = [  # m20 matched pair; bars = median over 10 training seeds (16:45 interim); plain ~2.5% / 1.5%
     ("Fresh search aimed at the\nmodel-written probe (median of 10 seeds)", 2.5, [97.6], 1.5, [76.0]),
@@ -27,13 +27,15 @@ OBJECTIVE = [  # NOT matched (pilot pairs)
     ("Chemistry: best attack on each", 0.0, [0.0], 0.0, [0.0]),
 ]
 # 95% task-resampled intervals on the gain over plain, (off, on). None = not available (the sarcasm fair test reports
-# only the interval on the off-minus-on difference: -13.4 points [-20.6, -6.6]).
+# only the interval on the off-minus-on difference: -13.7 points [-19.5, -7.9]).
 CIS = {
     "Maths: 'confirm their figure'\n(search aimed at the model-written probe)": ((0.6, 5.0), (0.0, 0.0)),
     "Anger: false alarms needed to catch\n90% of the old attack": ((1.9, 6.7), (4.6, 12.0)),
+    "Sarcasm: false alarms needed to catch 90%\nof Opus search 1 aimed at the Claude-written probe": ((7.0, 11.1), (11.2, 16.6)),
+    "Sarcasm: false alarms needed to catch 90%\nof Opus search 1 aimed at the model-written probe": ((3.8, 7.6), (6.7, 10.0)),
 }
-FA = [("Sarcasm: false alarms needed to catch 90%\nof the search aimed at the Claude-written probe", 0.6, [18.0], 0.5, [34.0]),
-      ("Sarcasm: false alarms needed to catch 90%\nof the search aimed at the model-written probe", 0.6, [19.0], 0.5, [36.0]),
+FA = [("Sarcasm: false alarms needed to catch 90%\nof Opus search 1 aimed at the Claude-written probe", 0.6, [9.0], 0.5, [13.8]),
+      ("Sarcasm: false alarms needed to catch 90%\nof Opus search 1 aimed at the model-written probe", 0.6, [5.3], 0.5, [8.4]),
       ("Anger: false alarms needed to catch 90%\nof the search aimed at the model-written probe", 0.4, [8.6], 0.4, [3.0]),
       ("Anger: false alarms needed to catch 90%\nof the search aimed at the Claude-written probe", 0.4, [2.9], 0.4, [1.9]),
       ("Anger: false alarms needed to catch\n90% of the old attack", 0.4, [5.0], 0.4, [8.3])]
@@ -52,7 +54,7 @@ def panel(ax, rows, xmax, title, unit="pts"):
                 ds = [x - p for x in a]
                 ax.scatter(ds[1:], [y + dy] * (len(ds) - 1), s=46, marker="D", facecolor="white", edgecolor=INK, linewidth=1.2, zorder=4)
             right = max([d, 0] + [x - p for x in a] + ([ci[1]] if ci is not None else []))
-            ax.text(right + xmax * 0.015, y + dy, f"+{d:.1f} {unit}  (plain {p:g}% → {a[0]:g}%)",
+            ax.text(right + xmax * 0.015, y + dy, f"+{d:.1f} {unit}  (plain {p:g}% → {a[0]:.1f}%)",
                     va="center", fontsize=9, color=INK)
     ax.set_yticks(range(len(rows)))
     ax.set_yticklabels([r[0] for r in rows][::-1], fontsize=9.5)
@@ -66,7 +68,7 @@ def panel(ax, rows, xmax, title, unit="pts"):
 
 fig = plt.figure(figsize=(13, 15))
 gs = fig.add_gridspec(4, 1, height_ratios=[3, 3, 3, 4.2], hspace=0.55, left=0.33, right=0.97, top=0.89, bottom=0.06)
-panel(fig.add_subplot(gs[0]), SARCASM, 112, "Sarcasm, matched pair: fair test reverses the old result (percentage points)")
+panel(fig.add_subplot(gs[0]), SARCASM, 112, "Sarcasm, matched pair: aimed searches get more past the model-written probe (gap −13.7 pts)")
 panel(fig.add_subplot(gs[1]), ANGER, 135, "Anger, matched pair: depends on the attack")
 panel(fig.add_subplot(gs[2]), OBJECTIVE, 8, "Maths and chemistry (pilot pairs, not matched): note the 0–8 scale")
 panel(fig.add_subplot(gs[3]), FA, 45, "Extra false-alarm rate a defender must accept to catch 90% of the attack")
@@ -77,6 +79,6 @@ fig.text(0.02, 0.940, "Bar = attacked minus plain prompt, same probe, Qwen3.5-27
 fig.text(0.02, 0.912, "Orange = probe trained on Claude-written examples     Blue = probe trained on the model's own (Qwen's) examples",
          fontsize=10, color=INK)
 fig.text(0.02, 0.012, "Sarcasm and anger pairs are matched (same training data except the author); maths and chemistry are earlier, unmatched pilot pairs.\n"
-         "Sarcasm and anger fair-test numbers are preliminary (before review). Plain-prompt false-alarm cost is about 0.5% for every probe.", fontsize=8.5, color=MUTED)
+         "Sarcasm numbers are final (reviewed); anger fair-test numbers are preliminary. Plain-prompt false-alarm cost is about 0.5% for every probe.", fontsize=8.5, color=MUTED)
 for p in ("png", "pdf"):
     fig.savefig(f"share/onoff_deltas.{p}", dpi=170)
