@@ -1,0 +1,575 @@
+{
+ "concept": "Anger",
+ "groups": [
+  {
+   "attack": "plain prompt (m20 frozen test)",
+   "probes": [
+    {
+     "kind": "off_claude",
+     "probe": "Claude-text probe (matched)",
+     "searched": false,
+     "evasions": [
+      11,
+      12,
+      13,
+      9,
+      12,
+      17,
+      12,
+      14,
+      5,
+      8
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.0048543689320388345,
+     "fa90_ci95": [
+      0.000970873786407767,
+      0.013592233009708738
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | plain] layer 48",
+     "note": ""
+    },
+    {
+     "kind": "on",
+     "probe": "own-reply probe (matched)",
+     "searched": false,
+     "evasions": [
+      8,
+      8,
+      6,
+      13,
+      9,
+      16,
+      7,
+      7,
+      4,
+      6
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.0048543689320388345,
+     "fa90_ci95": [
+      0.000970873786407767,
+      0.010679611650485437
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | plain] layer 48",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "attack": "m20 search aimed at the off-policy probe",
+   "probes": [
+    {
+     "kind": "off_claude",
+     "probe": "Claude-text probe (matched)",
+     "searched": true,
+     "evasions": [
+      369,
+      48,
+      363,
+      20,
+      364,
+      393,
+      393,
+      395,
+      0,
+      232
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.030097087378640777,
+     "fa90_ci95": [
+      0.02133495145631068,
+      0.04271844660194175
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | search aimed at off] layer 48",
+     "note": ""
+    },
+    {
+     "kind": "on",
+     "probe": "own-reply probe (matched)",
+     "searched": false,
+     "evasions": [
+      264,
+      100,
+      85,
+      170,
+      228,
+      215,
+      3,
+      138,
+      179,
+      110
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.02621359223300971,
+     "fa90_ci95": [
+      0.01650485436893204,
+      0.037864077669902914
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | search aimed at off] layer 48",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "attack": "m20 search aimed at the on-policy probe",
+   "probes": [
+    {
+     "kind": "off_claude",
+     "probe": "Claude-text probe (matched)",
+     "searched": false,
+     "evasions": [
+      481,
+      498,
+      479,
+      492,
+      488,
+      485,
+      488,
+      491,
+      497,
+      448
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.08737864077669903,
+     "fa90_ci95": [
+      0.06019417475728155,
+      0.10679611650485436
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | search aimed at on] layer 48",
+     "note": ""
+    },
+    {
+     "kind": "on",
+     "probe": "own-reply probe (matched)",
+     "searched": true,
+     "evasions": [
+      397,
+      338,
+      363,
+      319,
+      337,
+      484,
+      485,
+      347,
+      419,
+      412
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.030097087378640777,
+     "fa90_ci95": [
+      0.020388349514563107,
+      0.04466019417475728
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | search aimed at on] layer 48",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "attack": "m3c's searched prompt (calm statement of frustration)",
+   "probes": [
+    {
+     "kind": "off_claude",
+     "probe": "Claude-text probe (matched)",
+     "searched": false,
+     "evasions": [
+      121,
+      124,
+      115,
+      89,
+      123,
+      129,
+      112,
+      126,
+      61,
+      78
+     ],
+     "attempts": 200,
+     "visible_only": false,
+     "fa90": 0.05048543689320388,
+     "fa90_ci95": [
+      0.02330097087378641,
+      0.07089805825242705
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [frozen search test (100 test tasks x 2) | optimized (frozen search #4)] layer 48",
+     "note": "searched or chosen by the earlier mission against its own Claude-trained probe (almost the same training rows as this off-policy probe)"
+    },
+    {
+     "kind": "on",
+     "probe": "own-reply probe (matched)",
+     "searched": false,
+     "evasions": [
+      150,
+      170,
+      121,
+      149,
+      138,
+      165,
+      46,
+      144,
+      150,
+      133
+     ],
+     "attempts": 200,
+     "visible_only": false,
+     "fa90": 0.0825242718446602,
+     "fa90_ci95": [
+      0.05048543689320388,
+      0.12427184466019417
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [frozen search test (100 test tasks x 2) | optimized (frozen search #4)] layer 48",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "attack": "m3c hand-written cold register (understatement)",
+   "probes": [
+    {
+     "kind": "off_claude",
+     "probe": "Claude-text probe (matched)",
+     "searched": false,
+     "evasions": [
+      11,
+      14,
+      11,
+      20,
+      15,
+      19,
+      16,
+      14,
+      18,
+      8
+     ],
+     "attempts": 100,
+     "visible_only": false,
+     "fa90": 0.021359223300970873,
+     "fa90_ci95": [
+      0.007766990291262136,
+      0.03203883495145631
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [frozen hand-written test (100 test tasks) | evade + understatement] layer 48",
+     "note": "searched or chosen by the earlier mission against its own Claude-trained probe (almost the same training rows as this off-policy probe)"
+    },
+    {
+     "kind": "on",
+     "probe": "own-reply probe (matched)",
+     "searched": false,
+     "evasions": [
+      13,
+      17,
+      2,
+      14,
+      8,
+      17,
+      21,
+      5,
+      10,
+      5
+     ],
+     "attempts": 100,
+     "visible_only": false,
+     "fa90": 0.020388349514563107,
+     "fa90_ci95": [
+      0.009708737864077669,
+      0.030097087378640777
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [frozen hand-written test (100 test tasks) | evade + understatement] layer 48",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "attack": "plain prompt (m20 frozen test) (layer 16)",
+   "probes": [
+    {
+     "kind": "off_claude",
+     "probe": "Claude-text probe (matched)",
+     "searched": false,
+     "evasions": [
+      3,
+      0,
+      4,
+      2,
+      2,
+      5,
+      5,
+      6,
+      1,
+      3
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.0,
+     "fa90_ci95": [
+      0.0,
+      0.0
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | plain] layer 16",
+     "note": ""
+    },
+    {
+     "kind": "on",
+     "probe": "own-reply probe (matched)",
+     "searched": false,
+     "evasions": [
+      1,
+      1,
+      0,
+      1,
+      3,
+      1,
+      0,
+      1,
+      5,
+      0
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.0,
+     "fa90_ci95": [
+      0.0,
+      0.0
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | plain] layer 16",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "attack": "m20 search aimed at the off-policy probe (layer 16)",
+   "probes": [
+    {
+     "kind": "off_claude",
+     "probe": "Claude-text probe (matched)",
+     "searched": false,
+     "evasions": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.0,
+     "fa90_ci95": [
+      0.0,
+      0.0
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | search aimed at off] layer 16",
+     "note": ""
+    },
+    {
+     "kind": "on",
+     "probe": "own-reply probe (matched)",
+     "searched": false,
+     "evasions": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.0,
+     "fa90_ci95": [
+      0.0,
+      0.0
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | search aimed at off] layer 16",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "attack": "m20 search aimed at the on-policy probe (layer 16)",
+   "probes": [
+    {
+     "kind": "off_claude",
+     "probe": "Claude-text probe (matched)",
+     "searched": false,
+     "evasions": [
+      500,
+      500,
+      500,
+      500,
+      500,
+      485,
+      484,
+      484,
+      499,
+      500
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.15728155339805824,
+     "fa90_ci95": [
+      0.13495145631067962,
+      0.18058252427184465
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | search aimed at on] layer 16",
+     "note": ""
+    },
+    {
+     "kind": "on",
+     "probe": "own-reply probe (matched)",
+     "searched": false,
+     "evasions": [
+      500,
+      500,
+      500,
+      500,
+      500,
+      500,
+      500,
+      500,
+      500,
+      496
+     ],
+     "attempts": 500,
+     "visible_only": false,
+     "fa90": 0.40194174757281553,
+     "fa90_ci95": [
+      0.37281553398058254,
+      0.4320388349514563
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [m20 frozen test (100 test tasks x 5) | search aimed at on] layer 16",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "attack": "m3c's searched prompt (calm statement of frustration) (layer 16)",
+   "probes": [
+    {
+     "kind": "off_claude",
+     "probe": "Claude-text probe (matched)",
+     "searched": false,
+     "evasions": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "attempts": 200,
+     "visible_only": false,
+     "fa90": 0.0,
+     "fa90_ci95": [
+      0.0,
+      0.0
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [frozen search test (100 test tasks x 2) | optimized (frozen search #4)] layer 16",
+     "note": "searched or chosen by the earlier mission against its own Claude-trained probe (almost the same training rows as this off-policy probe)"
+    },
+    {
+     "kind": "on",
+     "probe": "own-reply probe (matched)",
+     "searched": false,
+     "evasions": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "attempts": 200,
+     "visible_only": false,
+     "fa90": 0.0,
+     "fa90_ci95": [
+      0.0,
+      0.0
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [frozen search test (100 test tasks x 2) | optimized (frozen search #4)] layer 16",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "attack": "m3c hand-written cold register (understatement) (layer 16)",
+   "probes": [
+    {
+     "kind": "off_claude",
+     "probe": "Claude-text probe (matched)",
+     "searched": false,
+     "evasions": [
+      37,
+      33,
+      37,
+      39,
+      36,
+      41,
+      41,
+      43,
+      29,
+      40
+     ],
+     "attempts": 100,
+     "visible_only": false,
+     "fa90": 0.05242718446601942,
+     "fa90_ci95": [
+      0.035922330097087375,
+      0.07961165048543689
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [frozen hand-written test (100 test tasks) | evade + understatement] layer 16",
+     "note": "searched or chosen by the earlier mission against its own Claude-trained probe (almost the same training rows as this off-policy probe)"
+    },
+    {
+     "kind": "on",
+     "probe": "own-reply probe (matched)",
+     "searched": false,
+     "evasions": [
+      45,
+      39,
+      44,
+      33,
+      35,
+      47,
+      45,
+      46,
+      34,
+      44
+     ],
+     "attempts": 100,
+     "visible_only": false,
+     "fa90": 0.22815533980582525,
+     "fa90_ci95": [
+      0.19803398058252428,
+      0.2776941747572814
+     ],
+     "source": "missions/m20_onoff_pairs/anger/metrics.json [frozen hand-written test (100 test tasks) | evade + understatement] layer 16",
+     "note": ""
+    }
+   ]
+  }
+ ]
+}
