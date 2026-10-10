@@ -57,3 +57,17 @@ m22's module; if it needs a change to accept another model, ask the lead. Until 
   per model; before the verdict.
 - Save everything: generated rows, probe files, calibration scores, every attacker prompt/response and every reply with
   per-token scores.
+
+## Amendment (2026-10-09, Nabil): add Gemma, and models writing prompts for themselves
+
+- **Add Gemma-2-9B** as a monitored model. Its maths probes already exist (peak-trained, layers 6/12/36, seed 0; see
+  `results/gepa/gemma_maths_peakL{6,12,36}_s0`, `analysis/gemma_readout/dots_layers.py` and `analysis/fa_cost/`). Use
+  layer 12 as the main probe (layer 6 is the weakest on every check; report 6 and 36 alongside). No new probe training
+  for Gemma unless a check shows it is needed (ask first).
+- **Self prompt-writer:** besides Claude Opus as the writer, run each monitored model with itself as the prompt-writer
+  (9B writes for 9B, 122B for 122B, Gemma-2-9B for Gemma-2-9B), via OpenRouter where available (cheaper; see
+  `src/probe_evasion/openrouter_gen.py`), reasoning on where the model supports it. m22 is adding the attacker model as a
+  parameter to its runner for the same purpose (Qwen3.5-27B writing for itself, and Qwen3.5-122B writing for 27B). If a
+  model isn't on OpenRouter, say so and serve it on Modal only if cheap. OpenRouter cap about $50.
+- The combined figure becomes a grid: monitored model × prompt-writer (Claude vs self), median valid score per round
+  relative to that model's plain answers and line.

@@ -67,3 +67,17 @@ movement early is the interesting signal.
 - No git commands that change the repo. Run long drivers detached in Modal (`remote_search` pattern) or with caffeinate.
 - Critic check-ins: design before round 0; after the first chain finishes; before the verdict.
 - Save everything: every attacker prompt and response, every reply with per-token scores, per-round summaries.
+
+## Amendment (2026-10-09, Nabil): vary the prompt-writer
+
+Make the attacker model a parameter and run the same conditions with two more prompt-writers, monitored model still
+Qwen3.5-27B:
+- **Qwen3.5-27B writing prompts for itself**;
+- **Qwen3.5-122B-A10B**.
+
+Run both through OpenRouter (cheaper; mission m14 already used Qwen3.5-122B as a prompt-writer this way, see
+`src/probe_evasion/openrouter_gen.py` and m14's module). Use reasoning on for the writer, as in m14, and log the exact
+OpenRouter model ids, settings and token costs. Same feedback, rounds, chains, eval set and frozen test as the Opus runs.
+Add the writers to the per-round dot plot (one row of panels per writer) and to the median-per-round figure. If a writer
+often fails to produce a usable instruction, record the failure rate rather than silently retrying forever. OpenRouter
+cap about $50.
