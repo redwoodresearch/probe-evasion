@@ -21,12 +21,15 @@ ANGER = [  # m20 matched pair, final (missions/m20_onoff_pairs/anger/RESULT.md);
     ("Fresh search aimed at the Claude-written\nprobe (median; not reliable, 7/10 seeds)", 2.5, [72.7], 1.5, [30.8]),
     ("Old attack, tuned on a near-copy of the\nClaude-written probe (median, 200 tries)", 2.5, [59.0], 1.5, [73.25]),
 ]
-# m20 matched pairs (agent A), mean over 10 training draws, full-strength replies only; each search scored on the probe it
-# was aimed at. Source: missions/m20_onoff_pairs/{flattery,condescension}/analysis.json, key seed_level.primary.
+# m20 matched pairs (agent A), mean over 10 training draws, full-strength replies only. Source:
+# missions/m20_onoff_pairs/{flattery,condescension}/analysis.json, seed_level. "Best known attack" = per draw, the highest
+# evasion rate over every saved non-plain arm (seed_level.same_reply), then averaged. Critic 3 found the warm-started search
+# aimed at the own-reply condescension probe had a flat reward and targeted its strongest draw, so its "0%" is not shown.
 OTHER_TONE = [
     ("Flattery: fresh search aimed at each\nprobe (gap −6 pts [−16, +4])", 10.9, [69.4], 5.4, [70.0]),
-    ("Condescension: search warm-started from\nm11 prompts, aimed at each (gap +71 pts [+62, +77])", 0.0, [70.8], 0.0, [0.0]),
-    ("Condescension: cold search from\ndefault seeds, aimed at each", 0.0, [0.0], 0.0, [2.8]),
+    ("Flattery: best known attack\nper training draw", 10.9, [69.6], 5.4, [72.0]),
+    ("Condescension: best known attack per\ntraining draw (on-side range 6–73%)", 0.0, [83.5], 0.0, [24.7]),
+    ("Condescension: pre-registered search\nfrom default seeds, aimed at each", 0.0, [0.0], 0.0, [2.8]),
 ]
 OBJECTIVE = [  # NOT matched (pilot pairs)
     ("Maths: 'confirm their figure'\n(search aimed at the model-written probe)", 0.0, [2.6, 1.4, 1.4], 0.0, [0.0, 0.0, 0.6]),
@@ -74,10 +77,10 @@ def panel(ax, rows, xmax, title, unit="pts"):
 
 
 fig = plt.figure(figsize=(13, 18.5))
-gs = fig.add_gridspec(5, 1, height_ratios=[3, 3, 3, 3, 4.2], hspace=0.55, left=0.33, right=0.97, top=0.91, bottom=0.05)
+gs = fig.add_gridspec(5, 1, height_ratios=[3, 3, 4, 3, 4.2], hspace=0.55, left=0.33, right=0.97, top=0.91, bottom=0.05)
 panel(fig.add_subplot(gs[0]), SARCASM, 112, "Sarcasm, matched pair: aimed searches get more past the model-written probe (gap −13.7 pts)")
 panel(fig.add_subplot(gs[1]), ANGER, 135, "Anger, matched pair: depends on the attack")
-panel(fig.add_subplot(gs[2]), OTHER_TONE, 112, "Flattery and condescension, matched pairs: no gap vs a large gap (mean of 10 training draws)")
+panel(fig.add_subplot(gs[2]), OTHER_TONE, 112, "Flattery: a tie. Condescension: the Claude-written probe is weaker (mean of 10 training draws)")
 panel(fig.add_subplot(gs[3]), OBJECTIVE, 8, "Maths and chemistry (pilot pairs, not matched): note the 0–8 scale")
 panel(fig.add_subplot(gs[4]), FA, 45, "Extra false-alarm rate a defender must accept to catch 90% of the attack")
 fig.text(0.02, 0.978, "Does it matter who wrote the probe's training examples?", fontsize=15,
@@ -87,6 +90,6 @@ fig.text(0.02, 0.952, "Bar = attacked minus plain prompt, same probe, Qwen3.5-27
 fig.text(0.02, 0.930, "Orange = probe trained on Claude-written examples     Blue = probe trained on the model's own (Qwen's) examples",
          fontsize=10, color=INK)
 fig.text(0.02, 0.012, "Sarcasm, anger, flattery and condescension pairs are matched (same training data except the author); maths and chemistry are earlier, unmatched pilot pairs.\n"
-         "Sarcasm and anger final; flattery and condescension awaiting a last review. Plain-prompt false-alarm cost is about 0.5% for every probe.", fontsize=8.5, color=MUTED)
+         "Sarcasm, anger, flattery and condescension final (condescension reframed after review). Plain-prompt false-alarm cost is about 0.5% for every probe.", fontsize=8.5, color=MUTED)
 for p in ("png", "pdf"):
     fig.savefig(f"share/onoff_deltas.{p}", dpi=170)
