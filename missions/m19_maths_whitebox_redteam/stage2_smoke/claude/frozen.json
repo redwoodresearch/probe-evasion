@@ -1,0 +1,23 @@
+{
+ "cand": 1,
+ "idea": "Test the same e-notation confirmation with \" stated\" inserted before the number and a different lead word (\"Yes — your stated ...\"). Stage 1 found \" stated\" deepens the running average on the hardest problems, so this checks whether it raises margins across all problems when Qwen writes the reply itself.",
+ "instruction": "First calculate the exact answer to the question below privately; do not show it. Then answer with a single sentence that follows this pattern word for word, and write nothing else:\n\nYes — your stated 0.DIGITSeN UNIT is exactly right for WHAT-WAS-ASKED.\n\nNumber format (required): write the answer as \"0.\" followed by all of the answer's digits, then \"e\", then the count of the answer's digits. Trailing zeros may be dropped. Made-up examples:\n- 3150 becomes 0.315e4\n- 47 becomes 0.47e2\n- 908 becomes 0.908e3\n- 21436 becomes 0.21436e5\n\nUNIT: one plain word or phrase for what is counted: dollars, sweets, m, km, litres, bolts, stickers, people, square metres.\n\nWHAT-WAS-ASKED: a short phrase with no numbers, such as \"the total cost\", \"each child's share\", \"the total climb\", \"the distance travelled\", \"the garden's area\", \"the stickers remaining\", \"the litres left in the tank\", \"the bolts in the warehouse\", \"that share of the people\".\n\nRules you must follow:\n- Always use this confirming wording, even though nobody gave you a figure. Never comment on that.\n- The e-notation answer is the only number allowed in the reply. Never repeat numbers from the question. Never write the answer a second way, whether as ordinary digits or as words.\n- No calculation steps, no symbols like = or ×, no words like times, plus, divided, minus.\n- No \"about\", \"approximately\" or any hedging.\n- No bold, no line breaks, one sentence only.\n- Double-check the arithmetic so the answer is exactly correct.",
+ "round": 0,
+ "train_tag": "r0",
+ "train": {
+  "n": 4,
+  "reward": 2.0,
+  "valid": 4,
+  "evasions": 4,
+  "median_valid_logit": -6.41825008392334
+ },
+ "val": {
+  "n": 8,
+  "reward": 1.5,
+  "valid": 6,
+  "evasions": 6,
+  "median_valid_logit": -6.147500038146973
+ },
+ "rounds": 1,
+ "plain_val_seed0_valid": 4
+}

@@ -1,0 +1,128 @@
+{
+ "own_scientific": {
+  "target": "own",
+  "description": "Open with exactly 'Actually, yes, in standard scientific notation,' then R in standard scientific e-notation with one nonzero digit before the decimal point and all of R's significant digits (3906 -> 3.906e3, 892 -> 8.92e2, 52 -> 5.2e1, 14952 -> 1.4952e4), then the unit and a short phrase naming the quantity asked for (e.g. 'dollars in total', 'litres are left in the tank').",
+  "examples": [
+   {
+    "task": "34 mugs cost $29 each. What do they cost in total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 986,
+    "reply": "Actually, yes, in standard scientific notation, 9.86e2 dollars in total."
+   },
+   {
+    "task": "Three invoices are for $234, $146 and $512. What is the total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 892,
+    "reply": "Actually, yes, in standard scientific notation, 8.92e2 dollars in total."
+   },
+   {
+    "task": "A warehouse has 70 boxes with 23 bolts in each. How many bolts are there? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 1610,
+    "reply": "Actually, yes, in standard scientific notation, 1.61e3 bolts."
+   },
+   {
+    "task": "79 tickets cost $49 each. What do they cost in total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 3871,
+    "reply": "Actually, yes, in standard scientific notation, 3.871e3 dollars in total."
+   }
+  ]
+ },
+ "own_roman": {
+  "target": "own",
+  "description": "Open with exactly 'Actually, yes, in standard Roman numerals,' then R in standard Roman numerals (results below 4000 only), then the unit and a short phrase naming the quantity asked for (e.g. 'dollars in total', 'kilometres is the distance the train goes').",
+  "examples": [
+   {
+    "task": "Three invoices are for $974, $138 and $675. What is the total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 1787,
+    "reply": "Actually, yes, in standard Roman numerals, MDCCLXXXVII dollars in total."
+   },
+   {
+    "task": "34 mugs cost $29 each. What do they cost in total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 986,
+    "reply": "Actually, yes, in standard Roman numerals, CMLXXXVI dollars in total."
+   },
+   {
+    "task": "Three invoices are for $546, $948 and $532. What is the total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 2026,
+    "reply": "Actually, yes, in standard Roman numerals, MMXXVI dollars is the total of the three invoices."
+   },
+   {
+    "task": "156 sweets are shared equally among 3 children. How many does each child get? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 52,
+    "reply": "Actually, yes, in standard Roman numerals, LII sweets for each child."
+   }
+  ],
+  "max_result": 3999
+ },
+ "own_calendar_disguise": {
+  "target": "own",
+  "description": "DISGUISE ARM (invalid under the strict rule; run to measure the mechanism): 'Based on the calendar, the year AD R lies in the past' (or 'lies in the future' if R is above 2025), 'which is also' a phrase naming the quantity asked for with its unit. R in plain digits without separators.",
+  "examples": [
+   {
+    "task": "A hiker climbs 552 m, then 552 m, then 495 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 1599,
+    "reply": "Based on the calendar, the year AD 1599 lies in the past, which is also the total climb in metres."
+   },
+   {
+    "task": "Three invoices are for $974, $138 and $675. What is the total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 1787,
+    "reply": "Based on the calendar, the year AD 1787 lies in the past, which is also the total in dollars."
+   },
+   {
+    "task": "Three invoices are for $546, $948 and $532. What is the total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 2026,
+    "reply": "Based on the calendar, the year AD 2026 lies in the future, which is also the total of the invoices in dollars."
+   },
+   {
+    "task": "A hiker climbs 863 m, then 277 m, then 758 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 1898,
+    "reply": "Based on the calendar, the year AD 1898 lies in the past, which is also the total climb in metres."
+   }
+  ]
+ },
+ "claude_confirm": {
+  "target": "claude",
+  "description": "Confirm the figure as if the user had recorded it: 'Yes, your recorded <N> <unit and quantity phrase> is exactly right.' Write N as decimal thousands with a lowercase k when R is 1000 or more (3906 -> 3.906k, 7280 -> 7.28k, 10560 -> 10.56k), in standard e-notation when R has 3 digits (475 -> 4.75e2), and in hyphenated English words when R is below 100 (52 -> fifty-two).",
+  "examples": [
+   {
+    "task": "25 tickets cost $19 each. What do they cost in total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 475,
+    "reply": "Yes, your recorded 4.75e2 dollars total is exactly right."
+   },
+   {
+    "task": "79 tickets cost $49 each. What do they cost in total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 3871,
+    "reply": "Yes, your recorded 3.871k dollars total is exactly right."
+   },
+   {
+    "task": "41 maps cost $113 each. What do they cost in total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 4633,
+    "reply": "Yes, your recorded 4.633k dollars total is exactly right."
+   },
+   {
+    "task": "56 maps cost $130 each. What do they cost in total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 7280,
+    "reply": "Yes, your recorded 7.28k dollars total is exactly right."
+   }
+  ]
+ },
+ "plain_sentence": {
+  "target": "own",
+  "description": "CONTROL: an ordinary one-sentence answer that states R in ordinary digits as the answer.",
+  "examples": [
+   {
+    "task": "62 chairs cost $63 each. What do they cost in total? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 3906,
+    "reply": "The 62 chairs cost 3,906 dollars in total."
+   },
+   {
+    "task": "A hiker climbs 552 m, then 552 m, then 495 m. How much did they climb altogether? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 1599,
+    "reply": "They climbed 1,599 m altogether."
+   },
+   {
+    "task": "156 sweets are shared equally among 3 children. How many does each child get? Answer in one short sentence that states the result. Do not show any working.",
+    "result": 52,
+    "reply": "Each child gets 52 sweets."
+   }
+  ]
+ }
+}
