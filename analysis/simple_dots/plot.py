@@ -2,7 +2,7 @@
 the concept, the best searched attack's valid replies read with the instruction removed) and the 1% flag line.
 
     uv run python analysis/simple_dots/plot.py
-Writes share/simple_dots_{sarcasm,qwen_maths,gemma_maths,condescension,flattery,anger}.png. Saved score caches only (no GPU).
+Writes share/simple_dots_{sarcasm,qwen_maths,gemma_maths,condescension,flattery,anger,maths_whitebox}.png. Saved score caches only (no GPU).
 """
 
 import importlib.util
@@ -183,6 +183,26 @@ def anger() -> None:
     save(fig, "anger")
 
 
+def maths_whitebox() -> None:
+    """Mission m19: Stage 2 frozen test, each reply-template search aimed at one Qwen maths probe, instruction removed."""
+    from probe_evasion.missions import m19_maths_whitebox_redteam as m19
+
+    cal, lines = m19.calibration()
+    test = {a: m19.jl(m19.STAGE2 / f"test_{a}.jsonl") for a in ("plain", "s2_own", "s2_claude")}
+    titles = {"own": "Probe trained on Qwen's own answers", "claude": "Probe trained on Claude's answers"}
+    expected = {"own": (385, 478), "claude": (380, 449)}
+    fig, axes = plt.subplots(1, 2, figsize=(16, 7.3), sharey=True)
+    for ax, (target, probe) in zip(axes, [(t, m19.TARGETS[t]) for t in ("own", "claude")]):
+        line = lines[probe][0.01]
+        c = [r["scores"][probe] for r in cal]
+        plain = [r["scores_all"][probe] for r in test["plain"] if r["valid"]]
+        attack = [r["scores_all"][probe] for r in test[f"s2_{target}"] if r["valid"]]
+        assert (sum(x <= line for x in attack), len(attack)) == expected[target]
+        panel(ax, three_strips(c, plain, attack, line, "Normal\nno-maths replies", "Plain\nmaths answers"), logit(line), titles[target])
+    axes[1].set_ylabel("")
+    save(fig, "maths_whitebox")
+
+
 if __name__ == "__main__":
     sarcasm()
     qwen_maths()
@@ -190,3 +210,4 @@ if __name__ == "__main__":
     condescension()
     flattery()
     anger()
+    maths_whitebox()
