@@ -112,7 +112,9 @@ Numbers so far (Claude writer, final tests where available):
   rated odd. Among replies it rates normal-looking, the drop is mixed: it survives for some arms (maths no-scores
   number-word answers: 99% rated normal, −3.3; own-reply Opus best −5.8 → −4.6; ordering Opus chain 0: 86% normal,
   −6.5) and shrinks to about 0 for others (maths 27B self-writer −3.7 → −0.3; code arms; 9B last round −4.1 → −0.8).
-  So a good part of the drop is oddness. [m29] [HOLE: judge not validated on borderline cases like number words or
+  So a good part of the drop is oddness. Stricter still: plain replies are all rated 5, and the arms cited above are
+  mostly rated 4 ("normal with a small quirk"); counting only 5s, the ordering and with-scores arms keep no replies, and
+  maths no-scores arms keep −1.4 to −4.5. [m29 second critic] [m29] [HOLE: judge not validated on borderline cases like number words or
   filler openers; no human ratings]
 
 ## 4. How much does attacker knowledge matter?
