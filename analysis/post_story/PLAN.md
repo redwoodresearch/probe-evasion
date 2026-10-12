@@ -159,3 +159,7 @@ Smuggling Capabilities", to be believed before use.
   (writer effort ablation within a model; 48-round searches). m39 amended: per-instruction matched baselines, the
   leading-digit causal check on sweep instructions, a realistic monitor (broad lines plus a text judge). m40 extended to
   11 writers. m41's binary arm replaced by a per-reply-score arm plus a loose-line binary (ordering).
+- v7.2 critic round 3: 7/10 (target mismatch: writers optimised for the instruction-removed reading; the summary was
+  too dense; one false "under way" claim). Final fixes applied without re-review → v7.3, published at the draft-page
+  link (version 3). Critic experiments folded into running missions: alternative readouts and instruction length on
+  the sweep (m39), an in-view-targeted arm (m41), transfer of frozen instructions to 9B/122B (m37).
