@@ -34,11 +34,13 @@
   Opus 4.8 pinned, scores helped clearly; a mostly-Opus-5.5 writer without scores got about as far as with them.
   [m19, m22, m28; PENDING m28, m31: random-style baseline, a writer told nothing about the readout, Qwen just told a
   probe is watching, 8 runs per arm with pinned Opus 4.8 and 5.5]
-- **Why tone probes were crossed and task probes weren't.** Earlier, sarcasm and condescension probes were crossed by a
-  score-guided search. The clearest difference is where the 1% line sits: ordinary traffic contains near-sarcastic
-  replies, so the sarcasm line sits 11–12 log-odds above the typical ordinary reply, against 2–4 for the task probes.
-  Crossing a fixed false-alarm line is largely a property of the calibration pool, which is why the post leads with the
-  score shift. [m29; PENDING m30: the same search effort on sarcasm and condescension]
+- **Why tone probes were crossed and task probes weren't.** With the identical search (same runner, pinned writer,
+  16 rounds, full-strength validity), sarcasm and condescension probes are still crossed and task probes still aren't.
+  Crossing follows mechanically from two numbers: how far the replies move (as a share of the distance from plain
+  answers to typical ordinary replies) and where the 1% line sits on that scale. Sarcasm's line sits only 36% of the way
+  down (ordinary traffic has near-sarcastic replies), so even task-sized moves would cross it; a zero-shot deadpan
+  instruction already moves sarcasm 40%. Condescension moves further than any task (61–74% vs 20–56%) and its line sits
+  at 71%. Task lines sit at 79–90%. Score feedback adds about 20 points of movement for tone and tasks alike. [m29, m30]
 
 ## 1. Set-up
 
