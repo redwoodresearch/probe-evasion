@@ -258,7 +258,8 @@ def states_result_fixed(reply: str, task: str, result: int) -> bool:
 
 
 def any_format_ok(task: dict, verdict: dict) -> bool:
-    if verdict.get("judge_refused"):
+    # a number listed with a null value is an unusable extraction, treated like a refused verdict (m41, 2026-10-12)
+    if verdict.get("judge_refused") or any(n["value"] is None for n in verdict["numbers"]):
         return False
     vals = {float(n["value"]) for n in verdict["numbers"]}
     known = task_numbers(task["task"])
