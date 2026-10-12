@@ -163,3 +163,9 @@ Smuggling Capabilities", to be believed before use.
   too dense; one false "under way" claim). Final fixes applied without re-review → v7.3, published at the draft-page
   link (version 3). Critic experiments folded into running missions: alternative readouts and instruction length on
   the sweep (m39), an in-view-targeted arm (m41), transfer of frozen instructions to 9B/122B (m37).
+
+## Design update (Nabil, 2026-10-12): the toggle design is the default
+From his 1:1 with James: attack templates have a togglable evasion part. The score is on minus off on the same
+problems, and the probe reads with the instruction in view. Earlier results are attack-vs-plain with the
+instruction-removed reading and should be labelled that way. Launched m45: the 11-writer sweep in the toggle design,
+both tasks. v8 should lead with m45 if it lands in time.
