@@ -3,7 +3,7 @@
 **Question.** Can prompt writers make Qwen3.5-27B (reasoning off) dodge the three new probes from m48 (v2: false
 belief, acrostic hiding, spotting a contradiction) while still doing the task, measured with m45's on/off design?
 
-**Phase:** smoke done (search, freeze, frozen test on 10 problems, summary): the pipeline works end to end. Full sweep waits on Nabil's call on in-view probe training (below).
+**Phase:** main sweep searching (batch `main`, launched 12 Oct evening): 11 writers (m45's) x 3 chains x 17 rounds per task, 9 detached drivers on m49's volume (task x writer speed group). Then freeze and frozen test (`test_chain_files`).
 
 ## Design (inherited from m45 unless stated)
 
@@ -100,3 +100,23 @@ instruction removed, depending on the template. Proposed: (1) paired crossings a
 retrain the three probes with benign instructions in view (training replies re-read after a pool of format / tone /
 persona / unrelated system-style instructions, no evasion-like text; the 1% line also calibrated in view with held-out
 instructions), keep today's probes as a secondary reading; maths / ordering (m45) would need the same for comparability.
+
+**Decision (Nabil, 12 Oct):** no in-view retraining. m45's early sweep shows the writer-capability trend in all three
+framings (OFF-referenced, plain-referenced, raw), so the in-view drop is not driving it, and the new tasks keep the
+same probe recipe as maths / ordering.
+
+**Reporting plan for the post (discussed with Nabil, 12 Oct):** headline = plain-referenced score on pairs with both
+replies correct (median OFF-minus-ON drop as a share of plain median minus the 1% line; per-probe fixed yardstick) vs
+writer ECI, next to the paired evasion rate at the 1% line (ON correct and under, OFF over); task success shown
+separately; OFF-referenced (unstable when OFF is near or under the line, as in the contradiction smoke) and raw
+log-odds in the appendix.
+
+## Main sweep (batch `main`)
+
+```
+# launched: one per chains file
+uv run modal run --detach -n probe-evasion_nabil-baugher_m49-main-<name>_kill-2026-11-30 -m probe_evasion.missions.m49_new_task_toggle::m49_launch --chains-file missions/m49_new_task_toggle/batches/main/chains/search_<task>_<group>.json
+# after all groups finish: pull runs/main from the volume, then
+uv run python -c "from probe_evasion.missions import m49_new_task_toggle as M; M.test_chain_files('main')"
+```
+Cap: CLAUDE_CAP $900 (root share 0.3 each); GPUs per driver: fast 6, mid 2, slow 1.

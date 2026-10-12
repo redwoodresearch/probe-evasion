@@ -17,7 +17,6 @@ from collections import Counter
 from pathlib import Path
 
 from probe_evasion.generation import read_jsonl as jl, write_jsonl
-from probe_evasion.missions import m48_chess as chess_task
 from probe_evasion.missions.m48_tasks import TASKS, TaskSpec, request
 from probe_evasion.modal_app import app
 
@@ -67,6 +66,8 @@ def pilot_rows(task: TaskSpec, kinds: tuple[str, ...] | None = None, variants: t
 
 
 def chess_rows() -> list[dict]:
+    from probe_evasion.missions import m48_chess as chess_task  # lazy: python-chess is not in the remote driver image
+
     rng, rows = random.Random(SEED["chess"]), []
     for question in chess_task.QUESTIONS:
         seen = set()
@@ -153,6 +154,8 @@ def checked(task_name: str, tag: str = "") -> list[dict]:
     load_dotenv(".env")
     rows = jl(raw_path(task_name, tag))
     if task_name == "chess":
+        from probe_evasion.missions import m48_chess as chess_task
+
         for r in rows:
             r["check"] = chess_task.chess_check(r["problem"], r["response"])
         return rows

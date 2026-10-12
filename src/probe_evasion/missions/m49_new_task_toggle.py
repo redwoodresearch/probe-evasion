@@ -36,7 +36,7 @@ STATE_VOLUME = "probe-evasion_nabil-baugher_m49-state_kill-2026-11-30"
 STATE = modal.Volume.from_name(STATE_VOLUME, create_if_missing=True, version=2)
 VOLUME_MARKER = "VOLUME_NAME"
 EFFORT_POINTS = (0, 4, 8, 16)  # as m45
-CLAUDE_CAP = 600.0  # dollars, estimated as m36 (validity judges for both versions dominate); smoke first
+CLAUDE_CAP = 900.0  # dollars, estimated as m36 (validity judges for both versions dominate); the smoke cost ~$3.5
 OPENROUTER_CAP = 40.0
 ROOT_SHARE = {**{("smoke", t): 0.05 for t in TASKS}, **{("main", t): 0.3 for t in TASKS}}
 WARM = 900
@@ -504,11 +504,25 @@ def prepare_batch(batch: str, writers: str, chains: int, tasks: str = ",".join(T
             dest.write_bytes(src.read_bytes())
 
 
-def step_search(batch: str, task: str, writers: str, chains: int, rounds: int) -> None:
+def step_search(batch: str, task: str, writers: str, chains: int, rounds: int, group: str = "", containers: int = 0) -> None:
     m45 = use_tasks(batch)
     m45.batch_design(task, batch)  # builds the monitor (and writer prompt) once before the sweep's own check
     assert M43 not in sys.modules
-    m45.search(task, batch, writers, rounds=rounds, chains=chains)
+    m45.search(task, batch, writers, rounds=rounds, chains=chains, group=group, containers=containers)
+
+
+SPEED_GROUPS = {"fast": ("opus55,sonnet55,gpt6sol,gemini38flash,gpt54mini,qwen35_397b,gpt5nano,llama4maverick", 6),
+                "mid": ("opus48,haiku45", 2), "slow": ("qwen35_9b", 1)}  # m45's groups; fewer GPUs each (m45's own sweep shares the pool)
+
+
+def search_chain_files(batch: str, rounds: int = 17, tasks: str = ",".join(TASKS)) -> list[Path]:
+    """One detached search driver per task and writer speed group (m45.prepare_groups' pattern); every group resumes
+    its own chains from saved state."""
+    w = json.loads((RUNS / batch / "writers.json").read_text())
+    assert sorted(sum((v[0].split(",") for v in SPEED_GROUPS.values()), [])) == sorted(w["writers"]), w["writers"]
+    return [chain_file(batch, f"search_{t}_{g}", [[ME, "step_search", {"batch": batch, "task": t, "writers": names, "chains": w["chains"],
+                                                                      "rounds": rounds, "group": g, "containers": n}]])
+            for t in tasks.split(",") for g, (names, n) in SPEED_GROUPS.items()]
 
 
 def step_freeze(batch: str, task: str, rounds: int) -> None:
@@ -531,6 +545,17 @@ def m49_local(step: str, batch: str, task: str, writers: str = "", chains: int =
     kw = {"search": dict(writers=writers, chains=chains, rounds=rounds), "freeze": dict(rounds=rounds),
           "test": dict(writers=writers, rounds=rounds, n_test=n_test)}[step]
     STEPS[step](batch, task, **kw)
+
+
+def test_chain_files(batch: str, rounds: int = 17, tasks: str = ",".join(TASKS)) -> list[Path]:
+    """After every search group of a task has finished (pull the roots first): one driver per task that freezes, then one
+    test driver per writer speed group (each writes its own test files)."""
+    out = []
+    for t in tasks.split(","):
+        out.append(chain_file(batch, f"freeze_{t}", [[ME, "step_freeze", {"batch": batch, "task": t, "rounds": rounds}]]))
+        out += [chain_file(batch, f"test_{t}_{g}", [[ME, "step_test", {"batch": batch, "task": t, "writers": names, "rounds": rounds}]])
+                for g, (names, _) in SPEED_GROUPS.items()]
+    return out
 
 
 def chain_file(batch: str, name: str, steps: list) -> Path:
