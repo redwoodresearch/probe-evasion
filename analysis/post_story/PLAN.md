@@ -169,3 +169,7 @@ From his 1:1 with James: attack templates have a togglable evasion part. The sco
 problems, and the probe reads with the instruction in view. Earlier results are attack-vs-plain with the
 instruction-removed reading and should be labelled that way. Launched m45: the 11-writer sweep in the toggle design,
 both tasks. v8 should lead with m45 if it lands in time.
+- Infra TODO (after the current runs, since running missions import judge.py): judge.log_usage appends to one
+  cache/anthropic_usage.jsonl, which undercounts on Modal volumes because concurrent container commits overwrite each
+  other (m38: $11 logged). Fix: one file per container (host-pid) in a usage folder, plus a shared reader that globs
+  them. Until then, missions guard on judge-call counts.
