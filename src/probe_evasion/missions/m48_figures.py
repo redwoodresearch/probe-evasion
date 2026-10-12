@@ -125,6 +125,7 @@ def dot_plot(task: str, title: str, rows: list[tuple[str, str, list[dict], bool]
     ax.set_facecolor(SURFACE)
     y, yticks, labels, last_section = 0, [], [], None
     section_y = []
+    rows = [r for r in rows if r[2]]  # a control with no replies (e.g. Qwen never spelled the named word) gets no row
     for section, label, rs, asks in rows:
         if section != last_section:
             y += 0.6 if last_section else 0

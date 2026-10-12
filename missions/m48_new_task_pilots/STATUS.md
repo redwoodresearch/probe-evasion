@@ -4,7 +4,7 @@
 (computation) or ordering? Candidates from the 2026-10-12 deck: false-belief stories, acrostic hiding, spotting a
 contradiction (pilot first), plus a 50-position chess accuracy check. Nabil asked to run them in parallel (2026-10-12).
 
-**Phase:** v2 (Nabil, 12 Oct: fix all three, then wire into the on/off sweep). v2 pilots done; v2 builds and probes running; sweep problem sets written; sweep wiring (new mission) next. v1 results below are kept for the record; v1 outputs are never overwritten (v2 paths end in `_v2`).
+**Phase:** v2 (Nabil, 12 Oct: fix all three, then wire into the on/off sweep). v2 probes built and checked (below); sweep problem sets written; the on/off sweep port is m49 (`missions/m49_new_task_toggle/`). v1 results below are kept for the record; v1 outputs are never overwritten (v2 paths end in `_v2`).
 
 ## Entry points
 
@@ -228,3 +228,31 @@ held-out dialogue, FAQ.
 **Sweep problem sets** (`data/concepts/m48_<task>_v2_sweep_problems.jsonl`, `m48_probes.sweep_problems`): 40 eval + 100
 test per task in the build's variant, none sharing an item with the v2 build or pilots; the request is the plain one.
 False belief answer types: 46 first / 52 middle / 42 last; contradiction: 30 "none" of 140.
+
+**Bug found and fixed (12 Oct):** the probe entry point's version switch was missing (an edit that did not apply), so
+the first "v2" probe runs trained v1 probes again in place, from v1's data. The retrained v1 probes are identical (same
+rows and seeds; validation numbers equal to the last digit), the acrostic run crashed before scoring, and v1
+contradiction's scored files were rewritten by the same code from the same data, so v1 results are unchanged. Every
+entry point now sets the version (checked).
+
+## v2 probe results (`probe_<task>_v2/probe_report.json`, seed 0; figures `figures/dots_<task>_v2.png`)
+
+| | false belief | acrostic | contradiction |
+|---|---|---|---|
+| training rows (computed / twins) | 575 (205 / 370) | 672 (276 / 396) | 324 (148 / 176) |
+| held-out AUROC (all / vs given twin) | 1.0 / 1.0 | 1.0 / 1.0 | 1.0 / 1.0 |
+| text-only classifier AUROC vs given twin | 0.45 | 0.76 | 0.50 |
+| 1% line | -2.39 | -2.55 | -0.58 |
+| plain correct replies: median, gap to line, share over | 7.6, 10.0, 100% (170/200 correct) | 8.2, 10.8, 100% (195/200) | 7.2, 7.8, 100% (188/200) |
+
+Checks (share over the 1% line):
+- **Acrostic near misses now fail to fire.** Held-out near-miss twin 5% (n = 38); two near-miss forms never trained
+  on: "the first letters need not spell anything" 0% (n = 60), "some puzzles hide a word such as GOLD in first letters;
+  this text should not be one" 2% (n = 60; Qwen never spelled the word). v1: 45% and 46%. The request's demand still
+  drives the score: a free reply (spells nothing) re-read after the hidden-word request is 100% over (median 7.0).
+- **False belief reads the answer more than v1 did.** Wrong-place replies re-read after the belief question: the
+  starting place (lookup reply) 65% over, the current place (reality reply) 4.5% (v1: 100% and 61%); a belief reply
+  re-read after the given request 22% (v1 50%). Bare answers: 100% after the belief question, 0-20% after twins.
+- **Contradiction** (first valid version): a wrong sentence number (lookup reply) re-read after the contradiction
+  question 17% over; bare answers 99-100% after the contradiction question, 0% after twins; a contradiction reply
+  re-read after the given request 11%.
