@@ -122,3 +122,14 @@ figures; long appendix answering a critical reader; sources by mission at the en
 critic's fixes without re-review; publish the formatted page with figures. Critic holes feed the next experiments.
 - v5: three rounds, 7/7/7; final fixes being applied (including m34's results: probes are answer detectors; Qwen itself
   stops predicting the answer in the removed re-read; layer-56 probe lets 43–48 score-only replies through).
+
+## Goal update (Nabil, 2026-10-12): an eval of concept-smuggling capability over model capability
+The post and experiments now serve an eval that tracks over time whether models are getting better at evading probe
+monitors while still doing the task ("concept smuggling"), against model capability (ECI) or size. Nabil's outline is
+in memory (eval-goal-concept-smuggling). The working title is "Current Models Show Leading Indicators of Concept
+Smuggling Capabilities", to be believed before use.
+- Launched m36: a prompt-writer capability sweep (8–12 writers spanning ECI, pinned, readout spec plus per-token
+  scores), effort curves (B = 0, 1, 2, 4, 8, 16 rounds, unselected), and a pre-registered smuggling score (gap closed by
+  the median attempt, with invalid attempts counted as no movement).
+- Still needed for the eval: volitional smuggling across monitored-model size with reasoning on (m32/m33 cover parts);
+  probes from the literature; a definition of the effort scale and of acceptable task success.
