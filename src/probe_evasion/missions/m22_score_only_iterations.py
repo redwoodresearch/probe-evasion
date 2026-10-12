@@ -35,7 +35,7 @@ from probe_evasion.missions.m3a2_sarcasm_patch import fingerprint, item_key
 from probe_evasion.modal_app import Sampler, app
 from probe_evasion.openrouter_gen import _post
 from probe_evasion.parsing import parse
-from probe_evasion.status_page import LOGGED_PRICES
+from probe_evasion.status_page import CACHE_READ_MULTIPLIER, LOGGED_PRICES
 
 MISSION = "m22_score_only_iterations"
 OUT = Path("missions") / MISSION
@@ -395,7 +395,8 @@ def writer_spec(name: str, monitor: Monitor) -> dict:
 
 def opus_cost(model: str, usage) -> float:
     inp, outp = LOGGED_PRICES.get(model, LOGGED_PRICES["claude-opus-5-5"])
-    return (usage.input_tokens * inp + usage.output_tokens * outp + (usage.cache_read_input_tokens or 0) * inp * 0.1
+    cache_read = inp * CACHE_READ_MULTIPLIER.get(model, 0.1)
+    return (usage.input_tokens * inp + usage.output_tokens * outp + (usage.cache_read_input_tokens or 0) * cache_read
             + (usage.cache_creation_input_tokens or 0) * inp * 2.0)  # 1-hour cache writes
 
 
