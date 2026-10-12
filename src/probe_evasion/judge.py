@@ -83,7 +83,18 @@ def _conform(call: dict, tool: dict) -> dict:
     cast = {"integer": int, "number": float, "boolean": lambda v: v.strip().lower() == "true", "string": str,
             "array": json.loads, "object": json.loads}
     props = tool["input_schema"]["properties"]
-    return {k: cast[props[k]["type"]](v) if isinstance(v, str) and k in props else v for k, v in call.items()}
+    out, unparsed = {}, {}
+    for k, v in call.items():
+        if not (isinstance(v, str) and k in props):
+            out[k] = v
+            continue
+        try:
+            out[k] = cast[props[k]["type"]](v)
+        except json.JSONDecodeError:  # a malformed list/object from the judge: an unusable verdict, as if refused
+            unparsed[k] = v
+    if unparsed:
+        out.update(judge_refused=True, judge_unparsed=unparsed)
+    return out
 
 
 def log_usage(model: str, usage) -> None:
