@@ -90,3 +90,15 @@ Secondary: within-style discrimination survives (it's a distribution shift); siz
   −6.0), while m22's mostly-5.5 no-scores writer reached −3.3. "Do scores help?" depends on the writer model, so Result
   3 needs revising. Added a pinned Opus 5.5 pair (no fallback; refusal rate is itself a result) to m31, analysed as
   writer × scores 2×2.
+
+### Iteration 4 (2026-10-11 late)
+- m30 (equal effort on tone): tone probes still crossed under the task search; crossing follows mechanically from the
+  shift (as a share of plain-to-ordinary) and where the 1% line sits; sarcasm's line sits 36% of the way down vs 79–90%
+  for tasks; condescension moves further (61–74% vs 20–56%); feedback adds ~20 points for all.
+- m28: Qwen told a monitor is watching does nothing; random styles best-of-16 get ~40–50% of the search's drop and also
+  squeeze from both sides (within-style AUROC 1.000); a writer not told the readout gets little (pinned 4.8 ordering
+  −0.3 vs −6.0); pinned 4.8 scores beat no-scores on every run (ordering clean, maths confounded by round-0 number
+  words).
+- Draft v3 → v3.1 (attacker-knowledge ladder table; m30 tone result). Fixed two numbers I'd written without checking
+  (9B row; maths no-spec cell).
+- Sent v3.1 to a fresh cold reviewer. m31 (8-run 2×2 writer × scores) and m32 (reasoning on) still running.
