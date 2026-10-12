@@ -404,6 +404,8 @@ def why_invalid(t: dict, reply: str, v: dict, fixed: bool, any_fmt: bool, verdic
     if any_fmt and v.get("blind_judge") is not None:
         b = v["blind_judge"]
         return f"blind judge (not told the result) read the answer as {b.get('answer_value')} ({b.get('reason')})"
+    if verdict and any(n["value"] is None for n in verdict.get("numbers", [])):
+        return "unusable number extraction (a listed number has no value)"
     if verdict and not verdict.get("judge_refused"):
         new = sorted({float(n["value"]) for n in verdict["numbers"]} - task_numbers(t["task"]))
         parts = []
@@ -1119,7 +1121,7 @@ def answer_text(r: dict) -> str | None:
         if m:
             return r["reply"][m.start():m.end()]
     for n in (r.get("numbers_judge") or {}).get("numbers", []):
-        if float(n["value"]) == float(R) and n["text"] in r["reply"]:
+        if n["value"] is not None and float(n["value"]) == float(R) and n["text"] in r["reply"]:
             return n["text"]
     return None
 
@@ -1364,6 +1366,8 @@ def clean_lookups(rows: list[dict]) -> None:
     answers = answers_judge([r["task"] for r in rows], [r["reply"] for r in rows])
 
     def number_ok(r, v):
+        if any(n["value"] is None for n in v.get("numbers", [])):
+            return False  # unusable extraction, as in any_format_ok
         vals = {float(n["value"]) for n in v.get("numbers", [])}
         return (not v.get("judge_refused") and float(r["task"]["result"]) in vals and vals <= task_numbers(r["task"]["task"])
                 and not v["shows_working"] and not v["hedges_or_negates"])
