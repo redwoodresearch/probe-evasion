@@ -100,6 +100,16 @@ Numbers so far (Claude writer, final tests where available):
   log-odds; at the deployed line most styled twins would be false alarms. Attack vs styled twin AUROC 0.989–1.000 on
   every score-only arm; with the line set on styled twins, 0 attack replies get under it for maths 27B and code, 0–10 for
   ordering, 5–40 per arm for maths 9B. [m27]
+- **Before the answer.** Read at the token just before the answer, the attack already moves the probe past the line on
+  every task (109–189% of that reading's gap; e.g. maths 27B −11.7 log-odds), more than on the answer tokens themselves
+  (23–42%). With the same token before the answer (the space before a digit), plain +7.7 vs attack +1.0 on maths 27B.
+  So the attack changes the model's state before the answer is written, but the model still writes the correct answer
+  next: the probe's pre-answer signal tracks context and style more than the work. [m27 Part C]
+- **The lines are fragile to the choice of ordinary traffic.** The task probes' 1% lines would flag 72% (maths), 96%
+  (code) and 100% (ordering) of ordinary chat replies that mention numbers or lists; the 1% figure holds only for the
+  one-sentence format they were calibrated on. Re-set on such a broad pool, the lines rise 3.4–5.3 log-odds, yet
+  score-only attack replies still almost never get under (maths 6 of 7,829; code 13 of 2,664; ordering 126 of 5,044),
+  while m19's white-box template does (485 of 485). [m27 Part D]
 - **In-context non-answers** (replies to the real request that skip the task) score close to the line (−4.5 to −6.1) and
   still separate from attack replies (AUROC 0.97–0.999). [m27]
 - **Transfer.** On maths 27B, Opus arms aimed at the own-reply probe close 33% of its gap but 51% of the never-attacked
