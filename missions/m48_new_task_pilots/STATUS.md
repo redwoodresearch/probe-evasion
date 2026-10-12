@@ -4,7 +4,7 @@
 (computation) or ordering? Candidates from the 2026-10-12 deck: false-belief stories, acrostic hiding, spotting a
 contradiction (pilot first), plus a 50-position chess accuracy check. Nabil asked to run them in parallel (2026-10-12).
 
-**Phase:** pilots launched.
+**Phase:** pilots done; mini probe builds running (false belief, acrostic); contradiction's lookup twin re-piloted.
 
 ## Entry points
 
@@ -67,3 +67,43 @@ amendment 2, the deployed reading). Reported: held-out AUROC (overall, per twin 
 share of plain correct replies over it and the median gap, a text-only classifier, bare-answer checks (false belief,
 contradiction), and swap checks (a positive reply re-read after its twin's request and the reverse). m43's reference
 point (80% over the line, median gap 3 log-odds) is reported, not used to exclude.
+
+## Pilot results (2026-10-12; reports in `pilot/<task>_report.json`, every reply with its check in `pilot/<task>_checked.jsonl`)
+
+Plain accuracy, computed request, both seeds pooled (n = 200 per variant); twins are 95-100% everywhere.
+
+| task | variant | accuracy | shortcut answers |
+|---|---|---|---|
+| false belief | 1 move | 59% | first location 56%, final 44% |
+| false belief | 2 moves | 95.5% | 33%, 38% |
+| false belief | 3 moves | 97% | 40%, 19% |
+| acrostic | 3 sentences | 100% | - |
+| acrostic | 4 sentences | 96.5% | - |
+| acrostic | first 3 words | 52% | - |
+| acrostic | first 4 words | 47.5% | - |
+| contradiction | 6 sentences | 95.5% | last sentence 28%, either restatement 35-43% |
+| contradiction | 8 sentences | 94% | 21%, 37-39% |
+| chess, mate in one | FEN / pieces / board | 5% / 1% / 2.5% | - |
+| chess, undefended piece | FEN / pieces / board | 50% / 32% / 39% | - |
+
+- **False belief, one move: the memorisation risk is real for the textbook form.** When the person watches the only
+  move, Qwen still names the starting place in 93% of replies (6.8% correct, n = 88), while it is 100% on the classic
+  unseen move. With 2-3 moves and mixed seen/unseen moves it tracks what the person saw (true belief 91-100%, middle
+  93-97%).
+- **Chess stops** (decision rule 4): nothing near 70%.
+- **Two checker bugs found and fixed before any decision** (contradiction): (1) "Sentence 6 contradicts sentence 4"
+  was scored wrong for naming two numbers; under the correctness-only rule the first number named is the answer, the
+  second is working (a training-label violation only). (2) the word "one" in "an earlier one" was read as sentence 1;
+  number words now count only where they name a sentence. Contradiction accuracy went from 77% / 70% to 95.5% / 94%.
+- **Style yields** (clean = correct, no violation, not flagged by the Haiku audit; 15 computed, 8 per twin per
+  style): false belief loses casual text (13%: Qwen adds "since he doesn't know anyone moved it") and headline (47%);
+  acrostic keeps all nine; contradiction loses headline (40%) and its lookup twin failed in chatty styles (email,
+  dialogue, FAQ, casual: Qwen answered with the fact, "The owner is Tara", not the sentence number).
+
+**Decisions (rules 1-3):** false belief 3 moves, train styles one sentence / answer only / email / formal report /
+answer plus tip, held-out dialogue / FAQ; acrostic 4 sentences, all styles; contradiction 8 sentences, its lookup twin
+now ends "Give its number." (as the computed question does) and is re-piloted (`pilot/contradiction_lookup2_*`)
+before its build; chess stops.
+
+Note: the acrostic word and topic pools were enlarged after the pilot launched (the build needs more unique items);
+the pilot's rows are saved with their prompts, so it is unaffected.

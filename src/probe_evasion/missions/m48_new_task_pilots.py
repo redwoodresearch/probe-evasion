@@ -44,22 +44,24 @@ def unique_items(task: TaskSpec, rng: random.Random, variant: str, n: int, used:
     return out
 
 
-def pilot_rows(task: TaskSpec) -> list[dict]:
+def pilot_rows(task: TaskSpec, kinds: tuple[str, ...] | None = None, variants: tuple[str, ...] | None = None, seed_offset: int = 0) -> list[dict]:
     """Accuracy rows (every variant, every kind, the default style, 96 tokens, two seeds) and style rows (one
-    variant, every style, 300 tokens, seed 0)."""
-    rng, used, rows = random.Random(SEED[task.name]), set(), []
-    for variant in task.variants:
+    variant, every style, 300 tokens, seed 0). kinds / variants restrict a re-pilot (e.g. a redesigned twin)."""
+    rng, used, rows = random.Random(SEED[task.name] + seed_offset), set(), []
+    kinds = kinds or ("computed",) + task.neg_kinds
+    for variant in variants or task.variants:
         for i, it in enumerate(unique_items(task, rng, variant, ACC_ITEMS, used)):
-            for kind in ("computed",) + task.neg_kinds:
+            for kind in kinds:
                 for seed in ACC_SEEDS:
                     rows.append({"part": "accuracy", "variant": variant, "item": i, "kind": kind, "style": task.default_style,
                                  "seed": seed, "budget": REPLY_BUDGET, "problem": it[kind], "prompt": request(task, it[kind], task.default_style)})
     for split in ("train", "heldout"):
         for style in task.styles[split]:
-            for kind in ("computed",) + task.neg_kinds:
+            for kind in kinds:
                 n = STYLE_COUNTS["computed" if kind == "computed" else "negative"]
-                for it in unique_items(task, rng, STYLE_VARIANT[task.name], n, used):
-                    rows.append({"part": "style", "variant": STYLE_VARIANT[task.name], "kind": kind, "style": style, "split": split,
+                variant = (variants or (STYLE_VARIANT[task.name],))[0]
+                for it in unique_items(task, rng, variant, n, used):
+                    rows.append({"part": "style", "variant": variant, "kind": kind, "style": style, "split": split,
                                  "seed": 0, "budget": STYLE_BUDGET, "problem": it[kind], "prompt": request(task, it[kind], style)})
     return rows
 
@@ -80,8 +82,8 @@ def chess_rows() -> list[dict]:
     return rows
 
 
-def raw_path(task: str) -> Path:
-    return PILOT / f"{task}_raw.jsonl"
+def raw_path(task: str, tag: str = "") -> Path:
+    return PILOT / f"{task}{tag}_raw.jsonl"
 
 
 def fill_replies(rows: list[dict], containers: int = 6) -> None:
@@ -96,15 +98,17 @@ def fill_replies(rows: list[dict], containers: int = 6) -> None:
 
 
 @app.local_entrypoint()
-def m48_pilot(task: str):
-    if raw_path(task).exists():
-        print(f"{raw_path(task)} exists; delete it to regenerate")
+def m48_pilot(task: str, kinds: str = "", variants: str = "", tag: str = ""):
+    """tag names a re-pilot's files (e.g. "_lookup2"); kinds / variants restrict it (comma-separated)."""
+    if raw_path(task, tag).exists():
+        print(f"{raw_path(task, tag)} exists; delete it to regenerate")
         return
-    rows = chess_rows() if task == "chess" else pilot_rows(TASKS[task])
-    print(f"{task}: {len(rows)} requests {Counter(r['part'] for r in rows)}", flush=True)
+    split = lambda x: tuple(x.split(",")) if x else None
+    rows = chess_rows() if task == "chess" else pilot_rows(TASKS[task], split(kinds), split(variants), seed_offset=100 if tag else 0)
+    print(f"{task}{tag}: {len(rows)} requests {Counter(r['part'] for r in rows)}", flush=True)
     fill_replies(rows)
     PILOT.mkdir(parents=True, exist_ok=True)
-    write_jsonl(raw_path(task), rows)
+    write_jsonl(raw_path(task, tag), rows)
 
 
 # ---------------------------------------------------------------- report (local)
@@ -143,11 +147,11 @@ def share(rows: list[dict], key) -> dict:
     return {"n": len(rows), "share": round(sum(bool(key(r)) for r in rows) / len(rows), 3) if rows else None}
 
 
-def checked(task_name: str) -> list[dict]:
+def checked(task_name: str, tag: str = "") -> list[dict]:
     from dotenv import load_dotenv
 
     load_dotenv(".env")
-    rows = jl(raw_path(task_name))
+    rows = jl(raw_path(task_name, tag))
     if task_name == "chess":
         for r in rows:
             r["check"] = chess_task.chess_check(r["problem"], r["response"])
@@ -160,7 +164,7 @@ def checked(task_name: str) -> list[dict]:
         r["audit_flag"] = flag
     for r in rows:
         r["clean"] = bool(r["check"]["correct"] and not r["check"]["violations"] and not r.get("audit_flag", True))
-    write_jsonl(PILOT / f"{task_name}_checked.jsonl", rows)
+    write_jsonl(PILOT / f"{task_name}{tag}_checked.jsonl", rows)
     return rows
 
 
@@ -169,10 +173,10 @@ def examples(rows: list[dict], n: int, rng: random.Random) -> list[dict]:
             for r in rng.sample(rows, min(n, len(rows)))]
 
 
-def report(task_name: str) -> dict:
+def report(task_name: str, tag: str = "") -> dict:
     from probe_evasion.missions.m26_ordering import group_by
 
-    rows, rng = checked(task_name), random.Random(0)
+    rows, rng = checked(task_name, tag), random.Random(0)
     ok = lambda r: r["check"]["correct"]
     if task_name == "chess":
         rep = {"accuracy": {f"{q} | {f}": share(g, ok) for (q, f), g in sorted(group_by(rows, lambda r: (r["question"], r["format"])).items())},
@@ -180,7 +184,7 @@ def report(task_name: str) -> dict:
     else:
         task = TASKS[task_name]
         acc = [r for r in rows if r["part"] == "accuracy"]
-        comp = [r for r in acc if r["kind"] == "computed"]
+        comp = [r for r in acc if r["kind"] == "computed"] or acc  # a re-pilot of one twin kind has no computed rows
         rep = {"accuracy": {f"{v} | {k}": share(g, ok) for (v, k), g in sorted(group_by(acc, lambda r: (r["variant"], r["kind"])).items())},
                "accuracy_by_seed": {f"{v} | {s}": share(g, ok) for (v, s), g in sorted(group_by(comp, lambda r: (r["variant"], r["seed"])).items())},
                "shortcuts": {f"{v} | {name}": share(g, lambda r, name=name: task.shortcuts(r["problem"])[name] == r["problem"]["answer"])
@@ -193,21 +197,21 @@ def report(task_name: str) -> dict:
                "examples": {f"{v} | {k}": examples(g, 3, rng) for (v, k), g in sorted(group_by(acc, lambda r: (r["variant"], r["kind"])).items())},
                "wrong_computed_examples": {v: examples([r for r in g if not ok(r)], 4, rng) for v, g in sorted(group_by(comp, lambda r: r["variant"]).items())},
                "flagged_examples": examples([r for r in rows if r.get("audit_flag")], 8, rng)}
-        if task_name == "false_belief":
+        if task_name == "false_belief" and not tag:
             rep["computed_by_pattern"] = {f"{v} | {p}": share(g, ok) for (v, p), g in sorted(group_by(comp, lambda r: (r["variant"], r["problem"]["pattern"])).items())}
-        if task_name == "contradiction":
+        if task_name == "contradiction" and not tag:
             answer_type = lambda r: "none" if r["problem"]["answer"] == "none" else "contradiction"
             rep["computed_by_answer_type"] = {f"{v} | {t}": share(g, ok) for (v, t), g in
                                               sorted(group_by(comp, lambda r: (r["variant"], answer_type(r))).items())}
             rep["computed_by_slot"] = {f"{v} | {s}": share(g, ok) for (v, s), g in sorted(group_by(
                 [r for r in comp if r["problem"]["answer"] != "none"],
                 lambda r: (r["variant"], next(k for k in r["problem"]["sentence_kinds"] if k.startswith("contradict")))).items())}
-    (PILOT / f"{task_name}_report.json").write_text(json.dumps(rep, indent=1))
+    (PILOT / f"{task_name}{tag}_report.json").write_text(json.dumps(rep, indent=1))
     return rep
 
 
 if __name__ == "__main__":
     cmd, *args = sys.argv[1:]
     if cmd == "report":
-        out = report(args[0])
+        out = report(*args)
         print(json.dumps({k: v for k, v in out.items() if "examples" not in k}, indent=1))

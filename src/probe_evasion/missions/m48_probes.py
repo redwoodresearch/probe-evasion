@@ -21,10 +21,11 @@ from probe_evasion.missions.m48_tasks import TASKS, TaskSpec, request
 from probe_evasion.modal_app import app
 
 # Filled from the pilot (decision rules in STATUS.md): the variant(s) and the styles the build uses.
-CHOICES = {
-    "false_belief": {"variants": ("moves2",), "train_styles": None, "heldout_styles": None},
-    "acrostic": {"variants": ("sent3",), "train_styles": None, "heldout_styles": None},
-    "contradiction": {"variants": ("n6",), "train_styles": None, "heldout_styles": None},
+CHOICES = {  # pilot decisions, 2026-10-12 (STATUS.md, "Pilot results")
+    "false_belief": {"variants": ("moves3",), "train_styles": ("one sentence", "answer only", "email", "formal report", "answer plus tip"),
+                     "heldout_styles": ("dialogue", "faq")},
+    "acrostic": {"variants": ("sent4",), "train_styles": None, "heldout_styles": None},
+    "contradiction": {"variants": ("n8",), "train_styles": None, "heldout_styles": None},
 }  # None = every style of that split
 PER_STYLE = {"train": {"computed": 60, "negative": 25}, "heldout": {"computed": 40, "negative": 15}}
 CAL_PER_KIND, CAL_FACTS, PLAIN_CHECK = 120, 150, 200

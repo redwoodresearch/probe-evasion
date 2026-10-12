@@ -326,7 +326,7 @@ def ct_item(rng: random.Random, variant: str) -> dict:
     passage = " ".join(f"({i + 1}) {s}" for i, s in enumerate(sent))
     answer = (pos[3] + 1) if has_contra else "none"
     single = next(s for s in slots if s not in restated)
-    lookup_q = LOOKUP_Q[single].format(E=place)
+    lookup_q = f"{LOOKUP_Q[single].format(E=place)} Give its number."  # "Give its number" added after the pilot (lookup answered with the fact in chatty styles)
     given_note = f"Note: sentence {answer} contradicts an earlier sentence." if has_contra else "Note: no sentence contradicts another."
     base = {"passage": passage, "sentences": sent, "sentence_kinds": kinds, "n": n, "variant": variant, "place": place}
     return {"key": passage,
@@ -335,11 +335,16 @@ def ct_item(rng: random.Random, variant: str) -> dict:
             "given": base | {"answer": answer, "question": CONTRA_Q, "core": f"{passage} {given_note} {CONTRA_Q}"}}
 
 
+WORD_ALT = "|".join(NUM_WORDS)
+SENTENCE_NUMBER = re.compile(rf"\b([1-9])\b|\b(?:sentence|number|no\.)\s+({WORD_ALT})\b|\b({WORD_ALT})\s+sentence\b", re.I)
+
+
 def sentence_numbers(reply: str) -> list[int]:
-    """Sentence numbers the reply names: digits 1-9 and number words (one..nine, first..eighth), in order."""
+    """Sentence numbers the reply names, in order: any digit 1-9; a number word only where it names a sentence
+    ("sentence three", "number five", "the third sentence"), so "an earlier one" or "no one" do not count."""
     out = []
-    for m in re.finditer(r"\b([1-9])\b|\b(" + "|".join(NUM_WORDS) + r")\b", reply, re.I):
-        out.append(int(m.group(1)) if m.group(1) else NUM_WORDS[m.group(2).lower()])
+    for m in SENTENCE_NUMBER.finditer(reply):
+        out.append(int(m.group(1)) if m.group(1) else NUM_WORDS[(m.group(2) or m.group(3)).lower()])
     return out
 
 
@@ -347,16 +352,16 @@ NONE_WORDS = re.compile(r"\b(none|no sentence|no contradiction|nothing contradic
 
 
 def ct_check(p: dict, reply: str) -> dict:
-    """Correct iff the reply names exactly the answer's sentence number (possibly repeated) and no other; for "none"
-    items, no number and a none-word. Violations: any other sentence number named (e.g. the earlier sentence of the
-    pair) or quoted passage content."""
+    """Correct iff the first sentence number the reply names is the answer ("Sentence 6 contradicts sentence 4" is
+    correct for 6: correctness only); for "none" items, no number and a none-word. Violations (training labels only):
+    any other sentence number named (e.g. the earlier sentence of the pair) or quoted passage content."""
     nums = sentence_numbers(reply)
     if p["answer"] == "none":
         correct = not nums and bool(NONE_WORDS.search(reply))
         extracted = "none" if correct else (nums[0] if nums else None)
         others = nums
     else:
-        correct = bool(nums) and set(nums) == {p["answer"]}
+        correct = bool(nums) and nums[0] == p["answer"]
         extracted = nums[0] if nums else None
         others = [x for x in nums if x != p["answer"]]
     quoted = [w for w in (CITIES + DAYS + COLOURS) if re.search(rf"\b{w}\b", reply)]
