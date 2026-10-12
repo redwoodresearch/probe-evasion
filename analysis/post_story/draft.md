@@ -28,12 +28,14 @@
     arm). [m27]
   - The answers that score lowest are visibly odd (number words, stock openers, false "as you wrote" attribution,
     filler); a judge picks the plain reply as the normal one 100% of the time for maths and ordering. [m29]
-- **What the attacker needs.** With per-token scores plus the probe's training data and a scoring tool (and a hint about
-  which notations were allowed), Claude found instructions that put 384–407 of 500 correct answers under the line.
-  Without them, nothing crossed. Whether the per-token scores themselves help depends on the writer model: with Claude
-  Opus 4.8 pinned, scores helped clearly; a mostly-Opus-5.5 writer without scores got about as far as with them.
-  [m19, m22, m28; PENDING m28, m31: random-style baseline, a writer told nothing about the readout, Qwen just told a
-  probe is watching, 8 runs per arm with pinned Opus 4.8 and 5.5]
+- **What the attacker needs.** Rungs of attacker knowledge, on maths and ordering (fresh problems, median change from
+  plain): Qwen simply told a monitor is watching does nothing (−0.05 / −0.2); random odd styles written with no probe
+  knowledge, best of 16 picked by the probe, get about 40–50% of the search's drop (−2.0 / −4.6 vs −5.2 / −9.5); a
+  writer told nothing about how the score is read gets little (pinned Opus 4.8 on ordering: −0.3 vs −6.0 when told the
+  readout); the full search with per-token scores and the readout formula moves furthest; with the probe's training
+  data and a scoring tool too, Claude put 384–407 of 500 correct maths answers under the line. With the writer pinned to
+  Opus 4.8, every scored run beat every unscored run on both tasks (ordering is the clean case: −8.3 to −9.6 vs −5.3 to
+  −6.3 over rounds 1–15). [m19, m22, m28; PENDING m31: 8 runs per arm with Opus 4.8 and Opus 5.5 pinned]
 - **Why tone probes were crossed and task probes weren't.** With the identical search (same runner, pinned writer,
   16 rounds, full-strength validity), sarcasm and condescension probes are still crossed and task probes still aren't.
   Crossing follows mechanically from two numbers: how far the replies move (as a share of the distance from plain
@@ -127,27 +129,31 @@ real request that skip the task); to the level of same-style non-task replies.
 
 ## 4. How much does the attacker need to know?
 
-Maths 27B, own-reply probe, fresh problems, median change from plain (mean of each arm's runs):
+Fresh problems, median change from plain in log-odds (mean over arms; all 0 under the 1% line except white-box) [m28,
+m22, m19]:
 
-| Attacker | Last-round instruction | Best of 16 (picked with the probe) |
+| Attacker | Maths 27B | Ordering 27B |
 |---|---|---|
-| White-box: per-token scores + training data + scoring tool + notation hints | — | −15.4; 384/500 under the line [m19 via m22] |
-| Per-token scores, mostly Opus 4.8 | −4.0 | −5.2 [m22] |
-| No scores, mostly Opus 5.5 | −3.2 | −3.5 [m22] |
-| Per-token scores vs no scores, Opus 4.8 pinned | [PENDING m28/m31] | |
-| Per-token scores vs no scores, Opus 5.5 pinned | [PENDING m31] | |
-| Writer told nothing about the readout | [PENDING m28] | |
-| Random odd styles (no probe knowledge) | — | [PENDING m28] |
-| Qwen3.5-27B writing for itself | | −3.7 [m22] |
-| Qwen just told a probe is watching | [PENDING m28] | — |
+| Qwen told a monitor is watching (no writer) | −0.05 | −0.2 |
+| Zero-shot instruction (round 0) | −0.2 | −3.7 |
+| One random odd style (no probe knowledge) | −1.2 | −3.1 |
+| Random odd styles, best of 16 picked by the probe | −2.0 | −4.6 |
+| Writer told nothing about the readout, no scores (pinned Opus 4.8; last round) | −0.6 (eval −0.7) | −0.6 (eval −0.3) |
+| Writer told the readout formula, no scores (pinned Opus 4.8; last round) | −1.0 | −6.1 |
+| Writer told the readout formula, with per-token scores (pinned Opus 4.8; last round) | −5.2 | −9.9 |
+| Search with scores, best round (m22/m26 writers, mostly Opus 4.8) | −5.2 | −9.5 |
+| White-box: scores + training data + scoring tool + notation hints | −15.4; 384/500 under the line | — |
 
-- Early evidence on the writer: on m28's first 3+3 pinned Opus 4.8 runs, scores help clearly in the per-round eval
-  (maths −3.6 vs −0.8; ordering −8.5 vs −6.0), while m22's mostly-Opus-5.5 no-scores writer reached about −3.3 without
-  scores. So "does the writer need the probe signal?" depends on the writer model. [m28 via m31 design critic]
-- The white-box gap mixes information, budget and rules: that red team started from replies Claude wrote directly and
-  its prompt listed scientific, k and Roman notation as allowed (exactly its winning formats); m22's rules dropped the
-  hint. [m19, m22]
-- Zero-shot (round 0) moves about −0.2 on this probe. [m22]
+- **Random styles also squeeze from both sides** (non-task replies rise +1.0 to +5.4), and within every style the probe
+  separates task from non-task perfectly (AUROC 1.000). What the search adds is pushing task replies further down:
+  random styles leave 55–93% of the within-style gap, searched instructions 18–70%. [m28]
+- **The cheap maths trick.** Switching the same random styles from "in digits" to "in words" reaches −3.8 (best of 16),
+  about the level of the search without scores (that switch was informed by m22, so it isn't a blind baseline). [m28]
+- **Scores vs no scores depends on the writer.** Pinned Opus 4.8: scores help clearly on ordering; on maths the gap is
+  mostly two scored runs that happened to write number words at round 0. m22's mostly-Opus-5.5 no-scores writer reached
+  about −3.3 on maths without scores. [m22, m28; PENDING m31]
+- **The white-box gap mixes information, budget and rules** (it started from replies Claude wrote directly; its prompt
+  listed scientific, k and Roman notation as allowed, exactly its winning formats). [m19, m22]
 
 ## 5. Tone vs task probes
 
