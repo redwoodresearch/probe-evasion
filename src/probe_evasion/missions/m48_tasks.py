@@ -114,11 +114,11 @@ def fb_item(rng: random.Random, variant: str) -> dict:
 
 
 def fb_check(p: dict, reply: str) -> dict:
-    """Correct iff the only story location the reply names is the answer. Violations: the reply names another story
-    location or a mover (it is retelling the moves)."""
+    """Correct iff the first story location the reply names is the answer (correctness only, as contradiction's
+    first-number rule). Violations (training labels only): another story location or a mover named (retelling)."""
     named = mentions(reply, p["locations"])
     movers = [n for n in mentions(reply, NAMES) if n != p["hero"]]
-    return {"correct": bool(named) and set(named) == {p["answer"]}, "extracted": named[0] if named else None,
+    return {"correct": bool(named) and named[0] == p["answer"], "extracted": named[0] if named else None,
             "violations": sorted(set(named) - {p["answer"]}) + sorted(set(movers))}
 
 
@@ -190,7 +190,7 @@ ACROSTIC_STYLES = {
                 "dry humour": "Write it with dry humour. Reply with the text only.",
                 "advert": "Write it like a short advert. Reply with the text only."},
 }
-LEAK_WORDS = re.compile(r"\b(spell|spells|spelled|spelling|acrostic|first letters?|initials?|hidden)\b", re.I)
+LEAK_WORDS = re.compile(r"\b(acrostic|first letters?|hidden (?:word|message)|spell(?:s|ed|ing)? out)\b", re.I)  # narrowed after review: "initial", "hidden", "spell" alone match ordinary prose
 
 
 def ac_item(rng: random.Random, variant: str) -> dict:
@@ -211,31 +211,62 @@ def ac_item(rng: random.Random, variant: str) -> dict:
     return {"key": f"{variant}|{word}|{topic}",
             "computed": base | {"answer": word, "core": f"{task} {hidden}"},
             "free": base | {"answer": None, "core": task},
-            "given": base | {"answer": word, "core": f"{task} {given}"}}
+            "given": base | {"answer": word, "core": f"{task} {given}", "starters_required": True}}
 
 
 SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
 
-def initials(reply: str, unit: str, n: int) -> str:
-    if unit == "sent":
-        parts = [s for s in SENTENCE_SPLIT.split(reply.strip()) if re.search(r"[A-Za-z]", s)]
-        if len(parts) != n:
-            return ""
-        return "".join(re.search(r"[A-Za-z]", s).group().upper() for s in parts)
-    words = re.findall(r"[A-Za-z][A-Za-z'-]*", reply)
-    return "".join(w[0].upper() for w in words[:n])
+GREETING_WORD = re.compile(r"^(dear|hi|hello|hey|best|regards|kind|warm|cheers|sincerely|thanks|yours|love)\b", re.I)
+NAME_LINE = re.compile(r"^(\[[^\]]+\]|[A-Z][a-z]+(?: [A-Z][a-z]+)?)$")
+
+
+def body_lines(reply: str) -> tuple[list[str], bool]:
+    """The reply's non-empty lines without email furniture (a subject line, a short greeting or sign-off line, a
+    final name-only line), looked for only in the first line and the last two (a short poem line ending in a comma
+    is not furniture); and whether any was removed."""
+    lines = [l.strip() for l in reply.strip().splitlines() if l.strip()]
+    sign_off = lambda l: len(l.split()) <= 4 and bool(GREETING_WORD.match(l)) and not l.endswith(".")
+    opener = lambda l: l.lower().startswith("subject:") or (len(l.split()) <= 5 and l.endswith((",", ":"))) or sign_off(l)
+    furniture = lambda i, l: len(lines) > 1 and ((i == 0 and opener(l)) or (i >= len(lines) - 2 and sign_off(l)))
+    kept = [l for i, l in enumerate(lines) if not furniture(i, l)]
+    if kept and len(kept) < len(lines) and NAME_LINE.match(kept[-1]):
+        kept = kept[:-1]
+    return kept, len(kept) < len(lines)
+
+
+def units(reply: str, unit: str, n: int) -> list[list[str]]:
+    """Candidate segmentations of the reply body into its first words per unit: sentences across lines, and
+    sentences within lines (lines without a full stop, as in poems, end a unit). Word units: the first n words."""
+    kept, _ = body_lines(reply)
+    if unit == "word":
+        words = re.findall(r"[A-Za-z][A-Za-z'-]*", " ".join(kept))
+        return [words[:n]] if len(words) >= n else []
+    first_word = lambda s: re.search(r"[A-Za-z][A-Za-z'-]*", s).group()
+    out = []
+    for parts in ([x for x in SENTENCE_SPLIT.split(" ".join(kept))], [x for l in kept for x in SENTENCE_SPLIT.split(l)]):
+        parts = [x for x in parts if re.search(r"[A-Za-z]", x)]
+        if len(parts) == n:
+            out.append([first_word(x) for x in parts])
+    return out
 
 
 def ac_check(p: dict, reply: str) -> dict:
-    """Correct iff the reply's units (exactly n sentences, or the first n words) start with the hidden word's letters.
-    For the free twin the answer is None and "correct" means the reply has the right shape (n sentences / a sentence).
-    Violations: the reply names the hidden word in capitals or talks about the pattern."""
-    got = initials(reply, p["unit"], p["n"])
-    shape_ok = bool(got) and (p["unit"] == "sent" or len(SENTENCE_SPLIT.split(reply.strip())) == 1)
-    correct = shape_ok and (p["answer"] is None or got == p["answer"])
-    violations = [m.group() for m in LEAK_WORDS.finditer(reply)] + ([p["word"]] if re.search(rf"\b{p['word']}\b", reply) else [])
-    return {"correct": correct, "extracted": got, "violations": violations}
+    """Correct iff some segmentation of the body (`units`) has exactly n units whose first letters spell the hidden
+    word (word units: the first n words, and the reply is one sentence). Free twin (answer None): the right shape.
+    Given twin: the units also start with the given words. Violations (training labels only): the reply names the
+    hidden word in capitals, talks about the pattern, or has email furniture (removed from every kind alike, since
+    only positives had greetings in the pilot)."""
+    cands = units(reply, p["unit"], p["n"])
+    if p["unit"] == "word" and len([x for x in SENTENCE_SPLIT.split(" ".join(body_lines(reply)[0])) if x]) != 1:
+        cands = []
+    spelled = lambda ws: "".join(w[0].upper() for w in ws)
+    good = [ws for ws in cands if (p["answer"] is None or spelled(ws) == p["answer"])
+            and (not p.get("starters_required") or [w.lower() for w in ws] == [w.lower() for w in p["starters"]])]
+    _, furniture = body_lines(reply)
+    violations = ([m.group() for m in LEAK_WORDS.finditer(reply)] + ([p["word"]] if re.search(rf"\b{p['word']}\b", reply) else [])
+                  + (["email furniture"] if furniture else []))
+    return {"correct": bool(good), "extracted": spelled(cands[0]) if cands else "", "violations": violations}
 
 
 ACROSTIC = TaskSpec(
@@ -336,32 +367,47 @@ def ct_item(rng: random.Random, variant: str) -> dict:
 
 
 WORD_ALT = "|".join(NUM_WORDS)
-SENTENCE_NUMBER = re.compile(rf"\b([1-9])\b|\b(?:sentence|number|no\.)\s+({WORD_ALT})\b|\b({WORD_ALT})\s+sentence\b", re.I)
+ORDINAL_ALT = "first|second|third|fourth|fifth|sixth|seventh|eighth"
+SENTENCE_NUMBER = re.compile(
+    rf"\((?P<p>[1-9])\)|\b(?:sentence|number|no\.)\s*\(?(?P<s>[1-9])\)?|#(?P<h>[1-9])\b|\b(?P<o>[1-9])(?:st|nd|rd|th)\b"
+    rf"|\b(?:sentence|number|no\.)\s+(?P<w>{WORD_ALT})\b|\b(?P<ow>{ORDINAL_ALT})\s+(?:sentence|one)\b"
+    rf"|(?P<pre>\b(?:person|speaker)\s+)?\b(?P<b>[1-9])\b(?P<post>\s+sentences)?", re.I)
 
 
 def sentence_numbers(reply: str) -> list[int]:
-    """Sentence numbers the reply names, in order: any digit 1-9; a number word only where it names a sentence
-    ("sentence three", "number five", "the third sentence"), so "an earlier one" or "no one" do not count."""
+    """Sentence numbers the reply names, in order: "(6)", "sentence 6", "#6", "6th", "sentence six", "the sixth
+    sentence / one", and bare digits except speaker labels ("Person 1:") and counts ("all 8 sentences"). Number words
+    count only where they name a sentence, so "an earlier one" or "no one" do not."""
     out = []
     for m in SENTENCE_NUMBER.finditer(reply):
-        out.append(int(m.group(1)) if m.group(1) else NUM_WORDS[(m.group(2) or m.group(3)).lower()])
+        g = m.groupdict()
+        if g["b"] and (g["pre"] or g["post"]):
+            continue
+        digit = g["p"] or g["s"] or g["h"] or g["o"] or g["b"]
+        out.append(int(digit) if digit else NUM_WORDS[(g["w"] or g["ow"]).lower()])
     return out
 
 
-NONE_WORDS = re.compile(r"\b(none|no sentence|no contradiction|nothing contradicts|doesn't|does not|do not|don't)\b", re.I)
+NONE_WORDS = re.compile(r"\b(none|no sentences?|no contradictions?|no conflicts?|no inconsistenc(?:y|ies)|nothing|consistent|"
+                        r"doesn't|does not|do not|don't)\b", re.I)
 
 
 def ct_check(p: dict, reply: str) -> dict:
     """Correct iff the first sentence number the reply names is the answer ("Sentence 6 contradicts sentence 4" is
-    correct for 6: correctness only); for "none" items, no number and a none-word. Violations (training labels only):
-    any other sentence number named (e.g. the earlier sentence of the pair) or quoted passage content."""
+    correct for 6: correctness only), or the numbers named are exactly the conflicting pair in either order
+    ("Sentence 4 contradicts sentence 6"); for "none" items, no number and a none-word. Violations (training labels
+    only): any other sentence number named (e.g. the earlier sentence of the pair) or quoted passage content."""
     nums = sentence_numbers(reply)
     if p["answer"] == "none":
         correct = not nums and bool(NONE_WORDS.search(reply))
         extracted = "none" if correct else (nums[0] if nums else None)
         others = nums
     else:
-        correct = bool(nums) and nums[0] == p["answer"]
+        pair = {p["answer"]}
+        if "question" in p and p["question"] == CONTRA_Q:  # computed / given: the statement the answer contradicts
+            slot = p["sentence_kinds"][p["answer"] - 1].split(":")[1]
+            pair.add(p["sentence_kinds"].index(f"state:{slot}") + 1)
+        correct = bool(nums) and (nums[0] == p["answer"] or (len(pair) == 2 and set(nums) == pair))
         extracted = nums[0] if nums else None
         others = [x for x in nums if x != p["answer"]]
     quoted = [w for w in (CITIES + DAYS + COLOURS) if re.search(rf"\b{w}\b", reply)]

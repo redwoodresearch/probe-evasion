@@ -126,9 +126,16 @@ class PeakProbeLabSeeds:
         out = {}
         for seed in seeds:
             gen = torch.Generator().manual_seed(seed)
-            perm = torch.randperm(len(rows), generator=gen).tolist()
-            n_val = len(rows) // 5
-            val, train = perm[:n_val], perm[n_val:]
+            if any("group" in r for r in rows):  # m48: copies of one reply (re-read under another request) share a group and a side
+                groups = list(dict.fromkeys(r["group"] for r in rows))
+                gperm = torch.randperm(len(groups), generator=gen).tolist()
+                val_groups = {groups[i] for i in gperm[:len(groups) // 5]}
+                val = [i for i, r in enumerate(rows) if r["group"] in val_groups]
+                train = [i for i, r in enumerate(rows) if r["group"] not in val_groups]
+            else:  # every earlier caller: the original row-level split, unchanged
+                perm = torch.randperm(len(rows), generator=gen).tolist()
+                n_val = len(rows) // 5
+                val, train = perm[:n_val], perm[n_val:]
             w = torch.zeros(X[0].shape[-1], device="cuda", requires_grad=True)
             b = torch.zeros((), device="cuda", requires_grad=True)
             opt = torch.optim.AdamW([w, b], lr=LR, weight_decay=WEIGHT_DECAY)

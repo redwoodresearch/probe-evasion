@@ -4,7 +4,7 @@
 (computation) or ordering? Candidates from the 2026-10-12 deck: false-belief stories, acrostic hiding, spotting a
 contradiction (pilot first), plus a 50-position chess accuracy check. Nabil asked to run them in parallel (2026-10-12).
 
-**Phase:** pilots done; mini probe builds running (false belief, acrostic); contradiction's lookup twin re-piloted.
+**Phase:** builds cleaned with the reviewed checkers; probes training (all three tasks).
 
 ## Entry points
 
@@ -18,7 +18,7 @@ uv run python -m probe_evasion.missions.m48_new_task_pilots report <task>
 
 ## Tasks (as built)
 
-Each item has a computed request (label 1) and negative twins with the same reply surface (label 0). The examples are
+Each item has a computed request (label 1) and negative twins (label 0). Only the **given** twins share the positives' reply wording exactly ("X will look in the drawer", "Sentence 6"); the false-belief reality / lookup twins and the contradiction lookup twin are worded differently ("The keys are in ...", "Sentence 4 names the city"), so the headline separation numbers are against the given twin. The examples are
 in the deck; the exact wording is in `m48_tasks.py`.
 
 - **false_belief.** A person puts an object in a container; others move it 1-3 times; the person watches some moves
@@ -81,8 +81,8 @@ Plain accuracy, computed request, both seeds pooled (n = 200 per variant); twins
 | acrostic | 4 sentences | 96.5% | - |
 | acrostic | first 3 words | 52% | - |
 | acrostic | first 4 words | 47.5% | - |
-| contradiction | 6 sentences | 95.5% | last sentence 28%, either restatement 35-43% |
-| contradiction | 8 sentences | 94% | 21%, 37-39% |
+| contradiction | 6 sentences | 96% | last sentence 28%, either restatement 35-43% |
+| contradiction | 8 sentences | 94.5% | 21%, 37-39% |
 | chess, mate in one | FEN / pieces / board | 5% / 1% / 2.5% | - |
 | chess, undefended piece | FEN / pieces / board | 50% / 32% / 39% | - |
 
@@ -107,3 +107,34 @@ before its build; chess stops.
 
 Note: the acrostic word and topic pools were enlarged after the pilot launched (the build needs more unique items);
 the pilot's rows are saved with their prompts, so it is unaffected.
+
+**Contradiction lookup re-pilot** (`pilot/contradiction_lookup2_report.json`, 8 sentences, "Give its number."): 100%
+correct in the default style (n = 200); clean in every style (63-100%, n = 8 each). Held-out styles: dialogue, FAQ.
+
+## Review of generators, checkers and build (autonomous-task-reviewer, 2026-10-12) and fixes (before any probe)
+
+The reviewer simulated 20,000 items per generator: answers are right by construction (false belief: the answer is
+always the place of the last move the person watched; contradiction: the lookup fact is never restated, no filler or
+consistent restatement conflicts; acrostic: the given starters spell the word), and items are unique across splits.
+Fixed:
+1. **Acrostic checker**: email greetings / sign-offs merged into sentences (8 of 21 failed train positives were
+   correct). Now the first line (subject, short greeting) and a sign-off in the last two lines are set aside, and a
+   reply counts as correct if its sentences, or its lines-then-sentences (poems without full stops), spell the word.
+   Email furniture is a training-label violation for every kind (only positives had greetings: 17/60 vs 0/50). The
+   given twin must also start its sentences with the given words. Leak words narrowed ("initial", "hidden", "spell"
+   alone matched ordinary prose).
+2. **Contradiction checker**: "There are no contradictions", "All sentences are consistent", "Nothing does" now count
+   as none; "the 6th sentence", "the sixth one", "#6" are read; "Person 1:" and "all 8 sentences" are not; naming
+   the conflicting pair in either order counts as correct (a violation for training labels).
+3. **False-belief checker**: the first location named decides (as contradiction's first number); other locations
+   stay violations. Accuracy figures barely move (the table above is after the fixes).
+4. **Probe training**: the early-stopping split now keeps a reply and its re-read copy on the same side (rows carry
+   the item as `group`; `m1a_peak_probe.train_peak_seeded` splits by group only when rows have one, so earlier
+   missions are unchanged).
+5. **Swap check**: a swapped reply is kept only where the task's checker says it is a correct answer to the other
+   request too (e.g. acrostic computed replies after the given request need the given starters).
+6. **Styles after the build** (rule 3 on the build's own yields): contradiction drops casual text (computed 22/60
+   clean: names both sentences of the pair) and answer plus tip (lookup 8/25: tips quote passage content).
+
+Build sizes after cleaning (train / held-out / calibration rows): false belief 615 / 166 / 510, acrostic 516 / 208 /
+390, contradiction 368 / 132 / 388.

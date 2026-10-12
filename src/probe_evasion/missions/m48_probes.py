@@ -25,8 +25,12 @@ CHOICES = {  # pilot decisions, 2026-10-12 (STATUS.md, "Pilot results")
     "false_belief": {"variants": ("moves3",), "train_styles": ("one sentence", "answer only", "email", "formal report", "answer plus tip"),
                      "heldout_styles": ("dialogue", "faq")},
     "acrostic": {"variants": ("sent4",), "train_styles": None, "heldout_styles": None},
-    "contradiction": {"variants": ("n8",), "train_styles": None, "heldout_styles": None},
+    "contradiction": {"variants": ("n8",), "train_styles": None, "heldout_styles": ("dialogue", "faq")},
 }  # None = every style of that split
+# Styles dropped after the build by decision rule 3 applied to the build's own yields (the pilot measured styles on
+# another variant): contradiction's casual text (computed 22/60 clean: names both sentences of the pair) and answer
+# plus tip (lookup 8/25: tips quote passage content). build_rows keeps them, so the seeded rebuild still matches.
+DROPPED_STYLES = {"false_belief": set(), "acrostic": set(), "contradiction": {"casual text", "answer plus tip"}}
 PER_STYLE = {"train": {"computed": 60, "negative": 25}, "heldout": {"computed": 40, "negative": 15}}
 CAL_PER_KIND, CAL_FACTS, PLAIN_CHECK = 120, 150, 200
 BUILD_BUDGET, CAL_BUDGET = 300, 96
@@ -50,8 +54,8 @@ def styles(task: TaskSpec, split: str) -> list[str]:
 
 
 def build_rows(task: TaskSpec) -> list[dict]:
-    """Every request the build generates a reply for. Each row's problem keeps the cores of all kinds of its item
-    (`cores`), for the swap check. Items are unique by key within the build."""
+    """Every request the build generates a reply for. Each row's problem keeps every kind's problem of its item
+    (`item`), for the swap check and the training groups. Items are unique by key within the build."""
     from probe_evasion.missions.m43_hidden_result_task import fact_problem, fact_questions
 
     rng, used, tries = random.Random(BUILD_SEED[task.name]), set(), 0
@@ -68,7 +72,7 @@ def build_rows(task: TaskSpec) -> list[dict]:
                 return it
 
     def row(split: str, kind: str, style: str, it: dict, budget: int) -> dict:
-        prob = it[kind] | {"cores": {k: it[k]["core"] for k in ("computed",) + task.neg_kinds}, "answers": {k: it[k]["answer"] for k in ("computed",) + task.neg_kinds}}
+        prob = it[kind] | {"item": {k: it[k] for k in ("computed",) + task.neg_kinds}}
         return {"task_name": task.name, "split": split, "kind": kind, "style": style, "problem": prob, "budget": budget,
                 "prompt": request(task, prob, style), "label": int(kind == "computed")}
 
@@ -112,6 +116,7 @@ def clean(task_name: str) -> dict:
 
     load_dotenv(".env")
     task, rows = TASKS[task_name], jl(task_dir(task_name) / "build_raw.jsonl")
+    attach_items(task, rows)
     for r in rows:
         r["check"] = task.check(r["problem"], r["response"]) if r["kind"] != "fact" else {"correct": True, "violations": [], "extracted": None}
         r["check"]["correct"] = bool(r["check"]["correct"] and r["finished"] and r["response"])
@@ -122,7 +127,7 @@ def clean(task_name: str) -> dict:
         r["clean"] = bool(r["check"]["correct"] and not r["check"]["violations"] and not r.get("audit_flag", False))
     files = {}
     for split in ("train", "heldout", "calibration"):
-        kept = [r for r in rows if r["split"] == split and r["clean"]]
+        kept = [r for r in rows if r["split"] == split and r["clean"] and r["style"] not in DROPPED_STYLES[task_name]]
         if split == "train":
             kept = balance_cells(kept, random.Random(7))
         write_jsonl(DATA / f"m48_{task_name}_{split}.jsonl", kept)
@@ -135,6 +140,18 @@ def clean(task_name: str) -> dict:
                         sorted(group_by(rows, lambda r: (r["split"], r["kind"])).items())}}
     (task_dir(task_name) / "build_yields.json").write_text(json.dumps(out, indent=1))
     return out
+
+
+def attach_items(task: TaskSpec, rows: list[dict]) -> None:
+    """Builds generated before `item` was stored (false belief, acrostic, contradiction on 2026-10-12) take their
+    problems from the same seeded build_rows (prompts must match exactly), so fields added to the generators since
+    (the acrostic given twin's `starters_required`) apply too."""
+    if all("item" in r["problem"] for r in rows):
+        return
+    again = build_rows(task)
+    assert len(again) == len(rows) and all(a["prompt"] == r["prompt"] for a, r in zip(again, rows)), "rebuilt rows differ"
+    for a, r in zip(again, rows):
+        r["problem"] = a["problem"]
 
 
 def reread(task: TaskSpec, rows: list[dict]) -> list[dict]:
@@ -160,17 +177,17 @@ def terse_rows(task: TaskSpec, held: list[dict]) -> list[dict]:
 
 
 def swap_rows(task: TaskSpec, held: list[dict]) -> list[dict]:
-    """A held-out reply re-read after a request of another kind on the same item whose answer is the same (so the
-    reply is still a correct answer there): computed replies after twin requests ("computed->twin") and twin replies
-    after the computed request ("twin->computed"). Separates what the probe reads in the reply from what it reads in
-    the request."""
+    """A held-out reply re-read after a request of another kind on the same item, kept only where the reply is a
+    correct answer to that request too (the task's checker on the other kind's problem): computed replies after twin
+    requests ("computed->twin") and twin replies after the computed request ("twin->computed"). Separates what the
+    probe reads in the reply from what it reads in the request."""
     out = []
     for r in held:
-        p = r["problem"]
+        item = r["problem"]["item"]
         for k in ("computed",) + task.neg_kinds:
-            if k == r["kind"] or p["answers"][k] != p["answer"] or (r["kind"] != "computed" and k != "computed"):
+            if k == r["kind"] or (r["kind"] != "computed" and k != "computed") or not task.check(item[k], r["response"])["correct"]:
                 continue
-            prompt = request(task, p | {"core": p["cores"][k]}, r["style"])
+            prompt = request(task, item[k], r["style"])
             out.append({"kind": f"{r['kind']}->{k}", "label": r["label"], "prompt": prompt, "response": r["response"], "style": r["style"]})
     return out
 
@@ -185,7 +202,9 @@ def m48_probes(task: str, train: bool = True):
     spec, d = TASKS[task], task_dir(task)
     tr = jl(DATA / f"m48_{task}_train.jsonl")
     if train:
-        rows = [{"prompt": r["prompt"], "response": r["response"], "label": r["label"]} for r in tr + reread(spec, tr)]
+        # group = the item, so a reply and its re-read copy land on the same side of the validation split
+        rows = [{"prompt": r["prompt"], "response": r["response"], "label": r["label"], "group": r["problem"]["item"]["computed"]["core"]}
+                for r in tr + reread(spec, tr)]
         fit = PeakProbeLabSeeds.with_options(max_containers=1)().train_peak_seeded.remote(rows, LAYER, PROBE_SEEDS)
         probes = {probe_name(task, p["seed"]): p for p in fit.values()}
         (d / "probes.json").write_text(json.dumps(probes))
