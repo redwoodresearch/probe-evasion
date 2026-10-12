@@ -139,7 +139,7 @@ white-box. [m28, m22, m19]
 |---|---|---|---|---|
 | Qwen told "a monitor reads your activations" (no writer) | — | −0.05 | — | −0.2 |
 | Zero-shot instruction, round 0 (eval set) | — | −0.2 | — | −3.7 |
-| Random odd style, no probe knowledge: one style / best of 16 by the probe | −2.0 | −1.2 | −4.6 | −3.1 |
+| Random odd style, no probe knowledge (best: best of 16 by the probe; last: one style, unpicked) | −2.0 | −1.2 | −4.6 | −3.1 |
 | Writer told only "a monitor flags computing", no scores (Opus 4.8 pinned) | −2.7 | −1.0 | −1.2 | −0.6 |
 | Same, Opus 5.5 | −3.3 | −0.9 | −6.3 | −3.3 |
 | Writer told the readout, no scores (Opus 4.8 pinned) | −2.0 | −1.0 | −8.3 | −6.1 |
