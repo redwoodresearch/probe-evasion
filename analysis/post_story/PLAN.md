@@ -72,3 +72,17 @@ Secondary: within-style discrimination survives (it's a distribution shift); siz
 - Pending v3 rewrite once results land: the review's section-2 edit list (TL;DR wording, white-box rule hints, §4 table
   on one measure, transfer scope, 9B in TL;DR, number-word naturalness, "no detectable difference" for scores, tone
   fragilities, ordering margin, minor numbers, cut the m20 bullet).
+
+### Iteration 3 continued (2026-10-11 evening)
+- Nabil: continue the write/critique/experiment loop autonomously; back Monday 10-12. Budget context: ~$50k/month
+  guideline, ~$10k spent last week; today's ~$130 GPU + ~$200–300 Claude is "very reasonable".
+- m27 Parts C/D: the drop is present at the token before the answer (larger than on the answer); task lines would flag
+  72–100% of broad chat traffic, but re-set on it, score-only attacks still almost never cross.
+- m29 final: naturalness claim withdrawn (evading replies are visibly odd); "similar shift" dropped; robust statement is
+  where the line sits / pool tail (pool_tail_figure.png).
+- Draft v2.2 written.
+- Launched m31 (5+5 more pinned-writer chains per arm on maths and ordering → 8 per arm with m28) and m32 (reasoning-on
+  pilot on maths: where the signal lives, can prompting move it).
+- Still running: m28, m30.
+- Next: when m28/m30 land, write v3 (apply the v2 review's edit list), send to a fresh reviewer, iterate. Before Monday:
+  a short status page for Nabil with the current story, figures and what's still running.
