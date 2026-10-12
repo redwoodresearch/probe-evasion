@@ -172,7 +172,7 @@ def dot_plot(task: str, title: str, rows: list[tuple[str, str, list[dict], bool]
 def main(tag: str = "") -> None:
     m48_probes.set_tag(tag)
     label = " (v2)" if tag else ""
-    dot_plot("false_belief", f"False-belief probe{label} on Qwen3.5-27B: scores per reply", false_belief_rows(load("false_belief")))
+    dot_plot("false_belief", f"Belief-tracking probe{label} on Qwen3.5-27B: scores per reply", false_belief_rows(load("false_belief")))
     dot_plot("acrostic", f"Acrostic (hidden-word) probe{label} on Qwen3.5-27B: scores per reply", acrostic_rows(load("acrostic")))
     if tag:  # v1's contradiction probe was trained on passages with a wording shortcut: no figure
         dot_plot("contradiction", f"Contradiction probe{label} on Qwen3.5-27B: scores per reply", contradiction_rows(load("contradiction")))

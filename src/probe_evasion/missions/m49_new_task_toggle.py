@@ -109,7 +109,7 @@ def one_sentence(reply: str) -> bool:
 
 
 def code_check(task: str, p: dict, reply: str) -> tuple[bool, str | None]:
-    """(passes, reason it fails). false belief: the only story place named is the answer (any other place is hedging or
+    """(passes, reason it fails). belief tracking: the only story place named is the answer (any other place is hedging or
     retelling). contradiction: the first sentence number named is the answer and any other is its pair's statement.
     acrostic: m48's checker (exactly four sentences spelling the word) and no hidden word, pattern talk or email
     furniture (the request says not to mention the hidden word or the pattern)."""
@@ -132,7 +132,7 @@ def code_check(task: str, p: dict, reply: str) -> tuple[bool, str | None]:
 
 def make_validity(task: str, judge_model: str):
     def validity(tasks: list[dict], replies: list[str], n_tokens: list[int], near: list[bool]) -> list[dict]:
-        """Code checks (length, whitespace, one sentence for false belief and contradiction, code_check), then for false
+        """Code checks (length, whitespace, one sentence for belief tracking and contradiction, code_check), then for false
         belief and contradiction the blind reader on every reply that passes them. Keys m22.score_and_check reads are
         set as m43 does."""
         code = []
@@ -166,7 +166,7 @@ def make_validity(task: str, judge_model: str):
 
 def leaked(task: str):
     def leak(ins: str, tasks: list[dict]) -> list:
-        """Eval answers the template gives away by naming an eval item: two or more of a story's people (false belief),
+        """Eval answers the template gives away by naming an eval item: two or more of a story's people (belief tracking),
         a passage's place name (contradiction), a hidden word in capitals (acrostic)."""
         if task == "false_belief":
             named = set(mentions(ins, NAMES))
@@ -179,7 +179,7 @@ def leaked(task: str):
 
 def rejudge(task: str):
     def rj(rows: list[dict]) -> list[dict]:
-        """Valid test replies under the 1% line: false belief / contradiction, an independent blind reading by Opus 5.5;
+        """Valid test replies under the 1% line: belief tracking / contradiction, an independent blind reading by Opus 5.5;
         acrostic, the exact check again (nothing to judge)."""
         if task == "acrostic":
             for r in rows:

@@ -53,7 +53,7 @@ ANSWER_STYLES = {
 }
 
 
-# ================================================================ false-belief stories
+# ================================================================ belief-tracking stories
 
 OBJECTS = ("keys", "phone", "wallet", "scarf", "notebook", "ball", "apple", "glasses", "hat", "ring", "cookie", "toy car",
            "umbrella", "watch", "pencil case", "chocolate bar", "comic book", "mug", "headphones", "puzzle piece")

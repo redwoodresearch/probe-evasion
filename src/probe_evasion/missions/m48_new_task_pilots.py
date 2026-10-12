@@ -1,4 +1,4 @@
-"""m48: pilots for new probe tasks (false-belief stories, acrostic hiding, spotting a contradiction) and a chess
+"""m48: pilots for new probe tasks (belief-tracking stories, acrostic hiding, spotting a contradiction) and a chess
 accuracy check, on Qwen3.5-27B with reasoning off.
 
     # Qwen's replies (one Modal run per task, run in parallel):

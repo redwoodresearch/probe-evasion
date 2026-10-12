@@ -30,7 +30,7 @@ CHOICES = {  # per build version: the variant(s) and styles the build uses (pilo
         "acrostic": {"variants": ("sent4",), "train_styles": None, "heldout_styles": None},
         "contradiction": {"variants": ("n8",), "train_styles": None, "heldout_styles": ("dialogue", "faq")},
     },
-    "_v2": {  # v2 pilots, 2026-10-12 (false belief filled after its second v2 pilot)
+    "_v2": {  # v2 pilots, 2026-10-12 (belief tracking filled after its second v2 pilot)
         "false_belief": {"variants": ("moves2",),  # second v2 pilot: 2 moves 87.5%, 3 moves 82.5%; casual text 13%, headline 33%
                          "train_styles": ("one sentence", "answer only", "email", "formal report", "answer plus tip"),
                          "heldout_styles": ("dialogue", "faq")},
@@ -177,7 +177,7 @@ def clean(task_name: str) -> dict:
 
 
 def attach_items(task: TaskSpec, rows: list[dict]) -> None:
-    """Builds generated before `item` was stored (false belief, acrostic, contradiction on 2026-10-12) take their
+    """Builds generated before `item` was stored (belief tracking, acrostic, contradiction on 2026-10-12) take their
     problems from the same seeded build_rows (prompts must match exactly), so fields added to the generators since
     (the acrostic given twin's `starters_required`) apply too."""
     if all("item" in r["problem"] for r in rows):
@@ -324,7 +324,7 @@ MENTION_PER_FORM = 60
 
 def wrong_rows(task: TaskSpec, held: list[dict]) -> list[dict]:
     """Held-out twin replies re-read after the computed request of the same item where they are NOT a correct answer
-    to it (false belief: a different place; acrostic: the free reply, which spells nothing; contradiction: another
+    to it (belief tracking: a different place; acrostic: the free reply, which spells nothing; contradiction: another
     number): high scores here mean the probe reads the request, whatever the reply does."""
     out = []
     for r in held:
