@@ -455,6 +455,115 @@ def m49_prepare(tasks: str = ",".join(TASKS)):
         prepare_source(t)
 
 
+# ---------------------------------------------------------------- batches and steps (m46's pattern)
+
+DESIGN = ["switch", "switch_after"]  # m45's default (v1: the switch line after the evasion block)
+ME = f"probe_evasion.missions.{MISSION}"
+
+
+def prepare_batch(batch: str, writers: str, chains: int, tasks: str = ",".join(TASKS)) -> None:
+    """Local, after prepare_source: RUNS/<batch>/writers.json (writers, chains, design, probe "original" = the
+    monitor's own target) and each task root's plain test rows copied from the source root (m45.test needs them)."""
+    m45 = use_tasks(batch)
+    wfile = RUNS / batch / "writers.json"
+    designs = {t: DESIGN for t in tasks.split(",")}
+    if wfile.exists():
+        assert json.loads(wfile.read_text())["design"] == designs, "this batch was prepared with another design"
+    wfile.parent.mkdir(parents=True, exist_ok=True)
+    wfile.write_text(json.dumps({"writers": writers.split(","), "chains": int(chains), "design": designs, "probe": "original"}))
+    for t in tasks.split(","):
+        src = SOURCE / f"m49_{t}" / "test" / "plain.jsonl"
+        assert src.exists(), f"prepare_source({t}) first"
+        dest = m45.m36.root_of(t, batch) / "test" / "plain.jsonl"
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if not dest.exists():
+            dest.write_bytes(src.read_bytes())
+
+
+def step_search(batch: str, task: str, writers: str, chains: int, rounds: int) -> None:
+    use_tasks(batch).search(task, batch, writers, rounds=rounds, chains=chains)
+
+
+def step_freeze(batch: str, task: str, rounds: int) -> None:
+    use_tasks(batch).freeze(task, batch, rounds, ",".join(map(str, EFFORT_POINTS)))
+
+
+def step_test(batch: str, task: str, writers: str, rounds: int, n_test: int = 0) -> None:
+    use_tasks(batch).test(task, batch, writers, rounds, n_test)
+
+
+STEPS = {"search": step_search, "freeze": step_freeze, "test": step_test}
+
+
+@app.local_entrypoint()
+def m49_local(step: str, batch: str, task: str, writers: str = "", chains: int = 1, rounds: int = 3, n_test: int = 0):
+    """One step run from this machine (the driver here, GPUs on Modal): for smoke runs. Long runs use m49_launch."""
+    from dotenv import load_dotenv
+
+    load_dotenv(".env")
+    kw = {"search": dict(writers=writers, chains=chains, rounds=rounds), "freeze": dict(rounds=rounds),
+          "test": dict(writers=writers, rounds=rounds, n_test=n_test)}[step]
+    STEPS[step](batch, task, **kw)
+
+
+def chain_file(batch: str, name: str, steps: list) -> Path:
+    path = OUT / "batches" / batch / "chains" / f"{name}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({f"m49_{batch}_{name}": steps}))
+    return path
+
+
+def volume_inputs(batch: str) -> list[str]:
+    """What a detached driver reads: m36's inputs, m48's v2 problems, probes, reports and calibration rows, m49's
+    source roots and the batch folder."""
+    from probe_evasion.missions import m36_attacker_capability_sweep as m36
+
+    out = list(m36.VOLUME_INPUTS)
+    for t in TASKS:
+        out += [str(m48.problems_path(t)), str(m48.data_path(t, "calibration")), str(m48.task_dir(t) / "probes.json"),
+                str(m48.task_dir(t) / "probe_report.json")]
+    return out + [str(SOURCE), str(RUNS / batch)]
+
+
+def volume_put(batch: str) -> None:
+    import subprocess
+    import tempfile
+
+    with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
+        f.write(STATE_VOLUME)
+    subprocess.run(["uv", "run", "modal", "volume", "put", "--force", STATE_VOLUME, f.name, VOLUME_MARKER], check=True)
+    for path in volume_inputs(batch):
+        subprocess.run(["uv", "run", "modal", "volume", "put", "--force", STATE_VOLUME, path, path], check=True)
+
+
+def _openrouter_secret():
+    from probe_evasion.missions import m22_score_only_iterations as m22
+
+    return m22.openrouter_key
+
+
+@app.function(image=remote_search.driver_image, volumes={"/work": STATE}, secrets=[remote_search.anthropic_key, _openrouter_secret()],
+              timeout=14 * 60 * 60)
+def m49_remote(name: str, steps: list[list]) -> str:
+    """m36's step runner on m49's volume; the volume's marker file is asserted first (m45's lesson)."""
+    from probe_evasion.missions import m36_attacker_capability_sweep as m36
+
+    marker = m36.WORK / VOLUME_MARKER
+    assert m36.WORK == Path("/work") and marker.exists() and marker.read_text().strip() == STATE_VOLUME, \
+        f"mounted volume is not m49's: {marker.read_text() if marker.exists() else 'no marker'}"
+    m36.STATE = STATE
+    return m36.m36_remote.local(name, steps)
+
+
+@app.local_entrypoint()
+def m49_launch(chains_file: str):
+    from dotenv import load_dotenv
+
+    load_dotenv(".env")
+    (name, steps), = json.loads(Path(chains_file).read_text()).items()
+    print("finished", m49_remote.remote(name, steps), flush=True)
+
+
 if __name__ == "__main__":
     cmd, *args = sys.argv[1:]
     if cmd == "prompts":

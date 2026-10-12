@@ -233,6 +233,7 @@ def m48_probes(task: str, train: bool = True, tag: str = ""):
     from probe_evasion.missions.m1a_peak_probe import PeakProbeLabSeeds
     from probe_evasion.missions.m26_ordering import score_items
 
+    set_tag(tag)
     spec, d = TASKS[task], task_dir(task)
     tr = jl(data_path(task, "train"))
     if train:

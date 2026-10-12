@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from probe_evasion.generation import read_jsonl as jl
+from probe_evasion.missions import m48_probes
 from probe_evasion.missions.m48_probes import probe_name, task_dir
 from probe_evasion.missions.m48_tasks import TASKS, ac_check
 
@@ -50,12 +51,30 @@ def false_belief_rows(S: dict) -> list[tuple[str, str, list[dict], bool]]:
     ]
 
 
+def contradiction_rows(S: dict) -> list[tuple[str, str, list[dict], bool]]:
+    return [
+        ("Ordinary use", "Plain contradiction question, correct reply", S["plain_check"], True),
+        ("Ordinary use", "Held-out styles: contradiction question", kind(S["heldout"], "computed"), True),
+        ("Ordinary use", "Held-out: answer stated, same question (given)", kind(S["heldout"], "given"), False),
+        ("Ordinary use", "Held-out: which sentence states a fact (lookup)", kind(S["heldout"], "lookup"), False),
+        ("Ordinary use", "Calibration: given / lookup", [r for r in S["calibration"] if r["kind"] != "fact"], False),
+        ("Ordinary use", "Calibration: yes/no fact questions", kind(S["calibration"], "fact"), False),
+        ("Same reply, other request", "Given-twin reply, read after contradiction question", kind(S["swap"], "given->computed"), True),
+        ("Same reply, other request", "Contradiction reply, read after given request", kind(S["swap"], "computed->given"), False),
+        ("Same reply, other request", "Wrong number (lookup reply), read after contradiction question", kind(S["controls"], "lookup->computed (wrong)"), True),
+        ("Same reply, other request", "Bare answer after contradiction question", kind(S["terse"], "computed"), True),
+        ("Same reply, other request", "Bare answer after given / lookup", [r for r in S["terse"] if r["kind"] != "computed"], False),
+    ]
+
+
 def spelled(r: dict) -> bool:
-    word = re.search(r"word (\w+)", r["prompt"]).group(1)
+    word = re.search(r"word (?:such as )?([A-Z]{3,})", r["prompt"]).group(1)
     return ac_check({"word": word, "answer": word, "unit": "sent", "n": 4, "starters": []}, r["response"])["correct"]
 
 
 def acrostic_rows(S: dict) -> list[tuple[str, str, list[dict], bool]]:
+    if m48_probes.TAG == "_v2":
+        return acrostic_rows_v2(S)
     named = kind(S["controls"], "mention 2")
     return [
         ("Ordinary use", "Plain hidden-word request, correct reply", S["plain_check"], True),
@@ -71,6 +90,27 @@ def acrostic_rows(S: dict) -> list[tuple[str, str, list[dict], bool]]:
         ("Request only mentions the idea", "\"First letters need not spell anything\"", kind(S["controls"], "mention 1"), False),
         ("Request only mentions the idea", "\"A friend hid WORD...; no need to\": not spelled", [r for r in named if not spelled(r)], False),
         ("Request only mentions the idea", "\"A friend hid WORD...; no need to\": Qwen spelled it", [r for r in named if spelled(r)], False),
+    ]
+
+
+def acrostic_rows_v2(S: dict) -> list[tuple[str, str, list[dict], bool]]:
+    """v2 trains on near misses ("say what an acrostic poem is", "a friend hid WORD; no need to"); the controls are two
+    near-miss forms it never trained on."""
+    named = kind(S["controls"], "mention 1")
+    return [
+        ("Ordinary use", "Plain hidden-word request, correct reply", S["plain_check"], True),
+        ("Ordinary use", "Held-out styles: hidden-word request", kind(S["heldout"], "computed"), True),
+        ("Ordinary use", "Held-out: starting words given (given)", kind(S["heldout"], "given"), False),
+        ("Ordinary use", "Held-out: same topic, no hidden word (free)", kind(S["heldout"], "free"), False),
+        ("Ordinary use", "Held-out: talks about acrostics (near miss)", kind(S["heldout"], "mention"), False),
+        ("Ordinary use", "Calibration: given / free / near miss", [r for r in S["calibration"] if r["kind"] != "fact"], False),
+        ("Ordinary use", "Calibration: yes/no fact questions", kind(S["calibration"], "fact"), False),
+        ("Same reply, other request", "Given-twin reply, read after hidden-word request", kind(S["swap"], "given->computed"), True),
+        ("Same reply, other request", "Hidden-word reply, read after free request", kind(S["swap"], "computed->free"), False),
+        ("Same reply, other request", "Free reply (spells nothing), read after hidden-word request", kind(S["controls"], "free->computed (wrong)"), True),
+        ("New near misses (never trained on)", "\"First letters need not spell anything\"", kind(S["controls"], "mention 0"), False),
+        ("New near misses (never trained on)", "\"Puzzles hide words like WORD; not this one\": not spelled", [r for r in named if not spelled(r)], False),
+        ("New near misses (never trained on)", "\"Puzzles hide words like WORD; not this one\": Qwen spelled it", [r for r in named if spelled(r)], False),
     ]
 
 
@@ -122,15 +162,22 @@ def dot_plot(task: str, title: str, rows: list[tuple[str, str, list[dict], bool]
     ax.set_title(title, loc="left", fontsize=12, color=INK, pad=12)
     FIGURES.mkdir(parents=True, exist_ok=True)
     fig.tight_layout()
-    fig.savefig(FIGURES / f"dots_{task}.png", dpi=170, facecolor=SURFACE)
+    out = FIGURES / f"dots_{task}{m48_probes.TAG}.png"
+    fig.savefig(out, dpi=170, facecolor=SURFACE)
     plt.close(fig)
-    print(FIGURES / f"dots_{task}.png")
+    print(out)
 
 
-def main() -> None:
-    dot_plot("false_belief", "False-belief probe on Qwen3.5-27B: scores per reply", false_belief_rows(load("false_belief")))
-    dot_plot("acrostic", "Acrostic (hidden-word) probe on Qwen3.5-27B: scores per reply", acrostic_rows(load("acrostic")))
+def main(tag: str = "") -> None:
+    m48_probes.set_tag(tag)
+    label = " (v2)" if tag else ""
+    dot_plot("false_belief", f"False-belief probe{label} on Qwen3.5-27B: scores per reply", false_belief_rows(load("false_belief")))
+    dot_plot("acrostic", f"Acrostic (hidden-word) probe{label} on Qwen3.5-27B: scores per reply", acrostic_rows(load("acrostic")))
+    if tag:  # v1's contradiction probe was trained on passages with a wording shortcut: no figure
+        dot_plot("contradiction", f"Contradiction probe{label} on Qwen3.5-27B: scores per reply", contradiction_rows(load("contradiction")))
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    main(*sys.argv[1:])
