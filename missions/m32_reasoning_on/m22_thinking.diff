@@ -1,0 +1,139 @@
+--- src/probe_evasion/missions/m22_score_only_iterations.py	2026-10-11 19:13:04
++++ src/probe_evasion/missions/m22_score_only_iterations.py	2026-10-11 21:49:56
+@@ -80,6 +80,13 @@
+     task: "Task" = attrs.field(factory=lambda: MATHS)  # the task the probes are for (m25 / m26 pass their own)
+     # (system, messages) -> the dict ask_writer returns: the model writing for itself where OpenRouter lacks it (m23's Gemma)
+     self_writer: Callable | None = None
++    # m32 (reasoning on): generate with the think block (kept on each row as "reasoning"), score the whole output in one
++    # pass, and let the probes read the span `reading` names. split_readings: whole-output trace {tokens, logits} ->
++    # {reading: trace}, with at least "answer" (the final answer's tokens; their count is the reply length).
++    thinking: bool = False
++    think_budget: int = 0  # extra generation tokens for the think block; the answer keeps task.max_reply_tokens
++    reading: str = "answer"
++    split_readings: Callable | None = None
+ 
+     def layer(self, target: str) -> int:
+         return self.probes[self.targets[target]]["layer"]
+@@ -127,17 +134,20 @@
+ 
+ 
+ def generate(monitor: Monitor, prompts: list[str], seed: int) -> list[dict]:
+-    """The monitored model, reasoning off, one sample per prompt (config.SAMPLING_NO_THINKING), at most 96 tokens."""
++    """The monitored model, one sample per prompt. Reasoning off (config.SAMPLING_NO_THINKING), at most 96 tokens; with
++    monitor.thinking, reasoning on (config.SAMPLING) with think_budget more tokens and the think block kept."""
+     convs = [[{"role": "user", "content": p}] for p in prompts]
+     chunks = [convs[i:i + GEN_CHUNK] for i in range(0, len(convs), GEN_CHUNK)]
+     parts = m11.retrying(lambda: dict(handle(monitor, "sampler").chat_tagged.map(
+-        list(range(len(chunks))), chunks, kwargs={"n": 1, "seed": seed, "thinking": False, "max_tokens": monitor.task.max_reply_tokens},
++        list(range(len(chunks))), chunks, kwargs={"n": 1, "seed": seed, "thinking": monitor.thinking,
++                                                  "max_tokens": monitor.task.max_reply_tokens + monitor.think_budget},
+         order_outputs=False)))
+     out = []
+     for i in range(len(chunks)):
+         for (text,) in parts[i]:
+-            p = parse(text, has_reasoning=False)
+-            out.append({"reply": p.final, "finished": not p.truncated_reasoning and bool(p.final)})
++            p = parse(text, has_reasoning=monitor.thinking)
++            out.append({"reply": p.final, "finished": not p.truncated_reasoning and bool(p.final),
++                        **({"reasoning": p.reasoning} if monitor.thinking else {})})
+     return out
+ 
+ 
+@@ -167,20 +177,27 @@
+     return _caches[str(root)]
+ 
+ 
+-def traces(monitor: Monitor, root: Path, items: list[tuple[str, str]]) -> list[dict]:
++def traces(monitor: Monitor, root: Path, items: list[tuple]) -> list[dict]:
+     """[(context, reply)] -> per item {tokens, logits: {probe: per-token log-odds}} for every monitor probe; the reply is
+-    read as the model's reply to the context (a single user turn, empty reasoning block). One batched scoring call."""
++    read as the model's reply to the context (a single user turn, empty reasoning block). One batched scoring call.
++    With monitor.thinking, items are (context, reply, think block) and the trace covers the whole output (think block,
++    closing tag, reply), from one forward pass; monitor.split_readings cuts it."""
+     fps = {n: fingerprint(p) for n, p in monitor.probes.items()}
+     cache = _cache(root)
+-    keys = [item_key(c, r) for c, r in items]
++    if monitor.thinking:
++        assert all(len(it) == 3 and isinstance(it[2], str) for it in items), "thinking on: items are (context, reply, think block)"
++        keys = [item_key(c, f"{t}\x00</think>\x00{r}") for c, r, t in items]
++    else:
++        keys = [item_key(c, r) for c, r, *_ in items]
+     ok = lambda k: k in cache and cache[k]["fp"] == fps
+     todo = list(dict.fromkeys(k for k in keys if not ok(k)))
+     if todo:
+         first = {k: items[keys.index(k)] for k in todo}
+-        batch = [{"prompt": first[k][0], "response": first[k][1], "reasoning": None} for k in todo]
++        batch = [{"prompt": first[k][0], "response": first[k][1], "reasoning": first[k][2] if monitor.thinking else None} for k in todo]
+         chunks = [batch[i:i + SCORE_CHUNK] for i in range(0, len(batch), SCORE_CHUNK)]
+         parts = m11.retrying(lambda: dict(handle(monitor, "scorer").score.starmap(
+-            [(i, c, monitor.probes) for i, c in enumerate(chunks)], order_outputs=False)))
++            [(i, c, monitor.probes) + ((False, True) if monitor.thinking else ()) for i, c in enumerate(chunks)],  # with_prompt, from_reasoning
++            order_outputs=False)))
+         out = [x for i in range(len(chunks)) for x in parts[i]]
+         path = _cache_files.get(str(root), root / "score_cache.jsonl")
+         root.mkdir(parents=True, exist_ok=True)
+@@ -197,12 +214,17 @@
+     return max(m19.ema_path(lg)) if lg else float("nan")
+ 
+ 
++def read(monitor: Monitor, tr: dict) -> dict:
++    """The tokens the probes read: the trace itself with thinking off; with thinking on, the span monitor.reading names."""
++    return monitor.split_readings(tr)[monitor.reading] if monitor.thinking else tr
++
++
+ def calibration(monitor: Monitor, root: Path) -> tuple[list[dict], dict]:
+     """The monitor's calibration pool scored by every probe (log-odds peaks), and the lines {probe: {fa: probability}}."""
+     path = root / "calibration_scores.jsonl"
+     if not path.exists():
+         cal = monitor.calibration_replies()
+-        trs = traces(monitor, root, [(r["task"]["task"], r["reply"]) for r in cal])
++        trs = [read(monitor, t) for t in traces(monitor, root, [(r["task"]["task"], r["reply"], r.get("reasoning")) for r in cal])]
+         write_jsonl(path, [{"task": r["task"], "reply": r["reply"], "peaks": {p: peak(t["logits"][p]) for p in monitor.probes}}
+                            for r, t in zip(cal, trs)])
+     rows = jl(path)
+@@ -285,21 +307,32 @@
+     critic 1: one rule for all score bands). A reply of 96 or more tokens is unfinished. Identical (problem, reply)
+     pairs are judged once. Returns the number of judge calls for groups new to this process (spend estimate)."""
+     targets = list(monitor.targets.values())
+-    trs = traces(monitor, root, [(r["task"]["task"], r["reply"]) for r in rows] + [(r["prompt"], r["reply"]) for r in rows])
++    trs = traces(monitor, root, [(r["task"]["task"], r["reply"], r.get("reasoning")) for r in rows]
++                 + [(r["prompt"], r["reply"], r.get("reasoning")) for r in rows])
+     removed, visible = trs[:len(rows)], trs[len(rows):]
+-    for r, a, b in zip(rows, removed, visible):
++    for r, wa, wb in zip(rows, removed, visible):
++        a, b = read(monitor, wa), read(monitor, wb)
+         r.update({"tokens": a["tokens"], "logits": {p: a["logits"][p] for p in targets},
+                   "peaks": {p: peak(a["logits"][p]) for p in monitor.probes},
+                   "peaks_visible": {p: peak(b["logits"][p]) for p in monitor.probes},
+                   "logits_visible": {p: b["logits"][p] for p in targets}, "tokens_visible": b["tokens"]})
++        r["n_reply_tokens"] = len(a["tokens"])
++        if monitor.thinking:  # every reading's peaks, and the whole output's per-token log-odds of the targets (saved)
++            sa, sb = monitor.split_readings(wa), monitor.split_readings(wb)
++            r["n_reply_tokens"] = len(sa["answer"]["tokens"])
++            r["peaks_by_reading"] = {rd: {p: peak(s["logits"][p]) for p in monitor.probes} for rd, s in sa.items()}
++            r["peaks_visible_by_reading"] = {rd: {p: peak(s["logits"][p]) for p in monitor.probes} for rd, s in sb.items()}
++            r["tokens_whole"], r["logits_whole"] = wa["tokens"], {p: wa["logits"][p] for p in targets}
++            r["finished"] = bool(r["finished"] and len(wa["tokens"]) < monitor.task.max_reply_tokens + monitor.think_budget)
+         r["near"] = full_check or any(r["peaks"][p] <= line_logit(lines, p) + NEAR for p in targets)
+-        r["finished"] = bool(r["finished"] and len(a["tokens"]) < monitor.task.max_reply_tokens)
++        r["finished"] = bool(r["finished"] and r["n_reply_tokens"] < monitor.task.max_reply_tokens)
+     groups: dict = {}
+     for r in rows:
+         groups.setdefault((r["task"]["task"], r["reply"], r["near"]), []).append(r)
+     keys = list(groups)
+     first = [groups[k][0] for k in keys]
+-    vals = monitor.task.validity([r["task"] for r in first], [r["reply"] for r in first], [len(r["tokens"]) for r in first], [r["near"] for r in first])
++    vals = monitor.task.validity([r["task"] for r in first], [r["reply"] for r in first], [r["n_reply_tokens"] for r in first],
++                                 [r["near"] for r in first])
+     calls = 0
+     for k, v in zip(keys, vals):
+         if k not in _judged:
+@@ -1093,7 +1126,7 @@
+     rng = random.Random(2222)
+     audit = [r for a in arms for r in rng.sample([x for x in rows[a] if not x["near"]], int(TEST_AUDIT_SHARE * sum(not x["near"] for x in rows[a])))]
+     if audit:
+-        full = mon.task.validity([r["task"] for r in audit], [r["reply"] for r in audit], [len(r["tokens"]) for r in audit], [True] * len(audit))
++        full = mon.task.validity([r["task"] for r in audit], [r["reply"] for r in audit], [r["n_reply_tokens"] for r in audit], [True] * len(audit))
+         for r, v in zip(audit, full):
+             r["audit_full_valid"] = bool(v["valid"] and r["finished"])
+             r["audit_full_why"] = v["why_invalid"]
