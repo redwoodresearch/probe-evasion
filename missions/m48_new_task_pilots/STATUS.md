@@ -4,7 +4,7 @@
 (computation) or ordering? Candidates from the 2026-10-12 deck: false-belief stories, acrostic hiding, spotting a
 contradiction (pilot first), plus a 50-position chess accuracy check. Nabil asked to run them in parallel (2026-10-12).
 
-**Phase:** mini probes done for false belief and acrostic (with request-reading controls); contradiction's generator has a wording shortcut and is on hold for a redesign (awaiting Nabil).
+**Phase:** v2 (Nabil, 12 Oct: fix all three, then wire into the on/off sweep). v2 pilots done; v2 builds and probes running; sweep problem sets written; sweep wiring (new mission) next. v1 results below are kept for the record; v1 outputs are never overwritten (v2 paths end in `_v2`).
 
 ## Entry points
 
@@ -183,3 +183,48 @@ only.
 **False belief, milder version of the same issue:** "watches" is the only cue for what the person saw, so "the last
 'watches' sentence's place, else the first" is right by construction. Proposed: vary how seeing is expressed and add
 bystanders who watch when the person does not.
+
+## v2 (2026-10-12, after Nabil's go-ahead): fixed generators, re-pilots, builds, problem sets
+
+Code: v2 generators replace v1 in `m48_tasks.py` (v1 is commit 109e40a); builds take `--tag _v2` (paths
+`probe_<task>_v2/`, `data/concepts/m48_<task>_v2_*`, probe names `m48fa_v2@L48@s0` etc.); `CHOICES` and
+`DROPPED_STYLES` are kept per version. Shortcut audit for contradiction: `m48_shortcut_audit.py`.
+
+**Changes.**
+- False belief: the person learns of a move by watching it, having it done "right in front of" them, being told
+  about it, helping, or being handed the object; misses a move by being away or by being present but asleep /
+  facing the wall / reading / looking out of the window; a bystander sometimes watches a move the person misses.
+  A first v2 pilot found three ambiguous phrasings ("while X is in the room" 23% correct: being there is not seeing;
+  "X hears Y say 'I'm putting it in the jar'" 32%; "Y tells X that it is now in the jar", which states no move:
+  reality questions 67%); they were replaced and the task re-piloted (`pilot/false_belief_v2b_*`).
+- Acrostic: every request names an audience (30), items are unique by (variant, topic, audience), so no two
+  free-twin requests repeat; a new near-miss twin ("..., and say in passing what an acrostic poem is" / "A friend
+  once hid the word X in the first letters of a poem; you do not need to do that"); replies that spell the word anyway
+  are not clean; the Haiku audit asks near misses only whether they hide a word themselves. Duplicate (request,
+  reply) rows are dropped across splits in `clean`. Controls use two near-miss forms v2 never trains on.
+- Contradiction: every restatement template is used for consistent and contradicting sentences alike; the value it
+  carries, compared with the earlier fact, decides (same city / owner / colour; a busy day that is or is not the
+  closing day; upstairs vs ground floor against one or two storeys). Audit on 4,000 generated passages: a classifier
+  on single sentences scores 59-60% (always guessing "consistent" scores 62.5%), and the per-passage rule built on it
+  48-49% (picking one of the two restatements: 50%); v1's wording rule scored 86-89%. A string-matching rule ("the first
+  restatement whose value is new") scores 62%: a crude form of the comparison itself.
+
+**v2 pilot accuracy** (computed request, n = 200 per variant, both seeds):
+
+| task | variant | accuracy | strongest shortcut |
+|---|---|---|---|
+| false belief (second v2 pilot) | 1 / 2 / 3 moves | 76.5% / **87.5%** / 82.5% | 66% / 53% / 47% |
+| acrostic | 3 / **4** sentences | 97.5% / 95.5% | - |
+| contradiction | 6 / **8** sentences | 97.5% / 94% | 41% / 41% |
+
+Contradiction accuracy did not fall when the wording shortcut was removed: Qwen compares the facts. False belief
+fell from 97% to 87.5% (2 moves): part of v1's accuracy came from the "watches" cue. Twins: 95-100% everywhere.
+
+**Decisions (rules 1-3):** false belief 2 moves (train styles one sentence, answer only, email, formal report, answer
+plus tip; held-out dialogue, FAQ; casual text 13% and headline 33% fail); acrostic 4 sentences, all styles;
+contradiction 8 sentences, casual text and headline fail in the pilot, answer plus tip fails in the build (lookup 9/25),
+held-out dialogue, FAQ.
+
+**Sweep problem sets** (`data/concepts/m48_<task>_v2_sweep_problems.jsonl`, `m48_probes.sweep_problems`): 40 eval + 100
+test per task in the build's variant, none sharing an item with the v2 build or pilots; the request is the plain one.
+False belief answer types: 46 first / 52 middle / 42 last; contradiction: 30 "none" of 140.

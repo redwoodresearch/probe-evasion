@@ -23,16 +23,27 @@ from probe_evasion.missions.m48_tasks import TASKS, TaskSpec, request
 from probe_evasion.modal_app import app
 
 # Filled from the pilot (decision rules in STATUS.md): the variant(s) and the styles the build uses.
-CHOICES = {  # pilot decisions, 2026-10-12 (STATUS.md, "Pilot results")
-    "false_belief": {"variants": ("moves3",), "train_styles": ("one sentence", "answer only", "email", "formal report", "answer plus tip"),
-                     "heldout_styles": ("dialogue", "faq")},
-    "acrostic": {"variants": ("sent4",), "train_styles": None, "heldout_styles": None},
-    "contradiction": {"variants": ("n8",), "train_styles": None, "heldout_styles": ("dialogue", "faq")},
-}  # None = every style of that split
+CHOICES = {  # per build version: the variant(s) and styles the build uses (pilot decisions, STATUS.md); None = every style
+    "": {  # v1, 2026-10-12
+        "false_belief": {"variants": ("moves3",), "train_styles": ("one sentence", "answer only", "email", "formal report", "answer plus tip"),
+                         "heldout_styles": ("dialogue", "faq")},
+        "acrostic": {"variants": ("sent4",), "train_styles": None, "heldout_styles": None},
+        "contradiction": {"variants": ("n8",), "train_styles": None, "heldout_styles": ("dialogue", "faq")},
+    },
+    "_v2": {  # v2 pilots, 2026-10-12 (false belief filled after its second v2 pilot)
+        "false_belief": {"variants": ("moves2",),  # second v2 pilot: 2 moves 87.5%, 3 moves 82.5%; casual text 13%, headline 33%
+                         "train_styles": ("one sentence", "answer only", "email", "formal report", "answer plus tip"),
+                         "heldout_styles": ("dialogue", "faq")},
+        "acrostic": {"variants": ("sent4",), "train_styles": None, "heldout_styles": None},
+        "contradiction": {"variants": ("n8",), "train_styles": ("one sentence", "answer only", "email", "formal report", "answer plus tip"),
+                          "heldout_styles": ("dialogue", "faq")},
+    },
+}
 # Styles dropped after the build by decision rule 3 applied to the build's own yields (the pilot measured styles on
-# another variant): contradiction's casual text (computed 22/60 clean: names both sentences of the pair) and answer
+# another variant): v1 contradiction's casual text (computed 22/60 clean: names both sentences of the pair) and answer
 # plus tip (lookup 8/25: tips quote passage content). build_rows keeps them, so the seeded rebuild still matches.
-DROPPED_STYLES = {"false_belief": set(), "acrostic": set(), "contradiction": {"casual text", "answer plus tip"}}
+DROPPED_STYLES = {"": {"false_belief": set(), "acrostic": set(), "contradiction": {"casual text", "answer plus tip"}},
+                  "_v2": {"false_belief": set(), "acrostic": set(), "contradiction": {"answer plus tip"}}}  # v2 lookup 9/25 (tips quote the passage)
 PER_STYLE = {"train": {"computed": 60, "negative": 25}, "heldout": {"computed": 40, "negative": 15}}
 CAL_PER_KIND, CAL_FACTS, PLAIN_CHECK = 120, 150, 200
 BUILD_BUDGET, CAL_BUDGET = 300, 96
@@ -67,7 +78,7 @@ def probe_name(task: str, seed: int = 0) -> str:
 
 
 def styles(task: TaskSpec, split: str) -> list[str]:
-    chosen = CHOICES[task.name][f"{split}_styles"]
+    chosen = CHOICES[TAG][task.name][f"{split}_styles"]
     return list(chosen if chosen is not None else task.styles[split])
 
 
@@ -77,7 +88,7 @@ def build_rows(task: TaskSpec) -> list[dict]:
     from probe_evasion.missions.m43_hidden_result_task import fact_problem, fact_questions
 
     rng, used, tries = random.Random(BUILD_SEED[task.name] + (100 if TAG else 0)), set(), 0
-    variants = CHOICES[task.name]["variants"]
+    variants = CHOICES[TAG][task.name]["variants"]
 
     def item() -> dict:
         nonlocal tries
@@ -148,7 +159,7 @@ def clean(task_name: str) -> dict:
     for split in ("train", "heldout", "calibration"):  # an identical (request, reply) is kept once, in its first split
         kept = []
         for r in rows:
-            if r["split"] == split and r["clean"] and r["style"] not in DROPPED_STYLES[task_name] and (r["prompt"], r["response"]) not in seen:
+            if r["split"] == split and r["clean"] and r["style"] not in DROPPED_STYLES[TAG][task_name] and (r["prompt"], r["response"]) not in seen:
                 seen.add((r["prompt"], r["response"]))
                 kept.append(r)
         if split == "train":
@@ -250,6 +261,54 @@ def m48_probes(task: str, train: bool = True, tag: str = ""):
         print(f"{task} scored {name}: {len(out)}", flush=True)
 
 
+# ---------------------------------------------------------------- the evasion sweep's problem sets
+
+N_EVAL, N_TEST = 40, 100  # m22 / m36 / m45: the writer sees replies to the eval problems; the test problems are never shown
+SWEEP_SEED = {"false_belief": 4831, "acrostic": 4832, "contradiction": 4833}
+
+
+def item_key(task: str, p: dict) -> str:
+    """The generator's item key, from any of the item's problems."""
+    return {"false_belief": lambda: p["story"], "contradiction": lambda: p["passage"],
+            "acrostic": lambda: f"{p['variant']}|{p['topic']}|{p['audience']}"}[task]()
+
+
+def used_keys(task: TaskSpec) -> set:
+    """Every item of this version's build and pilots (pilot files whose name starts with the task and this tag)."""
+    from probe_evasion.missions.m48_new_task_pilots import PILOT
+
+    keys = {item_key(task.name, r["problem"]) for r in build_rows(task) if r["kind"] != "fact"}
+    for f in PILOT.glob(f"{task.name}{TAG}*_raw.jsonl"):
+        keys |= {item_key(task.name, r["problem"]) for r in jl(f)}
+    return keys
+
+
+def problems_path(task: str) -> Path:
+    return data_path(task, "sweep_problems")
+
+
+def sweep_problems(task_name: str) -> dict[str, list[dict]]:
+    """40 eval and 100 test problems in the build's variant, none sharing an item with this version's build or
+    pilots; the request is the plain one (default style). Rows: the computed problem + id, split, task (the full
+    request), result (the answer as text). Written once, then read."""
+    path = problems_path(task_name)
+    if not path.exists():
+        task = TASKS[task_name]
+        used, rng, rows = used_keys(task), random.Random(SWEEP_SEED[task_name] + (100 if TAG else 0)), []
+        variants = CHOICES[TAG][task_name]["variants"]
+        while len(rows) < N_EVAL + N_TEST:
+            it = task.make_item(rng, rng.choice(variants))
+            if it["key"] in used:
+                continue
+            used.add(it["key"])
+            i, prob = len(rows), it["computed"]
+            rows.append(prob | {"id": f"E{i:02d}" if i < N_EVAL else f"X{i - N_EVAL:03d}", "split": "eval" if i < N_EVAL else "test",
+                                "task": request(task, prob, task.default_style), "result": str(prob["answer"]), "item": it})
+        write_jsonl(path, rows)
+    rows = jl(path)
+    return {"eval": [r for r in rows if r["split"] == "eval"], "test": [r for r in rows if r["split"] == "test"]}
+
+
 # ---------------------------------------------------------------- controls: does the probe read the request's words?
 
 MENTION_REQUESTS = {  # acrostic controls: requests that bring up first letters / hidden words without imposing them
@@ -341,7 +400,7 @@ def report(task_name: str) -> dict:
         r["valid"] = bool(spec.check(r["problem"], r["response"])["correct"])
     probes = json.loads((d / "probes.json").read_text())
     med = lambda xs: round(float(np.median(xs)), 2) if xs else None
-    rep = {"task": task_name, "choices": CHOICES[task_name], "plain_valid": f"{sum(r['valid'] for r in plain)}/{len(plain)}",
+    rep = {"task": task_name, "choices": CHOICES[TAG][task_name], "plain_valid": f"{sum(r['valid'] for r in plain)}/{len(plain)}",
            "text_only_auroc": text_only_auroc(S["train"], S["heldout"], spec.neg_kinds), "probes": {}}
     for n, pr in probes.items():
         pk = lambda r: r["peaks"][n]
@@ -377,5 +436,9 @@ def report(task_name: str) -> dict:
 if __name__ == "__main__":
     cmd, task_arg, *tag_arg = sys.argv[1:]
     set_tag(tag_arg[0] if tag_arg else "")
+    if cmd == "problems":
+        sets = sweep_problems(task_arg)
+        print({k: len(v) for k, v in sets.items()}, sets["eval"][0]["task"][:300])
+        raise SystemExit
     result = {"clean": clean, "report": report}[cmd](task_arg)
     print(json.dumps({k: v for k, v in result.items() if k not in ("top_calibration", "lowest_plain", "yields")}, indent=1))

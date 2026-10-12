@@ -68,10 +68,12 @@ FB_VARIANTS = ("moves1", "moves2", "moves3")
 # sentence, else the first place" was right by construction. Now the person learns of a move in several ways, misses
 # one either by being away or by being present but not looking, and a bystander sometimes watches a move the person
 # misses, so no single word marks the answer. Templates: {h} the person, {m} the mover, {b} a bystander.
+# v2 pilot (12 Oct): "while X is in the room" (23% correct: being there is not seeing), "X hears Y say 'I'm putting it
+# in the jar'" (32%) and "Y tells X that it is now in the jar" (no move stated; reality questions 67%) were ambiguous and
+# are replaced by phrasings that state the move and that the person knows of it.
 SEEN = ("{h} watches {m} move the {o} to the {d}.",
-        "While {h} is in the room, {m} moves the {o} to the {d}.",
-        "{h} hears {m} say, \"I'm putting the {o} in the {d}.\"",
-        "{m} tells {h} that the {o} {be} now in the {d}.",
+        "{m} moves the {o} to the {d} right in front of {h}.",
+        "{m} moves the {o} to the {d} and tells {h} about it.",
         "{h} helps {m} move the {o} to the {d}.",
         "{m} hands the {o} to {h}, who puts {them} in the {d}.")
 UNSEEN_PRESENT = ("While {h} is asleep on the sofa, {m} moves the {o} to the {d}.",
@@ -83,7 +85,7 @@ UNSEEN_AWAY = ("{m} moves the {o} to the {d}.",
                "While {h} is out, {m} moves the {o} to the {d}.")
 BYSTANDER = ("{b} watches {m} move the {o} to the {d}.",
              "{m} moves the {o} to the {d}, and {b} sees it happen.",
-             "{m} tells {b} that the {o} {be} now in the {d}.")
+             "{m} moves the {o} to the {d} and tells {b} about it.")
 P_MISS_PRESENT, P_BYSTANDER = 0.6, 0.5
 
 
@@ -152,7 +154,7 @@ def fb_check(p: dict, reply: str) -> dict:
             "violations": sorted(set(named) - {p["answer"]}) + sorted(set(movers))}
 
 
-SEEING_WORDS = re.compile(r"\b(watch|watches|sees|see|hears|tells|in the room)\b", re.I)
+SEEING_WORDS = re.compile(r"\b(watch|watches|sees|see|tells|in front of)\b", re.I)
 
 
 def fb_shortcuts(p: dict) -> dict:
