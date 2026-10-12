@@ -13,7 +13,7 @@
   itself) writes one instruction for the monitored model and revises it over 16 rounds of feedback. A reply counts only
   if it is correct. [m22, m23, m25, m26]
 - **Signs of life.** A cheap, black-box search that sees the monitored model's replies (and in most arms per-token
-  probe scores) moves the median correct answer 3–11 log-odds down, roughly a fifth to three fifths of the way from
+  probe scores) moves the median correct answer 3–11 log-odds down, roughly a fifth to two thirds of the way from
   plain answers to the probe's 1% flag line, on every task and model size tried. The movement transfers to probes the
   writer never saw (on maths 27B the never-attacked probe trained on Claude-written answers moves 6.8 log-odds, more
   than the attacked one's 4.9), and it is already present in the model's state at the token before the answer is
@@ -73,7 +73,7 @@ real request that skip the task); to the level of same-style non-task replies.
 | Task, model (Claude writer, final tests) | Median change from plain (log-odds) | Gap to 1% line closed | Correct answers under the line |
 |---|---|---|---|
 | Maths 27B | −0.9 to −7.2 across 27 instructions | up to 55% | 0 of 500 for every instruction [m22] |
-| Maths 9B | −3.8 to −8.3 (best rounds) | up to ~50% | 30 of 500 for one instruction (6 distinct answers), else 0–1 [m23] |
+| Maths 9B | −3.5, −6.4, −8.9 (Claude's three runs) | 26–67% | 30 of 500 for one instruction (6 distinct answers), else 0–1 [m23] |
 | Code 27B | −4.2 (main run) | 25–28% | 0 [m25] |
 | Ordering 27B | −6.5 to −11.2 | 36–63% | 0 [m26] |
 
