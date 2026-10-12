@@ -86,3 +86,7 @@ Secondary: within-style discrimination survives (it's a distribution shift); siz
 - Still running: m28, m30.
 - Next: when m28/m30 land, write v3 (apply the v2 review's edit list), send to a fresh reviewer, iterate. Before Monday:
   a short status page for Nabil with the current story, figures and what's still running.
+- m31 design critic: on m28's 3 vs 3 pinned Opus 4.8 chains, scores clearly help (maths −3.6 vs −0.8; ordering −8.5 vs
+  −6.0), while m22's mostly-5.5 no-scores writer reached −3.3. "Do scores help?" depends on the writer model, so Result
+  3 needs revising. Added a pinned Opus 5.5 pair (no fallback; refusal rate is itself a result) to m31, analysed as
+  writer × scores 2×2.
