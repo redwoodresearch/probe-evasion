@@ -1,0 +1,210 @@
+# m31_more_chains: status
+
+**Question.** With one pinned writer model (Claude Opus 4.8, no fallback), does seeing the probe's scores help the
+prompt-writer push Qwen3.5-27B's own-reply probe scores down on valid answers, and by how much? m28 ran 3 + 3 chains
+per task; m31 adds 5 + 5 per task (maths, ordering) so each arm has 8 chains.
+
+**Phase (handed back 10-11 22:07, unfinished):** four searches running detached in Modal, at about rounds 3-5 of 16
+(Opus 4.8: maths ap-tQTTZ7b1yRgG1riU52Itco, ordering ap-19DIiJ3bYejyGu9tuGBztE; Opus 5.5: maths ap-SKK9HXZMF6N6tgGNgT2EU7,
+ordering ap-C6Ztc091oGiTxyylBMtPPY; about 4-5 min per round, expected to finish around 23:15). m28's maths final test
+was still running (ap-PAatxtx7NOFq4GyIfximKV); its ordering test is on disk.
+
+**Exact next steps for whoever resumes:**
+1. Wait until each `logs/search*.log` prints `finished m31_search_<task>[_opus55]` (or a Traceback: relaunch the same
+   command, which resumes from the saved rounds on the volume).
+2. Pull: `uv run modal run -m probe_evasion.remote_search::pull --paths missions/m31_more_chains/runs/qwen35_27b,missions/m31_more_chains/runs/qwen35_27b_ordering,missions/m31_more_chains/runs_opus55/qwen35_27b,missions/m31_more_chains/runs_opus55/qwen35_27b_ordering`
+3. Freeze locally BEFORE any test: `uv run python -m probe_evasion.missions.m31_more_chains freeze <task> <opus48|opus55>`
+   (4 calls), push the 4 roots again, then launch the 4 tests detached with
+   `-n probe-evasion_nabil-baugher_m31-test[55]-<task>_kill-2026-11-30 -m probe_evasion.missions.m22_score_only_iterations::m22_launch --chains-file missions/m31_more_chains/test_chain_<task>[_opus55].json`.
+4. Pull the tests, check m28's maths `m28_test_rows.jsonl` exists, run `uv run python -m probe_evasion.missions.m31_more_chains report`
+   (writes `analysis.json`, `figures/rounds_all_chains.png`, `figures/scores_by_writer_model.png`), critic 2 (before the
+   verdict), RESULT.md, spend log. Stop only m31's apps by id.
+
+## Entry points
+
+Module `src/probe_evasion/missions/m31_more_chains.py` (imports m22's runner and m28's pinned writer; edits neither).
+Out dir `missions/m31_more_chains/runs/` (roots `qwen35_27b/` maths, `qwen35_27b_ordering/` ordering).
+
+```
+# 1. local, no GPU: copy calibration scores + plain eval replies (m28.prepare_root), start the 20 chain states
+#    (asserting each system prompt equals m28's chain of the same writer), write the chain files
+uv run python -m probe_evasion.missions.m31_more_chains prepare maths   # and ordering
+# 2. push the roots, launch the searches detached (m22's driver and run_search, unchanged)
+uv run modal run -m probe_evasion.remote_search::push --paths missions/m31_more_chains/runs/qwen35_27b
+uv run modal run --detach -n probe-evasion_nabil-baugher_m31-search-maths_kill-2026-11-30 \
+    -m probe_evasion.missions.m22_score_only_iterations::m22_launch --chains-file missions/m31_more_chains/search_chain_maths.json
+# 3. pull, freeze locally (writes <root>/frozen.json before any test reply), push, launch m22's run_frozen_test
+uv run modal run -m probe_evasion.remote_search::pull --paths missions/m31_more_chains/runs/qwen35_27b
+uv run python -m probe_evasion.missions.m31_more_chains freeze maths
+uv run modal run --detach -n probe-evasion_nabil-baugher_m31-test-maths_kill-2026-11-30 \
+    -m probe_evasion.missions.m22_score_only_iterations::m22_launch --chains-file missions/m31_more_chains/test_chain_maths.json
+# 4. analysis + figure (saved files only; reads m28's runs read-only)
+uv run python -m probe_evasion.missions.m31_more_chains report
+```
+
+## Design (written before any m31 chain ran)
+
+Everything about a chain is identical to m28's pinned arms:
+- **Writer:** m28's `pinned_opus` (`claude-opus-4-8` called directly, adaptive thinking, effort high, 1-hour cache, no
+  server-side fallback, asserts the answering model) wrapped in m28's `refusal_checked` (Haiku refusal check; a refusal
+  is a failed attempt). Monitor = `m28.pinned_monitor(task)` (registered via `pinned_maths` / `pinned_ordering`).
+- **Writer prompt:** the task's m22 / m26 writer prompt (`m22.WRITER_SYSTEM` for maths, `m26.WRITER_SYSTEM` for
+  ordering) with the full readout spec. `opus48_pinned` gets m22's scored feedback; `opus48_pinned_noscores` gets m22's
+  no-scores prompt (`m22.noscores_system`) and feedback (random sample of 8 valid + 3 invalid replies, no scores). This
+  is what m28's pinned arms use (m28 STATUS, "Arm 4"). `prepare` asserts every new chain's system prompt and opening
+  message equal m28's chain_0 of the same writer: they do, for both tasks and both writers.
+- **Runner:** m22's `run_search` (all 10 chains of a task in lockstep, 16 rounds 0-15, no zero-shot extras), the same
+  40 eval problems x seeds 1, 2 per round, scored with the instruction removed (headline) and visible, m22's leak rule
+  in the parser (maths answers in digits / words / e / k notation; ordering m26's 2-names-in-order rule), up to 3
+  answered attempts per round.
+- **Validity:** maths m19's strict rule (full check within 3 log-odds of the line, cheaper rule above, as m22 / m28's
+  search); ordering m26's exact-answer rule + blind reader on every reply.
+- **Lines and plain reference:** copied from m22 / m26 via `m28.prepare_root`; byte-identical to m28's
+  (`lines.json`, `plain_eval.jsonl`, `calibration_scores.jsonl` checked with `cmp`). Maths 1% line -5.80, ordering -7.30.
+- **Chain names:** m31's chains are `chain_0..4` in m31's folder; pooled with m28's `chain_0..2` (labelled by source).
+  Chain index enters only as the seed for which replies the feedback samples; the writer's own sampling makes chains
+  independent.
+
+## Pre-registration (written before any m31 chain ran)
+
+**Unit = one chain.** Pooled sample per task and arm: m28's 3 + m31's 5 = 8 chains (fewer only if a chain fails to
+finish; reported).
+
+**Primary measure (per chain), as m28's rule 4:** mean over rounds 1-15 that ran of the round's paired change vs plain
+(per (problem, seed) with both replies valid: score minus plain's score; median over pairs; `m22.paired_change` via
+`m28.unit_stats`), with each round's leaked eval problems left out under the task's leak rule (`m28.rounds_view`).
+Failed rounds (no instruction) are skipped. Selection-free: no round is picked with the probe.
+
+**Primary test (per task, maths and ordering separately):** D = mean over scored chains - mean over unscored chains
+(negative = scores help). Exact two-sided permutation test over all C(16, 8) = 12,870 relabellings of the 16 chains.
+Effect size: D with a 95% interval resampling chains within each arm (10,000 draws), Hedges' g, and D as a share of
+the plain-to-line gap. **Decision rule:** "a detectable benefit from seeing probe scores" for a task if p < 0.05 and
+D < 0; reported also with Holm's correction over the two tasks (the stricter p < 0.025 for the smaller p). "No
+detectable benefit" otherwise, with D and its interval reported as the size we can rule out.
+
+**Secondary (reported, no decision attached):**
+1. Final test, **last round** of every chain (selection-free): per chain the median valid test score minus plain's
+   (500 test replies: 100 untouched problems x seeds 10-14); 8 vs 8 permutation test and interval as above. For m28's
+   chains, m28's own test rows (its `@last` arms); m31's from m31's test.
+2. Final test, **best round** (m22's freeze rule, picked with the probe on the eval set, for both arms): same.
+3. Per round: median and mean over chains of the paired change per arm; the figure with every chain.
+4. Rounds 1-3 and 13-15 phase means per chain (same test); round 0 (zero-shot, before any feedback; should not differ).
+5. Batch check: m31-only (5 vs 5) and m28-only (3 vs 3) differences, to see that the two batches agree.
+6. Valid share per arm, writer failures (failed rounds, leaks), distinct instructions per chain (stagnation).
+
+**Final test (pre-registered):** plain + for every new chain its best round (m22's freeze rule: lowest leak-adjusted
+median valid score on the 80 eval replies among rounds with at least 40/80 valid; ties -> more valid, then earlier;
+a chain with no eligible round gets no best arm, recorded) and its last round that ran (selection-free). 100 untouched
+test problems x seeds 10-14. Validity as m22's amended test (maths: full check within 3 log-odds of the line, cheaper
+rule above, 5% full-check audit of far-above-line replies; ordering: its full rule on every reply); every valid reply
+under the 0.1% line re-judged by Opus (m19 / m26 rejudge). `frozen.json` is written by `freeze` before any test reply;
+m22's `run_frozen_test` reads it. No arm re-frozen or re-run after test results are seen.
+
+**Not pooled:** m22's and m26's Opus chains (Opus 5.5 with fallback to 4.8, models mixed by condition); quoted only as
+context.
+
+## Critic 1 (design; research-plan-reviewer) and actions: amendments written before any m31 result was seen
+
+The critic found the chain set-up identical to m28's pinned arms (writer, prompts, feedback, leak rule, eval set,
+seeds, plain reference, lines; differences only in score-cache file name and which chains share a lockstep batch) and
+the test plumbing correct (m22's `freeze` returns m31's `frozen.json` unchanged; arm keys match m28's test rows). It
+noted that m28's 3v3 already separates the arms completely on the primary measure (maths about -3.6 vs -0.8, ordering
+about -8.5 vs -6.0), so the informative output is the size of the effect, not the yes/no. Amendments:
+
+1. **Headline effect size, named now.** Two numbers, both selection-free, each with its interval:
+   (a) the primary eval measure's D (rounds 1-15; this decides "detectable"), and
+   (b) **the last-round final-test D** (held-out problems, end of search; the "how big at the end" number).
+   The primary averages in the early learning rounds, so it understates the end-state gap if scored chains keep
+   improving; both are reported side by side. Best-round test D is secondary (selected with the probe).
+2. **Scope.** The verdict is about Claude Opus 4.8 as the writer. m22's no-scores writer (mostly Opus 5.5) reached
+   about -3.3 on maths over rounds 1-15, pinned 4.8 without scores about -0.8 (m28), so the no-scores baseline depends
+   on the writer model. RESULT.md will not carry "scores help by X" over to Opus 5.5, and will say how this revises
+   the post's Result 3 (which was based on the model-mixed m22 / m26 chains).
+3. **Batch check:** batch-stratified exact permutation (relabel only within m28's 6 and m31's 10 chains; 5,040
+   relabellings) reported next to the pooled test (pooled stays primary).
+4. **Stagnation** (unscored chains resubmitting one instruction) is part of what a writer without the signal does, not
+   a confound; the mean over rounds penalises exploration, which works against the scored arm, so a detected benefit
+   is conservative. Distinct instructions per chain reported.
+5. **Round 0 differs by design** (the system prompts say whether scores will be shown). Sensitivity: per chain, rounds
+   1-15 mean minus round 0 (separates "the feedback helps" from "the prompt framing helps"); noisy, since round 0 is
+   one instruction per chain.
+6. **Intervals:** the percentile bootstrap over 8 chains is narrow; Welch's t interval reported alongside.
+7. **Under-line counts compared:** per chain share of test replies valid and under the 1% line, both arms (expected
+   0 everywhere, as in m22 / m26 / m28).
+8. Code: assert every chain has a primary value; Holm-adjusted p computed in `report()`; m31 writer and judge spend
+   summed in `analysis.json`; n per arm printed next to p; figure's line labelled approximate.
+
+## Amendment 2 (coordinator, 10-11 ~22:10): pinned Opus 5.5 pair and a 2x2. Written before any 5.5 chain ran
+
+**Why.** m28's pinned Opus 4.8 without scores does far worse than m22's mostly-Opus-5.5 no-scores writer, so "do
+scores help?" may depend on the writer model. Coordinator asked for the reconciling comparison.
+
+**Runs.**
+- Writer `pinned_opus55` (this module): m28's `pinned_opus` call (adaptive thinking, effort high, 1-hour cache) on
+  `claude-opus-5-5`, **no server-side fallback**, asserts the answering model, wrapped in m28's `refusal_checked`
+  (Haiku check on the parsed instruction). Registered in `m22.WRITERS` at import as `opus55_pinned` (scored feedback)
+  and `opus55_pinned_noscores` (`feedback: "noscores"`), exactly as m28 registers its 4.8 writers. Monitors
+  `pinned55_maths` / `pinned55_ordering`.
+- Same prompts: `prepare(task, "opus55")` asserts each 5.5 chain's system prompt and opening equal m28's 4.8 chain of the
+  same feedback kind (passed for both tasks and both kinds).
+- 4 chains with scores + 4 without, 16 rounds, maths and ordering; own root `runs_opus55/` (separate drivers never share
+  files), cache tag `search55`. Pre-flight: one round-0 call answered by claude-opus-5-5 (end_turn, $0.04).
+- **Refusals:** a refusal (API stop reason "refusal", or the Haiku check flagging the instruction) is a failed attempt;
+  3 failed attempts = a failed round, nothing runs, and m22's "no usable instruction" message is sent (m22's rule).
+- Final test: best and last round of every 5.5 chain (same rules as above); a chain with no round run has no arms
+  (recorded in `frozen_absent.json`).
+
+**Refusal rate (a result in its own right), per arm and task:** share of answered writer attempts that were refusals
+(API refusal vs Haiku-flagged, split), failed rounds per chain, and the first round each chain refused; same for the
+4.8 arms.
+
+**2x2 analysis (writer model 4.8 / 5.5 x scores / no scores), per task, on the primary per-chain measure:**
+- cell means with spread (4.8: 8 + 8 chains; 5.5: 4 + 4);
+- the scores effect within each model (exact permutation, Welch interval); the model effect within each feedback kind
+  (same);
+- the interaction (scores effect for 5.5 minus scores effect for 4.8) with a Welch-type interval;
+- the same on the last-round final-test change;
+- m22's / m26's mixed Opus arms (5.5 with fallback to 4.8; 3 + 3 chains) shown for reference, not tested.
+- **Failed rounds:** the primary averages rounds that ran (as for 4.8). Sensitivity, pre-registered: carry-forward,
+  where a failed round takes the change of the chain's last instruction that ran (0 = plain if none ran yet), i.e. the
+  attacker keeps using its previous instruction. A chain with no round run is reported but has no primary value.
+- Budget: up to +$200 Claude, +$60 GPU (coordinator).
+
+## Spend estimate (before runs)
+
+- Claude: maths judges ~12,800 search replies x ~$0.0045 ~ $58; ordering ~$28; writers (pinned 4.8) ~$18 scored + ~$8
+  unscored per task ~ $52; tests: maths ~10,500 replies ~ $38, ordering ~$10. Total ~$190 (cap ~$300). m22's driver
+  stops if its judge estimate passes $130 per search (pinned-writer cost is not counted by that guard; tracked here).
+- GPU: two search drivers (2 H100 samplers + 2 H200 scorers, ~1.5-2 h) ~ $50; tests ~ $25. Total ~ $75 (cap ~$150).
+
+## Log
+
+- 10-11 21:30 Read brief, m22 / m26 / m28 results, status and modules. m28's pinned chains (both tasks) finished;
+  m28's ordering test finished; m28's maths test running (app ap-PAatxtx7NOFq4GyIfximKV).
+- `prepare` done for both tasks: roots set up, 20 chain states started, prompts asserted equal to m28's.
+- 21:39 Roots pushed (`remote_search::push`). Searches launched detached: maths **ap-tQTTZ7b1yRgG1riU52Itco**
+  (`m31-search-maths`), ordering **ap-19DIiJ3bYejyGu9tuGBztE** (`m31-search-ordering`); logs `logs/search_*.log`.
+  Launched while the design critic runs: the chain set-up is fixed by the brief (identical to m28's pinned arms), so
+  critic findings can only change the analysis and the test, which have not run. Round 0: every writer answered on the
+  first attempt with claude-opus-4-8.
+- 21:45 Design critic returned; amendments (section "Critic 1") written before any m31 result. Lead told about the
+  writer-model dependence; lead asked for a pinned Opus 5.5 pair (Amendment 2).
+- 21:47 Opus 5.5 pair prepared (prompts asserted equal to m28's), pre-flight call fine, roots pushed, launched detached:
+  maths **ap-SKK9HXZMF6N6tgGNgT2EU7** (`m31-search55-maths`), ordering **ap-C6Ztc091oGiTxyylBMtPPY**
+  (`m31-search55-ordering`); logs `logs/search55_*.log`. Round 0: all 16 writers answered on the first attempt.
+- ~22:00 Lead: m22's runner gained reasoning-on support for m32 (new Monitor fields default off; behaviour with
+  thinking off identical; rows also get `n_reply_tokens`). The running searches use the code uploaded at launch; m31's
+  tests will run on the updated runner with thinking off (identical behaviour).
+- 22:05 Progress: 4.8 maths round 3, ordering round 3; 5.5 maths round 2-3, ordering round 4. Early 5.5 events: several
+  failed rounds from the leak rule in both 5.5 maths arms (the writer copies eval answers into examples), and the first
+  5.5 refusal (opus55_pinned/own/chain_3, round 2, 3 refused attempts = failed round). The analysis now splits failed
+  rounds by cause (leak / refusal / other). Analysis code dry-run on m28's saved data works (2x2, refusal table,
+  reference arms from m22 / m26, test records incl. m26's last rounds from m28's ordering test).
+- 22:07 Session handed back before the runs finished (state above).
+
+## Spend log
+
+| when | what | estimate |
+|---|---|---|
+| 22:05 | 4 searches so far (driver logs): 4.8 maths ~$15 judges + ~$4.4 writer; 4.8 ordering ~$4 + ~$5.7; 5.5 maths ~$8 + ~$2.6; 5.5 ordering ~$5 + ~$4.2 | ~$49 Claude so far; projected ~$190 search + ~$80 tests (of $300 + $200) |
+| 22:05 | GPU: 4 drivers (2 samplers + 2 scorers each), ~25 min so far | ~$15 so far; projected ~$90 search + ~$40 tests (of $150 + $60) |
