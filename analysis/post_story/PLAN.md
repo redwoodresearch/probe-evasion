@@ -102,3 +102,15 @@ Secondary: within-style discrimination survives (it's a distribution shift); siz
 - Draft v3 → v3.1 (attacker-knowledge ladder table; m30 tone result). Fixed two numbers I'd written without checking
   (9B row; maths no-spec cell).
 - Sent v3.1 to a fresh cold reviewer. m31 (8-run 2×2 writer × scores) and m32 (reasoning on) still running.
+
+### Iteration 5 (2026-10-11 night)
+- v3.1 cold review: headline should be "movement is limited by the attacker's information about the probe; the model on
+  its own doesn't move it"; 6 factual errors (e.g. the Claude-text probe was attacked, not "never-attacked"); §4 mixed
+  selected/unselected arms; §5 stale after m30; "black-box" wrong (writers told the readout).
+- Wrote v4 with all corrections and a matched best/last ladder table built from m28's tables.md (numbers checked by
+  script).
+- Launched m33 (Qwen-self without scores / without spec; Qwen told how it is read), m34 (next-token answer probability at
+  the pre-answer position; compute-without-output; probe cosines and other layers; broad-pool line positions;
+  within-style gap table), m35 (context distillation: does a fine-tuned model that uses the style without the
+  instruction move its own probe?).
+- Still running: m31 (2×2), m32 (reasoning on).
