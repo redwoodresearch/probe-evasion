@@ -143,3 +143,11 @@ Smuggling Capabilities", to be believed before use.
 - Launched m37 (does the trend hold on program output, with 6 maths chains, and on a 9B monitored model?) and m38 (the
   volitional track across 9B/27B/122B, reasoning off/on, plus single-thread self-iteration).
 - v7 writer started, restructured around the eval.
+- v7 critic round 1: 7/10. Main holes: the white box contradicts "none gets past it"; the re-read has no threat model
+  (instruction-in-view slope 0.07 / 0.02); the leading-indicator logic isn't argued; the trend uses a score oracle
+  (no-scores ranking inverts); the volitional null may be unwillingness (157/160 call it an injection).
+- Launched from the holes: m39 (instruction-in-view with a matched harmless baseline, tail measures,
+  naturalness-constrained S, leave-two-out), m40 (habit fine-tuning across writer capability), m41 (no-scores and
+  binary-feedback sweeps, plus a real-scoring-rule arm), m42 (adaptive defender: leave-one-lab-out probe retraining,
+  an augmented-style probe, a pooled probe). m38 amended with a system-prompt/scenario framing arm. m38's 397B
+  stretch approved (GPU cap $1,100).
