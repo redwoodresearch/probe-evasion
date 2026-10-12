@@ -25,7 +25,8 @@ model calls are a Haiku 5.5 naturalness judge ($6.9).
    normal. For code the drop mostly disappears among normal-rated replies (about 0 to -1.7).
 5. **Central figure.** `central_figure.png`, table below. Score-only attacks close 25-60% of the gap to the 1% line on
    the frozen test (median over chains per arm type); zero-shot closes 0-20%; only the white-box template reaches the
-   line. The three scales (to the line, to in-context non-answers, to styled twins) agree within about 10 points.
+   line. The three scales (to the line, to in-context non-answers, to styled twins) agree within about 10 points, except
+   ordering, whose line sits below even its non-answers, so its line scale reads 10-20 points lower.
 6. **Tone vs task (lead's item 6).** The attack drop is similar in size across concepts (median 6.8 log-odds for the
    tone concepts, 5.9 for task concepts), but the tone probes' plain answers sit about half as far above their line
    (median 6.5 vs 14.0 log-odds). So tone probes get crossed and task probes only shift. Within style, every probe
@@ -197,7 +198,11 @@ ordering (11,801 items).
 over chains. Hollow dots are zero-shot instructions on the eval set (no zero-shot instruction ran on the frozen test).
 Left: gap closed to the 1% line. Middle: to the median in-context non-answer (maths 27B, maths 9B, code, ordering).
 Right: to the median styled twin of that exact instruction (only the arms m27 built twins for). Dashed red = the
-endpoint.*
+endpoint. Ordering's line-scale values run 10-20 points below its other two scales because its 1% line (-7.30) sits
+about 3 log-odds below where Qwen's own non-answers and styled twins land in the puzzle's context (medians -4.5 and
+-3.1 to -5.3): the running average starts at half the first word's score, and no reply to an unsolved puzzle starts
+low enough (m26). So the same drop is a smaller share of the longer plain-to-line distance (17.9 vs 15.1 log-odds to
+the non-answers). For maths and code the line sits within about 1 log-odds of the non-answer level or above it, so the scales agree.*
 
 Share of the gap closed, median over instructions (each instruction in brackets, %). Frozen test except zero-shot.
 
