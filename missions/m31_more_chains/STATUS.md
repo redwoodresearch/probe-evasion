@@ -4,10 +4,11 @@
 prompt-writer push Qwen3.5-27B's own-reply probe scores down on valid answers, and by how much? m28 ran 3 + 3 chains
 per task; m31 adds 5 + 5 per task (maths, ordering) so each arm has 8 chains.
 
-**Phase (handed back 10-11 22:07, unfinished):** four searches running detached in Modal, at about rounds 3-5 of 16
-(Opus 4.8: maths ap-tQTTZ7b1yRgG1riU52Itco, ordering ap-19DIiJ3bYejyGu9tuGBztE; Opus 5.5: maths ap-SKK9HXZMF6N6tgGNgT2EU7,
-ordering ap-C6Ztc091oGiTxyylBMtPPY; about 4-5 min per round, expected to finish around 23:15). m28's maths final test
-was still running (ap-PAatxtx7NOFq4GyIfximKV); its ordering test is on disk.
+**Phase (handed back ~23:45):** all runs and tests done and pulled; all m31 apps stopped. analysis.json, figures and
+a full RESULT.md draft exist. **Critic 2 (before the verdict) was launched but its findings were not yet received or
+acted on.** To finish: rerun a fresh critic 2 on RESULT.md / analysis.json / the code (recompute headline numbers from
+raw files; check the regex-based "asked for number words" count and every number in RESULT), apply its fixes, rerun
+`uv run python -m probe_evasion.missions.m31_more_chains report` if code changes, and record it here.
 
 **Exact next steps for whoever resumes:**
 1. Wait until each `logs/search*.log` prints `finished m31_search_<task>[_opus55]` (or a Traceback: relaunch the same
@@ -201,10 +202,34 @@ scores help?" may depend on the writer model. Coordinator asked for the reconcil
   rounds by cause (leak / refusal / other). Analysis code dry-run on m28's saved data works (2x2, refusal table,
   reference arms from m22 / m26, test records incl. m26's last rounds from m28's ordering test).
 - 22:07 Session handed back before the runs finished (state above).
+- 22:10 Resumed (lead). Lead's analysis request: in the 2x2, report the primary both with failed rounds dropped and
+  with carry-forward (both already computed: `primary`, `primary_carry_forward`), and the failed-round rate by cause
+  per arm (`refusals[arm].failed_round_causes`).
+- 22:30 5.5 ordering search finished (all 8 chains, 16 rounds; driver Claude ~$14 judges + $19.3 writers). Pulled,
+  frozen locally (16 arms, none absent; `frozen.json` written before any test reply), pushed `frozen.json`; test
+  launched detached: **ap-0a8zJRubdbu97JRKA5lrci** (`m31-test55-ordering`, log `logs/test55_ordering.log`). The
+  traceback after "finished" in the search log is vLLM's shutdown noise (also in m28's logs).
+- 22:50 5.5 maths search finished (8 chains x 16 rounds; driver: ~$40 judges, $18.6 writers). Pulled, frozen (16
+  arms, none absent), pushed; test launched: **ap-1wJsNjhVVerHS7D9xxc4Ld** (`m31-test55-maths`, `logs/test55_maths.log`).
+  m28's maths test had finished meanwhile (`m28_test_rows.jsonl`, 22:06).
+- ~23:00 4.8 ordering search finished (10 chains x 16 rounds). Pulled, frozen (20 arms, none absent), pushed; test
+  launched: **ap-cKXzPgbtO7Cjjk3s8YMkEd** (`m31-test-ordering`, `logs/test_ordering.log`).
+- ~23:10 4.8 maths search finished (driver: ~$55 judges, $22.7 writers). Pulled, frozen (20 arms, none absent),
+  pushed; test launched: **ap-hLXTUgmYw9V3zOJOTvizqz** (`m31-test-maths`, `logs/test_maths.log`). All four searches
+  done; all four tests running.
+- ~23:30 All four tests finished and pulled. Test arms match `frozen.json` in every root; plain reproduces m22's /
+  m26's test (maths 500 valid, 498/500 replies identical to m22's; ordering 478 valid). Test judge calls: 4.8 maths
+  15,600 (~$47), 4.8 ordering 1,856 (~$6), 5.5 maths 6,882 (~$21), 5.5 ordering 1,283 (~$4).
+- Analysis additions (no change to any pre-registered measure): failed-round causes and rates per arm; leak-rejected
+  attempts per arm; maths answer-format split (number words vs digits, m28's `result_in_words`), added after seeing that
+  m22's mixed no-scores control beat both pinned no-scores arms (exploratory, labelled so in RESULT).
+- RESULT.md drafted; critic 2 launched.
 
 ## Spend log
 
 | when | what | estimate |
 |---|---|---|
 | 22:05 | 4 searches so far (driver logs): 4.8 maths ~$15 judges + ~$4.4 writer; 4.8 ordering ~$4 + ~$5.7; 5.5 maths ~$8 + ~$2.6; 5.5 ordering ~$5 + ~$4.2 | ~$49 Claude so far; projected ~$190 search + ~$80 tests (of $300 + $200) |
+| 23:40 | Final Claude (estimates): search judges ~$124, writers $93, test judges ~$78, Haiku + pre-flight ~$1 | ~$295 (cap $500 incl. amendment) |
+| 23:40 | GPU: Modal billing for m31 apps $83 through 22:00 PDT (lags); estimate incl. rest of searches + tests | ~$130-150 (cap $210) |
 | 22:05 | GPU: 4 drivers (2 samplers + 2 scorers each), ~25 min so far | ~$15 so far; projected ~$90 search + ~$40 tests (of $150 + $60) |

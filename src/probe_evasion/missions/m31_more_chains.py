@@ -205,7 +205,8 @@ def refusal_stats(d: Path) -> dict:
     haiku = [x for x in answered if (x.get("refusal_check") or {}).get("is_refusal")]
     api = [x for x in answered if x["stop"] == "refusal" and not (x.get("refusal_check") or {}).get("is_refusal")]
     refused_rounds = sorted({x["round"] for x in haiku + api})
-    return {"answered_attempts": len(answered), "api_refusals": len(api), "haiku_refusals": len(haiku),
+    leaks = [x for x in answered if "contains answers" in (x.get("problem") or "")]
+    return {"answered_attempts": len(answered), "api_refusals": len(api), "haiku_refusals": len(haiku), "leak_rejected_attempts": len(leaks),
             "refusal_share": (len(api) + len(haiku)) / len(answered) if answered else None,
             "rounds_with_refusal": refused_rounds, "first_refusal_round": refused_rounds[0] if refused_rounds else None,
             "api_errors": len(calls) - len(answered)}
@@ -252,7 +253,10 @@ def chain_records(task: str, info: dict) -> list[dict]:
                             "primary_minus_round_0": prim - ran[0] if prim is not None and 0 in ran else None,
                             "cost": float(sum(x["cost"] for x in st["rounds"])),
                             "failed_rounds": [e["round"] for e in rounds if e.get("failed")],
-                            "failed_round_causes": dict(Counter(failure_cause(x) for x in st["rounds"] if x["instruction"] is None)),
+                            "failed_round_causes": dict(Counter(failure_cause(x) for x in st["rounds"] if x["instruction"] is None)
+                                                        + Counter({"ran, no valid reply left (all invalid or leaked)": sum(
+                                                            bool(e.get("failed")) and st["rounds"][e["round"]]["instruction"] is not None
+                                                            for e in rounds)})),
                             "valid_share": float(np.mean([e["valid"] / e["n"] for e in rounds if not e.get("failed")])) if ran else None,
                             "answered_by": dict(Counter(e["answered_by"] for e in rounds if e["answered_by"])),
                             "distinct_instructions": len({x["instruction"] for x in st["rounds"] if x["instruction"]}),
@@ -440,12 +444,39 @@ def refusal_table(chains: list[dict]) -> dict:
         att = sum(r["answered_attempts"] for r in rs)
         out[arm] = {"chains": len(cs), "answered_attempts": att, "api_refusals": sum(r["api_refusals"] for r in rs),
                     "haiku_refusals": sum(r["haiku_refusals"] for r in rs),
+                    "leak_rejected_attempts": sum(r["leak_rejected_attempts"] for r in rs),
                     "refusal_share": (sum(r["api_refusals"] + r["haiku_refusals"] for r in rs) / att) if att else None,
                     "chains_with_a_refusal": sum(bool(r["rounds_with_refusal"]) for r in rs),
                     "first_refusal_round": [r["first_refusal_round"] for r in rs],
                     "failed_rounds": [len(c["failed_rounds"]) for c in cs],
                     "failed_round_causes": dict(sum((Counter(c["failed_round_causes"]) for c in cs), Counter())),
+                    "failed_round_rate_by_cause": {k: v / (len(cs) * m22.N_ROUNDS) for k, v in
+                                                   sum((Counter(c["failed_round_causes"]) for c in cs), Counter()).items()},
+                    "failed_round_rate": sum(len(c["failed_rounds"]) for c in cs) / (len(cs) * m22.N_ROUNDS),
                     "rounds_answered_by": dict(sum((Counter(c["answered_by"]) for c in cs), Counter()))}
+    return out
+
+
+def answer_format(task: str, info: dict) -> dict:
+    """Maths only: among valid eval replies in rounds 1-15, the share that give the result in number words (m28's
+    result_in_words), and the median paired change vs plain for word and digit answers, per arm."""
+    base = {(p["task"]["id"], p["seed"]): p["peaks"][info["probe"]] for p in info["plain"] if p["valid"]}
+    out = {}
+    for arm, (_, _, sources) in ARMS.items():
+        fmt: dict[str, list[float]] = {"words": [], "digits": []}
+        for _, root_fn, w in sources:
+            for d in sorted((root_fn(task) / w / TARGET).glob("chain_*")):
+                for r in m28.rounds_view(d, info["leaked"]):
+                    if r["round"] not in PRIMARY_ROUNDS or not r["rows"]:
+                        continue
+                    for x in r["rows"]:
+                        k = (x["task"]["id"], x["seed"])
+                        words = m28.result_in_words(x["reply"], x["task"]["result"])
+                        if x["valid"] and k in base and words is not None:
+                            fmt["words" if words else "digits"].append(x["peaks"][info["probe"]] - base[k])
+        n = len(fmt["words"]) + len(fmt["digits"])
+        out[arm] = {"valid_replies": n, "share_words": len(fmt["words"]) / n if n else None,
+                    **{f"median_change_{f}": float(np.median(v)) if v else None for f, v in fmt.items()}}
     return out
 
 
@@ -482,7 +513,7 @@ def analyse(task: str) -> dict:
     gap = info["plain_median"] - info["line"]
     return {"task": task, "plain_eval_median": info["plain_median"], "line": info["line"], "plain_to_line_gap": gap,
             "eval": eval_measures, "test": test_measures, "per_round": per_round(chains), "refusals": refusal_table(chains),
-            "spend_m31": spend(task, chains), "chains": chains, "test_records": tests,
+            "spend_m31": spend(task, chains), "answer_format": answer_format(task, info) if task == "maths" else None, "chains": chains, "test_records": tests,
             "plain_test": {f: {"valid": sum(r["valid"] for r in rows), "median_valid": float(np.median([r["peaks"][info["probe"]] for r in rows if r["valid"]]))}
                            for f, rows in ((str(p), [r for r in jl(p) if r["key"] == "plain"]) for _, p in test_files(task)[:3] if p.exists())}}
 
