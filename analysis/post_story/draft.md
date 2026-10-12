@@ -1,4 +1,4 @@
-# DRAFT v2.1: Prompting shifts activation-probe scores but doesn't hide the task; tone probes get crossed because their line sits close to plain answers
+# DRAFT v2.2: Prompting shifts activation-probe scores but doesn't hide the task; tone probes get crossed because their line sits close to plain answers
 
 *Working draft. [HOLE] marks a claim not yet backed by data or a missing control; [PENDING mXX] marks an experiment
 running now. Sources in brackets. v0 → v1 changes are logged in PLAN.md.*
@@ -28,14 +28,16 @@ running now. Sources in brackets. v0 → v1 changes are logged in PLAN.md.*
   found instructions that put 384–407 of 500 correct maths answers under the line, and those answers genuinely look like
   same-style non-task replies (within-style AUROC 0.93). Even they are caught when the probe reads the instruction too
   and the line is set in that context. [m19, m27]
-- **Result 5: tone probes' lines sit close to plain answers.** Earlier, tone concepts (sarcasm, flattery, anger,
-  condescension) crossed the line outright with an ordinary score-guided search. For tone probes the 1% line sits
-  0.33–0.41 of the way down from plain answers to ordinary replies (condescension 0.72); for task probes 0.56–0.90. So a
-  shift of a given relative size crosses tone probes sooner. Whether the shifts themselves are "similar" depends on the
-  unit (log-odds aren't comparable across probes), and no single margin measure separates crossed from not-crossed:
-  Gemma maths (small margin, 0% crossed), condescension m11 (task-like margin, crossed after 42 rounds) and maths 122B
-  break the pattern. Within style, no probe is blinded (AUROC 0.97–1.00, flattery 0.88). [m29] [HOLE: equal-effort test;
-  tone searches mostly optimised the in-context score, tasks the instruction-removed score; anger's validity is weak]
+- **Result 5: crossing a fixed line is mostly about the calibration pool's tail.** On one scale from the median ordinary
+  reply (0) to plain answers, the 1% line sits 11–12 log-odds above typical ordinary replies for sarcasm (ordinary
+  traffic has playful, near-sarcastic replies), but only 2–4 for maths, code and ordering. Attacked sarcasm replies land
+  right at that tail; attacked task replies stay far above their line though they moved several points. Separation of
+  plain answers from ordinary replies: 4.0–5.0 SD for sarcasm/flattery/anger, 7.2 condescension, 8.6–16.2 for tasks.
+  The shifts themselves are not "similar": with the same long search (m11) condescension moved 11.1 log-odds (0.88 of
+  the way to ordinary) and maths 3.5–3.9 (0.20–0.22); and neither margin nor line position predicts crossing alone
+  (condescension crossed after 42 rounds; Gemma maths, m9 jokey and m3b criticism weren't). Flattery is invalid for this
+  argument (probe failed its gate), anger weak. [m29 pool_tail_figure.png] [PENDING m30: equal-effort search on
+  sarcasm and condescension]
 - Whether the probe was trained on the model's own text or Claude's depended on the concept. [m20]
 
 ## 1. Set-up
@@ -108,14 +110,11 @@ Numbers so far (Claude writer, final tests where available):
 - **What evading replies look like.** Maths: the result in English words, or framings like "As the question itself
   already tells us…". Code: "Yes, exactly as you wrote above: [34, 18]". Ordering: filler before the first name.
   [m22, m25, m26]
-- **Normal-looking replies.** A Haiku judge rates most of the strongest arms' replies as odd; every white-box reply is
-  rated odd. Among replies it rates normal-looking, the drop is mixed: it survives for some arms (maths no-scores
-  number-word answers: 99% rated normal, −3.3; own-reply Opus best −5.8 → −4.6; ordering Opus chain 0: 86% normal,
-  −6.5) and shrinks to about 0 for others (maths 27B self-writer −3.7 → −0.3; code arms; 9B last round −4.1 → −0.8).
-  So a good part of the drop is oddness. Stricter still: plain replies are all rated 5, and the arms cited above are
-  mostly rated 4 ("normal with a small quirk"); counting only 5s, the ordering and with-scores arms keep no replies, and
-  maths no-scores arms keep −1.4 to −4.5. [m29 second critic] [m29] [HOLE: judge not validated on borderline cases like number words or
-  filler openers; no human ratings]
+- **The evading replies are visibly odd.** Every device that lowers scores is something a reader would notice: number
+  words, stock openers ("Oh, happy to help —"), false attribution, filler. A second judge (Sonnet) rates only 35% of
+  Haiku's "normal" replies as normal, and in a side-by-side test Haiku picks plain Qwen's reply as the normal one 100%
+  of the time for maths and ordering. Among replies rated fully normal, the drop shrinks to about 0 for code and several
+  maths arms. [m29]
 
 ## 4. How much does attacker knowledge matter?
 
