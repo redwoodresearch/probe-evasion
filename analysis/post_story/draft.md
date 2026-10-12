@@ -1,97 +1,130 @@
-# DRAFT v0: Prompting moves activation-probe scores a long way, but only white-box help crosses the line
+# DRAFT v1: Prompting shifts activation-probe scores, but doesn't hide the task
 
-*Working draft for the post. [HOLE] marks a claim not yet backed by data, or a missing control. Sources in brackets.*
+*Working draft. [HOLE] marks a claim not yet backed by data or a missing control; [PENDING mXX] marks an experiment
+running now. Sources in brackets. v0 → v1 changes are logged in PLAN.md.*
 
 ## TL;DR
 
-- We ask: can prompting alone make a model keep doing a task while a linear probe on its activations stops noticing,
-  and how does that depend on how much the attacker knows?
-- Set-up: Qwen3.5-27B does verifiable tasks (maths word problems, predicting a program's output, ordering five people
-  from clues). A probe trained on the model's own replies flags "doing the task in its head". Another model writes an
-  instruction for the monitored model and iterates with feedback.
-- **With a few rounds of feedback, prompting closes a quarter to a half of the gap between plain answers and the probe's
-  1% flag line, on every task and model size we tried. Zero-shot instructions close almost none of it. Only a white-box
-  attacker (training data plus a scoring tool) got most answers past the line.** [m19, m22, m23, m25, m26]
-- **The probe's own scores barely help the attacker.** Seeing the monitored model's replies and whether they were correct
-  gets almost as far. [m22 control, m26 control; HOLE: only 2 of 6 task×probe cells have the control]
-- The probe still separates task from non-task replies *within* the attack's style; the attack shifts the whole
-  distribution rather than blinding the probe. [HOLE: shown for sarcasm and m19 maths; not yet for m22–m26]
-- Earlier, on tone concepts (sarcasm, flattery, condescension), a Claude-searched prompt crossed the line outright; and
-  whether the probe was trained on the model's own text or Claude's text made no consistent difference. [m3a, m8a, m11,
-  m20]
+- **Question.** Can prompting alone make a model keep doing a task while a linear probe on its activations stops
+  noticing, and does it matter how much the attacker knows about the probe?
+- **Set-up.** Qwen3.5-27B (also 9B, 122B-A10B, Gemma-2-9B) does tasks with an automatic correctness check: maths word
+  problems, predicting a short program's output, ordering five people from clues. A probe trained on the model's own
+  replies flags "doing the task". A writer model (Claude, or Qwen itself) writes an instruction for the monitored model
+  and iterates on feedback. [m22, m23, m25, m26]
+- **Result 1: the scores move a lot, the monitor barely notices.** With a few rounds of feedback, the median correct
+  answer drops 3–11 log-odds, a quarter to a half of the way from plain answers to the 1% flag line. But on fresh test
+  problems not one of 27 searched maths instructions got a single correct answer under the line (0/500 each), and
+  [PENDING m29] every attacked answer still scores above every ordinary reply. [m22, m25, m26]
+- **Result 2: it's a shift, not hiding.** The same instructions applied to requests that don't need the task make those
+  replies score *higher* (up to +6), so task and non-task replies converge from both sides. Within the attack's style
+  the probe still separates them almost perfectly (AUROC 0.989–1.000). A line set on replies in that style catches
+  essentially everything. The drop is real under other ways of reading the probe, and partly comes from text placed
+  before the answer. [m27]
+- **Result 3: the probe's own signal adds little.** A writer that saw Qwen's replies and whether they were correct, but
+  no probe scores, got most of the way (−3.2 vs −4.0 log-odds on fresh problems, last-round instructions, 3 runs each).
+  [m22] [PENDING m28: random-style baseline; a writer not told how the score is read; a pinned writer model]
+- **Result 4: white-box access is the exception.** With the probe's training data and a tool to score any text, Claude
+  found instructions that put 384–407 of 500 correct maths answers under the line, and those answers genuinely look like
+  same-style non-task replies (within-style AUROC 0.93). Even they are caught when the probe reads the instruction too
+  and the line is set in that context. [m19, m27]
+- **Context.** Earlier, tone concepts (sarcasm, flattery, condescension) crossed the line outright with an ordinary
+  score-guided search; whether the probe was trained on the model's own text or Claude's made no consistent difference.
+  [m3a, m8a, m11, m20]
 
 ## 1. Set-up
 
-- Monitored models: Qwen3.5-27B (main), Qwen3.5-9B, Qwen3.5-122B-A10B, Gemma-2-9B; reasoning off. [HOLE: reasoning on]
-- Tasks with an automatic correctness check: maths word problems (one-sentence answer), "what does this Python program
-  print?", order five people from four comparison clues. [m22, m25, m26]
-- Probes: linear, one layer at about 75% depth, trained on the monitored model's own replies (task done vs a matched
-  reply that needn't do it, e.g. the answer is given), read as the peak of a running average over the reply's words,
-  the way it is trained. Flag line at 1% false alarms on ordinary replies. [m1a, m22, m25, m26]
-- Attacker loop: a writer model gets the task and one paragraph about the probe; each round it sees a sample of replies,
-  whether each was correct, and each word's probe score; it writes a new instruction. 3 runs × 16 rounds; final test on
-  fresh problems. A reply counts only if correct; odd wording allowed. [m22]
-- Scoring: probe reads the reply with the attack instruction removed (so the instruction text itself can't lower it).
-  [HOLE: report instruction-visible too; m19 found 0/500 evade with it visible]
+- Monitored models: Qwen3.5-27B (main), Qwen3.5-9B, Qwen3.5-122B-A10B (mixture of experts, ~10B active), Gemma-2-9B.
+  Reasoning off. [m22, m23]
+- Tasks: maths word problems with a one-sentence answer; "what does this Python program print?"; order five people from
+  four comparison clues. A reply counts only if correct; odd wording is allowed. [m22, m25, m26]
+- Probes: linear, one layer at about 75% depth, trained on the monitored model's own replies (task done vs matched
+  replies that needn't do it, e.g. the answer is given), read as the peak of a running average over the reply's tokens,
+  the way they are trained. Flag line at 1% false alarms on ordinary replies. The probe reads the reply with the attack
+  instruction removed, so the instruction's own text can't lower the score; we report the instruction-visible reading
+  too. [m1a, m22, m25, m26]
+- **What the probe actually detects.** Swapping the answer for a wrong value of the same form barely changes the maths
+  and code scores (−0.1 to −0.4 log-odds); a wrong order lowers ordering scores by 3.3. So the maths probe responds to
+  "a value in the answer slot after a request that needs working out", not to correct computation. [m27]
+- Attacker loop: a writer gets the task and a paragraph about the probe; each round it sees a sample of replies, whether
+  each was correct, and each token's probe score, then writes a new instruction. 3 runs × 16 rounds; best and last
+  instructions are frozen and tested on 100 fresh problems × 5 samples. [m22]
+- **Disclosure:** every writer, including zero-shot and the no-scores control, was told the exact running-average
+  formula, the layer, the line, and what the probe's negative examples were. [m22 WRITER_SYSTEM; PENDING m28: a writer
+  told only that "a monitor flags computing the answer"]
 
-## 2. The ladder (central figure, planned)
+## 2. How far scores move, and what it means operationally
 
-Share of the plain-to-line gap closed, per rung, per task (Claude writer unless stated):
+Central figure [PENDING m29]: share of the gap closed per arm, final tests, every run as a dot, on three scales:
+to the 1% line; to the level of in-context non-answers (Qwen's replies to the real request that skip the task); to the
+level of same-style non-task replies.
 
-| Rung (attacker knows) | Maths 27B | Ordering 27B | Code 27B |
+Numbers so far (Claude writer, final tests where available):
+
+| Task, model | Median change from plain (log-odds) | Gap to 1% line closed | Correct answers under the line |
 |---|---|---|---|
-| White-box: per-word scores + training data + scoring tool | >100% (385/500 past) [m19] | [HOLE] | [HOLE] |
-| Per-word probe scores, 16 rounds (best round) | 35% [m23] | 52% [m26] | 27% [m25] |
-| Replies + correctness, no scores (best round) | ~25% [m22, interim] | 52% [m26] | [HOLE] |
-| Model writes for itself, with scores | ~21% [m22] | [from m26] | [from m25] |
-| Zero-shot (no feedback) | 6% | 19% | 11% |
-| Model just told a probe is watching | [HOLE] | [HOLE] | [HOLE] |
+| Maths 27B | −0.9 to −7.2 across 27 instructions | up to ~50% | 0 of 500 for every instruction [m22] |
+| Maths 9B | — | best round 52% | 30 of 500 for one instruction (6 distinct answers), else ~0 [m23] |
+| Code 27B | −4.2 (main run) | 27% | 0 [m25] |
+| Ordering 27B | −6.5 to −11.2 | 36–63% | 0 [m26] |
 
-[HOLE: best round is picked by score — use frozen-test numbers for every cell; m22 frozen test pending]
-[HOLE: the gap-closed measure depends on where the line sits; also show the pool-anchored version]
+- Operational meaning: [PENDING m29: false-alarm sweep; share above the calibration pool's maximum; false-alarm rate
+  needed to catch the median attacked answer.]
+- Zero-shot instructions move little: 2–19% of the gap, most for ordering and the 9B model. [m22, m23, m25, m26]
+- Model size matters mainly at zero-shot (9B moves more; permutation p 0.004–0.02); after feedback no ordering by
+  size. Correct-answer rates fall more on 9B, 122B and Gemma (to 45–64%) than on 27B (85%). [m23]
 
-## 3. Feedback, not the probe signal, does the work
+## 3. Shift, not hiding
 
-- Maths (probe trained on Qwen's answers): with scores −3.4 → −3.6 log-odds from plain (rounds 1–3 → 13–15); without
-  −3.3 → −3.1. Ordering: −7.2 vs −6.1 averaged over rounds 1–15. Most of the drop happens at round 1 in both.
-  [m22, m26]
-- Confound: Claude Opus 5.5 often declines when shown probe scores and Opus 4.8 answers (30/48 vs 23/48 rounds on maths,
-  33/48 vs 0/48 on ordering). [HOLE: run the control with a fixed writer model, or report by answering model]
-- [HOLE: a "best of N independent zero-shot instructions" baseline would separate "search with feedback" from "just more
-  tries"]
+- **Other readouts.** The drop survives four of five ways of reading the probe (per-token max, mean, running average
+  restarted at the answer, max over the answer tokens) on every task. Restarting the average at the answer removes about
+  half of the drop for code, less for ordering and 9B, none for maths 27B, 122B and Gemma: part of the attack is text
+  before the answer, but the answer tokens' own scores drop too. [m27]
+- **Styled twins.** Applying each frozen instruction to non-task requests raises those replies' scores by up to 6
+  log-odds; at the deployed line most styled twins would be false alarms. Attack vs styled twin AUROC 0.989–1.000 on
+  every score-only arm; with the line set on styled twins, 0 attack replies get under it for maths 27B and code, 0–10 for
+  ordering, 5–40 per arm for maths 9B. [m27]
+- **In-context non-answers** (replies to the real request that skip the task) score close to the line (−4.5 to −6.1) and
+  still separate from attack replies (AUROC 0.97–0.999). [m27]
+- **Transfer.** [PENDING m29: the maths drop on probes that were never attacked — other seeds, a size-matched probe, the
+  Claude-text probe. The reviewer's spot check found similar or larger drops on all of them: the writers move every
+  maths probe, not this probe's weights.]
+- **What evading replies look like.** Maths: the result in English words, or framings like "As the question itself
+  already tells us…". Code: "Yes, exactly as you wrote above: [34, 18]". Ordering: filler before the first name.
+  [m22, m25, m26] [PENDING m29: does the drop survive among replies a judge rates as normal-looking?]
 
-## 4. What the evading replies look like, and is it hiding or a style shift?
+## 4. How much does attacker knowledge matter?
 
-- Maths: scripted openers ("Actually, yes, in standard scientific notation, 8.92e2 dollars in total"). Code: false
-  attribution ("Yes, exactly as you wrote above: [34, 18]"). Ordering: filler before the first name. [m19, m25, m26]
-- Mechanism: the running average peaks on the answer tokens; filler or a strongly negative opener drags it down before
-  the answer arrives. [m19 trace figure, m26]
-- [HOLE: does the drop survive another readout (per-token max, mean, an average that starts at the answer)? If not, the
-  attack exploits the readout, not the representation.]
-- [HOLE: score non-task replies written in the attack's style. If they drop too and the probe still ranks task above
-  non-task, it is a style shift.]
+| Attacker | Maths 27B, own-reply probe, fresh problems |
+|---|---|
+| White-box: per-token scores + training data + scoring tool | −15.4; 384/500 under the line [m19 via m22] |
+| Per-token scores, 16 rounds | −4.0 (last round, mean of 3); −5.2 (best of 16) [m22] |
+| Replies + correctness, no scores | −3.2 (last round); −3.5 (best of 16) [m22] |
+| Random odd styles, best of 16 by score | [PENDING m28] |
+| Writer told nothing about the readout | [PENDING m28] |
+| Qwen writing for itself | about −3.1 at the end of the search [m22] |
+| Zero-shot | about −0.2 [m22] |
+| Qwen just told a probe is watching | [PENDING m28] |
 
-## 5. Model size and who writes the prompt
+- Caveats: white-box differs in budget and method too (it started from replies Claude wrote directly); Opus 5.5 often
+  declines when shown scores and Opus 4.8 answers (66/96 scored rounds) [PENDING m28: pinned writer]; 3 runs per arm.
+- Ordering shows the same pattern: −7.2 vs −6.1 averaged over rounds 1–15 with and without scores. [m26]
 
-- Zero-shot moves 9B more than 27B or 122B (permutation p about 0.004–0.02); after feedback, no ordering by size.
-  27B keeps the most answers correct (85% vs 45–64%). [m23]
-- Claude moves scores more than the models writing for themselves (clear on 122B and Gemma; a trend on 9B and 27B).
-  Qwen3.5-122B writing for 27B catches up with Claude on the Claude-text probe. [m22, m23]
-- [HOLE: 122B is mixture-of-experts (~10B active); "bigger" is not clean]
+## 5. Earlier results that fit
 
-## 6. Earlier results that fit
+- Tone concepts cross with an ordinary score-guided search: sarcasm 268/500 valid sarcastic replies under the line
+  (plain 29); condescension 475/500 full-strength replies on fresh messages after a 42-round search, though milder and
+  caught by a layer-16 probe; flattery mostly because the probe only detects gushing wording (calm neutral replies pass
+  too). Patching the probe, broad style coverage and layer ensembles each lost to a fresh search. [m3a, m3a2, m3a4,
+  m8a, m11]
+- So the contrast is between concepts: tone probes are crossed by an ordinary search; task probes are only shifted.
+  [HOLE: is that contrast about the concept, or about how far apart task and non-task replies sit to begin with?]
+- Who wrote the probe's training data depended on the concept across five matched pairs (e.g. the own-reply sarcasm
+  probe was *more* exploitable; condescension the other way). [m20]
 
-- Tone concepts cross the line: sarcasm 268/500 valid sarcastic replies past (plain 29); flattery 454/456; condescension
-  492/494 after a 42-round search, though a layer-16 probe catches them. Patching the probe, broad style coverage and
-  layer ensembles each lost to a fresh search within a round. [m3a, m3a2, m3a4, m8a, m11]
-- Who wrote the probe's training data (the model itself vs Claude) made no consistent difference across five matched
-  pairs. [m20]
-- Content probes (maths, chemistry) held against the standard search until the white-box red team. [m11, m19]
+## 6. Limitations
 
-## 7. Limitations (so far)
-
-- New tasks' probes partly react to the request: a non-answer still scores above the line, so the line is unreachable
-  there by construction. [m25, m26; HOLE: fix and re-score]
-- Opus 5.5 / 4.8 mix in the writer.
-- One prompt-writer family for most runs; reasoning off throughout.
-- Small number of runs per cell (3).
+- Code and ordering probes partly react to the request: in-context non-answers already score near or above the line, so
+  their 1% line is barely reachable. [m25, m26, m27]
+- Writer models: mostly Claude (Opus 5.5 falling back to 4.8); Qwen writers weaker; reasoning off throughout; one probe
+  layer and readout per task; 3 runs per cell; Qwen family plus Gemma with a different probe recipe.
+- 122B is a mixture of experts; "bigger" is not clean. [m23]

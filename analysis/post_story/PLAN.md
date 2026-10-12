@@ -39,3 +39,16 @@ Secondary: within-style discrimination survives (it's a distribution shift); siz
   since both holes are certain.
 - Could not stop our idle Oct 8 Modal app (`ap-WdL8eqGOKfWPVzawSaSONU`, 0 tasks): the permission classifier blocked
   it. It costs nothing while idle; flagged for Nabil.
+
+### Iteration 1 results and iteration 2 (2026-10-11)
+- Cold review of v0 (research-reviewer): the ladder framing mixes axes; all attacked answers stay above the calibration
+  pool's maximum; every writer was told the readout formula; the drop transfers to never-attacked probes; random-style
+  baseline missing. Suggested reframing: "prompting shifts the distribution; the probe isn't blinded".
+- m22 finished: 27 searched instructions, all 0/500 under the line on fresh problems; −0.9 to −7.2 log-odds; m19
+  references 384/407 under. No-scores last round −3.2 vs with scores −4.0.
+- m27 finished: drops survive other readouts; part is pre-answer text (half for code, none for maths 27B); styled twins
+  move UP; within-style AUROC 0.989–1.000; m19 white-box answers do look like styled twins (AUROC 0.93) but are caught
+  with the instruction visible; maths/code probes don't check correctness (answer-swap barely moves scores).
+- Launched m28 (random-style baseline, no-readout-spec writer, told-probe bottom rung, pinned-writer scores vs no-scores)
+  and m29 (false-alarm sweep, transfer to sister probes, validity/selection effects, naturalness, central figure).
+- Rewrote the draft as v1 with the reframed story; overnight report updated with m22's final numbers (republished).

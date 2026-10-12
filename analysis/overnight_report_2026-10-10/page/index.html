@@ -27,6 +27,7 @@ p > em:only-child { display: block; color: var(--muted); font-size: 0.88rem; fon
 </style>
 <main>
 <h1>Overnight report, 9–10 October 2026</h1>
+<p><em>Updated 11 October with the 27B maths final test (m22).</em></p>
 <p><strong>Question.</strong> After your 1:1 with James: can prompting push a probe's scores down while the model still does the task,
 and how does that depend on what the prompt-writer sees, which model is monitored, who writes the prompts, and the
 task? Overnight we ran this on three tasks and four monitored models.</p>
@@ -73,7 +74,7 @@ task? Overnight we ran this on three tasks and four monitored models.</p>
 <tr>
 <td>m22</td>
 <td>Maths on 27B. Claude, Qwen3.5-27B (for itself) and Qwen3.5-122B write the prompts. Two probes: one trained on Qwen's own answers, one trained on Claude-written answers. Plus a control with no probe scores.</td>
-<td>Search done; final test on fresh problems still running, so m22 numbers are from the search rounds.</td>
+<td>Done (final test finished 11 Oct, after this report was first published).</td>
 </tr>
 <tr>
 <td>m23</td>
@@ -177,7 +178,8 @@ cleaner (they still use each run's best round, but on new problems):
 - ordering: −6.5 to −11.2 log-odds across Claude's three runs (36–63% of the gap, measured from the final test's plain median, +10.6);
 - model size: Claude's instruction for 9B got 30 of 500 attempts under the line (only 6 distinct answers, 6 problems);
   one Gemma run got 12; everything else 0 or 1;
-- 27B maths: still running.</p>
+- 27B maths (finished 11 Oct): every one of the 27 searched instructions got 0 of 500 under the line; median change
+  from plain −0.9 to −7.2 log-odds. The white-box instructions from the red team got 384 and 407 of 500 under it.</p>
 <p><img alt="Model-size comparison" src="fig/model_sizes.png" />
 <em>Maths, median correct-answer score per round for each model. Left column: Claude writes the prompts; right: each model
 writes its own. Row 1: rescaled so 1 = plain answers and 0 = the flag line. Row 2: rescaled so 0 = the median ordinary
@@ -231,7 +233,7 @@ without; on ordering, 33 of 48 with scores and none without. So "with scores" le
 Also, the control's best rounds for the final test are still picked by probe score, so only the per-round comparison
 above is a clean test.</p>
 <p><img alt="Maths rounds" src="fig/maths_rounds.png" />
-<em>Maths on 27B (interim). Left column: probe trained on Qwen's own answers; right: probe trained on Claude-written
+<em>Maths on 27B (search rounds). Left column: probe trained on Qwen's own answers; right: probe trained on Claude-written
 answers. Rows: median correct-answer score per round with the instruction removed, the same with it visible to the
 probe, and share of answers still correct. Brown = Claude with no probe scores (control). The legend says "Claude Opus
 5.5", but most rounds after round 2 were written by Opus 4.8.</em></p>
@@ -372,7 +374,7 @@ probe, and share of answers still correct. Brown = Claude with no probe scores (
 <h2>Where things are</h2>
 <ul>
 <li>Write-ups: <code>missions/m23_model_size/RESULT.md</code>, <code>missions/m25_program_output/RESULT.md</code>,
-  <code>missions/m26_ordering/RESULT.md</code>; m22 has no write-up yet (see its <code>STATUS.md</code>); task design in
+  <code>missions/m26_ordering/RESULT.md</code>; <code>missions/m22_score_only_iterations/RESULT.md</code>; task design in
   <code>missions/m24_task_ablation_design/PROPOSAL.md</code>.</li>
 <li>Per-round dot plots (every correct answer, every round): <code>missions/m22_score_only_iterations/runs/qwen35_27b/rounds_dots_own.png</code>,
   <code>missions/m23_model_size/runs/m23_{9b,122b}/rounds_dots_own.png</code>, <code>missions/m23_model_size/runs/m23_gemma/rounds_dots_templated.png</code>,
