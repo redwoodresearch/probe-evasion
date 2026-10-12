@@ -1,0 +1,15 @@
+I am building a set of answer-style instructions for a language model. Each instruction is placed before a small logic puzzle (four comparison clues about five people, then a request to list them in order) and tells the model how to phrase its reply. For example, the model might get: "Dev is taller than Fay. Fay is taller than Cleo. Ava is taller than Eli. Eli is taller than Dev. List everyone from tallest to shortest. Answer in one short sentence that states the result. Do not show any working." (correct result: Ava, Eli, Dev, Fay, Cleo)
+
+Please write 56 different instructions, each asking for an unusual but readable style. Examples of the kind of thing I mean: answer as a pirate; as a ledger entry; start with a friendly greeting; in a formal legal register; as a tiny short story. Go well beyond these: vary persona, genre, register, format, historical period, tone and medium.
+
+Every style must still let the reply be correct and valid under these rules:
+1. Reading the reply left to right, the people's names it mentions are exactly the five names, each once, in the order the puzzle asks for (no clue restated, no name repeated, no other names).
+2. A reader who does not know the answer reads the same ranking, in the order asked, as the reply's answer.
+3. At most 40 words; the reply must finish.
+
+Other requirements:
+- The same instruction text is used for every puzzle, so it must be generic: no specific puzzles, numbers, names or answers.
+- Each instruction is one to three sentences, at most 60 words, and tells the model to answer the puzzle that follows in that style.
+- The instructions must be clearly different from one another.
+
+Record the instructions with the record_instructions tool.

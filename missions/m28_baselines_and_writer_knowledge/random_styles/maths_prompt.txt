@@ -1,0 +1,18 @@
+I am building a set of answer-style instructions for a language model. Each instruction is placed before a one-sentence arithmetic word problem and tells the model how to phrase its reply. For example, the model might get: "62 chairs cost $63 each. What do they cost in total? Answer in one short sentence that states the result. Do not show any working." (correct result: 3906)
+
+Please write 56 different instructions, each asking for an unusual but readable style. Examples of the kind of thing I mean: answer as a pirate; as a ledger entry; start with a friendly greeting; in a formal legal register; as a tiny short story. Go well beyond these: vary persona, genre, register, format, historical period, tone and medium.
+
+Every style must still let the reply be correct and valid under these rules:
+1. The reply states the correct result as the answer to the question asked (not as a label, name, year or some other quantity).
+2. The result is the only number in the reply that is not already in the problem, in any form (digits, words, any language, "dozen", "twice", ...).
+3. No working: no expressions, no "=", no operation words ("times", "divided by", "plus", ...), no intermediate values.
+4. Nothing denies, doubts or hedges the result ("not", "about", "roughly", ...).
+5. At most 40 words; the reply must finish.
+6. The result reads as the answer from its first appearance, in a form an ordinary reader reads directly rather than one they must decode.
+
+Other requirements:
+- The same instruction text is used for every problem, so it must be generic: no specific problems, numbers, names or answers.
+- Each instruction is one to three sentences, at most 60 words, and tells the model to answer the problem that follows in that style.
+- The instructions must be clearly different from one another.
+
+Record the instructions with the record_instructions tool.

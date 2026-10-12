@@ -1,0 +1,945 @@
+✓ Initialized. View run at 
+https://modal.com/apps/redwood-default/main/ap-ZiVHwXThw2lAlp2VdcRcJ9
+✓ Created objects.
+├── ✓ Uploaded PythonPackage:probe_evasion
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/results/chameleons/trained_probes
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/external/minimal_neural_chameleons/pro
+│   bes
+├── ✓ Created Function execute.
+├── ✓ Created Function Sampler.*.
+├── ✓ Created Function train.
+├── ✓ Created Function score.
+├── ✓ Created Function chain.
+├── ✓ Created Function m22_remote_chain.
+├── ✓ Created Function m23_remote_chain.
+├── ✓ Created Function BigLab.*.
+├── ✓ Created Function PeakFit.*.
+├── ✓ Created Function SizeLab.*.
+├── ✓ Created Function LongFit.*.
+├── ✓ Created Function GemmaSampler.*.
+├── ✓ Created Function ProbeLab.*.
+├── ✓ Created Function PeakProbeLab.*.
+├── ✓ Created Function PeakProbeLabSeeds.*.
+├── ✓ Created Function ConceptGen.*.
+├── ✓ Created Function ConceptScorer.*.
+└── ✓ Created Function train_probes_remote.
+
+[1AFetching 24 files:   0%|          | 0/24 [00:00<?, ?it/s]
+[1AFetching 24 files: 100%|██████████| 24/24 [00:00<00:00, 1232.92it/s]
+INFO 10-12 01:45:28 [api_utils.py:286] non-default args: {'max_model_len': 36864, 'max_num_seqs': 256, 'disable_log_stats': True, 'limit_mm_per_prompt': {'image': 0, 'video': 0}, 'model': 'Qwen/Qwen3.5-27B'}
+
+[1AFetching 24 files:   0%|          | 0/24 [00:00<?, ?it/s]
+[1AFetching 24 files: 100%|██████████| 24/24 [00:00<00:00, 1406.29it/s]
+INFO 10-12 01:45:28 [api_utils.py:286] non-default args: {'max_model_len': 36864, 'max_num_seqs': 256, 'disable_log_stats': True, 'limit_mm_per_prompt': {'image': 0, 'video': 0}, 'model': 'Qwen/Qwen3.5-27B'}
+INFO 10-12 01:45:42 [model.py:692] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 10-12 01:45:42 [model.py:2030] Using max model len 36864
+WARNING 10-12 01:45:42 [model.py:994] Model does not support mm_device_do_normalize, forcing mm_device_do_normalize = False.
+INFO 10-12 01:45:43 [model.py:692] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 10-12 01:45:43 [model.py:2030] Using max model len 36864
+WARNING 10-12 01:45:43 [model.py:994] Model does not support mm_device_do_normalize, forcing mm_device_do_normalize = False.
+INFO 10-12 01:45:44 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+INFO 10-12 01:45:44 [model.py:900] Disabled mm_prefix attention mode because multimodal inputs are configuration-disabled. Attention backends without mm_prefix support may now be selected.
+INFO 10-12 01:45:44 [scheduler.py:288] Chunked prefill is enabled with max_num_batched_tokens=16384.
+INFO 10-12 01:45:44 [config.py:625] Mamba cache mode is set to 'align' for Qwen3_5ForConditionalGeneration by default when prefix caching is enabled
+INFO 10-12 01:45:44 [kernel.py:416] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+INFO 10-12 01:45:45 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+INFO 10-12 01:45:45 [model.py:900] Disabled mm_prefix attention mode because multimodal inputs are configuration-disabled. Attention backends without mm_prefix support may now be selected.
+INFO 10-12 01:45:45 [scheduler.py:288] Chunked prefill is enabled with max_num_batched_tokens=16384.
+INFO 10-12 01:45:45 [config.py:625] Mamba cache mode is set to 'align' for Qwen3_5ForConditionalGeneration by default when prefix caching is enabled
+INFO 10-12 01:45:45 [kernel.py:416] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+WARNING 10-12 01:45:48 [system_utils.py:157] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+WARNING 10-12 01:45:49 [system_utils.py:157] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+(EngineCore pid=59) INFO 10-12 01:45:58 [core.py:123] Initializing a V1 LLM engine (v0.30.0) with config: model='Qwen/Qwen3.5-27B', speculative_config=None, tokenizer='Qwen/Qwen3.5-27B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=main, tokenizer_revision=main, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=36864, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, per_request_spec_decode_metrics='none', kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_mode='warn', jit_monitor_verbose=False), seed=0, served_model_name=Qwen/Qwen3.5-27B, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'ir_enable_torch_wrap': True, 'splitting_ops': ['vllm::unified_attention_with_output', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::qwen4_exp_ple_short_conv', 'vllm::qwen4_exp_qsa_with_output', 'vllm::linear_attention', 'vllm::qwen_gdn_attention_core', 'vllm::qwen_gdn_attention_core_fused_norm_packed', 'vllm::gdn_attention_core_xpu', 'vllm::olmo_hybrid_gdn_full_forward', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::deepseek_v4_attention', 'vllm::hpc_rope_norm_forward', 'vllm::unified_kv_cache_update', 'vllm::unified_mla_kv_cache_update'], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [16384], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'enable_qk_norm_rope_fusion': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False, 'fuse_qk_norm_rope_kvcache': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native']), enable_flashinfer_autotune=True, enable_cutedsl_warmup=True, enable_jit_warmup=True, moe_backend='auto', sparse_indexer_topk_backend='auto', linear_backend='auto', linear_backend_per_quant=None)
+(EngineCore pid=59) INFO 10-12 01:46:00 [core.py:123] Initializing a V1 LLM engine (v0.30.0) with config: model='Qwen/Qwen3.5-27B', speculative_config=None, tokenizer='Qwen/Qwen3.5-27B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=main, tokenizer_revision=main, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=36864, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, per_request_spec_decode_metrics='none', kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_mode='warn', jit_monitor_verbose=False), seed=0, served_model_name=Qwen/Qwen3.5-27B, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'ir_enable_torch_wrap': True, 'splitting_ops': ['vllm::unified_attention_with_output', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::qwen4_exp_ple_short_conv', 'vllm::qwen4_exp_qsa_with_output', 'vllm::linear_attention', 'vllm::qwen_gdn_attention_core', 'vllm::qwen_gdn_attention_core_fused_norm_packed', 'vllm::gdn_attention_core_xpu', 'vllm::olmo_hybrid_gdn_full_forward', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::deepseek_v4_attention', 'vllm::hpc_rope_norm_forward', 'vllm::unified_kv_cache_update', 'vllm::unified_mla_kv_cache_update'], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [16384], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'enable_qk_norm_rope_fusion': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False, 'fuse_qk_norm_rope_kvcache': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native']), enable_flashinfer_autotune=True, enable_cutedsl_warmup=True, enable_jit_warmup=True, moe_backend='auto', sparse_indexer_topk_backend='auto', linear_backend='auto', linear_backend_per_quant=None)
+(EngineCore pid=59) INFO 10-12 01:46:00 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+(EngineCore pid=59) INFO 10-12 01:46:00 [parallel_state.py:1827] world_size=1 rank=0 local_rank=0 distributed_init_method=file:///tmp/vllm_dist_0191ebcf68024b7b8410f504e5f72b3a backend=nccl
+(EngineCore pid=59) INFO 10-12 01:46:00 [parallel_state.py:2267] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, ETP rank 0, EP rank N/A, EPLB rank N/A
+(EngineCore pid=59) INFO 10-12 01:46:00 [gpu_worker.py:441] Using V2 Model Runner
+(EngineCore pid=59) INFO 10-12 01:46:01 [model_runner.py:396] Loading model from scratch...
+(EngineCore pid=59) INFO 10-12 01:46:01 [cuda.py:597] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(EngineCore pid=59) INFO 10-12 01:46:01 [mm_encoder_attention.py:372] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(EngineCore pid=59) INFO 10-12 01:46:01 [qwen_gdn_linear_attn.py:176] Using FlashInfer GDN prefill kernel (requested=auto, head_k_dim=128).
+(EngineCore pid=59) WARNING 10-12 01:46:01 [qwen_gdn_linear_attn.py:183] FlashInfer GDN prefill is JIT-compiled; first run may take a while. Set --gdn-prefill-backend triton to skip JIT.
+(EngineCore pid=59) INFO 10-12 01:46:01 [qwen_gdn_linear_attn.py:528] GDN decode kernel: cuda
+(EngineCore pid=59) INFO 10-12 01:46:02 [cuda.py:538] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(EngineCore pid=59) INFO 10-12 01:46:02 [flash_attn.py:1116] Using FlashAttention version 3
+(EngineCore pid=59) INFO 10-12 01:46:03 [registry.py:146] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+(EngineCore pid=59) INFO 10-12 01:46:03 [parallel_state.py:1827] world_size=1 rank=0 local_rank=0 distributed_init_method=file:///tmp/vllm_dist_38a1c3f34a9d46eea4575bdad945aa2a backend=nccl
+(EngineCore pid=59) INFO 10-12 01:46:03 [parallel_state.py:2267] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, ETP rank 0, EP rank N/A, EPLB rank N/A
+(EngineCore pid=59) INFO 10-12 01:46:03 [gpu_worker.py:441] Using V2 Model Runner
+(EngineCore pid=59) INFO 10-12 01:46:03 [weight_utils.py:895] Filesystem type for checkpoints: 9P. Checkpoint size: 51.75 GiB. Available RAM: 1017.81 GiB.
+(EngineCore pid=59) INFO 10-12 01:46:03 [weight_utils.py:918] Auto-prefetch is disabled because the filesystem (9P) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+(EngineCore pid=59) Loading safetensors checkpoint shards:   0% Completed | 0/11 [00:00<?, ?it/s]
+(EngineCore pid=59) INFO 10-12 01:46:03 [model_runner.py:396] Loading model from scratch...
+(EngineCore pid=59) INFO 10-12 01:46:03 [cuda.py:597] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(EngineCore pid=59) INFO 10-12 01:46:03 [mm_encoder_attention.py:372] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(EngineCore pid=59) INFO 10-12 01:46:04 [qwen_gdn_linear_attn.py:176] Using FlashInfer GDN prefill kernel (requested=auto, head_k_dim=128).
+(EngineCore pid=59) WARNING 10-12 01:46:04 [qwen_gdn_linear_attn.py:183] FlashInfer GDN prefill is JIT-compiled; first run may take a while. Set --gdn-prefill-backend triton to skip JIT.
+(EngineCore pid=59) INFO 10-12 01:46:04 [qwen_gdn_linear_attn.py:528] GDN decode kernel: cuda
+(EngineCore pid=59) INFO 10-12 01:46:05 [cuda.py:538] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(EngineCore pid=59) INFO 10-12 01:46:05 [flash_attn.py:1116] Using FlashAttention version 3
+(EngineCore pid=59) Loading safetensors checkpoint shards:   9% Completed | 1/11 [00:02<00:22,  2.22s/it]
+(EngineCore pid=59) INFO 10-12 01:46:06 [weight_utils.py:895] Filesystem type for checkpoints: 9P. Checkpoint size: 51.75 GiB. Available RAM: 1017.82 GiB.
+(EngineCore pid=59) INFO 10-12 01:46:06 [weight_utils.py:918] Auto-prefetch is disabled because the filesystem (9P) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+(EngineCore pid=59) Loading safetensors checkpoint shards:   0% Completed | 0/11 [00:00<?, ?it/s]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  18% Completed | 2/11 [00:04<00:19,  2.21s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:   9% Completed | 1/11 [00:02<00:22,  2.22s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  27% Completed | 3/11 [00:06<00:18,  2.25s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  18% Completed | 2/11 [00:04<00:19,  2.19s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  36% Completed | 4/11 [00:08<00:15,  2.25s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  27% Completed | 3/11 [00:06<00:17,  2.14s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  45% Completed | 5/11 [00:11<00:13,  2.25s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  36% Completed | 4/11 [00:08<00:15,  2.25s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  55% Completed | 6/11 [00:13<00:11,  2.24s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  45% Completed | 5/11 [00:11<00:13,  2.31s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  64% Completed | 7/11 [00:15<00:08,  2.23s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  55% Completed | 6/11 [00:13<00:11,  2.28s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  73% Completed | 8/11 [00:17<00:06,  2.19s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  64% Completed | 7/11 [00:15<00:09,  2.29s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  82% Completed | 9/11 [00:19<00:04,  2.16s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  73% Completed | 8/11 [00:18<00:06,  2.31s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  91% Completed | 10/11 [00:22<00:02,  2.16s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards:  82% Completed | 9/11 [00:20<00:04,  2.28s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards: 100% Completed | 11/11 [00:22<00:00,  1.80s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards: 100% Completed | 11/11 [00:22<00:00,  2.09s/it]
+(EngineCore pid=59) 
+(EngineCore pid=59) INFO 10-12 01:46:26 [default_loader.py:430] Loading weights took 23.03 seconds
+(EngineCore pid=59) INFO 10-12 01:46:27 [model_runner.py:428] Model loading took 50.22 GiB memory and 25.835450 seconds
+(EngineCore pid=59) INFO 10-12 01:46:27 [topk_topp_sampler.py:78] Using FlashInfer for top-p & top-k sampling.
+(EngineCore pid=59) INFO 10-12 01:46:27 [interface.py:933] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+(EngineCore pid=59) INFO 10-12 01:46:27 [interface.py:957] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+(EngineCore pid=59) INFO 10-12 01:46:27 [utils.py:320] Using LBNHC KV cache layout.
+(EngineCore pid=59) Loading safetensors checkpoint shards:  91% Completed | 10/11 [00:22<00:02,  2.29s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards: 100% Completed | 11/11 [00:23<00:00,  1.93s/it]
+(EngineCore pid=59) Loading safetensors checkpoint shards: 100% Completed | 11/11 [00:23<00:00,  2.17s/it]
+(EngineCore pid=59) 
+(EngineCore pid=59) INFO 10-12 01:46:29 [default_loader.py:430] Loading weights took 23.87 seconds
+(EngineCore pid=59) INFO 10-12 01:46:30 [model_runner.py:428] Model loading took 50.22 GiB memory and 27.074233 seconds
+(EngineCore pid=59) INFO 10-12 01:46:30 [topk_topp_sampler.py:78] Using FlashInfer for top-p & top-k sampling.
+(EngineCore pid=59) INFO 10-12 01:46:30 [interface.py:933] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+(EngineCore pid=59) INFO 10-12 01:46:30 [interface.py:957] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+(EngineCore pid=59) INFO 10-12 01:46:30 [utils.py:320] Using LBNHC KV cache layout.
+(EngineCore pid=59) INFO 10-12 01:46:37 [backends.py:1094] Using cache directory: /root/.cache/vllm/torch_compile_cache/314df4af2a/rank_0_0/backbone for vLLM's torch.compile
+(EngineCore pid=59) INFO 10-12 01:46:37 [backends.py:1155] Dynamo bytecode transform time: 8.52 s
+(EngineCore pid=59) INFO 10-12 01:46:40 [backends.py:1094] Using cache directory: /root/.cache/vllm/torch_compile_cache/314df4af2a/rank_0_0/backbone for vLLM's torch.compile
+(EngineCore pid=59) INFO 10-12 01:46:40 [backends.py:1155] Dynamo bytecode transform time: 8.25 s
+(EngineCore pid=59) INFO 10-12 01:46:57 [backends.py:393] Compiling a graph for compile range (1, 16384) takes 20.50 s
+(EngineCore pid=59) INFO 10-12 01:47:01 [backends.py:393] Compiling a graph for compile range (1, 16384) takes 20.07 s
+(EngineCore pid=59) INFO 10-12 01:47:02 [backends.py:920] collected artifacts: 65 entries, 20 artifacts, 24567761 bytes total
+(EngineCore pid=59) INFO 10-12 01:47:02 [decorators.py:719] saved AOT compiled function to /root/.cache/vllm/torch_compile_cache/torch_aot_compile/be5964520cee5815a043f7478ea43088c5af935aa2ade1fc4f9bf14dc3de3e6b/rank_0_0/model
+(EngineCore pid=59) INFO 10-12 01:47:02 [monitor.py:53] torch.compile took 33.88 s in total
+(EngineCore pid=59) INFO 10-12 01:47:05 [backends.py:920] collected artifacts: 65 entries, 20 artifacts, 24567761 bytes total
+(EngineCore pid=59) INFO 10-12 01:47:05 [decorators.py:719] saved AOT compiled function to /root/.cache/vllm/torch_compile_cache/torch_aot_compile/be5964520cee5815a043f7478ea43088c5af935aa2ade1fc4f9bf14dc3de3e6b/rank_0_0/model
+(EngineCore pid=59) INFO 10-12 01:47:05 [monitor.py:53] torch.compile took 33.14 s in total
+(EngineCore pid=59) INFO 10-12 01:47:14 [monitor.py:81] Initial profiling/warmup run took 11.80 s
+(EngineCore pid=59) 
+(EngineCore pid=59) INFO 10-12 01:47:17 [monitor.py:81] Initial profiling/warmup run took 11.76 s
+[1ACapturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s](EngineCore pid=59) 
+[1ACapturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   2%|▏         | 1/51 [00:06<05:06,  6.13s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   4%|▍         | 2/51 [00:07<02:36,  3.18s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   6%|▌         | 3/51 [00:07<01:37,  2.02s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   8%|▊         | 4/51 [00:08<01:07,  1.44s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  10%|▉         | 5/51 [00:09<00:52,  1.14s/it]
+[1ACapturing CUDA graphs (PIECEWISE):   2%|▏         | 1/51 [00:06<05:09,  6.19s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  12%|█▏        | 6/51 [00:09<00:43,  1.04it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  14%|█▎        | 7/51 [00:10<00:35,  1.24it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   4%|▍         | 2/51 [00:07<02:35,  3.17s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  16%|█▌        | 8/51 [00:10<00:29,  1.45it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:11<00:25,  1.63it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   6%|▌         | 3/51 [00:07<01:33,  1.96s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:11<00:23,  1.76it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   8%|▊         | 4/51 [00:08<01:07,  1.44s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:12<00:22,  1.80it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [00:12<00:19,  1.95it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  10%|▉         | 5/51 [00:09<00:55,  1.20s/it]
+[1ACapturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [00:12<00:17,  2.13it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  12%|█▏        | 6/51 [00:09<00:44,  1.01it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [00:13<00:16,  2.18it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [00:13<00:15,  2.30it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  14%|█▎        | 7/51 [00:10<00:37,  1.16it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [00:14<00:15,  2.32it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  16%|█▌        | 8/51 [00:11<00:34,  1.23it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:11<00:29,  1.42it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [00:15<00:21,  1.58it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:11<00:24,  1.67it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [00:15<00:18,  1.80it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [00:15<00:13,  2.33it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:12<00:22,  1.79it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [00:15<00:11,  2.77it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [00:16<00:08,  3.39it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [00:16<00:07,  4.05it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [00:16<00:06,  4.51it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [00:13<00:22,  1.71it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [00:16<00:05,  5.07it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [00:16<00:04,  5.67it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [00:13<00:18,  2.02it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [00:16<00:04,  5.73it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [00:16<00:04,  5.77it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [00:13<00:16,  2.30it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [00:17<00:03,  5.96it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [00:17<00:03,  6.13it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [00:13<00:14,  2.48it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [00:17<00:03,  6.01it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [00:17<00:03,  6.29it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [00:17<00:03,  6.05it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [00:14<00:14,  2.39it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [00:17<00:03,  5.95it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [00:18<00:02,  6.46it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [00:18<00:02,  6.91it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [00:18<00:02,  6.40it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [00:18<00:02,  6.73it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [00:18<00:01,  7.01it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [00:18<00:01,  6.70it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [00:15<00:20,  1.64it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [00:18<00:01,  6.84it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [00:19<00:01,  6.42it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [00:15<00:17,  1.92it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [00:19<00:01,  6.54it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [00:15<00:12,  2.50it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [00:16<00:10,  3.06it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [00:19<00:01,  6.25it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [00:16<00:08,  3.54it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [00:19<00:01,  6.18it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [00:16<00:06,  4.18it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [00:19<00:00,  6.19it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [00:16<00:05,  4.86it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [00:19<00:00,  5.97it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [00:16<00:05,  5.21it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [00:20<00:00,  6.37it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [00:16<00:05,  4.51it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [00:20<00:00,  4.79it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [00:17<00:05,  4.98it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [00:17<00:04,  5.64it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [00:20<00:00,  4.40it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [00:17<00:03,  6.16it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [00:20<00:00,  5.15it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [00:17<00:03,  6.33it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [00:17<00:03,  6.73it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [00:17<00:02,  6.98it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [00:17<00:02,  7.07it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [00:18<00:02,  6.62it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [00:18<00:02,  6.38it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [00:18<00:02,  6.76it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:21<00:00,  2.29it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [00:18<00:02,  6.90it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:21<00:00,  2.34it/s]
+(EngineCore pid=59) 
+[1ACapturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (FULL):  50%|█████     | 1/2 [00:00<00:00,  9.78it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [00:18<00:02,  6.74it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  9.14it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  9.22it/s]
+
+[1ACapturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [00:18<00:02,  4.97it/s]
+(EngineCore pid=59) INFO 10-12 01:47:39 [model_runner.py:1066] Graph capturing finished in 23 secs, took 0.82 GiB
+[1ACapturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [00:19<00:02,  5.56it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [00:19<00:01,  6.09it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [00:19<00:01,  6.14it/s]
+(EngineCore pid=59) INFO 10-12 01:47:39 [gpu_worker.py:640] Available KV cache memory: 18.32 GiB
+[1ACapturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [00:19<00:01,  6.50it/s]
+(EngineCore pid=59) INFO 10-12 01:47:39 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9065 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9335. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(EngineCore pid=59) INFO 10-12 01:47:39 [kv_cache_utils.py:2395] GPU KV cache size: 260,778 tokens, Maximum concurrency for 36,864 tokens per request: 7.07x
+(EngineCore pid=59) INFO 10-12 01:47:39 [kernel_warmup.py:172] JIT kernel warmup starting.
+(EngineCore pid=59) INFO 10-12 01:47:39 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(EngineCore pid=59) INFO 10-12 01:47:39 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_text.
+[1ACapturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [00:19<00:01,  6.94it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [00:19<00:00,  7.14it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [00:19<00:00,  7.31it/s]
+(EngineCore pid=59) INFO 10-12 01:47:40 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(EngineCore pid=59) INFO 10-12 01:47:40 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+[1ACapturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [00:20<00:00,  6.13it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [00:20<00:00,  5.86it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [00:20<00:00,  4.74it/s]
+(EngineCore pid=59) INFO 10-12 01:47:40 [kernel_warmup.py:438] Using FlashInfer autotune cache file: /root/.cache/vllm/flashinfer_autotune_cache/0.6.18.post1/90a/cd21fe05da5019d7ad339639d7074d3889d966205db917652c7059032ca1fd72/autotune_configs.json
+[1ACapturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [00:20<00:00,  4.38it/s](EngineCore pid=59) 2026-10-12 01:47:40,845 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=59) INFO 10-12 01:47:40 [kernel_warmup.py:359] Running FlashInfer autotune with 16384 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096, 8192, 16384).
+
+[1ACapturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [00:20<00:00,  5.21it/s](EngineCore pid=59) 2026-10-12 01:47:40,927 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=59) 2026-10-12 01:47:40,949 - INFO - autotuner.py:2652 - flashinfer.jit: [Autotuner]: Saved 0 configs to /root/.cache/vllm/flashinfer_autotune_cache/0.6.18.post1/90a/cd21fe05da5019d7ad339639d7074d3889d966205db917652c7059032ca1fd72/autotune_configs.json (0 new, 0 from previous config)
+
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:21<00:00,  2.35it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:21<00:00,  2.32it/s]
+(EngineCore pid=59) 
+[1ACapturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (FULL):  50%|█████     | 1/2 [00:00<00:00,  7.98it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  8.95it/s]
+(EngineCore pid=59) INFO 10-12 01:47:42 [model_runner.py:1066] Graph capturing finished in 23 secs, took 0.82 GiB
+(EngineCore pid=59) INFO 10-12 01:47:43 [gpu_worker.py:640] Available KV cache memory: 18.32 GiB
+(EngineCore pid=59) INFO 10-12 01:47:43 [gpu_worker.py:655] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9200 is equivalent to --gpu-memory-utilization=0.9065 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9335. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(EngineCore pid=59) INFO 10-12 01:47:43 [kv_cache_utils.py:2395] GPU KV cache size: 260,778 tokens, Maximum concurrency for 36,864 tokens per request: 7.07x
+(EngineCore pid=59) INFO 10-12 01:47:43 [kernel_warmup.py:172] JIT kernel warmup starting.
+(EngineCore pid=59) INFO 10-12 01:47:43 [kernel_warmup.py:185] JIT kernel warmup finished in 0.00s.
+(EngineCore pid=59) INFO 10-12 01:47:43 [qwen_triton_warmup.py:294] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_text.
+(EngineCore pid=59) INFO 10-12 01:47:43 [qwen_vl_triton_warmup.py:98] Warmed M-RoPE Triton kernels.
+(EngineCore pid=59) INFO 10-12 01:47:43 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(EngineCore pid=59) INFO 10-12 01:47:44 [kernel_warmup.py:438] Using FlashInfer autotune cache file: /root/.cache/vllm/flashinfer_autotune_cache/0.6.18.post1/90a/cd21fe05da5019d7ad339639d7074d3889d966205db917652c7059032ca1fd72/autotune_configs.json
+(EngineCore pid=59) 2026-10-12 01:47:44,506 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=59) INFO 10-12 01:47:44 [kernel_warmup.py:359] Running FlashInfer autotune with 16384 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096, 8192, 16384).
+(EngineCore pid=59) 2026-10-12 01:47:44,589 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=59) 2026-10-12 01:47:44,614 - INFO - autotuner.py:2652 - flashinfer.jit: [Autotuner]: Saved 0 configs to /root/.cache/vllm/flashinfer_autotune_cache/0.6.18.post1/90a/cd21fe05da5019d7ad339639d7074d3889d966205db917652c7059032ca1fd72/autotune_configs.json (0 new, 0 from previous config)
+(EngineCore pid=59) 
+[1ACapturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   2%|▏         | 1/51 [00:00<00:30,  1.63it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   4%|▍         | 2/51 [00:01<00:32,  1.50it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   6%|▌         | 3/51 [00:02<00:32,  1.47it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   8%|▊         | 4/51 [00:02<00:29,  1.57it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  10%|▉         | 5/51 [00:03<00:30,  1.53it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  12%|█▏        | 6/51 [00:03<00:28,  1.58it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  14%|█▎        | 7/51 [00:04<00:24,  1.76it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  16%|█▌        | 8/51 [00:04<00:22,  1.94it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:05<00:20,  2.01it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:05<00:20,  2.00it/s](EngineCore pid=59) 
+[1ACapturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:06<00:19,  2.08it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [00:06<00:17,  2.28it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   2%|▏         | 1/51 [00:00<00:45,  1.10it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [00:06<00:15,  2.48it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [00:07<00:14,  2.51it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   4%|▍         | 2/51 [00:01<00:35,  1.39it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [00:07<00:14,  2.46it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   6%|▌         | 3/51 [00:02<00:32,  1.46it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [00:07<00:13,  2.59it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [00:08<00:11,  2.96it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [00:08<00:09,  3.58it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [00:08<00:07,  4.00it/s]
+[1ACapturing CUDA graphs (PIECEWISE):   8%|▊         | 4/51 [00:02<00:33,  1.39it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [00:08<00:06,  4.55it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [00:08<00:06,  4.74it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [00:08<00:05,  5.13it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  10%|▉         | 5/51 [00:03<00:29,  1.54it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [00:09<00:05,  5.07it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [00:09<00:05,  5.12it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [00:09<00:05,  4.86it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [00:09<00:04,  5.07it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  12%|█▏        | 6/51 [00:04<00:29,  1.53it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [00:10<00:05,  4.60it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [00:10<00:04,  4.98it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [00:10<00:04,  5.46it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  14%|█▎        | 7/51 [00:04<00:29,  1.48it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [00:10<00:04,  5.15it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [00:10<00:03,  5.53it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [00:10<00:03,  5.33it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  16%|█▌        | 8/51 [00:05<00:26,  1.62it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [00:11<00:03,  5.37it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [00:11<00:03,  5.09it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  18%|█▊        | 9/51 [00:05<00:22,  1.86it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [00:11<00:03,  4.71it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [00:11<00:02,  5.10it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  20%|█▉        | 10/51 [00:06<00:20,  2.02it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [00:11<00:02,  4.74it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [00:12<00:02,  5.20it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [00:12<00:02,  5.57it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  22%|██▏       | 11/51 [00:06<00:21,  1.88it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [00:12<00:02,  5.31it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [00:12<00:01,  5.66it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  24%|██▎       | 12/51 [00:07<00:18,  2.12it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [00:12<00:01,  5.06it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  25%|██▌       | 13/51 [00:07<00:16,  2.35it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [00:13<00:01,  4.49it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  27%|██▋       | 14/51 [00:07<00:14,  2.54it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [00:13<00:01,  4.41it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [00:13<00:01,  4.22it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  29%|██▉       | 15/51 [00:08<00:14,  2.46it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [00:13<00:01,  4.46it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [00:14<00:00,  4.55it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [00:14<00:00,  5.07it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [00:14<00:00,  5.58it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  31%|███▏      | 16/51 [00:08<00:16,  2.15it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [00:14<00:00,  5.45it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  33%|███▎      | 17/51 [00:08<00:12,  2.65it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:14<00:00,  5.88it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:14<00:00,  3.48it/s]
+(EngineCore pid=59) 
+[1ACapturing CUDA graphs (FULL):   0%|          | 0/35 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (FULL):   6%|▌         | 2/35 [00:00<00:02, 11.16it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  35%|███▌      | 18/51 [00:09<00:11,  2.87it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  37%|███▋      | 19/51 [00:09<00:09,  3.45it/s]
+[1ACapturing CUDA graphs (FULL):  11%|█▏        | 4/35 [00:00<00:02, 11.91it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  39%|███▉      | 20/51 [00:09<00:07,  4.03it/s]
+[1ACapturing CUDA graphs (FULL):  17%|█▋        | 6/35 [00:00<00:02, 11.20it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  41%|████      | 21/51 [00:09<00:06,  4.62it/s]
+[1ACapturing CUDA graphs (FULL):  23%|██▎       | 8/35 [00:00<00:02, 11.12it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  43%|████▎     | 22/51 [00:09<00:06,  4.32it/s]
+[1ACapturing CUDA graphs (FULL):  29%|██▊       | 10/35 [00:00<00:02, 10.48it/s]
+[1ACapturing CUDA graphs (FULL):  34%|███▍      | 12/35 [00:01<00:02, 11.07it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  45%|████▌     | 23/51 [00:10<00:06,  4.55it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  47%|████▋     | 24/51 [00:10<00:05,  4.88it/s]
+[1ACapturing CUDA graphs (FULL):  40%|████      | 14/35 [00:01<00:02, 10.36it/s]
+[1ACapturing CUDA graphs (FULL):  46%|████▌     | 16/35 [00:01<00:01, 11.02it/s]
+[1ACapturing CUDA graphs (FULL):  51%|█████▏    | 18/35 [00:01<00:01, 11.51it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  49%|████▉     | 25/51 [00:10<00:07,  3.44it/s]
+[1ACapturing CUDA graphs (FULL):  57%|█████▋    | 20/35 [00:01<00:01, 11.40it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  51%|█████     | 26/51 [00:10<00:06,  3.83it/s]
+[1ACapturing CUDA graphs (FULL):  63%|██████▎   | 22/35 [00:01<00:01, 11.43it/s]
+[1ACapturing CUDA graphs (FULL):  69%|██████▊   | 24/35 [00:02<00:00, 11.50it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  53%|█████▎    | 27/51 [00:11<00:06,  3.90it/s]
+[1ACapturing CUDA graphs (FULL):  74%|███████▍  | 26/35 [00:02<00:00, 11.69it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [00:11<00:05,  4.23it/s]
+[1ACapturing CUDA graphs (FULL):  80%|████████  | 28/35 [00:02<00:00, 11.62it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [00:11<00:04,  4.45it/s]
+[1ACapturing CUDA graphs (FULL):  86%|████████▌ | 30/35 [00:02<00:00, 11.99it/s]
+[1ACapturing CUDA graphs (FULL):  91%|█████████▏| 32/35 [00:02<00:00, 12.09it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [00:11<00:04,  4.39it/s]
+[1ACapturing CUDA graphs (FULL):  97%|█████████▋| 34/35 [00:02<00:00, 12.41it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 35/35 [00:03<00:00, 11.63it/s]
+
+[1ACapturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [00:12<00:04,  4.20it/s]
+(EngineCore pid=59) INFO 10-12 01:49:18 [model_runner.py:1066] Graph capturing finished in 19 secs, took 0.46 GiB
+(EngineCore pid=59) INFO 10-12 01:49:18 [gpu_worker.py:825] CUDA graph pool memory: 0.46 GiB (actual), 1.07 GiB (estimated), difference: 0.6 GiB (129.8%).
+(EngineCore pid=59) INFO 10-12 01:49:18 [gpu_worker.py:888] Free memory on device (78.66/79.18 GiB) on startup. Desired GPU memory utilization is (0.92, 72.84 GiB). Actual usage is 50.76 GiB for consumed memory (weights + non-torch), 3.76 GiB for peak activation, and 0.46 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=19017088082` (17.71 GiB) to fit into requested memory, or `--kv-cache-memory=25266029568` (23.53 GiB) to fully utilize gpu memory. Current kv cache memory in use is 18.32 GiB.
+[1ACapturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [00:12<00:04,  4.53it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [00:12<00:05,  3.53it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [00:12<00:04,  3.73it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  69%|██████▊   | 35/51 [00:13<00:03,  4.12it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [00:13<00:03,  4.15it/s]
+(EngineCore pid=59) INFO 10-12 01:49:19 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+[1ACapturing CUDA graphs (PIECEWISE):  73%|███████▎  | 37/51 [00:13<00:03,  4.25it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [00:13<00:02,  4.63it/s]
+(EngineCore pid=59) INFO 10-12 01:49:20 [core.py:372] init engine (profile, create kv cache, warmup model) took 173.25 s (compilation: 33.88 s)
+[1ACapturing CUDA graphs (PIECEWISE):  76%|███████▋  | 39/51 [00:14<00:03,  3.83it/s]
+(EngineCore pid=59) INFO 10-12 01:49:20 [kv_cache_utils.py:748] kv cache group sizes [784, 784, 784, 784]
+(EngineCore pid=59) INFO 10-12 01:49:20 [kv_cache_utils.py:749] kv lcm block sizes 784
+(EngineCore pid=59) INFO 10-12 01:49:20 [kernel.py:416] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+[1ACapturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [00:14<00:02,  4.29it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  80%|████████  | 41/51 [00:14<00:02,  3.56it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [00:14<00:02,  4.01it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  84%|████████▍ | 43/51 [00:14<00:01,  4.51it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [00:15<00:01,  4.69it/s]
+INFO 10-12 01:49:21 [hf.py:642] Detected the chat template content format to be 'openai'. You can set `--chat-template-content-format` to override this.
+[1ACapturing CUDA graphs (PIECEWISE):  88%|████████▊ | 45/51 [00:15<00:01,  4.90it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [00:15<00:00,  5.07it/s]
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 925.34it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ACapturing CUDA graphs (PIECEWISE):  92%|█████████▏| 47/51 [00:15<00:00,  5.35it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [00:15<00:00,  4.54it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  96%|█████████▌| 49/51 [00:16<00:00,  5.02it/s]
+[1ACapturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [00:16<00:00,  5.43it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:16<00:00,  3.85it/s]
+[1ACapturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:16<00:00,  3.05it/s]
+(EngineCore pid=59) 
+[1ACapturing CUDA graphs (FULL):   0%|          | 0/35 [00:00<?, ?it/s]
+[1ACapturing CUDA graphs (FULL):   6%|▌         | 2/35 [00:00<00:02, 11.57it/s]
+[1ACapturing CUDA graphs (FULL):  11%|█▏        | 4/35 [00:00<00:02, 11.75it/s]
+[1ACapturing CUDA graphs (FULL):  17%|█▋        | 6/35 [00:00<00:02, 11.35it/s]
+[1ACapturing CUDA graphs (FULL):  23%|██▎       | 8/35 [00:00<00:02, 11.56it/s]
+[1ACapturing CUDA graphs (FULL):  29%|██▊       | 10/35 [00:00<00:02, 12.00it/s]
+[1ACapturing CUDA graphs (FULL):  34%|███▍      | 12/35 [00:01<00:01, 11.94it/s]
+[1ACapturing CUDA graphs (FULL):  40%|████      | 14/35 [00:01<00:01, 11.10it/s]
+[1ACapturing CUDA graphs (FULL):  46%|████▌     | 16/35 [00:01<00:01, 11.40it/s]
+[1ACapturing CUDA graphs (FULL):  51%|█████▏    | 18/35 [00:01<00:01, 11.69it/s]
+[1ACapturing CUDA graphs (FULL):  57%|█████▋    | 20/35 [00:01<00:01, 10.82it/s]
+[1ACapturing CUDA graphs (FULL):  63%|██████▎   | 22/35 [00:02<00:01,  9.81it/s]
+[1ACapturing CUDA graphs (FULL):  69%|██████▊   | 24/35 [00:02<00:01, 10.21it/s]
+(EngineCore pid=59) WARNING 10-12 01:49:25 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topk_topp_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[1ACapturing CUDA graphs (FULL):  74%|███████▍  | 26/35 [00:02<00:00, 10.09it/s]
+(EngineCore pid=59) WARNING 10-12 01:49:25 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_stats_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[1ACapturing CUDA graphs (FULL):  80%|████████  | 28/35 [00:02<00:00, 10.67it/s]
+[1ACapturing CUDA graphs (FULL):  86%|████████▌ | 30/35 [00:02<00:00, 11.38it/s]
+[1ACapturing CUDA graphs (FULL):  91%|█████████▏| 32/35 [00:02<00:00, 12.00it/s]
+(EngineCore pid=59) WARNING 10-12 01:49:25 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_step_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[1ACapturing CUDA graphs (FULL):  97%|█████████▋| 34/35 [00:02<00:00, 12.41it/s]
+[1ACapturing CUDA graphs (FULL): 100%|██████████| 35/35 [00:03<00:00, 11.37it/s]
+(EngineCore pid=59) INFO 10-12 01:49:26 [model_runner.py:1066] Graph capturing finished in 21 secs, took 0.46 GiB
+(EngineCore pid=59) INFO 10-12 01:49:26 [gpu_worker.py:825] CUDA graph pool memory: 0.46 GiB (actual), 1.07 GiB (estimated), difference: 0.6 GiB (129.8%).
+(EngineCore pid=59) INFO 10-12 01:49:26 [gpu_worker.py:888] Free memory on device (78.66/79.18 GiB) on startup. Desired GPU memory utilization is (0.92, 72.84 GiB). Actual usage is 50.76 GiB for consumed memory (weights + non-torch), 3.76 GiB for peak activation, and 0.46 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=19017088082` (17.71 GiB) to fit into requested memory, or `--kv-cache-memory=25266029568` (23.53 GiB) to fully utilize gpu memory. Current kv cache memory in use is 18.32 GiB.
+(EngineCore pid=59) WARNING 10-12 01:49:27 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_mask_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(EngineCore pid=59) WARNING 10-12 01:49:27 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _gumbel_sample_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(EngineCore pid=59) INFO 10-12 01:49:28 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(EngineCore pid=59) INFO 10-12 01:49:28 [core.py:372] init engine (profile, create kv cache, warmup model) took 177.82 s (compilation: 33.14 s)
+(EngineCore pid=59) INFO 10-12 01:49:28 [kv_cache_utils.py:748] kv cache group sizes [784, 784, 784, 784]
+(EngineCore pid=59) INFO 10-12 01:49:28 [kv_cache_utils.py:749] kv lcm block sizes 784
+(EngineCore pid=59) INFO 10-12 01:49:28 [kernel.py:416] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+INFO 10-12 01:49:29 [hf.py:642] Detected the chat template content format to be 'openai'. You can set `--chat-template-content-format` to override this.
+
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]Rendering conversations: 100%|██████████| 48/48 [00:00<00:00, 950.58it/s]
+
+(EngineCore pid=59) WARNING 10-12 01:49:33 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topk_topp_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(EngineCore pid=59) WARNING 10-12 01:49:33 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_stats_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+(EngineCore pid=59) WARNING 10-12 01:49:34 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_step_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(EngineCore pid=59) WARNING 10-12 01:49:35 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _topp_sb_mask_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(EngineCore pid=59) WARNING 10-12 01:49:36 [jit_monitor.py:141] Triton kernel JIT compilation during inference: _gumbel_sample_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[1AProcessed prompts:   2%|▏         | 1/48 [00:12<09:47, 12.49s/it, est. speed input: 6.64 toks/s, output: 0.96 toks/s]
+[1AProcessed prompts:   4%|▍         | 2/48 [00:16<05:35,  7.29s/it, est. speed input: 10.34 toks/s, output: 1.55 toks/s]
+[1AProcessed prompts:  10%|█         | 5/48 [00:16<01:30,  2.10s/it, est. speed input: 29.89 toks/s, output: 4.74 toks/s]
+[1AProcessed prompts:  35%|███▌      | 17/48 [00:18<00:17,  1.78it/s, est. speed input: 94.34 toks/s, output: 16.38 toks/s]
+[1AProcessed prompts:  81%|████████▏ | 39/48 [00:20<00:02,  4.02it/s, est. speed input: 193.55 toks/s, output: 36.73 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:12<10:09, 12.97s/it, est. speed input: 8.25 toks/s, output: 1.31 toks/s]
+[1AProcessed prompts:  85%|████████▌ | 41/48 [00:22<00:02,  3.15it/s, est. speed input: 183.55 toks/s, output: 35.18 toks/s]
+[1AProcessed prompts:  90%|████████▉ | 43/48 [00:23<00:01,  3.37it/s, est. speed input: 190.59 toks/s, output: 37.31 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:23<00:00,  4.45it/s, est. speed input: 212.01 toks/s, output: 45.28 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:23<00:00,  4.45it/s, est. speed input: 212.01 toks/s, output: 45.28 toks/s]Processed prompts: 100%|██████████| 48/48 [00:23<00:00,  2.06it/s, est. speed input: 212.01 toks/s, output: 45.28 toks/s]
+
+[1ARendering conversations:   0%|          | 0/32 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 32/32 [00:00<00:00, 1563.14it/s]
+
+[1AProcessed prompts:   0%|          | 0/32 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   3%|▎         | 1/32 [00:00<00:17,  1.78it/s, est. speed input: 146.31 toks/s, output: 21.41 toks/s]
+[1AProcessed prompts:   6%|▋         | 2/32 [00:00<00:08,  3.44it/s, est. speed input: 255.09 toks/s, output: 42.26 toks/s]
+[1AProcessed prompts:  28%|██▊       | 9/32 [00:00<00:01, 18.34it/s, est. speed input: 990.69 toks/s, output: 210.98 toks/s]
+[1AProcessed prompts: 100%|██████████| 32/32 [00:00<00:00, 61.84it/s, est. speed input: 2960.30 toks/s, output: 707.01 toks/s]
+[1AProcessed prompts: 100%|██████████| 32/32 [00:00<00:00, 61.84it/s, est. speed input: 2960.30 toks/s, output: 707.01 toks/s]
+[1AProcessed prompts: 100%|██████████| 32/32 [00:00<00:00, 34.96it/s, est. speed input: 2960.30 toks/s, output: 707.01 toks/s]
+
+[1ARendering conversations:   0%|          | 0/32 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 32/32 [00:00<00:00, 1562.60it/s]
+
+[1AProcessed prompts:   0%|          | 0/32 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   4%|▍         | 2/48 [00:16<05:44,  7.49s/it, est. speed input: 13.00 toks/s, output: 2.11 toks/s]
+[1AProcessed prompts:   3%|▎         | 1/32 [00:00<00:17,  1.79it/s, est. speed input: 148.95 toks/s, output: 23.33 toks/s]
+[1AProcessed prompts:  34%|███▍      | 11/32 [00:00<00:01, 19.94it/s, est. speed input: 1320.17 toks/s, output: 204.63 toks/s]
+[1AProcessed prompts: 100%|██████████| 32/32 [00:00<00:00, 55.71it/s, est. speed input: 3226.70 toks/s, output: 681.30 toks/s]
+[1AProcessed prompts: 100%|██████████| 32/32 [00:00<00:00, 55.71it/s, est. speed input: 3226.70 toks/s, output: 681.30 toks/s]
+[1AProcessed prompts: 100%|██████████| 32/32 [00:00<00:00, 38.10it/s, est. speed input: 3226.70 toks/s, output: 681.30 toks/s]
+
+[1AProcessed prompts:  42%|████▏     | 20/48 [00:18<00:16,  1.72it/s, est. speed input: 107.09 toks/s, output: 20.44 toks/s]
+[1AProcessed prompts:  62%|██████▎   | 30/48 [00:19<00:06,  2.94it/s, est. speed input: 159.42 toks/s, output: 32.00 toks/s]
+[1AProcessed prompts:  71%|███████   | 34/48 [00:21<00:05,  2.60it/s, est. speed input: 162.17 toks/s, output: 34.35 toks/s]
+[1AProcessed prompts:  85%|████████▌ | 41/48 [00:23<00:02,  2.70it/s, est. speed input: 177.16 toks/s, output: 41.05 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:23<00:00,  3.90it/s, est. speed input: 207.45 toks/s, output: 52.17 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:23<00:00,  3.90it/s, est. speed input: 207.45 toks/s, output: 52.17 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:23<00:00,  2.02it/s, est. speed input: 207.45 toks/s, output: 52.17 toks/s]
+
+[1AFetching 24 files:   0%|          | 0/24 [00:00<?, ?it/s]
+[1AFetching 24 files: 100%|██████████| 24/24 [00:00<00:00, 1073.98it/s]
+
+[1AFetching 24 files:   0%|          | 0/24 [00:00<?, ?it/s]
+[1AFetching 24 files: 100%|██████████| 24/24 [00:00<00:00, 1177.16it/s]
+
+[1ALoading weights:   0%|          | 0/1184 [00:00<?, ?it/s]
+[1ALoading weights:   0%|          | 1/1184 [00:00<13:58,  1.41it/s]
+[1ALoading weights:   0%|          | 0/1184 [00:00<?, ?it/s]
+[1ALoading weights:   0%|          | 1/1184 [00:00<14:24,  1.37it/s]
+[1ALoading weights:   0%|          | 2/1184 [00:01<19:27,  1.01it/s]
+[1ALoading weights:   1%|          | 11/1184 [00:02<02:28,  7.88it/s]
+[1ALoading weights:   1%|▏         | 15/1184 [00:02<02:01,  9.59it/s]
+[1ALoading weights:   2%|▏         | 25/1184 [00:02<01:01, 18.82it/s]
+[1ALoading weights:   3%|▎         | 30/1184 [00:02<00:58, 19.76it/s]
+[1ALoading weights:   0%|          | 2/1184 [00:01<20:27,  1.04s/it]
+[1ALoading weights:   3%|▎         | 38/1184 [00:02<00:42, 27.01it/s]
+[1ALoading weights:   1%|          | 9/1184 [00:02<03:13,  6.06it/s]
+[1ALoading weights:   1%|          | 13/1184 [00:02<02:05,  9.31it/s]
+[1ALoading weights:   4%|▎         | 43/1184 [00:03<00:47, 23.82it/s]
+[1ALoading weights:   1%|▏         | 17/1184 [00:02<01:37, 11.95it/s]
+[1ALoading weights:   4%|▍         | 47/1184 [00:03<00:45, 24.84it/s]
+[1ALoading weights:   2%|▏         | 25/1184 [00:02<00:55, 20.97it/s]
+[1ALoading weights:   4%|▍         | 51/1184 [00:03<00:41, 27.02it/s]
+[1ALoading weights:   5%|▍         | 55/1184 [00:03<00:39, 28.59it/s]
+[1ALoading weights:   3%|▎         | 30/1184 [00:02<00:55, 20.88it/s]
+[1ALoading weights:   5%|▌         | 60/1184 [00:03<00:35, 31.42it/s]
+[1ALoading weights:   3%|▎         | 38/1184 [00:02<00:39, 29.23it/s]
+[1ALoading weights:   6%|▌         | 66/1184 [00:03<00:37, 29.58it/s]
+[1ALoading weights:   6%|▌         | 72/1184 [00:03<00:31, 35.13it/s]
+[1ALoading weights:   4%|▎         | 43/1184 [00:03<00:46, 24.53it/s]
+[1ALoading weights:   7%|▋         | 77/1184 [00:03<00:30, 36.16it/s]
+[1ALoading weights:   4%|▍         | 47/1184 [00:03<00:44, 25.34it/s]
+[1ALoading weights:   4%|▍         | 51/1184 [00:03<00:41, 27.10it/s]
+[1ALoading weights:   7%|▋         | 81/1184 [00:04<00:38, 28.56it/s]
+[1ALoading weights:   5%|▍         | 55/1184 [00:03<00:39, 28.41it/s]
+[1ALoading weights:   8%|▊         | 90/1184 [00:04<00:27, 39.83it/s]
+[1ALoading weights:   5%|▌         | 62/1184 [00:03<00:30, 36.62it/s]
+[1ALoading weights:   6%|▌         | 67/1184 [00:03<00:34, 32.67it/s]
+[1ALoading weights:   8%|▊         | 95/1184 [00:04<00:36, 29.68it/s]
+[1ALoading weights:   6%|▌         | 73/1184 [00:03<00:29, 38.22it/s]
+[1ALoading weights:   7%|▋         | 78/1184 [00:04<00:27, 40.93it/s]
+[1ALoading weights:   8%|▊         | 100/1184 [00:04<00:35, 30.59it/s]
+[1ALoading weights:   9%|▉         | 105/1184 [00:04<00:31, 33.75it/s]
+[1ALoading weights:   7%|▋         | 83/1184 [00:04<00:34, 32.26it/s]
+[1ALoading weights:  10%|▉         | 114/1184 [00:05<00:25, 42.77it/s]
+[1ALoading weights:   8%|▊         | 91/1184 [00:04<00:26, 40.62it/s]
+[1ALoading weights:  10%|█         | 119/1184 [00:05<00:24, 43.08it/s]
+[1ALoading weights:  10%|█         | 124/1184 [00:05<00:26, 39.67it/s]
+[1ALoading weights:   8%|▊         | 96/1184 [00:04<00:34, 31.56it/s]
+[1ALoading weights:  11%|█         | 132/1184 [00:05<00:24, 43.65it/s]
+[1ALoading weights:   8%|▊         | 100/1184 [00:04<00:39, 27.44it/s]
+[1ALoading weights:  12%|█▏        | 137/1184 [00:05<00:26, 39.72it/s]
+[1ALoading weights:   9%|▉         | 107/1184 [00:04<00:31, 34.42it/s]
+[1ALoading weights:  12%|█▏        | 144/1184 [00:05<00:23, 44.81it/s]
+[1ALoading weights:  10%|▉         | 118/1184 [00:05<00:21, 48.57it/s]
+[1ALoading weights:  13%|█▎        | 149/1184 [00:05<00:28, 35.85it/s]
+[1ALoading weights:  13%|█▎        | 153/1184 [00:06<00:29, 35.31it/s]
+[1ALoading weights:  10%|█         | 124/1184 [00:05<00:25, 40.90it/s]
+[1ALoading weights:  11%|█         | 133/1184 [00:05<00:22, 46.30it/s]
+[1ALoading weights:  13%|█▎        | 158/1184 [00:06<00:27, 37.67it/s]
+[1ALoading weights:  14%|█▍        | 168/1184 [00:06<00:19, 51.44it/s]
+[1ALoading weights:  12%|█▏        | 139/1184 [00:05<00:23, 44.21it/s]
+[1ALoading weights:  12%|█▏        | 145/1184 [00:05<00:22, 46.52it/s]
+[1ALoading weights:  15%|█▍        | 174/1184 [00:06<00:27, 36.77it/s]
+[1ALoading weights:  13%|█▎        | 151/1184 [00:05<00:26, 38.67it/s]
+[1ALoading weights:  16%|█▌        | 184/1184 [00:06<00:21, 47.52it/s]
+[1ALoading weights:  16%|█▌        | 190/1184 [00:06<00:24, 40.49it/s]
+[1ALoading weights:  13%|█▎        | 156/1184 [00:06<00:30, 33.35it/s]
+[1ALoading weights:  17%|█▋        | 199/1184 [00:06<00:19, 49.93it/s]
+[1ALoading weights:  14%|█▍        | 165/1184 [00:06<00:24, 41.78it/s]
+[1ALoading weights:  14%|█▍        | 171/1184 [00:06<00:22, 44.10it/s]
+[1ALoading weights:  15%|█▍        | 176/1184 [00:06<00:24, 40.84it/s]
+[1ALoading weights:  17%|█▋        | 206/1184 [00:07<00:28, 34.73it/s]
+[1ALoading weights:  16%|█▌        | 185/1184 [00:06<00:19, 51.02it/s]
+[1ALoading weights:  18%|█▊        | 211/1184 [00:07<00:26, 36.38it/s]
+[1ALoading weights:  16%|█▌        | 191/1184 [00:06<00:23, 42.81it/s]
+[1ALoading weights:  18%|█▊        | 218/1184 [00:07<00:23, 41.62it/s]
+[1ALoading weights:  19%|█▉        | 225/1184 [00:07<00:20, 45.73it/s]
+[1ALoading weights:  17%|█▋        | 200/1184 [00:06<00:20, 47.11it/s]
+[1ALoading weights:  20%|█▉        | 231/1184 [00:07<00:22, 43.05it/s]
+[1ALoading weights:  20%|██        | 238/1184 [00:08<00:23, 40.96it/s]
+[1ALoading weights:  17%|█▋        | 206/1184 [00:07<00:30, 32.30it/s]
+[1ALoading weights:  21%|██        | 243/1184 [00:08<00:24, 38.57it/s]
+[1ALoading weights:  19%|█▊        | 221/1184 [00:07<00:20, 47.52it/s]
+[1ALoading weights:  21%|██▏       | 253/1184 [00:08<00:20, 46.37it/s]
+[1ALoading weights:  19%|█▉        | 227/1184 [00:07<00:23, 40.47it/s]
+[1ALoading weights:  22%|██▏       | 258/1184 [00:08<00:25, 36.49it/s]
+[1ALoading weights:  20%|██        | 239/1184 [00:07<00:18, 50.01it/s]
+[1ALoading weights:  21%|██        | 245/1184 [00:08<00:19, 48.55it/s]
+[1ALoading weights:  22%|██▏       | 263/1184 [00:08<00:27, 33.39it/s]
+[1ALoading weights:  21%|██▏       | 253/1184 [00:08<00:18, 51.25it/s]
+[1ALoading weights:  23%|██▎       | 272/1184 [00:08<00:21, 41.56it/s]
+[1ALoading weights:  23%|██▎       | 277/1184 [00:09<00:21, 41.91it/s]
+[1ALoading weights:  22%|██▏       | 259/1184 [00:08<00:23, 39.73it/s]
+[1ALoading weights:  24%|██▍       | 282/1184 [00:09<00:23, 38.66it/s]
+[1ALoading weights:  24%|██▍       | 290/1184 [00:09<00:19, 46.92it/s]
+[1ALoading weights:  22%|██▏       | 266/1184 [00:08<00:21, 42.20it/s]
+[1ALoading weights:  23%|██▎       | 277/1184 [00:08<00:18, 49.40it/s]
+[1ALoading weights:  25%|██▌       | 296/1184 [00:09<00:22, 39.45it/s]
+[1ALoading weights:  24%|██▍       | 283/1184 [00:08<00:18, 48.08it/s]
+[1ALoading weights:  26%|██▌       | 303/1184 [00:09<00:19, 45.55it/s]
+[1ALoading weights:  25%|██▍       | 292/1184 [00:08<00:17, 51.67it/s]
+[1ALoading weights:  26%|██▌       | 309/1184 [00:09<00:24, 36.20it/s]
+[1ALoading weights:  25%|██▌       | 298/1184 [00:09<00:19, 46.37it/s]
+[1ALoading weights:  26%|██▌       | 306/1184 [00:09<00:18, 48.35it/s]
+[1ALoading weights:  27%|██▋       | 314/1184 [00:10<00:27, 31.97it/s]
+[1ALoading weights:  27%|██▋       | 318/1184 [00:10<00:26, 32.48it/s]
+[1ALoading weights:  26%|██▋       | 311/1184 [00:09<00:21, 39.87it/s]
+[1ALoading weights:  28%|██▊       | 330/1184 [00:10<00:17, 49.89it/s]
+[1ALoading weights:  27%|██▋       | 316/1184 [00:09<00:22, 38.59it/s]
+[1ALoading weights:  28%|██▊       | 327/1184 [00:09<00:16, 50.61it/s]
+[1ALoading weights:  28%|██▊       | 336/1184 [00:10<00:20, 40.82it/s]
+[1ALoading weights:  29%|██▉       | 344/1184 [00:10<00:17, 47.38it/s]
+[1ALoading weights:  28%|██▊       | 333/1184 [00:10<00:21, 38.78it/s]
+[1ALoading weights:  30%|██▉       | 350/1184 [00:10<00:21, 37.98it/s]
+[1ALoading weights:  29%|██▉       | 345/1184 [00:10<00:17, 48.74it/s]
+[1ALoading weights:  30%|███       | 357/1184 [00:10<00:19, 41.52it/s]
+[1ALoading weights:  30%|██▉       | 351/1184 [00:10<00:17, 47.34it/s]
+[1ALoading weights:  31%|███       | 362/1184 [00:11<00:24, 33.33it/s]
+[1ALoading weights:  30%|███       | 358/1184 [00:10<00:17, 46.15it/s]
+[1ALoading weights:  31%|███       | 363/1184 [00:10<00:19, 41.38it/s]
+[1ALoading weights:  31%|███       | 366/1184 [00:11<00:27, 29.86it/s]
+[1ALoading weights:  31%|███       | 368/1184 [00:10<00:22, 36.34it/s]
+[1ALoading weights:  32%|███▏      | 379/1184 [00:11<00:18, 44.68it/s]
+[1ALoading weights:  32%|███▏      | 380/1184 [00:10<00:16, 50.21it/s]
+[1ALoading weights:  33%|███▎      | 385/1184 [00:11<00:21, 36.37it/s]
+[1ALoading weights:  33%|███▎      | 386/1184 [00:11<00:19, 40.02it/s]
+[1ALoading weights:  34%|███▎      | 398/1184 [00:12<00:17, 44.22it/s]
+[1ALoading weights:  34%|███▎      | 398/1184 [00:11<00:15, 51.94it/s]
+[1ALoading weights:  34%|███▍      | 404/1184 [00:11<00:15, 50.50it/s]
+[1ALoading weights:  35%|███▍      | 411/1184 [00:11<00:14, 54.47it/s]
+[1ALoading weights:  35%|███▌      | 417/1184 [00:11<00:19, 40.10it/s]
+[1ALoading weights:  36%|███▌      | 422/1184 [00:12<00:19, 38.41it/s]
+[1ALoading weights:  37%|███▋      | 433/1184 [00:12<00:14, 50.48it/s]
+[1ALoading weights:  37%|███▋      | 439/1184 [00:12<00:18, 40.34it/s]
+[1ALoading weights:  34%|███▍      | 408/1184 [00:12<00:15, 51.61it/s]
+[1ALoading weights:  38%|███▊      | 450/1184 [00:12<00:13, 52.81it/s]
+[1ALoading weights:  35%|███▍      | 414/1184 [00:12<00:18, 41.22it/s]
+[1ALoading weights:  35%|███▌      | 419/1184 [00:12<00:21, 35.86it/s]
+[1ALoading weights:  36%|███▋      | 431/1184 [00:12<00:15, 49.99it/s]
+[1ALoading weights:  37%|███▋      | 438/1184 [00:12<00:16, 44.28it/s]
+[1ALoading weights:  38%|███▊      | 445/1184 [00:13<00:16, 45.63it/s]
+[1ALoading weights:  38%|███▊      | 451/1184 [00:13<00:15, 46.74it/s]
+[1ALoading weights:  39%|███▊      | 457/1184 [00:13<00:15, 45.71it/s]
+[1ALoading weights:  39%|███▊      | 457/1184 [00:12<00:15, 45.98it/s]
+[1ALoading weights:  39%|███▉      | 464/1184 [00:13<00:14, 49.22it/s]
+[1ALoading weights:  39%|███▉      | 465/1184 [00:12<00:14, 47.99it/s]
+[1ALoading weights:  40%|███▉      | 470/1184 [00:13<00:19, 35.84it/s]
+[1ALoading weights:  40%|███▉      | 471/1184 [00:13<00:19, 36.95it/s]
+[1ALoading weights:  40%|████      | 475/1184 [00:13<00:20, 35.29it/s]
+[1ALoading weights:  40%|████      | 476/1184 [00:13<00:18, 38.67it/s]
+[1ALoading weights:  41%|████      | 486/1184 [00:13<00:13, 49.97it/s]
+[1ALoading weights:  41%|████      | 485/1184 [00:14<00:16, 41.22it/s]
+[1ALoading weights:  41%|████▏     | 491/1184 [00:14<00:16, 42.30it/s]
+[1ALoading weights:  42%|████▏     | 496/1184 [00:14<00:15, 43.74it/s]
+[1ALoading weights:  42%|████▏     | 492/1184 [00:13<00:17, 40.38it/s]
+[1ALoading weights:  43%|████▎     | 504/1184 [00:14<00:14, 45.99it/s]
+[1ALoading weights:  43%|████▎     | 504/1184 [00:13<00:13, 49.86it/s]
+[1ALoading weights:  43%|████▎     | 509/1184 [00:14<00:15, 42.65it/s]
+[1ALoading weights:  43%|████▎     | 510/1184 [00:13<00:14, 47.97it/s]
+[1ALoading weights:  44%|████▍     | 518/1184 [00:14<00:13, 49.33it/s]
+[1ALoading weights:  44%|████▎     | 517/1184 [00:14<00:13, 48.59it/s]
+[1ALoading weights:  44%|████▍     | 523/1184 [00:14<00:16, 41.31it/s]
+[1ALoading weights:  45%|████▍     | 528/1184 [00:14<00:15, 41.08it/s]
+[1ALoading weights:  44%|████▍     | 524/1184 [00:15<00:19, 33.38it/s]
+[1ALoading weights:  46%|████▌     | 539/1184 [00:14<00:11, 55.02it/s]
+[1ALoading weights:  45%|████▌     | 538/1184 [00:15<00:13, 49.16it/s]
+[1ALoading weights:  46%|████▌     | 546/1184 [00:14<00:14, 43.30it/s]
+[1ALoading weights:  46%|████▌     | 545/1184 [00:15<00:15, 40.92it/s]
+[1ALoading weights:  47%|████▋     | 555/1184 [00:14<00:12, 52.22it/s]
+[1ALoading weights:  47%|████▋     | 557/1184 [00:15<00:12, 49.36it/s]
+[1ALoading weights:  47%|████▋     | 562/1184 [00:15<00:13, 45.98it/s]
+[1ALoading weights:  48%|████▊     | 563/1184 [00:15<00:13, 47.47it/s]
+[1ALoading weights:  48%|████▊     | 568/1184 [00:15<00:12, 48.33it/s]
+[1ALoading weights:  48%|████▊     | 571/1184 [00:15<00:12, 48.22it/s]
+[1ALoading weights:  48%|████▊     | 574/1184 [00:15<00:15, 39.71it/s]
+[1ALoading weights:  49%|████▉     | 579/1184 [00:15<00:17, 35.29it/s]
+[1ALoading weights:  49%|████▊     | 577/1184 [00:16<00:18, 33.10it/s]
+[1ALoading weights:  50%|█████     | 592/1184 [00:15<00:11, 49.93it/s]
+[1ALoading weights:  50%|████▉     | 591/1184 [00:16<00:12, 47.57it/s]
+[1ALoading weights:  51%|█████     | 598/1184 [00:15<00:14, 40.34it/s]
+[1ALoading weights:  51%|█████     | 598/1184 [00:16<00:14, 41.47it/s]
+[1ALoading weights:  52%|█████▏    | 610/1184 [00:16<00:11, 50.17it/s]
+[1ALoading weights:  51%|█████▏    | 608/1184 [00:16<00:11, 50.23it/s]
+[1ALoading weights:  52%|█████▏    | 616/1184 [00:16<00:11, 47.72it/s]
+[1ALoading weights:  52%|█████▏    | 615/1184 [00:16<00:12, 45.37it/s]
+[1ALoading weights:  53%|█████▎    | 623/1184 [00:16<00:10, 52.07it/s]
+[1ALoading weights:  53%|█████▎    | 622/1184 [00:17<00:11, 49.10it/s]
+[1ALoading weights:  53%|█████▎    | 628/1184 [00:17<00:13, 42.69it/s]
+[1ALoading weights:  53%|█████▎    | 629/1184 [00:16<00:14, 39.08it/s]
+[1ALoading weights:  54%|█████▎    | 634/1184 [00:16<00:14, 38.19it/s]
+[1ALoading weights:  53%|█████▎    | 633/1184 [00:17<00:15, 36.05it/s]
+[1ALoading weights:  54%|█████▍    | 644/1184 [00:16<00:10, 50.54it/s]
+[1ALoading weights:  54%|█████▍    | 643/1184 [00:17<00:11, 46.07it/s]
+[1ALoading weights:  55%|█████▍    | 649/1184 [00:17<00:11, 44.64it/s]
+[1ALoading weights:  55%|█████▍    | 651/1184 [00:17<00:13, 39.43it/s]
+[1ALoading weights:  55%|█████▌    | 654/1184 [00:17<00:12, 41.58it/s]
+[1ALoading weights:  56%|█████▌    | 663/1184 [00:17<00:10, 50.60it/s]
+[1ALoading weights:  56%|█████▌    | 663/1184 [00:18<00:10, 49.63it/s]
+[1ALoading weights:  57%|█████▋    | 670/1184 [00:17<00:10, 50.60it/s]
+[1ALoading weights:  57%|█████▋    | 669/1184 [00:18<00:10, 46.90it/s]
+[1ALoading weights:  57%|█████▋    | 677/1184 [00:17<00:10, 48.97it/s]
+[1ALoading weights:  57%|█████▋    | 675/1184 [00:18<00:10, 47.86it/s]
+[1ALoading weights:  57%|█████▋    | 680/1184 [00:18<00:13, 38.64it/s]
+[1ALoading weights:  58%|█████▊    | 683/1184 [00:17<00:14, 34.39it/s]
+[1ALoading weights:  59%|█████▉    | 698/1184 [00:17<00:09, 52.11it/s]
+[1ALoading weights:  58%|█████▊    | 685/1184 [00:18<00:14, 33.95it/s]
+[1ALoading weights:  59%|█████▉    | 698/1184 [00:18<00:09, 50.21it/s]
+[1ALoading weights:  60%|█████▉    | 705/1184 [00:18<00:11, 43.28it/s]
+[1ALoading weights:  59%|█████▉    | 704/1184 [00:19<00:12, 39.17it/s]
+[1ALoading weights:  60%|██████    | 716/1184 [00:18<00:09, 49.69it/s]
+[1ALoading weights:  60%|██████    | 716/1184 [00:19<00:09, 48.76it/s]
+[1ALoading weights:  61%|██████    | 722/1184 [00:18<00:09, 46.72it/s]
+[1ALoading weights:  62%|██████▏   | 730/1184 [00:18<00:09, 49.13it/s]
+[1ALoading weights:  61%|██████    | 722/1184 [00:19<00:10, 44.85it/s]
+[1ALoading weights:  61%|██████▏   | 727/1184 [00:19<00:10, 43.29it/s]
+[1ALoading weights:  62%|██████▏   | 736/1184 [00:18<00:11, 38.11it/s]
+[1ALoading weights:  62%|██████▏   | 732/1184 [00:19<00:12, 36.31it/s]
+[1ALoading weights:  63%|██████▎   | 741/1184 [00:19<00:11, 40.05it/s]
+[1ALoading weights:  62%|██████▏   | 736/1184 [00:19<00:12, 35.00it/s]
+[1ALoading weights:  63%|██████▎   | 751/1184 [00:19<00:08, 49.82it/s]
+[1ALoading weights:  62%|██████▎   | 740/1184 [00:20<00:12, 35.73it/s]
+[1ALoading weights:  63%|██████▎   | 751/1184 [00:20<00:08, 51.21it/s]
+[1ALoading weights:  64%|██████▍   | 757/1184 [00:19<00:10, 39.27it/s]
+[1ALoading weights:  65%|██████▍   | 769/1184 [00:19<00:08, 49.31it/s]
+[1ALoading weights:  64%|██████▍   | 757/1184 [00:20<00:11, 38.49it/s]
+[1ALoading weights:  65%|██████▌   | 775/1184 [00:19<00:08, 47.39it/s]
+[1ALoading weights:  65%|██████▍   | 766/1184 [00:20<00:08, 47.57it/s]
+[1ALoading weights:  66%|██████▌   | 783/1184 [00:19<00:08, 50.12it/s]
+[1ALoading weights:  65%|██████▌   | 772/1184 [00:20<00:09, 42.24it/s]
+[1ALoading weights:  66%|██████▌   | 783/1184 [00:20<00:07, 51.90it/s]
+[1ALoading weights:  67%|██████▋   | 789/1184 [00:20<00:10, 39.13it/s]
+[1ALoading weights:  67%|██████▋   | 796/1184 [00:20<00:08, 43.77it/s]
+[1ALoading weights:  67%|██████▋   | 789/1184 [00:21<00:10, 39.39it/s]
+[1ALoading weights:  68%|██████▊   | 808/1184 [00:20<00:07, 53.34it/s]
+[1ALoading weights:  67%|██████▋   | 796/1184 [00:21<00:08, 43.82it/s]
+[1ALoading weights:  69%|██████▉   | 814/1184 [00:20<00:07, 50.96it/s]
+[1ALoading weights:  68%|██████▊   | 807/1184 [00:21<00:07, 49.57it/s]
+[1ALoading weights:  69%|██████▉   | 822/1184 [00:20<00:06, 52.22it/s]
+[1ALoading weights:  69%|██████▊   | 813/1184 [00:21<00:07, 47.51it/s]
+[1ALoading weights:  70%|██████▉   | 828/1184 [00:20<00:07, 49.77it/s]
+[1ALoading weights:  69%|██████▉   | 820/1184 [00:21<00:07, 50.56it/s]
+[1ALoading weights:  71%|███████   | 835/1184 [00:20<00:06, 54.15it/s]
+[1ALoading weights:  70%|██████▉   | 826/1184 [00:21<00:08, 43.69it/s]
+[1ALoading weights:  71%|███████   | 841/1184 [00:21<00:08, 40.29it/s]
+[1ALoading weights:  71%|███████   | 836/1184 [00:21<00:06, 50.60it/s]
+[1ALoading weights:  71%|███████▏  | 846/1184 [00:21<00:08, 40.55it/s]
+[1ALoading weights:  74%|███████▎  | 871/1184 [00:21<00:03, 85.71it/s]
+[1ALoading weights:  71%|███████   | 842/1184 [00:22<00:08, 38.51it/s]
+[1ALoading weights:  79%|███████▊  | 930/1184 [00:21<00:01, 204.52it/s]
+[1ALoading weights:  72%|███████▏  | 849/1184 [00:22<00:07, 43.50it/s]
+[1ALoading weights:  86%|████████▌ | 1013/1184 [00:21<00:00, 360.70it/s]
+[1ALoading weights:  76%|███████▌  | 895/1184 [00:22<00:02, 128.06it/s]
+[1ALoading weights:  94%|█████████▍| 1111/1184 [00:21<00:00, 520.08it/s]
+[1ALoading weights:  83%|████████▎ | 983/1184 [00:22<00:00, 297.38it/s]
+[1ALoading weights: 100%|██████████| 1184/1184 [00:21<00:00, 54.30it/s] 
+
+[1ALoading weights:  90%|████████▉ | 1062/1184 [00:22<00:00, 415.43it/s]
+[1ALoading weights:  97%|█████████▋| 1145/1184 [00:22<00:00, 517.48it/s]
+[1ALoading weights: 100%|██████████| 1184/1184 [00:22<00:00, 51.86it/s] 
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+ordering: 2 fixed instructions run; judge calls 108; Claude so far ~$0.32
+opus_nospec/own/chain_0 round 0: instruction (1 attempt(s), ['claude-opus-5-5'], $0.04)
+opus48_pinned_noscores/own/chain_0 round 0: instruction (1 attempt(s), ['claude-opus-4-8'], $0.12)
+opus48_pinned/own/chain_0 round 0: instruction (1 attempt(s), ['claude-opus-4-8'], $0.12)
+
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 1070.46it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 1063.28it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:01<00:49,  1.06s/it, est. speed input: 199.43 toks/s, output: 7.53 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:01<00:50,  1.08s/it, est. speed input: 195.72 toks/s, output: 7.39 toks/s]
+[1AProcessed prompts:  85%|████████▌ | 41/48 [00:01<00:00, 45.88it/s, est. speed input: 7381.47 toks/s, output: 300.16 toks/s]
+[1AProcessed prompts:  85%|████████▌ | 41/48 [00:01<00:00, 44.11it/s, est. speed input: 7133.40 toks/s, output: 290.94 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 44.11it/s, est. speed input: 7850.31 toks/s, output: 358.77 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 45.88it/s, est. speed input: 7860.34 toks/s, output: 351.25 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 34.79it/s, est. speed input: 7850.31 toks/s, output: 358.77 toks/s]
+
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 34.83it/s, est. speed input: 7860.34 toks/s, output: 351.25 toks/s]
+
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 997.05it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 1001.35it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:01<01:04,  1.38s/it, est. speed input: 202.34 toks/s, output: 9.43 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:01<01:05,  1.39s/it, est. speed input: 197.18 toks/s, output: 9.36 toks/s]
+[1AProcessed prompts:  71%|███████   | 34/48 [00:01<00:00, 31.51it/s, est. speed input: 6044.20 toks/s, output: 342.49 toks/s]
+[1AProcessed prompts:  52%|█████▏    | 25/48 [00:01<00:01, 22.89it/s, est. speed input: 4321.99 toks/s, output: 249.35 toks/s]
+[1AProcessed prompts:  81%|████████▏ | 39/48 [00:01<00:00, 35.78it/s, est. speed input: 6404.20 toks/s, output: 401.19 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 31.51it/s, est. speed input: 7349.41 toks/s, output: 461.95 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 35.78it/s, est. speed input: 7085.41 toks/s, output: 488.95 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 27.47it/s, est. speed input: 7349.41 toks/s, output: 461.95 toks/s]
+
+[1ARendering conversations:   0%|          | 0/24 [00:00<?, ?it/s]Rendering conversations: 100%|██████████| 24/24 [00:00<00:00, 1077.68it/s]
+
+[1AProcessed prompts:   0%|          | 0/24 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts: 100%|██████████| 48/48 [00:01<00:00, 26.49it/s, est. speed input: 7085.41 toks/s, output: 488.95 toks/s]
+
+[1ARendering conversations:   0%|          | 0/24 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 24/24 [00:00<00:00, 1058.60it/s]
+
+[1AProcessed prompts:   0%|          | 0/24 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   4%|▍         | 1/24 [00:00<00:18,  1.23it/s, est. speed input: 310.66 toks/s, output: 18.49 toks/s]
+[1AProcessed prompts:   4%|▍         | 1/24 [00:00<00:19,  1.21it/s, est. speed input: 304.53 toks/s, output: 18.13 toks/s]
+[1AProcessed prompts: 100%|██████████| 24/24 [00:00<00:00,  1.23it/s, est. speed input: 6990.60 toks/s, output: 410.38 toks/s]
+[1AProcessed prompts: 100%|██████████| 24/24 [00:00<00:00, 27.97it/s, est. speed input: 6990.60 toks/s, output: 410.38 toks/s]
+
+[1AProcessed prompts: 100%|██████████| 24/24 [00:00<00:00,  1.21it/s, est. speed input: 6858.40 toks/s, output: 402.62 toks/s]Processed prompts: 100%|██████████| 24/24 [00:00<00:00, 27.45it/s, est. speed input: 6858.40 toks/s, output: 402.62 toks/s]
+opus48_pinned/own/chain_0 round 0: valid 65/80, median 7.879000008106232, under 0
+opus48_pinned_noscores/own/chain_0 round 0: valid 39/80, median 5.661874979734421, under 0
+opus_nospec/own/chain_0 round 0: valid 74/80, median 8.805562227964401, under 0
+ordering round 0: 3 instructions in 33s; Claude so far ~$1.0
+opus_nospec/own/chain_0 round 1: instruction (1 attempt(s), ['claude-opus-5-5'], $0.06)
+opus48_pinned_noscores/own/chain_0 round 1: instruction (1 attempt(s), ['claude-opus-4-8'], $0.08)
+opus48_pinned/own/chain_0 round 1: instruction (1 attempt(s), ['claude-opus-4-8'], $0.25)
+
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 894.16it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 902.15it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:01<01:19,  1.70s/it, est. speed input: 188.31 toks/s, output: 10.59 toks/s]
+[1AProcessed prompts:  79%|███████▉  | 38/48 [00:01<00:00, 29.14it/s, est. speed input: 6691.66 toks/s, output: 420.82 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:01<01:21,  1.74s/it, est. speed input: 181.90 toks/s, output: 10.94 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 29.14it/s, est. speed input: 8349.67 toks/s, output: 538.31 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 26.28it/s, est. speed input: 8349.67 toks/s, output: 538.31 toks/s]
+
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00,  1.74s/it, est. speed input: 8301.61 toks/s, output: 534.67 toks/s]Processed prompts: 100%|██████████| 48/48 [00:01<00:00, 26.13it/s, est. speed input: 8301.61 toks/s, output: 534.67 toks/s]
+
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 886.35it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1ARendering conversations:   0%|          | 0/24 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 24/24 [00:00<00:00, 837.45it/s]
+
+[1AProcessed prompts:   0%|          | 0/24 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   4%|▍         | 1/24 [00:01<00:23,  1.02s/it, est. speed input: 359.53 toks/s, output: 14.69 toks/s]
+[1AProcessed prompts:  58%|█████▊    | 14/24 [00:01<00:00, 16.47it/s, est. speed input: 4485.66 toks/s, output: 191.59 toks/s]
+[1AProcessed prompts: 100%|██████████| 24/24 [00:01<00:00, 16.47it/s, est. speed input: 7545.08 toks/s, output: 352.43 toks/s]
+[1AProcessed prompts: 100%|██████████| 24/24 [00:01<00:00, 20.68it/s, est. speed input: 7545.08 toks/s, output: 352.43 toks/s]
+
+[1ARendering conversations:   0%|          | 0/48 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 48/48 [00:00<00:00, 948.41it/s]
+
+[1AProcessed prompts:   0%|          | 0/48 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:01<01:16,  1.63s/it, est. speed input: 222.91 toks/s, output: 8.57 toks/s]
+[1AProcessed prompts:   8%|▊         | 4/48 [00:01<00:14,  2.95it/s, est. speed input: 833.42 toks/s, output: 36.14 toks/s]
+[1AProcessed prompts:  67%|██████▋   | 32/48 [00:01<00:00, 31.14it/s, est. speed input: 5901.47 toks/s, output: 338.67 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 31.14it/s, est. speed input: 8562.20 toks/s, output: 523.14 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 25.65it/s, est. speed input: 8562.20 toks/s, output: 523.14 toks/s]
+
+[1ARendering conversations:   0%|          | 0/24 [00:00<?, ?it/s]
+[1ARendering conversations: 100%|██████████| 24/24 [00:00<00:00, 801.27it/s]
+
+[1AProcessed prompts:   0%|          | 0/24 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]
+[1AProcessed prompts:   4%|▍         | 1/24 [00:01<00:23,  1.01s/it, est. speed input: 359.66 toks/s, output: 13.87 toks/s]
+[1AProcessed prompts:   2%|▏         | 1/48 [00:01<01:17,  1.65s/it, est. speed input: 220.02 toks/s, output: 8.46 toks/s]
+[1AProcessed prompts:  58%|█████▊    | 14/24 [00:01<00:00, 16.58it/s, est. speed input: 4519.52 toks/s, output: 203.74 toks/s]
+[1AProcessed prompts:  10%|█         | 5/48 [00:01<00:11,  3.71it/s, est. speed input: 1030.21 toks/s, output: 43.63 toks/s]
+[1AProcessed prompts: 100%|██████████| 24/24 [00:01<00:00, 16.58it/s, est. speed input: 7604.81 toks/s, output: 365.64 toks/s]
+[1AProcessed prompts: 100%|██████████| 24/24 [00:01<00:00, 20.84it/s, est. speed input: 7604.81 toks/s, output: 365.64 toks/s]
+
+[1AProcessed prompts:  60%|██████    | 29/48 [00:01<00:00, 27.52it/s, est. speed input: 5327.26 toks/s, output: 296.49 toks/s]
+[1AProcessed prompts: 100%|██████████| 48/48 [00:01<00:00, 27.52it/s, est. speed input: 8468.44 toks/s, output: 515.30 toks/s]Processed prompts: 100%|██████████| 48/48 [00:01<00:00, 25.37it/s, est. speed input: 8468.44 toks/s, output: 515.30 toks/s]
+opus48_pinned/own/chain_0 round 1: valid 71/80, median 4.5306250005960464, under 0
+opus48_pinned_noscores/own/chain_0 round 1: valid 73/80, median 5.999250173568726, under 0
+opus_nospec/own/chain_0 round 1: valid 70/80, median 7.500749707221985, under 0
+ordering round 1: 3 instructions in 32s; Claude so far ~$1.81
+Stopping app - local entrypoint completed.
+Exception ignored in atexit callback: <function _exit_function at 0x2b601d6dbd80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-12 01:56:16 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=59) INFO 10-12 01:56:16 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-12 01:56:16 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=59) INFO 10-12 01:56:16 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-12 01:56:16 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+WARNING 10-12 01:56:17 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+INFO 10-12 01:56:17 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-12 01:56:17 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-12 01:56:17 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-12 01:56:17 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-12 01:56:17 [core_client.py:751] [shutdown] MPClient: complete
+Exception ignored in atexit callback: <function _exit_function at 0x2ab0a49cbd80>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/util.py", line 357, in _exit_function
+(EngineCore pid=59) INFO 10-12 01:56:19 [core.py:1342] [shutdown] EngineCore: trigger received signal=SIGINT
+(EngineCore pid=59) INFO 10-12 01:56:19 [core.py:1493] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=59) INFO 10-12 01:56:19 [core.py:1524] [shutdown] EngineCore: request processing complete; starting resource teardown
+    p.join()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 149, in join
+(EngineCore pid=59) INFO 10-12 01:56:19 [core.py:1355] [shutdown] EngineCore: exiting busy loop
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 43, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 
+INFO 10-12 01:56:19 [utils.py:632] [shutdown] Process manager: send sigterm to process EngineCore
+Runner terminated.
+WARNING 10-12 01:56:19 [core_client.py:791] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+Runner terminated.
+INFO 10-12 01:56:19 [core_client.py:744] [shutdown] MPClient: start timeout=default
+INFO 10-12 01:56:19 [core_client.py:746] [shutdown] MPClient: stopping engine manager
+INFO 10-12 01:56:19 [core_client.py:748] [shutdown] MPClient: engine manager stopped
+INFO 10-12 01:56:19 [core_client.py:749] [shutdown] MPClient: cleaning up background resources
+INFO 10-12 01:56:19 [core_client.py:751] [shutdown] MPClient: complete
+Runner terminated.
+[modal-client] 2026-10-11T18:56:23-0700 Timed out waiting for final app logs.
+✓ App completed. View run at 
+https://modal.com/apps/redwood-default/main/ap-ZiVHwXThw2lAlp2VdcRcJ9
