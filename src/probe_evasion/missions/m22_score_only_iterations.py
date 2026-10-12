@@ -1279,10 +1279,10 @@ def fig_rounds(root: Path, target: str) -> Path:
                 ax.axis("off")
                 continue
             rounds = chain_rounds(grid[(w, target)][j])
-            ax.scatter([-3 + rng.uniform(-0.35, 0.35) for _ in cal], cal, s=3, color=NORMAL, alpha=0.35, linewidths=0)
-            ax.scatter([-1.8 + rng.uniform(-0.35, 0.35) for _ in plain], plain, s=6, color=PLAIN, alpha=0.6, linewidths=0)
+            ax.scatter([-3.1 + rng.uniform(-0.3, 0.3) for _ in cal], cal, s=3, color=NORMAL, alpha=0.35, linewidths=0)
+            ax.scatter([-2.0 + rng.uniform(-0.3, 0.3) for _ in plain], plain, s=6, color=PLAIN, alpha=0.6, linewidths=0)
             if ref:
-                ax.scatter([-0.9 + rng.uniform(-0.25, 0.25) for _ in ref], ref, s=6, color=INK, alpha=0.5, linewidths=0)
+                ax.scatter([-0.95 + rng.uniform(-0.25, 0.25) for _ in ref], ref, s=6, color=INK, alpha=0.5, linewidths=0)
             meds = []
             for r in rounds:
                 x0 = r["round"]
@@ -1310,21 +1310,21 @@ def fig_rounds(root: Path, target: str) -> Path:
                 for x0, y0, enough in meds:
                     ax.plot([x0], [y0], "o", ms=3.5 if enough else 4.5, color=INK, mfc=INK if enough else "white", mew=1)
             ax.axhline(line, color="#e34948", ls="--", lw=1.1)
-            ticks = [-3, -1.8] + ([-0.9] if ref else []) + list(range(0, len(rounds), 3))
-            labels = ["normal", "plain"] + (["m19"] if ref else []) + [str(k) for k in range(0, len(rounds), 3)]
-            ax.set_xticks(ticks, labels, fontsize=8)
-            ax.set_xlim(-3.6, max(len(rounds), 1) - 0.4)
+            ticks = [-3.1, -2.0] + ([-0.95] if ref else []) + list(range(0, len(rounds), 3))
+            labels = ["normal", "plain"] + (["m19\ninstr."] if ref else []) + [str(k) for k in range(0, len(rounds), 3)]
+            ax.set_xticks(ticks, labels, fontsize=7)
+            ax.set_xlim(-3.7, max(len(rounds), 1) - 0.4)
             ax.spines[["top", "right"]].set_visible(False)
             ax.set_title(f"{WRITER_NAMES.get(w, w)}, {grid[(w, target)][j].name}", fontsize=9.5, loc="left", color=INK)
             if j == 0:
                 ax.set_ylabel("probe score (log-odds)", fontsize=9)
             if i == len(writers) - 1:
-                ax.set_xlabel("round (0 = zero-shot); number = valid replies of 80", fontsize=8.5)
+                ax.set_xlabel("round (0 = zero-shot); number = valid replies among the problems shown", fontsize=8.5)
     fig.suptitle(f"{TARGET_NAMES.get(target, target)} ({probe}), instruction removed: every valid reply per round\n"
-                 f"(" + ("eval problems whose answer the round's instruction contains are left out: red -k = problems dropped; " if LEAK_VIEW["drop"] else "all eval problems, incl. ones whose answer the instruction contains; ") + f"faint rings = invalid, faint x = unfinished at 96 tokens; black line = median of valid, hollow = under half valid; dashed = 1% line {line:+.2f}; '4.8' at the top = that "
+                 f"(" + ("eval problems whose answer the round's instruction contains are left out: red -k = problems dropped;\n" if LEAK_VIEW["drop"] else "all eval problems, incl. ones whose answer the instruction contains; ") + f"faint rings = invalid, faint x = unfinished at 96 tokens; black line = median of valid, hollow = under half valid;\n dashed = 1% line {line:+.2f}; '4.8' at the top = that "
                  f"round's instruction was written by the fallback model claude-opus-4-8"
                  + ("; m19 = m19's frozen instruction on the same 80 prompts" if ref else "") + ")", fontsize=10.5, x=0.01, ha="left")
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0, 1, 0.955))
     path = root / f"rounds_dots_{target}.png"
     fig.savefig(path, dpi=140)
     plt.close(fig)
@@ -1437,14 +1437,57 @@ def fig_early(root: Path) -> Path:
     return path
 
 
+def fig_test(root: Path) -> Path:
+    """Frozen test (100 fresh problems x 5 seeds, instruction removed): every valid reply's score per arm aimed at each
+    target probe, next to normal no-maths replies, plain answers and m19's frozen instruction; the 1% line; counts of
+    valid replies under the line above each strip."""
+    plt = _plt()
+    targets, lines = load_lines(root)
+    rows = jl(root / "test_rows.jsonl")
+    frozen = json.loads((root / "frozen.json").read_text())
+    cal = jl(root / "calibration_scores.jsonl")
+    fig, axes = plt.subplots(len(targets), 1, figsize=(17, 5.2 * len(targets)), squeeze=False)
+    rng = random.Random(0)
+    for i, (target, probe) in enumerate(targets.items()):
+        ax = axes[i][0]
+        line = line_logit(lines, probe)
+        arms = ["plain"] + [a for a, v in frozen.items() if v.get("target") == target] + [f"m19/s2_{target}"]
+        strips = [("normal", [r["peaks"][probe] for r in cal], NORMAL)]
+        for a in arms:
+            colour = PLAIN if a == "plain" else INK if a.startswith("m19") else WRITER_COLOURS.get(a.split("/")[0], "#888")
+            short = {"opus": "Opus", "opus_noscores": "Opus\nno scores", "q27": "Qwen-27B", "q122": "Qwen-122B"}
+            w, _, rest = a.partition("/" + target + "/")
+            label = ("plain" if a == "plain" else f"m19 frozen\ninstruction" if a.startswith("m19") else
+                     f"{short.get(w, w)}\n{rest.replace('chain_', 'chain ').replace('@last', '')}\n"
+                     + ("last round" if a.endswith("@last") else f"best: r{frozen[a]['round']}"))
+            strips.append((label, [r["peaks"][probe] for r in rows if r["key"] == a and r["valid"]], colour))
+        for k, (label, ys, colour) in enumerate(strips):
+            ax.scatter([k + rng.uniform(-0.32, 0.32) for _ in ys], ys, s=3, color=colour, alpha=0.4, linewidths=0)
+            if ys:
+                ax.plot([k - 0.35, k + 0.35], [np.median(ys)] * 2, color=INK, lw=1.5)
+            ax.text(k, 1.0, f"{sum(y <= line for y in ys)}/{len(ys)}", transform=ax.get_xaxis_transform(), ha="center", va="bottom", fontsize=6.5)
+        ax.axhline(line, color="#e34948", ls="--", lw=1.1)
+        ax.set_xticks(range(len(strips)), [s_[0] for s_ in strips], fontsize=6.5)
+        ax.set_ylabel("probe score (log-odds)")
+        ax.set_title(f"{TARGET_NAMES.get(target, target)} ({probe}), frozen test, instruction removed: valid replies "
+                     f"(numbers on top = valid under the 1% line / valid; bar = median)", fontsize=10, loc="left", pad=14)
+        ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    path = root / "test_dots.png"
+    fig.savefig(path, dpi=140)
+    plt.close(fig)
+    return path
+
+
 def median_row(rows: list[dict], probe: str) -> dict | None:
     v = sorted((r for r in rows if r["valid"]), key=lambda r: r["peaks"][probe])
     return v[len(v) // 2] if v else None
 
 
 def fig_traces(root: Path, writer: str = "opus") -> Path:
-    """Per target: the median plain reply, the median valid round-0 (zero-shot) reply and the median valid reply of the
-    frozen (best) round, for the writer's chain with the lowest frozen median; per-token log-odds and running average."""
+    """Per target, for the writer's chain with the lowest frozen median: plain, round-0 (zero-shot) and best-round
+    replies to the same eval prompt (the prompt whose best-round score is the median); per-token log-odds and the
+    running average."""
     plt = _plt()
     targets, lines = load_lines(root)
     plain = jl(root / "plain_eval.jsonl")
@@ -1459,9 +1502,15 @@ def fig_traces(root: Path, writer: str = "opus") -> Path:
         d = min(ds, key=lambda d: best_round(d)["stats"]["median"])
         rounds = chain_rounds(d)
         b = best_round(d)
-        panels = [("plain answer (median)", median_row(plain, probe)),
-                  ("round 0, zero-shot (median valid)", median_row(rounds[0]["rows"] or [], probe)),
-                  (f"best round {b['round']} (median valid)", median_row(b["rows"], probe))]
+        # critic 3: the same (problem, seed) in all three panels: among prompts valid in plain, round 0 and the best
+        # round, the one whose best-round score is the median
+        key = lambda r: (r["task"]["id"], r["seed"])
+        by = [{key(r): r for r in rows if r["valid"]} for rows in (plain, rounds[0]["rows"] or [], b["rows"])]
+        common = sorted(set(by[0]) & set(by[1]) & set(by[2]), key=lambda k: by[2][k]["peaks"][probe])
+        pick = common[len(common) // 2] if common else None
+        who = lambda r: "" if not r.get("answered_by") or r["answered_by"] == WRITERS["opus"]["model"] else f" (written by {r['answered_by']})"
+        panels = [("plain answer", by[0].get(pick)), ("round 0, zero-shot" + who(rounds[0]), by[1].get(pick)),
+                  (f"best round {b['round']}" + who(b), by[2].get(pick))]
         for j, (title, r) in enumerate(panels):
             ax = axes[i][j]
             if r is None:
@@ -1560,6 +1609,7 @@ def report(out_dir: str = str(RUNS), monitor_name: str = "qwen35_27b") -> None:
     paths += [fig_traces(root, w) for w in sorted({w for w, _ in chains_by(root)})]
     if (root / "test_rows.jsonl").exists():
         test_report(root)
+        paths.append(fig_test(root))
     print("\n".join(map(str, paths)))
 
 
