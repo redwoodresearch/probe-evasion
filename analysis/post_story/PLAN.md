@@ -133,3 +133,13 @@ Smuggling Capabilities", to be believed before use.
   the median attempt, with invalid attempts counted as no movement).
 - Still needed for the eval: volitional smuggling across monitored-model size with reasoning on (m32/m33 cover parts);
   probes from the literature; a definition of the effort scale and of acceptable task success.
+
+### Iteration 6 (2026-10-12)
+- v6.3 published (same link as v5's draft page); round 3 graded 7/10, fixes applied without re-review.
+- m36 final: across 11 prompt-writers by ECI, ordering S rises 0.17 per 10 ECI (Spearman 0.95); maths 0.03 (0.07 on
+  valid replies; stronger writers break more answers); nothing reaches the 1% line. First real trend for the eval.
+- m32 test running (GPU cap raised to $420). Search: the answer reading moves 2–3 log-odds; the whole-output reading
+  barely moves, because Qwen keeps writing digit arithmetic in its reasoning.
+- Launched m37 (does the trend hold on program output, with 6 maths chains, and on a 9B monitored model?) and m38 (the
+  volitional track across 9B/27B/122B, reasoning off/on, plus single-thread self-iteration).
+- v7 writer started, restructured around the eval.
