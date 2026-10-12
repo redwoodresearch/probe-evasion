@@ -39,7 +39,7 @@ a { color:var(--accent); }
 <main>
 <header>
 <h1>Probe evasion: status</h1>
-<p class="sub">Snapshot at Monday 12 October, 13:15 Pacific. Main focus: the matched on/off switch sweep on Qwen3.5-27B.</p>
+<p class="sub">Snapshot at Monday 12 October, 14:45 Pacific. Main focus: the matched on/off switch sweep on Qwen3.5-27B.</p>
 </header>
 
 <section>
@@ -69,11 +69,11 @@ a { color:var(--accent); }
 <div class="card wrap">
 <table>
 <tr><th>Experiment</th><th>What it answers</th><th>State</th><th>Expected</th></tr>
-<tr><td><b>Matched switch sweep, Qwen3.5-27B</b> <span class="pill main">main</span></td><td>Does the capability trend hold when only the ON/OFF switch differs, read with the instruction in view? 11 writers, maths and ordering, new re-read probes, compliance in feedback.</td><td><span class="pill run">round 0</span></td><td>searches ~18:00–20:00, tests +1–2 h</td></tr>
+<tr><td><b>Matched switch sweep, Qwen3.5-27B</b> <span class="pill main">main</span></td><td>Does the capability trend hold when only the ON/OFF switch differs, read with the instruction in view? 11 writers, maths and ordering, new re-read probes, compliance in feedback.</td><td><span class="pill run">searching (sped up)</span></td><td>searches ~16:30–17:30, verdict draft ~19:30–20:00</td></tr>
 <tr><td><b>100-round searches</b></td><td>Does continued effort keep making progress? GPT-6 Sol and Opus 5.5 (medium), same setup as the main sweep.</td><td><span class="pill run">relaunching</span></td><td>a few hours per task</td></tr>
-<tr><td><b>On its own (volitional)</b></td><td>Can Qwen 9B / 27B / 122B / 397B hide its work when told how the probe reads it, reasoning off and on?</td><td><span class="pill run">reasoning-on tests, 397B</span></td><td>later today</td></tr>
-<tr><td><b>Sweep extension</b></td><td>Extra maths searches per writer (third task and 9B already done).</td><td><span class="pill run">final test</span></td><td>~13:15, then write-up</td></tr>
-<tr><td><b>Less feedback</b></td><td>Does the trend need per-token scores? No-score, one-score and flag-only arms (old unmatched design).</td><td><span class="pill run">maths search</span></td><td>~16:00, then tests</td></tr>
+<tr><td><b>On its own (volitional)</b></td><td>Can Qwen 9B / 27B / 122B hide its work when told how the probe reads it, reasoning off and on? (397B paused: widgets first.)</td><td><span class="pill run">reasoning-on tests</span></td><td>later today</td></tr>
+
+
 <tr><td><b>Robustness checks</b></td><td>Other readouts, tails, naturalness, text monitor, length control on the capability sweep.</td><td><span class="pill run">twin tests</span></td><td>~14:15, then write-up</td></tr>
 <tr><td><b>Monitored-model axis</b></td><td>Qwen3.8-27B, Qwen3.5-397B, DeepSeek V4 Flash: all 8 probes built and passing.</td><td><span class="pill pause">paused</span></td><td>resumes after the main sweep</td></tr>
 </table>
@@ -93,7 +93,6 @@ a { color:var(--accent); }
 <div class="card">
 <h2>Waiting on you</h2>
 <ul>
-<li>Stop the less-feedback and writer-effort style experiments that use the old unmatched design? (Writer effort has since finished.)</li>
 <li>Which new concepts to scout first.</li>
 <li>Title for the write-up.</li>
 </ul>

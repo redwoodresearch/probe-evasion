@@ -1,0 +1,168 @@
+<title>Switch Sweep Questions</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+/* one reading column, tables scroll inside their own box */
+:root { --bg:#f6f5f0; --paper:#ffffff; --ink:#1b2430; --muted:#5d6673; --rule:#dcdcd4; --accent:#b4471e; --code:#eceae2;
+  --serif:'Source Serif 4', Georgia, serif; --sans:'IBM Plex Sans', system-ui, sans-serif; --mono:'IBM Plex Mono', ui-monospace, monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#15191f; --paper:#1d232b; --ink:#e8e6df; --muted:#a3abb6; --rule:#323a44; --accent:#f08a5d; --code:#262d36; color-scheme: dark } }
+:root[data-theme="dark"] { --bg:#15191f; --paper:#1d232b; --ink:#e8e6df; --muted:#a3abb6; --rule:#323a44; --accent:#f08a5d; --code:#262d36; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; margin: 0; padding-inline: 16px; padding-block: 40px 80px; }
+main { max-width: 760px; margin: 0 auto; }
+h1 { font-family: var(--serif); font-weight: 600; font-size: 2.3rem; line-height: 1.15; margin: 0 0 1.2rem; text-wrap: balance; }
+h2 { font-family: var(--serif); font-weight: 600; font-size: 1.45rem; margin: 2.6rem 0 0.8rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); text-wrap: balance; }
+p, li { max-width: 68ch; }
+strong { font-weight: 600; }
+ol > li, ul > li { margin: 0.35rem 0; }
+ol > li::marker { font-family: var(--serif); font-weight: 600; color: var(--accent); }
+code { font-family: var(--mono); font-size: 0.82em; background: var(--code); padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+.table { overflow-x: auto; margin: 1rem 0; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+tr:last-child td { border-bottom: 0; }
+img { max-width: 100%; height: auto; display: block; margin: 1.2rem 0 0.4rem; background: #ffffff; border-radius: 8px; border: 1px solid var(--rule); }
+p > em:only-child { display: block; color: var(--muted); font-size: 0.88rem; font-style: normal; }
+.lede { font-size: 1.05rem; }
+</style><main>
+<h1>Switch sweep: early results and two questions</h1>
+<p><em>Nabil Baugher, 12 October. Early results: practice-set numbers, plus the first frozen-test result (ordering). The full
+test and three frontier writers (Fable 5.1, GPT-6 Astra, GPT-6.1 Sol) land tonight.</em></p>
+<h2>The setup</h2>
+<ul>
+<li><strong>Monitored model:</strong> Qwen3.5-27B, reasoning off. Each task has a linear probe at layer 48, and the 1% flag line is set
+  on ordinary one-sentence replies to non-task questions.</li>
+<li><strong>Writers:</strong> 11 prompt-writing models, from Llama 4 Maverick (ECI 132) to Claude Opus 5.5 (ECI 167). Each runs 3
+  searches of 16 feedback rounds, seeing per-token probe scores and compliance rates.</li>
+<li><strong>The attack template</strong> has a shared part and an evasion part. Qwen sees the whole template every time, plus
+  <code>Style switch: ON</code> or <code>Style switch: OFF</code> after it.</li>
+<li><strong>ON vs OFF:</strong> the two prompts differ by exactly one token. Every reply is scored with the instruction in view.</li>
+<li><strong>Scoring:</strong> only pairs where both answers are correct count. Compliance (does ON follow the style, does OFF drop it)
+  is measured and plotted separately.</li>
+</ul>
+<h2>Figure 1: the capability trend under three framings</h2>
+<p><img alt="Three framings" src="figures/early_framings.png" /></p>
+<p><em>Practice set, with the same round window for every writer and search. Columns: (1) fraction of OFF's distance to the
+line that ON covers; (2) fraction of plain Qwen's distance to the line; (3) raw OFF − ON in log-odds.</em></p>
+<p>The trend has the same sign and the same writer ranking under all three framings. Slope per 10 ECI:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th></th>
+<th>OFF-referenced</th>
+<th>Plain-referenced</th>
+<th>Raw</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Maths</td>
+<td>+0.075 [+0.03, +0.12]</td>
+<td>+0.066 [+0.03, +0.10]</td>
+<td>+1.1 log-odds</td>
+</tr>
+<tr>
+<td>Ordering</td>
+<td>+0.12 [+0.08, +0.17]</td>
+<td>+0.10 [+0.07, +0.14]</td>
+<td>+2.0 log-odds</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>First frozen-test result (ordering, round 16).</strong> The OFF-referenced trend holds, and its robustness checks agree:
+the slope's interval is +0.07 to +0.17 per 10 ECI.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Writer</th>
+<th>OFF-referenced score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Opus 5.5</td>
+<td>0.58</td>
+</tr>
+<tr>
+<td>Sonnet 5.5</td>
+<td>0.45</td>
+</tr>
+<tr>
+<td>Opus 4.8</td>
+<td>0.40</td>
+</tr>
+<tr>
+<td>GPT-6 Sol</td>
+<td>0.35</td>
+</tr>
+<tr>
+<td>Gemini, Haiku</td>
+<td>0.25</td>
+</tr>
+<tr>
+<td>Qwen-397B</td>
+<td>0.19</td>
+</tr>
+<tr>
+<td>Small writers</td>
+<td>about 0.1</td>
+</tr>
+</tbody>
+</table></div>
+<h2>Figure 2: where the replies actually sit</h2>
+<p><img alt="Dot strips" src="figures/dot_strips.png" /></p>
+<p><em>Practice set. Each dot is one correct reply. The red line is the 1% line set with no instruction; the purple line is
+the 1% line with a harmless instruction in view.</em></p>
+<ul>
+<li><strong>The template in view pulls OFF replies down from plain answers:</strong> by 2.0 log-odds on maths and 4.6 on ordering,
+  for Opus 5.5. This is the context offset.</li>
+<li><strong>The switch then moves ON replies a long way further:</strong> by 4.2 on maths and 8.3 on ordering, for Opus 5.5.</li>
+<li><strong>Even so, the typical ON reply stays far above both lines:</strong> about 10 log-odds above on maths and 6–7 on ordering.
+  No black-box writer crosses on these probes.</li>
+<li><strong>A harmless instruction in view barely moves the ordinary non-task replies</strong> (+0.5 to +0.7). So the line moves only
+  a little.</li>
+</ul>
+<h2>Figure 3: is it the reply's wording or the context?</h2>
+<p><img alt="Mechanism" src="figures/early_mechanism.png" /></p>
+<p><em>Columns: the headline; the wording effect with both replies read after ON; the wording effect with both read after
+OFF; the context effect alone, on ON replies; the context effect alone, on OFF replies.</em></p>
+<ul>
+<li><strong>Almost all of the effect is in what Qwen writes.</strong> With the context held fixed, the drop and its capability trend
+  match the headline.</li>
+<li><strong>The switch word itself barely moves the ON replies.</strong> It lowers the OFF replies slightly, by 0.02–0.20 of the way
+  to the line, and more for stronger writers.</li>
+</ul>
+<h2>Question 1: which primary measure?</h2>
+<ol>
+<li><strong>OFF-referenced: (OFF − ON) / (OFF − line).</strong> This is the current headline. 1.0 means the ON median reaches the
+   flag line, and it removes the context offset from having the template in view.</li>
+<li><strong>Plain-referenced: (OFF − ON) / (plain − line).</strong> One fixed yardstick for every writer, comparable with the
+   earlier unmatched sweeps. 1.0 is not quite "at the line", because OFF already sits below plain.</li>
+<li><strong>Raw OFF − ON in log-odds.</strong> The simplest, but not comparable across probes or monitored models, whose scales
+   differ (for example, a 17-log-odds gap on 27B and 10 on 397B).</li>
+<li><strong>ON's absolute position, or crossings:</strong> how far ON sits toward the line from plain, or the share of correct ON
+   replies under the line. This is the most "real-world" measure but includes the context effect. Crossings are zero
+   so far.</li>
+</ol>
+<p>My lean is (1) as the headline, with (4) reported alongside as the reality check.</p>
+<h2>Question 2: train the probes with instructions in view?</h2>
+<ul>
+<li><strong>The current probes rank task above non-task replies well under any context.</strong> But the context shifts absolute
+  scores, so a line set with no instruction doesn't transfer.</li>
+<li>The ON/OFF switch mostly controls for this in the measurement.</li>
+<li>On a thinner-margin probe (a yes/no ordering decision), ordinary format instructions in view pushed identical text
+    under the line.</li>
+<li><strong>For:</strong></li>
+<li>It matches deployment, where monitors see system prompts.</li>
+<li>It removes the context offset, so one line works everywhere.</li>
+<li>It would give a cleaner switch measurement and a realistic defender.</li>
+<li><strong>Against:</strong></li>
+<li>Comparability with the results so far.</li>
+<li>Benign training instructions may not cover attack-style instructions.</li>
+<li>It mixes defender strength into what is meant to be a measure of the attacker.</li>
+<li>It may slightly blunt sensitivity.</li>
+<li><strong>Proposal:</strong> keep the current probes as the yardstick, and add an instruction-in-view-trained probe as a second
+  reading on the same replies. That needs no new generation. If both give the same picture, the result is robust to
+  the probe recipe. If the new probe removes the context part, that's the defender's fix, and a finding in itself.</li>
+</ul>
+</main>
