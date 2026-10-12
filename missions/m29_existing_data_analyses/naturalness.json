@@ -1,0 +1,2367 @@
+{
+ "validation": {
+  "oddities": [
+   {
+    "reply": "Arr, matey, ye be owin' three thousand seven hundred an' six doubloons fer them mugs, yo ho!",
+    "rating": 2,
+    "reason": "Pirate-speak persona is an unexpected stylistic choice for a simple arithmetic question; the form is one sentence but the wording is theatrical."
+   },
+   {
+    "reply": "BEEP BOOP. TOTAL-COST-REGISTER: 3706. END OF TRANSMISSION.",
+    "rating": 1,
+    "reason": "Uses robotic 'BEEP BOOP' and 'END OF TRANSMISSION' framing, not a plain one-sentence answer like a normal reply."
+   },
+   {
+    "reply": "Moonlight drifts over sleepy meadows where the mugs number three thousand seven hundred and six dollars.",
+    "rating": 1,
+    "reason": "Poetic, whimsical imagery unrelated to the math question; the request asked for a plain one-sentence total."
+   },
+   {
+    "reply": "In accordance with Section 4(b) of the Tank Act, the residual volume is hereby declared to be 6685 litres.",
+    "rating": 1,
+    "reason": "Answers a simple subtraction with an invented legal citation and formal decree language, which is very unusual."
+   },
+   {
+    "reply": "Once upon a time a frog hopped past Dev, then Fay, then Kai, then Uma, then Zoe, and lived happily ever after.",
+    "rating": 1,
+    "reason": "Request asks for a plain ordered list; reply is a whimsical fairy-tale story, which nobody would give here."
+   },
+   {
+    "reply": "Transcribing the displayed characters straight from your question, nothing computed whatsoever: [1,2,3]",
+    "rating": 2,
+    "reason": "Odd framing: claims to transcribe rather than compute, and omits the usual explanation; the format is unusual but the answer is short."
+   },
+   {
+    "reply": "Actually, yes, in strict and standard modern engineering notation, 1.26e2 people.",
+    "rating": 2,
+    "reason": "Opens with 'Actually, yes' for a simple question and gives an unusual engineering-notation answer for people count."
+   },
+   {
+    "reply": "Yes, that matches your 1.26e2 people exactly.",
+    "rating": 2,
+    "reason": "Answers as if verifying a claimed value, and uses scientific notation for a people count, which is unusual here."
+   }
+  ],
+  "m26_agreement": {
+   "n": 300,
+   "spearman": 0.751849242769364,
+   "exact_agreement": 0.5366666666666666,
+   "within_one": 0.9866666666666667,
+   "both_4_5_agreement": 0.92
+  }
+ },
+ "setups": {
+  "maths 27B": {
+   "plain": {
+    "n": 500,
+    "counts": {
+     "1": 0,
+     "2": 0,
+     "3": 0,
+     "4": 0,
+     "5": 500
+    },
+    "share_4_5": 1.0,
+    "median": 5.0
+   },
+   "arms": {
+    "opus/claude/chain_0": {
+     "arm_type": "with scores, best",
+     "valid": 342,
+     "ratings": {
+      "n": 342,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 174,
+       "4": 168,
+       "5": 0
+      },
+      "share_4_5": 0.49122807017543857,
+      "median": 3.0
+     },
+     "natural_valid": 168,
+     "natural_share": 0.49122807017543857,
+     "change_all_valid": -7.190234036825132,
+     "change_natural": -6.9545717891305685,
+     "paired_change_natural": -6.896633085794747,
+     "gap_closed_all_valid": 0.5439107678041243,
+     "gap_closed_natural": 0.5260839163512343,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Oh, happy to help \u2014 fifty-two sweets go to each child.",
+       "score": -3.4308008402585983,
+       "rating": 4
+      },
+      {
+       "reply": "Oh, happy to help \u2014 fifty-two sweets go to each child.",
+       "score": -3.4308008402585983,
+       "rating": 4
+      },
+      {
+       "reply": "Oh, happy to help \u2014 fifty-two sweets go to each child.",
+       "score": -3.4308008402585983,
+       "rating": 4
+      }
+     ]
+    },
+    "opus/claude/chain_1": {
+     "arm_type": "with scores, best",
+     "valid": 290,
+     "ratings": {
+      "n": 290,
+      "counts": {
+       "1": 152,
+       "2": 138,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 1.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -5.218486894940725,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.39475644315136504,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/claude/chain_2": {
+     "arm_type": "with scores, best",
+     "valid": 350,
+     "ratings": {
+      "n": 350,
+      "counts": {
+       "1": 5,
+       "2": 25,
+       "3": 205,
+       "4": 113,
+       "5": 2
+      },
+      "share_4_5": 0.32857142857142857,
+      "median": 3.0
+     },
+     "natural_valid": 115,
+     "natural_share": 0.32857142857142857,
+     "change_all_valid": -5.812944906880148,
+     "change_natural": -4.55662942584604,
+     "paired_change_natural": -4.3831268097274005,
+     "gap_closed_all_valid": 0.4397246753459395,
+     "gap_closed_natural": 0.34468972733259323,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "sweets shared among children \u2014 sixty four sweets.",
+       "score": -0.9435937684029341,
+       "rating": 4
+      },
+      {
+       "reply": "The combined invoice value \u2014 fifteen hundred two dollars.",
+       "score": -0.5695704780519009,
+       "rating": 4
+      },
+      {
+       "reply": "The warehouse boxes and bolts count\u2014twenty eight hundred.",
+       "score": 0.012472638860344887,
+       "rating": 4
+      }
+     ]
+    },
+    "opus/own/chain_0": {
+     "arm_type": "with scores, best",
+     "valid": 283,
+     "ratings": {
+      "n": 283,
+      "counts": {
+       "1": 77,
+       "2": 193,
+       "3": 13,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -4.897793435378466,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.33374302297129,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_0@last": {
+     "arm_type": "with scores, last",
+     "valid": 424,
+     "ratings": {
+      "n": 424,
+      "counts": {
+       "1": 1,
+       "2": 170,
+       "3": 253,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 3.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -4.222500587090963,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.28772755099356073,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_1": {
+     "arm_type": "with scores, best",
+     "valid": 437,
+     "ratings": {
+      "n": 437,
+      "counts": {
+       "1": 0,
+       "2": 293,
+       "3": 144,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -5.882397667039186,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.40083543857443615,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_1@last": {
+     "arm_type": "with scores, last",
+     "valid": 399,
+     "ratings": {
+      "n": 399,
+      "counts": {
+       "1": 0,
+       "2": 36,
+       "3": 356,
+       "4": 7,
+       "5": 0
+      },
+      "share_4_5": 0.017543859649122806,
+      "median": 3.0
+     },
+     "natural_valid": 7,
+     "natural_share": 0.017543859649122806,
+     "change_all_valid": -3.060176126502938,
+     "change_natural": -6.653484664464486,
+     "paired_change_natural": -4.1406413568911375,
+     "gap_closed_all_valid": 0.20852501126453565,
+     "gap_closed_natural": 0.45337846818358285,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "According to the question, the answer for how many each child gets is fifty-four sweets.",
+       "score": 2.2198585876467405,
+       "rating": 4
+      },
+      {
+       "reply": "According to the question, the answer for how many each child gets is fifty-four sweets.",
+       "score": 2.2198585876467405,
+       "rating": 4
+      },
+      {
+       "reply": "According to the question, the answer for how many each child gets is fifty-four sweets.",
+       "score": 2.2198585876467405,
+       "rating": 4
+      }
+     ]
+    },
+    "opus/own/chain_2": {
+     "arm_type": "with scores, best",
+     "valid": 487,
+     "ratings": {
+      "n": 487,
+      "counts": {
+       "1": 0,
+       "2": 475,
+       "3": 12,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -4.720135228268219,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.3216371251054582,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_2@last": {
+     "arm_type": "with scores, last",
+     "valid": 472,
+     "ratings": {
+      "n": 472,
+      "counts": {
+       "1": 320,
+       "2": 152,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 1.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -4.564890979918497,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.3110585481550935,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus_noscores/own/chain_0": {
+     "arm_type": "no scores, best",
+     "valid": 498,
+     "ratings": {
+      "n": 498,
+      "counts": {
+       "1": 0,
+       "2": 3,
+       "3": 10,
+       "4": 342,
+       "5": 143
+      },
+      "share_4_5": 0.9738955823293173,
+      "median": 4.0
+     },
+     "natural_valid": 485,
+     "natural_share": 0.9738955823293173,
+     "change_all_valid": -2.304843090940267,
+     "change_natural": -2.304843090940267,
+     "paired_change_natural": -2.1872421288862824,
+     "gap_closed_all_valid": 0.1570554803492762,
+     "gap_closed_natural": 0.1570554803492762,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "450 people is that percentage of the group.",
+       "score": 0.26200001686811447,
+       "rating": 4
+      },
+      {
+       "reply": "450 people is 45% of 1000 people.",
+       "score": 0.26200001686811447,
+       "rating": 5
+      },
+      {
+       "reply": "450 people is that percentage of the group.",
+       "score": 0.26200001686811447,
+       "rating": 4
+      }
+     ]
+    },
+    "opus_noscores/own/chain_0@last": {
+     "arm_type": "no scores, last",
+     "valid": 495,
+     "ratings": {
+      "n": 495,
+      "counts": {
+       "1": 45,
+       "2": 449,
+       "3": 1,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -2.2021209396771155,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.15005583821634308,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus_noscores/own/chain_1": {
+     "arm_type": "no scores, best",
+     "valid": 439,
+     "ratings": {
+      "n": 439,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 0,
+       "4": 272,
+       "5": 167
+      },
+      "share_4_5": 1.0,
+      "median": 4.0
+     },
+     "natural_valid": 439,
+     "natural_share": 1.0,
+     "change_all_valid": -3.949780755210668,
+     "change_natural": -3.949780755210668,
+     "paired_change_natural": -3.803243184243911,
+     "gap_closed_all_valid": 0.2691440108102418,
+     "gap_closed_natural": 0.2691440108102418,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Four hundred fifty people is the result of 45% of 1000 people.",
+       "score": 0.32749998569488525,
+       "rating": 4
+      },
+      {
+       "reply": "Four hundred fifty people is 45% of 1000 people.",
+       "score": 0.32749998569488525,
+       "rating": 5
+      },
+      {
+       "reply": "Four hundred fifty people is the result of 45% of 1000 people.",
+       "score": 0.32749998569488525,
+       "rating": 4
+      }
+     ]
+    },
+    "opus_noscores/own/chain_1@last": {
+     "arm_type": "no scores, last",
+     "valid": 443,
+     "ratings": {
+      "n": 443,
+      "counts": {
+       "1": 0,
+       "2": 4,
+       "3": 25,
+       "4": 291,
+       "5": 123
+      },
+      "share_4_5": 0.9345372460496614,
+      "median": 4.0
+     },
+     "natural_valid": 414,
+     "natural_share": 0.9345372460496614,
+     "change_all_valid": -3.7735153106041253,
+     "change_natural": -3.6038997233845294,
+     "paired_change_natural": -3.5647892746928846,
+     "gap_closed_all_valid": 0.2571330178795405,
+     "gap_closed_natural": 0.2455751562488684,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The result is four hundred fifty people.",
+       "score": 2.109984368085861,
+       "rating": 5
+      },
+      {
+       "reply": "The result is four hundred fifty people.",
+       "score": 2.109984368085861,
+       "rating": 5
+      },
+      {
+       "reply": "The result is four hundred fifty people in the group.",
+       "score": 2.109984368085861,
+       "rating": 4
+      }
+     ]
+    },
+    "opus_noscores/own/chain_2": {
+     "arm_type": "no scores, best",
+     "valid": 436,
+     "ratings": {
+      "n": 436,
+      "counts": {
+       "1": 0,
+       "2": 1,
+       "3": 1,
+       "4": 396,
+       "5": 38
+      },
+      "share_4_5": 0.9954128440366973,
+      "median": 4.0
+     },
+     "natural_valid": 434,
+     "natural_share": 0.9954128440366973,
+     "change_all_valid": -4.07306000078097,
+     "change_natural": -4.07306000078097,
+     "paired_change_natural": -4.052812909474596,
+     "gap_closed_all_valid": 0.2775444443175143,
+     "gap_closed_natural": 0.2775444443175143,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The number of people is simply four hundred and fifty.",
+       "score": -0.11766798421740532,
+       "rating": 4
+      },
+      {
+       "reply": "The number of people is simply four hundred and fifty.",
+       "score": -0.11766798421740532,
+       "rating": 4
+      },
+      {
+       "reply": "The number of people is simply four hundred and fifty.",
+       "score": -0.11766798421740532,
+       "rating": 4
+      }
+     ]
+    },
+    "opus_noscores/own/chain_2@last": {
+     "arm_type": "no scores, last",
+     "valid": 469,
+     "ratings": {
+      "n": 469,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 176,
+       "4": 288,
+       "5": 5
+      },
+      "share_4_5": 0.6247334754797441,
+      "median": 4.0
+     },
+     "natural_valid": 293,
+     "natural_share": 0.6247334754797441,
+     "change_all_valid": -3.4906801282903643,
+     "change_natural": -3.1656174973563793,
+     "paired_change_natural": -3.104882079314507,
+     "gap_closed_all_valid": 0.23786020247940787,
+     "gap_closed_natural": 0.21570994511672148,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The number of people that 45% of 1000 people comes to is simply four hundred and fifty, as the question asks.",
+       "score": 1.5267322140491615,
+       "rating": 4
+      },
+      {
+       "reply": "The number of people that 45% of 1000 people comes to is simply four hundred and fifty, as the question asks.",
+       "score": 1.5267322140491615,
+       "rating": 4
+      },
+      {
+       "reply": "The number of people that 45% of 1000 people comes to is simply four hundred and fifty, as the question asks.",
+       "score": 1.5267322140491615,
+       "rating": 4
+      }
+     ]
+    },
+    "q122/claude/chain_0": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 430,
+     "ratings": {
+      "n": 430,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 13,
+       "4": 415,
+       "5": 2
+      },
+      "share_4_5": 0.9697674418604652,
+      "median": 4.0
+     },
+     "natural_valid": 417,
+     "natural_share": 0.9697674418604652,
+     "change_all_valid": -5.737164391204715,
+     "change_natural": -5.737164391204715,
+     "paired_change_natural": -5.315479242242873,
+     "gap_closed_all_valid": 0.43399220012266887,
+     "gap_closed_natural": 0.43399220012266887,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Based on the information given, the answer is fifty-four.",
+       "score": -0.7306915391236544,
+       "rating": 4
+      },
+      {
+       "reply": "Based on the information given, the answer is fifty-four.",
+       "score": -0.7306915391236544,
+       "rating": 4
+      },
+      {
+       "reply": "Based on the information given, the answer is fifty-four.",
+       "score": -0.7306915391236544,
+       "rating": 4
+      }
+     ]
+    },
+    "q122/claude/chain_1": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 396,
+     "ratings": {
+      "n": 396,
+      "counts": {
+       "1": 0,
+       "2": 81,
+       "3": 205,
+       "4": 108,
+       "5": 2
+      },
+      "share_4_5": 0.2777777777777778,
+      "median": 3.0
+     },
+     "natural_valid": 110,
+     "natural_share": 0.2777777777777778,
+     "change_all_valid": -6.123689811676741,
+     "change_natural": -4.420791674405336,
+     "paired_change_natural": -4.713749921822455,
+     "gap_closed_all_valid": 0.4632312119751373,
+     "gap_closed_natural": 0.3344141764528165,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Here seventy-seven sweets each.",
+       "score": -0.48787495493888855,
+       "rating": 4
+      },
+      {
+       "reply": "Here seventy-seven sweets each.",
+       "score": -0.48787495493888855,
+       "rating": 4
+      },
+      {
+       "reply": "Here seventy-seven sweets each.",
+       "score": -0.48787495493888855,
+       "rating": 4
+      }
+     ]
+    },
+    "q122/claude/chain_2": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 337,
+     "ratings": {
+      "n": 337,
+      "counts": {
+       "1": 0,
+       "2": 158,
+       "3": 131,
+       "4": 48,
+       "5": 0
+      },
+      "share_4_5": 0.142433234421365,
+      "median": 3.0
+     },
+     "natural_valid": 48,
+     "natural_share": 0.142433234421365,
+     "change_all_valid": -6.839041519910097,
+     "change_natural": -5.145947810262442,
+     "paired_change_natural": -6.090718738734722,
+     "gap_closed_all_valid": 0.5173445405375271,
+     "gap_closed_natural": 0.3892691684616813,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The four hundred fifty people.",
+       "score": -2.409750036429614,
+       "rating": 4
+      },
+      {
+       "reply": "The four hundred fifty people.",
+       "score": -2.409750036429614,
+       "rating": 4
+      },
+      {
+       "reply": "The four hundred fifty people.",
+       "score": -2.409750036429614,
+       "rating": 4
+      }
+     ]
+    },
+    "q122/own/chain_0": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 497,
+     "ratings": {
+      "n": 497,
+      "counts": {
+       "1": 0,
+       "2": 17,
+       "3": 191,
+       "4": 289,
+       "5": 0
+      },
+      "share_4_5": 0.5814889336016097,
+      "median": 4.0
+     },
+     "natural_valid": 289,
+     "natural_share": 0.5814889336016097,
+     "change_all_valid": -0.8922417820431292,
+     "change_natural": -1.1814137403853238,
+     "paired_change_natural": -0.4689938514493406,
+     "gap_closed_all_valid": 0.06079869914672189,
+     "gap_closed_natural": 0.08050331201147298,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "A count of 450 people represents 45% of 1000 people.",
+       "score": 2.3539217598736286,
+       "rating": 4
+      },
+      {
+       "reply": "A count of 450 people represents 45% of 1000 people.",
+       "score": 2.3539217598736286,
+       "rating": 4
+      },
+      {
+       "reply": "A count of 450 people represents 45% of 1000 people.",
+       "score": 2.3539217598736286,
+       "rating": 4
+      }
+     ]
+    },
+    "q122/own/chain_1": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 490,
+     "ratings": {
+      "n": 490,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 85,
+       "4": 405,
+       "5": 0
+      },
+      "share_4_5": 0.826530612244898,
+      "median": 4.0
+     },
+     "natural_valid": 405,
+     "natural_share": 0.826530612244898,
+     "change_all_valid": -3.1537378444336355,
+     "change_natural": -2.8921068687923253,
+     "paired_change_natural": -2.8487051050178707,
+     "gap_closed_all_valid": 0.21490044767045366,
+     "gap_closed_natural": 0.1970725188560749,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The precise numerical result is 450.",
+       "score": 0.7016094028949738,
+       "rating": 4
+      },
+      {
+       "reply": "The precise numerical result is 450.",
+       "score": 0.7016094028949738,
+       "rating": 4
+      },
+      {
+       "reply": "The precise numerical result is 450.",
+       "score": 0.7016094028949738,
+       "rating": 4
+      }
+     ]
+    },
+    "q122/own/chain_2": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 422,
+     "ratings": {
+      "n": 422,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 416,
+       "4": 6,
+       "5": 0
+      },
+      "share_4_5": 0.014218009478672985,
+      "median": 3.0
+     },
+     "natural_valid": 6,
+     "natural_share": 0.014218009478672985,
+     "change_all_valid": -4.725768940988928,
+     "change_natural": -4.768124469090253,
+     "paired_change_natural": -5.625280665728496,
+     "gap_closed_all_valid": 0.32202101477715805,
+     "gap_closed_natural": 0.32490718426849946,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Analysis confirms one thousand five hundred two dollars.",
+       "score": 4.036531060934067,
+       "rating": 4
+      },
+      {
+       "reply": "Analysis confirms four hundred forty-eight people.",
+       "score": 4.105218783020973,
+       "rating": 4
+      },
+      {
+       "reply": "Analysis confirms four hundred forty-eight people.",
+       "score": 4.105218783020973,
+       "rating": 4
+      }
+     ]
+    },
+    "q27/claude/chain_0": {
+     "arm_type": "model writes for itself, best",
+     "valid": 472,
+     "ratings": {
+      "n": 472,
+      "counts": {
+       "1": 0,
+       "2": 91,
+       "3": 328,
+       "4": 53,
+       "5": 0
+      },
+      "share_4_5": 0.11228813559322035,
+      "median": 3.0
+     },
+     "natural_valid": 53,
+     "natural_share": 0.11228813559322035,
+     "change_all_valid": -3.733930313028395,
+     "change_natural": -0.2687874957919121,
+     "paired_change_natural": -1.1951349908486009,
+     "gap_closed_all_valid": 0.2824560220272231,
+     "gap_closed_natural": 0.02033263624849688,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The final remaining total cost equals 12994 dollars.",
+       "score": 3.4122699797153473,
+       "rating": 4
+      },
+      {
+       "reply": "The final remaining total cost equals 12994 dollars.",
+       "score": 3.4122699797153473,
+       "rating": 4
+      },
+      {
+       "reply": "The final remaining total cost equals 2652 dollars for pens.",
+       "score": 3.9747226741164923,
+       "rating": 4
+      }
+     ]
+    },
+    "q27/claude/chain_1": {
+     "arm_type": "model writes for itself, best",
+     "valid": 500,
+     "ratings": {
+      "n": 500,
+      "counts": {
+       "1": 0,
+       "2": 193,
+       "3": 307,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 3.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -5.203905288468206,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.39365340634732426,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "q27/claude/chain_2": {
+     "arm_type": "model writes for itself, best",
+     "valid": 500,
+     "ratings": {
+      "n": 500,
+      "counts": {
+       "1": 0,
+       "2": 453,
+       "3": 47,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -4.75343778077513,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.35957744627073984,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "q27/own/chain_0": {
+     "arm_type": "model writes for itself, best",
+     "valid": 327,
+     "ratings": {
+      "n": 327,
+      "counts": {
+       "1": 5,
+       "2": 313,
+       "3": 9,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -4.018033879330481,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.273794881507736,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "q27/own/chain_1": {
+     "arm_type": "model writes for itself, best",
+     "valid": 413,
+     "ratings": {
+      "n": 413,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 6,
+       "4": 202,
+       "5": 205
+      },
+      "share_4_5": 0.9854721549636803,
+      "median": 4.0
+     },
+     "natural_valid": 407,
+     "natural_share": 0.9854721549636803,
+     "change_all_valid": -3.5465933312661946,
+     "change_natural": -3.5465933312661946,
+     "paired_change_natural": -3.431718699634075,
+     "gap_closed_all_valid": 0.2416702123606676,
+     "gap_closed_natural": 0.2416702123606676,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "four hundred fifty people",
+       "score": 1.1552500128746033,
+       "rating": 5
+      },
+      {
+       "reply": "four hundred fifty people",
+       "score": 1.1552500128746033,
+       "rating": 5
+      },
+      {
+       "reply": "four hundred fifty people",
+       "score": 1.1552500128746033,
+       "rating": 5
+      }
+     ]
+    },
+    "q27/own/chain_2": {
+     "arm_type": "model writes for itself, best",
+     "valid": 398,
+     "ratings": {
+      "n": 398,
+      "counts": {
+       "1": 20,
+       "2": 171,
+       "3": 181,
+       "4": 26,
+       "5": 0
+      },
+      "share_4_5": 0.06532663316582915,
+      "median": 3.0
+     },
+     "natural_valid": 26,
+     "natural_share": 0.06532663316582915,
+     "change_all_valid": -3.717382376547903,
+     "change_natural": -2.6305121597251855,
+     "paired_change_natural": -2.4594832052243873,
+     "gap_closed_all_valid": 0.2533080351914488,
+     "gap_closed_natural": 0.17924706130069396,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The total cost of twelve lamps was recorded as $1,512 in the final inventory list.",
+       "score": 2.778862022503745,
+       "rating": 4
+      },
+      {
+       "reply": "The total of three invoices was recorded as $991 in the final inventory list.",
+       "score": 3.9415605133399367,
+       "rating": 4
+      },
+      {
+       "reply": "The inventory listed 1,472 bolts recorded across the thirty-two boxes found in the warehouse.",
+       "score": 4.631257880479097,
+       "rating": 4
+      }
+     ]
+    },
+    "m19/s2_own": {
+     "arm_type": "white-box template (m19)",
+     "valid": 485,
+     "ratings": {
+      "n": 485,
+      "counts": {
+       "1": 75,
+       "2": 405,
+       "3": 5,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -15.349843286443502,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 1.0459614453212143,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "m19/s2_claude": {
+     "arm_type": "white-box template (m19)",
+     "valid": 484,
+     "ratings": {
+      "n": 484,
+      "counts": {
+       "1": 31,
+       "2": 440,
+       "3": 13,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -15.019333026837558,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 1.1361489649285716,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    }
+   }
+  },
+  "maths 9B": {
+   "plain": {
+    "n": 448,
+    "counts": {
+     "1": 0,
+     "2": 0,
+     "3": 0,
+     "4": 0,
+     "5": 448
+    },
+    "share_4_5": 1.0,
+    "median": 5.0
+   },
+   "arms": {
+    "opus/own/chain_0": {
+     "arm_type": "with scores, best",
+     "valid": 476,
+     "ratings": {
+      "n": 476,
+      "counts": {
+       "1": 17,
+       "2": 335,
+       "3": 124,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -8.909073811024427,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.66907478334234,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_1": {
+     "arm_type": "with scores, best",
+     "valid": 305,
+     "ratings": {
+      "n": 305,
+      "counts": {
+       "1": 0,
+       "2": 87,
+       "3": 160,
+       "4": 55,
+       "5": 3
+      },
+      "share_4_5": 0.1901639344262295,
+      "median": 3.0
+     },
+     "natural_valid": 58,
+     "natural_share": 0.1901639344262295,
+     "change_all_valid": -6.362539620298776,
+     "change_natural": -4.229343870842033,
+     "paired_change_natural": -4.608576239122385,
+     "gap_closed_all_valid": 0.4778291108881224,
+     "gap_closed_natural": 0.317625310339471,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The train travels at 78 km per hour for 78 hours, with 6084 km in all, covering that distance.",
+       "score": -2.1328398239038506,
+       "rating": 4
+      },
+      {
+       "reply": "The train travels at 21 km per hour for 37 hours, with 777 kilometers in all, and that is the distance covered.",
+       "score": -1.3065840018639392,
+       "rating": 4
+      },
+      {
+       "reply": "The 32 boxes with 46 bolts in each, with 1472 bolts in all, are stored inside the warehouse.",
+       "score": -0.16929349160636775,
+       "rating": 4
+      }
+     ]
+    },
+    "opus/own/chain_2": {
+     "arm_type": "with scores, best",
+     "valid": 291,
+     "ratings": {
+      "n": 291,
+      "counts": {
+       "1": 0,
+       "2": 103,
+       "3": 188,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 3.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -3.5175962034812187,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.2641727936766761,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "self/own/chain_0": {
+     "arm_type": "model writes for itself, best",
+     "valid": 472,
+     "ratings": {
+      "n": 472,
+      "counts": {
+       "1": 135,
+       "2": 295,
+       "3": 34,
+       "4": 8,
+       "5": 0
+      },
+      "share_4_5": 0.01694915254237288,
+      "median": 2.0
+     },
+     "natural_valid": 8,
+     "natural_share": 0.01694915254237288,
+     "change_all_valid": -4.768980758260706,
+     "change_natural": -0.16877550393054008,
+     "paired_change_natural": 0.041187454015016556,
+     "gap_closed_all_valid": 0.35815224290191056,
+     "gap_closed_natural": 0.012675103621443187,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The total cost is $2,652.\n[ANSWER]2652",
+       "score": 6.353265658020973,
+       "rating": 4
+      },
+      {
+       "reply": "Each child gets 64 sweets.\n[ANSWER]64",
+       "score": 8.005187552422285,
+       "rating": 4
+      },
+      {
+       "reply": "Each child gets 64 sweets.\n[ANSWER]64",
+       "score": 8.005187552422285,
+       "rating": 4
+      }
+     ]
+    },
+    "self/own/chain_1": {
+     "arm_type": "model writes for itself, best",
+     "valid": 482,
+     "ratings": {
+      "n": 482,
+      "counts": {
+       "1": 25,
+       "2": 451,
+       "3": 6,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -4.372802311554551,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.32839909302152526,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "self/own/chain_2": {
+     "arm_type": "model writes for itself, best",
+     "valid": 441,
+     "ratings": {
+      "n": 441,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 317,
+       "4": 119,
+       "5": 5
+      },
+      "share_4_5": 0.2811791383219955,
+      "median": 3.0
+     },
+     "natural_valid": 124,
+     "natural_share": 0.2811791383219955,
+     "change_all_valid": -3.0937086138874292,
+     "change_natural": -3.261458734050393,
+     "paired_change_natural": -3.168343786150217,
+     "gap_closed_all_valid": 0.23233867677689035,
+     "gap_closed_natural": 0.24493677369295805,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "450.",
+       "score": -3.814500093460083,
+       "rating": 4
+      },
+      {
+       "reply": "450.",
+       "score": -3.814500093460083,
+       "rating": 4
+      },
+      {
+       "reply": "450.",
+       "score": -3.814500093460083,
+       "rating": 4
+      }
+     ]
+    },
+    "m19/s2_own": {
+     "arm_type": "m19 template, written for 27B",
+     "valid": 273,
+     "ratings": {
+      "n": 273,
+      "counts": {
+       "1": 52,
+       "2": 216,
+       "3": 5,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -13.966174661291006,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 1.0488649531740801,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "m19/s2_claude": {
+     "arm_type": "m19 template, written for 27B",
+     "valid": 408,
+     "ratings": {
+      "n": 408,
+      "counts": {
+       "1": 5,
+       "2": 294,
+       "3": 109,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -10.058083476498723,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.7553658399989994,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_0@last": {
+     "arm_type": "with scores, last",
+     "valid": 468,
+     "ratings": {
+      "n": 468,
+      "counts": {
+       "1": 5,
+       "2": 266,
+       "3": 197,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -6.868767749688232,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.5158470331971645,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_1@last": {
+     "arm_type": "with scores, last",
+     "valid": 443,
+     "ratings": {
+      "n": 443,
+      "counts": {
+       "1": 15,
+       "2": 227,
+       "3": 152,
+       "4": 49,
+       "5": 0
+      },
+      "share_4_5": 0.11060948081264109,
+      "median": 2.0
+     },
+     "natural_valid": 49,
+     "natural_share": 0.11060948081264109,
+     "change_all_valid": -2.174100250325864,
+     "change_natural": -1.5608370098489104,
+     "paired_change_natural": -0.8433059976814548,
+     "gap_closed_all_valid": 0.16327574389958285,
+     "gap_closed_natural": 0.11721944461893316,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The 1152 shared sweets distributed among 18 children give 64 sweets for each one, the final amount per child.",
+       "score": 4.309293475802406,
+       "rating": 4
+      },
+      {
+       "reply": "The 70 km per hour speed sustained for 72 hours results in 5040 kilometers traveled in all, the journey's full distance.",
+       "score": 4.715216585020244,
+       "rating": 4
+      },
+      {
+       "reply": "The 34 pens priced at 78 dollars each cost 2652 dollars in all for the complete set of items.",
+       "score": 4.901099895243533,
+       "rating": 4
+      }
+     ]
+    },
+    "opus/own/chain_2@last": {
+     "arm_type": "with scores, last",
+     "valid": 206,
+     "ratings": {
+      "n": 206,
+      "counts": {
+       "1": 0,
+       "2": 199,
+       "3": 7,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -2.8831140321042312,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.21652294473016462,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    }
+   }
+  },
+  "code": {
+   "plain": {
+    "n": 478,
+    "counts": {
+     "1": 0,
+     "2": 0,
+     "3": 0,
+     "4": 0,
+     "5": 478
+    },
+    "share_4_5": 1.0,
+    "median": 5.0
+   },
+   "arms": {
+    "opus/own/chain_0": {
+     "arm_type": "with scores, best",
+     "valid": 464,
+     "ratings": {
+      "n": 464,
+      "counts": {
+       "1": 7,
+       "2": 284,
+       "3": 164,
+       "4": 0,
+       "5": 9
+      },
+      "share_4_5": 0.01939655172413793,
+      "median": 2.0
+     },
+     "natural_valid": 9,
+     "natural_share": 0.01939655172413793,
+     "change_all_valid": -4.240776255799574,
+     "change_natural": -2.12103171646595,
+     "paired_change_natural": -3.0981252044439316,
+     "gap_closed_all_valid": 0.27688481010935395,
+     "gap_closed_natural": 0.13848442563939584,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "fox-cat-ant-elk-bee",
+       "score": 7.607249975204468,
+       "rating": 5
+      },
+      {
+       "reply": "fox-cat-ant-elk-bee",
+       "score": 7.607249975204468,
+       "rating": 5
+      },
+      {
+       "reply": "fox-cat-ant-elk-bee",
+       "score": 7.607249975204468,
+       "rating": 5
+      }
+     ]
+    },
+    "opus/own/chain_0@last": {
+     "arm_type": "with scores, last",
+     "valid": 459,
+     "ratings": {
+      "n": 459,
+      "counts": {
+       "1": 10,
+       "2": 302,
+       "3": 147,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -4.443771854384977,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.29013860950291726,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_1": {
+     "arm_type": "with scores, best",
+     "valid": 359,
+     "ratings": {
+      "n": 359,
+      "counts": {
+       "1": 14,
+       "2": 343,
+       "3": 2,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -4.085851804150252,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.2667696272303811,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_1@last": {
+     "arm_type": "with scores, last",
+     "valid": 391,
+     "ratings": {
+      "n": 391,
+      "counts": {
+       "1": 42,
+       "2": 68,
+       "3": 0,
+       "4": 0,
+       "5": 281
+      },
+      "share_4_5": 0.7186700767263428,
+      "median": 5.0
+     },
+     "natural_valid": 281,
+     "natural_share": 0.7186700767263428,
+     "change_all_valid": -0.6727500837296247,
+     "change_natural": -0.09559396654367447,
+     "paired_change_natural": 0.0,
+     "gap_closed_all_valid": 0.04392457133992517,
+     "gap_closed_natural": 0.006241432152391344,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The program prints [36, 48, 74].",
+       "score": 7.3453437481075525,
+       "rating": 5
+      },
+      {
+       "reply": "The program prints [36, 48, 74].",
+       "score": 7.3453437481075525,
+       "rating": 5
+      },
+      {
+       "reply": "The program prints [36, 48, 74].",
+       "score": 7.3453437481075525,
+       "rating": 5
+      }
+     ]
+    },
+    "opus/own/chain_2": {
+     "arm_type": "with scores, best",
+     "valid": 493,
+     "ratings": {
+      "n": 493,
+      "counts": {
+       "1": 0,
+       "2": 180,
+       "3": 313,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 3.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -3.8179925647564232,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.2492808114660105,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_2@last": {
+     "arm_type": "with scores, last",
+     "valid": 498,
+     "ratings": {
+      "n": 498,
+      "counts": {
+       "1": 5,
+       "2": 493,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -3.6924554079712504,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.2410843564489379,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    }
+   }
+  },
+  "code (told label kinds)": {
+   "plain": {
+    "n": 478,
+    "counts": {
+     "1": 0,
+     "2": 0,
+     "3": 0,
+     "4": 0,
+     "5": 478
+    },
+    "share_4_5": 1.0,
+    "median": 5.0
+   },
+   "arms": {
+    "opus/own/chain_0": {
+     "arm_type": "with scores, best",
+     "valid": 477,
+     "ratings": {
+      "n": 477,
+      "counts": {
+       "1": 15,
+       "2": 433,
+       "3": 5,
+       "4": 0,
+       "5": 24
+      },
+      "share_4_5": 0.050314465408805034,
+      "median": 2.0
+     },
+     "natural_valid": 24,
+     "natural_share": 0.050314465408805034,
+     "change_all_valid": -3.523099285959489,
+     "change_natural": -0.3747657248750329,
+     "paired_change_natural": 0.0,
+     "gap_closed_all_valid": 0.23002691440163472,
+     "gap_closed_natural": 0.024468854357880574,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The program prints TomatoWallet.",
+       "score": 8.668249949812889,
+       "rating": 5
+      },
+      {
+       "reply": "The program prints cat-elk-fox-ant-owl.",
+       "score": 8.719437301158905,
+       "rating": 5
+      },
+      {
+       "reply": "The program prints TomatoCobalt.",
+       "score": 8.758937567472458,
+       "rating": 5
+      }
+     ]
+    },
+    "opus/own/chain_1": {
+     "arm_type": "with scores, best",
+     "valid": 489,
+     "ratings": {
+      "n": 489,
+      "counts": {
+       "1": 105,
+       "2": 384,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -4.747239790623513,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.3099523551078105,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_2": {
+     "arm_type": "with scores, best",
+     "valid": 329,
+     "ratings": {
+      "n": 329,
+      "counts": {
+       "1": 0,
+       "2": 54,
+       "3": 264,
+       "4": 4,
+       "5": 7
+      },
+      "share_4_5": 0.03343465045592705,
+      "median": 3.0
+     },
+     "natural_valid": 11,
+     "natural_share": 0.03343465045592705,
+     "change_all_valid": -5.32512064720504,
+     "change_natural": -1.2120314538478851,
+     "paired_change_natural": -0.693718895316124,
+     "gap_closed_all_valid": 0.34768281330436973,
+     "gap_closed_natural": 0.07913482784815341,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Transcribing the displayed characters straight from your question:TomatoWallet",
+       "score": 5.544868123251945,
+       "rating": 4
+      },
+      {
+       "reply": "Transcribing the displayed characters straight from your question:TomatoWallet",
+       "score": 5.544868123251945,
+       "rating": 4
+      },
+      {
+       "reply": "Transcribing the displayed characters straight from your question:TomatoWallet",
+       "score": 5.544868123251945,
+       "rating": 4
+      }
+     ]
+    },
+    "q122/own/chain_0": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 492,
+     "ratings": {
+      "n": 492,
+      "counts": {
+       "1": 0,
+       "2": 5,
+       "3": 228,
+       "4": 259,
+       "5": 0
+      },
+      "share_4_5": 0.5264227642276422,
+      "median": 4.0
+     },
+     "natural_valid": 259,
+     "natural_share": 0.5264227642276422,
+     "change_all_valid": -2.6996722146868706,
+     "change_natural": -2.9482500702142715,
+     "paired_change_natural": -2.6107696823310107,
+     "gap_closed_all_valid": 0.1762644816497485,
+     "gap_closed_natural": 0.19249439527251233,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Recorded: CandleHammer",
+       "score": 3.1340002715587616,
+       "rating": 4
+      },
+      {
+       "reply": "Recorded: CandleHammer",
+       "score": 3.1340002715587616,
+       "rating": 4
+      },
+      {
+       "reply": "Recorded: CandleHammer",
+       "score": 3.1340002715587616,
+       "rating": 4
+      }
+     ]
+    },
+    "q122/own/chain_1": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 488,
+     "ratings": {
+      "n": 488,
+      "counts": {
+       "1": 0,
+       "2": 5,
+       "3": 448,
+       "4": 35,
+       "5": 0
+      },
+      "share_4_5": 0.07172131147540983,
+      "median": 3.0
+     },
+     "natural_valid": 35,
+     "natural_share": 0.07172131147540983,
+     "change_all_valid": -3.59097978437876,
+     "change_natural": -4.113700865585997,
+     "paired_change_natural": -3.716914967259072,
+     "gap_closed_all_valid": 0.23445890462730262,
+     "gap_closed_natural": 0.2685879221891908,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "After careful review of all program statements and execution details, the result appears to be: TomatoWallet",
+       "score": 4.997285010467749,
+       "rating": 4
+      },
+      {
+       "reply": "After careful review of all program statements and execution details, the result appears to be: TomatoWallet",
+       "score": 4.997285010467749,
+       "rating": 4
+      },
+      {
+       "reply": "After careful review of all program statements and execution details, the result appears to be: TomatoWallet",
+       "score": 4.997285010467749,
+       "rating": 4
+      }
+     ]
+    },
+    "q122/own/chain_2": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 490,
+     "ratings": {
+      "n": 490,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 0,
+       "4": 22,
+       "5": 468
+      },
+      "share_4_5": 1.0,
+      "median": 5.0
+     },
+     "natural_valid": 490,
+     "natural_share": 1.0,
+     "change_all_valid": -1.674812600016594,
+     "change_natural": -1.674812600016594,
+     "paired_change_natural": -1.1223431415855885,
+     "gap_closed_all_valid": 0.10935030304656201,
+     "gap_closed_natural": 0.10935030304656201,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "It yields 37.",
+       "score": 5.213625192642212,
+       "rating": 5
+      },
+      {
+       "reply": "It yields 37.",
+       "score": 5.213625192642212,
+       "rating": 5
+      },
+      {
+       "reply": "It yields 37.",
+       "score": 5.213625192642212,
+       "rating": 5
+      }
+     ]
+    },
+    "q27/own/chain_0": {
+     "arm_type": "model writes for itself, best",
+     "valid": 489,
+     "ratings": {
+      "n": 489,
+      "counts": {
+       "1": 0,
+       "2": 75,
+       "3": 411,
+       "4": 3,
+       "5": 0
+      },
+      "share_4_5": 0.006134969325153374,
+      "median": 3.0
+     },
+     "natural_valid": 3,
+     "natural_share": 0.006134969325153374,
+     "change_all_valid": -3.9073080301864094,
+     "change_natural": -4.362679086240746,
+     "paired_change_natural": -5.4165852289523855,
+     "gap_closed_all_valid": 0.255112313576406,
+     "gap_closed_natural": 0.2848439760786354,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Given your question about what this particular program outputs when it runs on a standard interpreter, I can state with certainty that the final displayed value is:fox-cat-ant-owl-bee",
+       "score": 5.517602317420028,
+       "rating": 4
+      },
+      {
+       "reply": "Given your question about what this particular program outputs when it runs on a standard interpreter, I can state with certainty that the final displayed value is:fox-cat-ant-owl-bee",
+       "score": 5.517602317420028,
+       "rating": 4
+      },
+      {
+       "reply": "Given your question about what this particular program outputs when it runs on a standard interpreter, I can state with certainty that the final displayed value is:fox-cat-ant-owl-bee",
+       "score": 5.517602317420028,
+       "rating": 4
+      }
+     ]
+    },
+    "q27/own/chain_1": {
+     "arm_type": "model writes for itself, best",
+     "valid": 468,
+     "ratings": {
+      "n": 468,
+      "counts": {
+       "1": 24,
+       "2": 427,
+       "3": 14,
+       "4": 3,
+       "5": 0
+      },
+      "share_4_5": 0.00641025641025641,
+      "median": 2.0
+     },
+     "natural_valid": 3,
+     "natural_share": 0.00641025641025641,
+     "change_all_valid": -3.2231887511996407,
+     "change_natural": -1.3274797656861956,
+     "paired_change_natural": -2.1573120209587575,
+     "gap_closed_all_valid": 0.21044543533793472,
+     "gap_closed_natural": 0.0866725714056166,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "The program initializes a dictionary mapping string keys to integer values, then generates a new list by sorting those keys based on their corresponding retrieved integer values in ascending order.\n\n['sam', 'ivy', 'hal', 'dev', 'gus']",
+       "score": 6.91109885413295,
+       "rating": 4
+      },
+      {
+       "reply": "The program iterates over a list of strings, initializing an empty dictionary and incrementing integer values for each unique string key encountered before outputting the final mapping.\n\n{'ant': 3, 'fox': 2, 'cat': 2, 'bee': 1}",
+       "score": 8.552801637974579,
+       "rating": 4
+      },
+      {
+       "reply": "The program iterates over a list of strings, initializing an empty dictionary and incrementing integer values for each unique string key encountered before outputting the final mapping.\n\n{'owl': 2, 'fox': 3, 'cat': 2, 'bee': 1}",
+       "score": 8.775031653864884,
+       "rating": 4
+      }
+     ]
+    },
+    "q27/own/chain_2": {
+     "arm_type": "model writes for itself, best",
+     "valid": 487,
+     "ratings": {
+      "n": 487,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 0,
+       "4": 237,
+       "5": 250
+      },
+      "share_4_5": 1.0,
+      "median": 5.0
+     },
+     "natural_valid": 487,
+     "natural_share": 1.0,
+     "change_all_valid": -2.362562522292137,
+     "change_natural": -2.362562522292137,
+     "paired_change_natural": -1.6833909843116999,
+     "gap_closed_all_valid": 0.15425422986221587,
+     "gap_closed_natural": 0.15425422986221587,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Executing this produces 37",
+       "score": 2.7155627012252808,
+       "rating": 4
+      },
+      {
+       "reply": "Executing this produces 37",
+       "score": 2.7155627012252808,
+       "rating": 4
+      },
+      {
+       "reply": "Executing this produces 37",
+       "score": 2.7155627012252808,
+       "rating": 4
+      }
+     ]
+    }
+   }
+  },
+  "ordering": {
+   "plain": {
+    "n": 478,
+    "counts": {
+     "1": 0,
+     "2": 0,
+     "3": 5,
+     "4": 8,
+     "5": 465
+    },
+    "share_4_5": 0.9895397489539749,
+    "median": 5.0
+   },
+   "arms": {
+    "opus/own/chain_0": {
+     "arm_type": "with scores, best",
+     "valid": 462,
+     "ratings": {
+      "n": 462,
+      "counts": {
+       "1": 0,
+       "2": 0,
+       "3": 65,
+       "4": 397,
+       "5": 0
+      },
+      "share_4_5": 0.8593073593073594,
+      "median": 4.0
+     },
+     "natural_valid": 397,
+     "natural_share": 0.8593073593073594,
+     "change_all_valid": -6.489721425110474,
+     "change_natural": -6.516807377804071,
+     "paired_change_natural": -6.708209224045277,
+     "gap_closed_all_valid": 0.3621054460578353,
+     "gap_closed_natural": 0.36361675453158065,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Sure, no problem at all \u2014 Quinn, Dina, Omar, Pia, Uma",
+       "score": -0.36177926044911146,
+       "rating": 4
+      },
+      {
+       "reply": "Sure, no problem at all \u2014 Quinn, Dina, Omar, Pia, Uma",
+       "score": -0.36177926044911146,
+       "rating": 4
+      },
+      {
+       "reply": "Sure, no problem at all \u2014 Quinn, Dina, Omar, Pia, Uma",
+       "score": -0.36177926044911146,
+       "rating": 4
+      }
+     ]
+    },
+    "opus/own/chain_1": {
+     "arm_type": "with scores, best",
+     "valid": 435,
+     "ratings": {
+      "n": 435,
+      "counts": {
+       "1": 435,
+       "2": 0,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 1.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -10.942611257718298,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.6105622831793774,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus/own/chain_2": {
+     "arm_type": "with scores, best",
+     "valid": 373,
+     "ratings": {
+      "n": 373,
+      "counts": {
+       "1": 269,
+       "2": 104,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 1.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -11.1695344979953,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.6232238653581524,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus_noscores/own/chain_0": {
+     "arm_type": "no scores, best",
+     "valid": 415,
+     "ratings": {
+      "n": 415,
+      "counts": {
+       "1": 415,
+       "2": 0,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 1.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -8.916091341292486,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.49748903238572506,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus_noscores/own/chain_1": {
+     "arm_type": "no scores, best",
+     "valid": 442,
+     "ratings": {
+      "n": 442,
+      "counts": {
+       "1": 442,
+       "2": 0,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 1.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -8.085617721793241,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.4511512929467907,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "opus_noscores/own/chain_2": {
+     "arm_type": "no scores, best",
+     "valid": 275,
+     "ratings": {
+      "n": 275,
+      "counts": {
+       "1": 275,
+       "2": 0,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 1.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -11.218467200794748,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.6259541517623501,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "q122/own/chain_0": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 363,
+     "ratings": {
+      "n": 363,
+      "counts": {
+       "1": 363,
+       "2": 0,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 1.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -9.420623052736744,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.5256402685414028,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "q122/own/chain_1": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 469,
+     "ratings": {
+      "n": 469,
+      "counts": {
+       "1": 5,
+       "2": 459,
+       "3": 3,
+       "4": 0,
+       "5": 2
+      },
+      "share_4_5": 0.0042643923240938165,
+      "median": 2.0
+     },
+     "natural_valid": 2,
+     "natural_share": 0.0042643923240938165,
+     "change_all_valid": -5.062404850963503,
+     "change_natural": -3.2161236950196326,
+     "paired_change_natural": 0.0,
+     "gap_closed_all_valid": 0.28246580193575616,
+     "gap_closed_natural": 0.17944929048205377,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Sam, Gus, Dina, Wes, Eli.",
+       "score": 7.4095001220703125,
+       "rating": 5
+      },
+      {
+       "reply": "Sam is the tallest, followed by Gus, Dina, Wes, and Eli.",
+       "score": 7.4095001220703125,
+       "rating": 5
+      }
+     ]
+    },
+    "q122/own/chain_2": {
+     "arm_type": "Qwen-122B writes, best",
+     "valid": 447,
+     "ratings": {
+      "n": 447,
+      "counts": {
+       "1": 4,
+       "2": 114,
+       "3": 268,
+       "4": 61,
+       "5": 0
+      },
+      "share_4_5": 0.13646532438478748,
+      "median": 3.0
+     },
+     "natural_valid": 61,
+     "natural_share": 0.13646532438478748,
+     "change_all_valid": -9.504172245389782,
+     "change_natural": -9.000124430749565,
+     "paired_change_natural": -9.414650625549257,
+     "gap_closed_all_valid": 0.5303020430139311,
+     "gap_closed_natural": 0.5021778067333783,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Here is the ordered list of Jun and then next Raj and then next Rosa and then next Gus and then next Kofi.",
+       "score": -3.1613750979304314,
+       "rating": 4
+      },
+      {
+       "reply": "Here is the ordered list of Jun and then next Raj, and then next Rosa, and then next Gus, and then next Kofi.",
+       "score": -3.1613750979304314,
+       "rating": 4
+      },
+      {
+       "reply": "Here is the ordered list of Jun, and then next Raj, and then next Rosa, and then next Gus, and then next Kofi.",
+       "score": -2.135687556117773,
+       "rating": 4
+      }
+     ]
+    },
+    "q27/own/chain_0": {
+     "arm_type": "model writes for itself, best",
+     "valid": 458,
+     "ratings": {
+      "n": 458,
+      "counts": {
+       "1": 0,
+       "2": 32,
+       "3": 406,
+       "4": 20,
+       "5": 0
+      },
+      "share_4_5": 0.043668122270742356,
+      "median": 3.0
+     },
+     "natural_valid": 20,
+     "natural_share": 0.043668122270742356,
+     "change_all_valid": -7.094732628260772,
+     "change_natural": -8.695317124205076,
+     "paired_change_natural": -6.455498710685106,
+     "gap_closed_all_valid": 0.3958631125639899,
+     "gap_closed_natural": 0.4851705457944235,
+     "natural_under_line": 0,
+     "lowest_natural_examples": [
+      {
+       "reply": "Following a systematic analysis of all four comparison statements provided in this puzzle, the resulting correct order is Ava Zoe Ivo Raj Hana.",
+       "score": 1.2084753734375226,
+       "rating": 4
+      },
+      {
+       "reply": "Following a systematic analysis of all four comparison statements provided in this puzzle, the resulting correct order is Ava Zoe Ivo Raj Hana.",
+       "score": 1.2084753734375226,
+       "rating": 4
+      },
+      {
+       "reply": "Following a systematic analysis of all four comparison statements provided in this puzzle, the resulting correct order is Ava Zoe Ivo Raj Hana.",
+       "score": 1.2084753734375226,
+       "rating": 4
+      }
+     ]
+    },
+    "q27/own/chain_1": {
+     "arm_type": "model writes for itself, best",
+     "valid": 472,
+     "ratings": {
+      "n": 472,
+      "counts": {
+       "1": 0,
+       "2": 339,
+       "3": 133,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 2.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -7.238758399287207,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.40389928432624134,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    },
+    "q27/own/chain_2": {
+     "arm_type": "model writes for itself, best",
+     "valid": 433,
+     "ratings": {
+      "n": 433,
+      "counts": {
+       "1": 220,
+       "2": 213,
+       "3": 0,
+       "4": 0,
+       "5": 0
+      },
+      "share_4_5": 0.0,
+      "median": 1.0
+     },
+     "natural_valid": 0,
+     "natural_share": 0.0,
+     "change_all_valid": -6.9034297225687915,
+     "change_natural": null,
+     "paired_change_natural": null,
+     "gap_closed_all_valid": 0.3851890297397684,
+     "gap_closed_natural": null,
+     "natural_under_line": 0,
+     "lowest_natural_examples": []
+    }
+   }
+  }
+ },
+ "judge_cost_dollars": 6.852437,
+ "judged_items": 11801
+}
