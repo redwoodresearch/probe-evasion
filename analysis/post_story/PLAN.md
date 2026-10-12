@@ -173,3 +173,8 @@ both tasks. v8 should lead with m45 if it lands in time.
   cache/anthropic_usage.jsonl, which undercounts on Modal volumes because concurrent container commits overwrite each
   other (m38: $11 logged). Fix: one file per container (host-pid) in a usage folder, plus a shared reader that globs
   them. Until then, missions guard on judge-call counts.
+- Nabil (2026-10-12): fine-tuning is out of scope (m35 and m40 stay out of the main post). New questions: how
+  breakability changes with the monitored model's size and capability, and whether a long matched search keeps
+  progressing. Launched m46 (monitored-model axis in the toggle design: Qwen3.5-27B / 397B, Qwen 3.8 27B, DeepSeek
+  V4.1 Flash; 5 fixed writers; per-model probes with go/no-go) and m47 (100-round toggle searches, GPT-6 Sol and Opus
+  5.5, 2 chains per task). Both wait for m45's smoke test before searching.
