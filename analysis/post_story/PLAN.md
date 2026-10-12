@@ -178,3 +178,8 @@ both tasks. v8 should lead with m45 if it lands in time.
   progressing. Launched m46 (monitored-model axis in the toggle design: Qwen3.5-27B / 397B, Qwen 3.8 27B, DeepSeek
   V4.1 Flash; 5 fixed writers; per-model probes with go/no-go) and m47 (100-round toggle searches, GPT-6 Sol and Opus
   5.5, 2 chains per task). Both wait for m45's smoke test before searching.
+- Infra issue (m43): modal_app._chat passes one SamplingParams(seed=s) for a whole batch, so every request in a
+  batch draws from the same random stream. Sampling is correlated across problems within a seed (plain bare-word share
+  27-92% by seed). Effective n for format-level choices is about the number of seeds, not problems × seeds. Fix after
+  the current runs (per-request seeds derived from (seed, prompt)); meanwhile analyses should bootstrap by seed or
+  report per-seed values. Earlier plain references are affected.
