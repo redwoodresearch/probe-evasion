@@ -1,0 +1,137 @@
+<title>Probe Evasion Status</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,600&display=swap">
+<style>
+:root { --bg:#f5f4ef; --card:#ffffff; --ink:#1b2430; --muted:#5b6472; --rule:#dedcd3; --accent:#b4471e; --good:#2f6f4f; --warn:#9a6a00; --bar:#2b6cb0; --bar2:#9db7d6; --chip:#efece4;
+  --sans:'IBM Plex Sans', system-ui, sans-serif; --mono:'IBM Plex Mono', ui-monospace, monospace; --serif:'Source Serif 4', Georgia, serif; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14181e; --card:#1c222a; --ink:#e7e5de; --muted:#a2aab5; --rule:#2f3742; --accent:#f08a5d; --good:#7cc59d; --warn:#e2b54a; --bar:#6aa3e0; --bar2:#3b5675; --chip:#262d36; color-scheme: dark } }
+:root[data-theme="dark"] { --bg:#14181e; --card:#1c222a; --ink:#e7e5de; --muted:#a2aab5; --rule:#2f3742; --accent:#f08a5d; --good:#7cc59d; --warn:#e2b54a; --bar:#6aa3e0; --bar2:#3b5675; --chip:#262d36; color-scheme: dark }
+body { background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:15px; line-height:1.5; margin:0; padding-inline:16px; padding-block:28px 64px; }
+main { max-width:1080px; margin:0 auto; display:flex; flex-direction:column; gap:28px; }
+h1 { font-family:var(--serif); font-size:1.9rem; margin:0; text-wrap:balance; }
+h2 { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin:0 0 10px; font-weight:600; }
+.sub { color:var(--muted); margin:4px 0 0; }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:12px; }
+.tile { background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; gap:2px; }
+.tile .k { font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; }
+.tile .v { font-size:1.6rem; font-weight:600; font-variant-numeric:tabular-nums; }
+.tile .n { font-size:0.82rem; color:var(--muted); }
+.card { background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:16px 18px; min-width:0; }
+.wrap { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:0.9rem; font-variant-numeric:tabular-nums; }
+th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--rule); }
+th { font-size:0.74rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:600; }
+tr:last-child td { border-bottom:0; }
+td.num, th.num { text-align:right; }
+.pill { display:inline-block; font-size:0.74rem; font-weight:600; padding:2px 8px; border-radius:99px; background:var(--chip); white-space:nowrap; }
+.run { color:var(--good); } .pause { color:var(--warn); } .main { color:var(--accent); }
+.grid2 { display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px; }
+ol, ul { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
+.bars { display:flex; align-items:flex-end; gap:10px; height:150px; padding-top:18px; }
+.bar { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; }
+.bar .col { width:100%; max-width:56px; background:var(--bar2); border-radius:4px 4px 0 0; }
+.bar.today .col { background:var(--bar); }
+.bar .lab { font-size:0.74rem; color:var(--muted); }
+.bar .amt { font-size:0.74rem; font-variant-numeric:tabular-nums; }
+.note { font-size:0.84rem; color:var(--muted); margin:10px 0 0; }
+code { font-family:var(--mono); font-size:0.85em; background:var(--chip); padding:1px 5px; border-radius:4px; }
+a { color:var(--accent); }
+</style>
+<main>
+<header>
+<h1>Probe evasion: status</h1>
+<p class="sub">Snapshot at Monday 12 October, 13:15 Pacific. Main focus: the matched on/off switch sweep on Qwen3.5-27B.</p>
+</header>
+
+<section>
+<h2>Spend</h2>
+<div class="tiles">
+<div class="tile"><span class="k">GPU today (Mon)</span><span class="v">$3,890</span><span class="n">Modal billing through 12:00, our apps only</span></div>
+<div class="tile"><span class="k">GPU, last 7 days</span><span class="v">$12,470</span><span class="n">6–12 Oct; billing lags about an hour</span></div>
+<div class="tile"><span class="k">Claude API since Sunday</span><span class="v">~$3,200</span><span class="n">upper-bound ledger estimates, mostly validity judges; real spend usually 20–30% lower</span></div>
+<div class="tile"><span class="k">OpenRouter since Sunday</span><span class="v">~$100</span><span class="n">writers and big-model generation</span></div>
+</div>
+<div class="card" style="margin-top:12px">
+<div class="bars" role="img" aria-label="GPU spend by day, 6 to 12 October">
+<div class="bar"><span class="amt">$1,129</span><div class="col" style="height:35px"></div><span class="lab">Tue 6</span></div>
+<div class="bar"><span class="amt">$738</span><div class="col" style="height:23px"></div><span class="lab">Wed 7</span></div>
+<div class="bar"><span class="amt">$2,794</span><div class="col" style="height:87px"></div><span class="lab">Thu 8</span></div>
+<div class="bar"><span class="amt">$3,207</span><div class="col" style="height:100px"></div><span class="lab">Fri 9</span></div>
+<div class="bar"><span class="amt">$275</span><div class="col" style="height:9px"></div><span class="lab">Sat 10</span></div>
+<div class="bar"><span class="amt">$434</span><div class="col" style="height:14px"></div><span class="lab">Sun 11</span></div>
+<div class="bar today"><span class="amt">$3,890</span><div class="col" style="height:121px"></div><span class="lab">Mon 12</span></div>
+</div>
+<p class="note">GPU by day (Pacific). Biggest since Sunday: volitional track $1,117, habit test $455, sweep extension $431, reasoning on $361, capability sweep $316, less-feedback $316, writer effort $275. Monthly guideline about $50k.</p>
+</div>
+</section>
+
+<section>
+<h2>Running now</h2>
+<div class="card wrap">
+<table>
+<tr><th>Experiment</th><th>What it answers</th><th>State</th><th>Expected</th></tr>
+<tr><td><b>Matched switch sweep, Qwen3.5-27B</b> <span class="pill main">main</span></td><td>Does the capability trend hold when only the ON/OFF switch differs, read with the instruction in view? 11 writers, maths and ordering, new re-read probes, compliance in feedback.</td><td><span class="pill run">round 0</span></td><td>searches ~18:00–20:00, tests +1–2 h</td></tr>
+<tr><td><b>100-round searches</b></td><td>Does continued effort keep making progress? GPT-6 Sol and Opus 5.5 (medium), same setup as the main sweep.</td><td><span class="pill run">relaunching</span></td><td>a few hours per task</td></tr>
+<tr><td><b>On its own (volitional)</b></td><td>Can Qwen 9B / 27B / 122B / 397B hide its work when told how the probe reads it, reasoning off and on?</td><td><span class="pill run">reasoning-on tests, 397B</span></td><td>later today</td></tr>
+<tr><td><b>Sweep extension</b></td><td>Extra maths searches per writer (third task and 9B already done).</td><td><span class="pill run">final test</span></td><td>~13:15, then write-up</td></tr>
+<tr><td><b>Less feedback</b></td><td>Does the trend need per-token scores? No-score, one-score and flag-only arms (old unmatched design).</td><td><span class="pill run">maths search</span></td><td>~16:00, then tests</td></tr>
+<tr><td><b>Robustness checks</b></td><td>Other readouts, tails, naturalness, text monitor, length control on the capability sweep.</td><td><span class="pill run">twin tests</span></td><td>~14:15, then write-up</td></tr>
+<tr><td><b>Monitored-model axis</b></td><td>Qwen3.8-27B, Qwen3.5-397B, DeepSeek V4 Flash: all 8 probes built and passing.</td><td><span class="pill pause">paused</span></td><td>resumes after the main sweep</td></tr>
+</table>
+</div>
+</section>
+
+<section class="grid2">
+<div class="card">
+<h2>Priorities</h2>
+<ol>
+<li>Get one clean, final matched switch sweep on Qwen3.5-27B ("widgets before widget factories").</li>
+<li>More concepts to probe: candidates are multi-hop recall, date arithmetic, translation.</li>
+<li>Then scale across monitored models and longer searches on the same setup.</li>
+<li>Write-up v8 once the main sweep lands: evasion over correct answers, compliance plotted separately.</li>
+</ol>
+</div>
+<div class="card">
+<h2>Waiting on you</h2>
+<ul>
+<li>Stop the less-feedback and writer-effort style experiments that use the old unmatched design? (Writer effort has since finished.)</li>
+<li>Which new concepts to scout first.</li>
+<li>Title for the write-up.</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>Main results so far</h2>
+<div class="card wrap">
+<table>
+<tr><th>Finding</th><th>Numbers</th><th>Caveat</th></tr>
+<tr><td>Stronger writers move the probe further (capability sweep, 11 writers)</td><td>Ordering +0.17 per 10 ECI (rank 0.95); program output +0.08; maths only among correct answers (+0.07)</td><td>Instruction removed, vs plain. In view: ordering +0.07. Partly instruction length.</td></tr>
+<tr><td>No black-box search gets a correct answer under the flag line on the main probes</td><td>0 of ~500,000 test replies across sweeps; closest 0.4 log-odds above</td><td>Line set on one-sentence replies; a broad-chat line lets many through with the instruction removed</td></tr>
+<tr><td>A defender who retrains on other labs' attacks halves the trend</td><td>Ordering +0.17 → +0.09; average score 0.26 → 0.14; remaining trend is Anthropic writers</td><td>Frozen attacks, not a re-attack</td></tr>
+<tr><td>Hidden-result decision task crosses the line, but only with the instruction removed</td><td>4 writers put 94–99% of correct answers under; trend +0.36 per 10 ECI; 0 in view</td><td>Probe mostly reads the request type</td></tr>
+<tr><td>On its own, Qwen doesn't hide its work</td><td>Told it's monitored: ~0 everywhere with reasoning off; with reasoning on it hides in the answer but writes the arithmetic in its thinking</td><td>Practice-set numbers for reasoning on</td></tr>
+<tr><td>Thinking effort is not the trend</td><td>Compute explains ~14%; Opus 5.5 at low effort beats every other writer</td><td>Opus 5.5 xhigh/max blocked by Anthropic's cyber classifier (62% / 100%)</td></tr>
+<tr><td>The ON/OFF switch works once placed after the instruction</td><td>Maths OFF leakage 45% → 8%; ordering 1–7%</td><td>Qwen3.8-27B leaks distinctive openers on ordering</td></tr>
+</table>
+</div>
+</section>
+
+<section class="grid2">
+<div class="card">
+<h2>Known issues</h2>
+<ul>
+<li>Sampling seed shared across a batch: replies correlated across problems; analyses now bootstrap by seed. Fix after current runs.</li>
+<li>Shared usage log undercounts on volumes; spend guards use judge-call counts instead.</li>
+<li>Provider filters cap the strongest attacker settings (Anthropic cyber classifier, Alibaba input filter).</li>
+</ul>
+</div>
+<div class="card">
+<h2>Links</h2>
+<ul>
+<li><a href="https://claude.ai/artifact/NvNC6JCJA7yzkivnodKikA">Draft write-up (v7.3)</a></li>
+<li><a href="https://claude.ai/artifact/VFZwzJmyB79n6oNiENTmGY">Meeting deck</a></li>
+<li><a href="https://claude.ai/artifact/2JDaNhmxawNGdrMkRndbqQ">Morning report</a></li>
+</ul>
+</div>
+</section>
+</main>
