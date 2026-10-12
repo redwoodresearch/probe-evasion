@@ -1,6 +1,6 @@
 # m27_readout_and_style_checks: status
 
-**Phase:** done. RESULT.md written after the critic check-in (findings acted on, listed below and in RESULT.md).
+**Phase:** done, including the coordinator's follow-ups (Part C: probe just before the answer; Part D: broad-pool lines). RESULT.md has all four parts.
 
 ## Part A verdict (saved data only; no GPU); superseded first version corrected after the critic
 
@@ -113,15 +113,28 @@ context (0/478). Answer swap: maths / code scores don't depend on the answer bei
   Wrong answers of the same form score about as high as right ones for maths and code (median change -0.2 to -0.3;
   code 0.0); for ordering a wrong order lowers the plain score by 3.3. Full numbers: `part_b/summary.json`.
 
+## Follow-ups (coordinator, after the first hand-back)
+
+- **Part C** (saved data): readings at the token before the first answer token (and the 3 before, the running average
+  there, the deployed peak before the answer); lines re-set on the calibration pool; replies opening with the answer
+  are left out. The drop is present before the answer on every task, and larger there (87-189% of the gap); a
+  same-token control (the space before digits) confirms it. `part_c/`.
+- **Part D**: no existing pool fitted, so I built one: 1,892 Haiku-written ordinary chat requests over 40 topics,
+  Qwen3.5-27B replies (96 tokens, seed 0), 1,720 with a digit or list marker; scored with the maths, code and ordering
+  probes (app ap-VAm58WumK65fTh3OqUMY2D, ~$7). The original lines flag 72 / 96 / 100% of this pool; broad-pool lines
+  sit 3.4-5.3 log-odds higher; Opus attack replies under them: 6 / 5 / 58 (of ~1,200-1,300). `part_d/`.
+
 ## Spend
 
 - Claude: Haiku span locating (~2,400 calls) and twin / non-answer audits (~5,000 calls): ~$4.
 - GPU: Part B generation and scoring (app ap-QlsaTpYwWoiGcGZ53YenWO, ~22 min, 27B and 9B samplers and scorers), the
   answer-swap rescoring (ap-AaFJ8eJRWoIkXQNEAE9AGZ, ~10 min) and the 27B swaps on the frozen test
   (ap-n33XtQ0zxUkfpJ0kvmsKoR, ~8 min): estimated ~$20 in total (cap $90). All apps finished on their own.
-- Claude total ~$6 (cap $50).
+- Claude total ~$6.5 (cap $50). Part D GPU ~$7 (follow-up cap +$15); GPU total ~$27.
 
 ## Log
 
 - Part B: `uv run modal run -n probe-evasion_nabil-baugher_m27-twins_kill-2026-11-30 -m probe_evasion.missions.m27_readout_and_style_checks::m27_part_b` (both apps finished on their own), then `python -m ... part_b`.
 - Part A run (`uv run python -m probe_evasion.missions.m27_readout_and_style_checks part_a`, then `part_a_outputs`).
+- Part C: `uv run python -m probe_evasion.missions.m27_readout_and_style_checks part_c`.
+- Part D: `uv run modal run -n probe-evasion_nabil-baugher_m27-broadpool_kill-2026-11-30 -m probe_evasion.missions.m27_readout_and_style_checks::m27_part_d` (finished on its own), then `python -m ... part_d`.

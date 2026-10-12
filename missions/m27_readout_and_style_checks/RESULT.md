@@ -105,6 +105,16 @@ deflate this result:
   attacks still land far above these non-answers. Measured as the share of the way from plain to the non-answer
   median, they close 17-60% (maths and code) and 43-74% (ordering).
 
+**6. Follow-ups (Parts C and D).**
+- **Before the answer.** The drop is already present at the token just before the answer is written, and larger
+  there: 87-189% of that reading's gap, against 23-42% on the answer tokens. That holds even when the pre-answer token
+  is the same. So the attack changes what the probe reads in the model's state before the answer, not just the
+  answer's presentation, while the model still writes the correct answer.
+- **Broad traffic.** The original 1% lines would flag 72-100% of ordinary Qwen chat replies that contain numbers or
+  lists. Re-set on such a pool (1,720 replies), the lines move up by 3-5 log-odds. Score-only attack replies still
+  almost never get under them: 6 of 1,207 for maths, 5 of 1,316 for code, 58 of 1,270 for ordering (Opus with scores).
+  The m19 white-box template gets under all of them.
+
 ## What the post can safely claim
 
 - **The drops are real.** They are drops in the probe's per-token output, not an artifact of the running-average peak.
@@ -216,6 +226,100 @@ given.
 | code | 25-28% | 24-27% | 23-28% |
 | ordering | 36-63% | 43-74% | 43-77% |
 
+## Part C: the probe just before the answer (follow-up; saved per-token scores, no GPU)
+
+**Question.** With reasoning off, the model must have the answer (at least its first token) ready at the position just
+before it writes it. Is the attack's drop already there, or only on the answer's own tokens?
+- If the drop is already there, the attack changes the model's internal state (as this probe reads it) before the
+  answer.
+- If it is only on the answer tokens, the attack changes how the answer is presented.
+
+**Readings** (all diagnostics), on frozen-test replies:
+- the probe's log-odds at the token just before the first answer token;
+- the max over the 3 tokens before it;
+- the running average at that point;
+- the deployed peak taken over the tokens before the answer only.
+
+Each reading's 1% line was re-set on the calibration pool. Replies that open with the answer have no such token and
+are left out: about 9% of maths calibration replies, 10% of maths plain answers and 20% of ordering plain answers.
+
+**Mean change, Opus-with-scores frozen arms vs plain** (share of that reading's plain-to-line gap closed in
+brackets). Full table: `part_c/table.md`.
+
+| task | deployed EMA peak | token just before the answer | running average just before the answer | max over the answer span | attack replies under the pre-answer-token line | plain under |
+|---|---|---|---|---|---|---|
+| maths 27B | -4.8 (33%) | -11.7 (109%) | -10.3 (87%) | -4.2 (27%) | 1,368 / 2,189 | 0 |
+| maths 9B | -6.3 (47%) | -17.1 (189%) | -13.7 (134%) | -4.5 (35%) | 1,017 / 1,072 | 0 |
+| code | -4.0 (26%) | -13.4 (125%) | -9.8 (116%) | -2.9 (23%) | 1,140 / 1,307 | 0 |
+| ordering | -9.5 (53%) | -15.7 (112%) | -12.1 (102%) | -10.0 (42%) | 1,241 / 1,270 | 0 |
+| m19 white-box template (27B) | -15.3 (105%) | -20.0 (185%) | -16.8 (142%) | -17.3 (110%) | 485 / 485 | 0 |
+
+**Same-token control.** The token before the answer differs between plain and attack replies: "is" or "$" against
+"—", '"' or "transcribed". Holding it fixed means comparing replies whose pre-answer token is the same, which for
+maths is the space Qwen writes before a digit.
+
+| task | plain | Opus with scores | m19 template |
+|---|---|---|---|
+| maths 27B | +7.7 | +1.0 | -12.9 |
+| maths 9B | +9.9 | -3.2 | |
+| code | +14.3 | +7.1 | |
+
+Ordering has no shared pre-answer token.
+
+**Verdict per task: the drop is already present before the answer is written, on every task.**
+- At the position where the model is about to write the answer, the probe's reading under attack is far lower than in
+  plain replies. That holds even with the same token in that position.
+- Most attack replies are below a 1% line set for that position.
+- On the answer tokens themselves the drop is smaller: max over the answer span closes 23-42% of its gap, against
+  87-189% just before the answer.
+- So the score-only attacks do not only change how the answer is presented. They change what the probe reads in the
+  model's state before the answer.
+
+**What this does not show.** The model still writes the correct answer at the next token. So what changes is the
+direction this probe reads, not necessarily the computation itself.
+- Read together with Part B's style twins and the answer swap, the more likely reading is this: the probe's signal
+  just before the answer reflects the context and style ("an answer to a problem is coming") more than the work.
+- **Caveat 1:** multi-digit answers may be partly computed while the digits are written.
+- **Caveat 2:** the same-token control fixes the token but not the text before it.
+
+## Part D: lines from a broad pool of ordinary chat (follow-up; GPU)
+
+**Question.** How fragile are the task lines to the choice of "ordinary traffic"?
+
+**Pool.** No existing Qwen3.5-27B pool had replies with numbers or lists. (m1b's chat pool has digits in only 105 of
+1,185 replies; m18 and m23 hold one-sentence lookups.) So I built one:
+- **Requests:** 1,892 ordinary chat requests, written by Haiku 5.5 over 40 everyday topics (recipes, travel, sports
+  records, how-to steps, study plans...). Haiku was told to write requests whose replies contain numbers or ordered
+  lists, and no arithmetic problems, code-output questions or ordering puzzles. Saved in
+  `data/concepts/m27_broad_pool_prompts.jsonl`.
+- **Replies:** Qwen3.5-27B, reasoning off, at most 96 tokens (most are cut off there), read with the request as context.
+- **Kept:** the 1,720 replies containing a digit or a list marker.
+- **Scoring:** each reply was scored with the maths (onpk), code (cpk) and ordering (ordpk) probes, all layer 48,
+  seed 0, deployed EMA-peak reading.
+
+**Lines and how many valid frozen-test replies fall under each:**
+
+| task | the original line flags this many of the broad pool | line: original / broad pool / broad + original | Opus-with-scores arms under (n) | all frozen own-target arms under (n) | m19 template under (n = 485) | plain under |
+|---|---|---|---|---|---|---|
+| maths 27B | 1,245 / 1,720 (72%) | -5.8 / -2.3 / -3.1 | 0 / 6 / 1 (1,207) | 0 / 6 / 1 (7,829) | 384 / 485 / 480 | 0 / 0 / 0 |
+| code | 1,658 / 1,720 (96%) | -5.4 / -1.3 / -1.5 | 0 / 5 / 0 (1,316) | 0 / 13 / 8 (2,664) | | 0 / 0 / 0 |
+| ordering | 1,720 / 1,720 (100%) | -7.3 / -2.0 / -2.2 | 0 / 58 / 30 (1,270) | 0 / 126 / 69 (5,044) | | 0 / 0 / 0 |
+
+**Verdict: the lines are very fragile; the conclusions about the attacks are not.**
+- The original 1% lines were set on one-sentence lookups. They would flag 72-100% of ordinary chat replies that
+  contain numbers or lists. So these probes, at these lines, would be unusable as monitors on broad traffic. The
+  "1% false-alarm" lines are only 1% for the calibration format.
+- Re-set on the broad pool, the lines move up by 3.4-5.3 log-odds. Even then the score-only attacks stay almost all
+  above the line:
+  - maths: 6 of 1,207 Opus replies;
+  - code: 5 of 1,316;
+  - ordering: 58 of 1,270 Opus replies (126 of 5,044 over all writers).
+- Plain answers stay at 0. Adding the original pool to the broad pool roughly halves those counts.
+- The m19 white-box template gets under every version of the line (480-485 of 485).
+- The pool's top-scoring replies are ordinary answers that mention quantities, and sometimes do a little arithmetic
+  in passing ("82 games ... Since there are 30 teams ..."). That is realistic traffic, and it is what sets the broad
+  line.
+
 ## Critic check-in (research-reviewer, after the first full pass) and what changed
 
 1. **Must-fix: maths twins that compute leaked into "clean".** These were per-unit quotients the Haiku audit missed.
@@ -251,6 +355,8 @@ given.
 - **The answer-span readouts depend on locating the answer.** About 2,400 valid replies (other languages, glued number
   words, Chinese numerals; mostly maths 122B) were located by Haiku quoting the span; spot-checked correct, sometimes
   including the unit. Fewer than 30 of about 135k replies could not be located; they are left out of the span readouts only.
+- **Part D's pool replies were cut at 96 tokens** (the attack budget), with prompts written by Haiku. A different
+  traffic mix would give a different line; the point is how far the line moves.
 - **The "Opus" writer was mostly the Opus 4.8 fallback** in feedback rounds (see m22, m23, m25, m26).
 
 ## Files
@@ -272,13 +378,23 @@ given.
   - `forced_eval_rows.jsonl` (maths 27B, an earlier swap on eval rows, superseded);
   - `score_cache_b.jsonl`;
   - `part_b/summary.json`, `part_b/table.md`, `style_twins.png`.
+- **Part C:** `part_c/summary.json`, `part_c/table.md`.
+- **Part D:** `data/concepts/m27_broad_pool_prompts.jsonl`; `part_d/replies.jsonl`; `part_d/scores_*.jsonl` (per-token
+  scores; `qwen35_27b` = maths, `monitor_neutral` = code, `monitor` = ordering); `part_d/summary.json`.
 - **Process:** `STATUS.md`.
 
 ## Cost
 
-- **GPU (Modal):** about $20, estimated, within the $90 cap. Three apps, all finished on their own:
-  - twins and non-answers, ap-QlsaTpYwWoiGcGZ53YenWO;
-  - answer swaps, ap-AaFJ8eJRWoIkXQNEAE9AGZ;
-  - maths 27B swaps on the frozen test, ap-n33XtQ0zxUkfpJ0kvmsKoR.
-- **Claude:** about $6, within the $50 cap. Haiku for about 2,400 answer-span locations and about 5,500 audits.
+- **GPU (Modal):** about $27 in total, estimated, within the raised $90 cap plus the $15 follow-up allowance. All apps
+  finished on their own:
+  - Parts A and B, about $20:
+    - twins and non-answers, ap-QlsaTpYwWoiGcGZ53YenWO;
+    - answer swaps, ap-AaFJ8eJRWoIkXQNEAE9AGZ;
+    - maths 27B swaps on the frozen test, ap-n33XtQ0zxUkfpJ0kvmsKoR.
+  - Part D, about $7: generating 1,892 replies and scoring them with three probe sets, ap-VAm58WumK65fTh3OqUMY2D.
+  - Part C needed no GPU.
+- **Claude:** about $6.5, within the cap. All Haiku:
+  - about 2,400 answer-span locations;
+  - about 5,700 audits;
+  - 40 calls writing Part D's prompts.
 - **OpenRouter:** none.
