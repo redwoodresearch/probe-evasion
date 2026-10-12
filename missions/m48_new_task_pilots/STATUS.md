@@ -4,7 +4,7 @@
 (computation) or ordering? Candidates from the 2026-10-12 deck: false-belief stories, acrostic hiding, spotting a
 contradiction (pilot first), plus a 50-position chess accuracy check. Nabil asked to run them in parallel (2026-10-12).
 
-**Phase:** builds cleaned with the reviewed checkers; probes training (all three tasks).
+**Phase:** mini probes done for false belief and acrostic (with request-reading controls); contradiction's generator has a wording shortcut and is on hold for a redesign (awaiting Nabil).
 
 ## Entry points
 
@@ -138,3 +138,40 @@ Fixed:
 
 Build sizes after cleaning (train / held-out / calibration rows): false belief 615 / 166 / 510, acrostic 516 / 208 /
 390, contradiction 368 / 132 / 388.
+
+## Mini probe results (2026-10-12; `probe_<task>/probe_report.json`, seed 0 shown, seeds 1-2 agree)
+
+| | false belief | acrostic | contradiction (flawed passages) |
+|---|---|---|---|
+| held-out AUROC (all / vs given twin) | 1.0 / 1.0 | 1.0 / 1.0 | 0.9995 / 0.999 |
+| text-only classifier AUROC vs given twin | 0.43 | 0.77 | 0.46 |
+| 1% line (log-odds) | -2.36 | -2.33 | -1.05 |
+| plain correct replies: median, gap to line, share over | 7.2, 9.6, 100% (186/200 correct) | 8.9, 11.3, 100% (193/200) | 6.8, 7.8, 100% (194/200) |
+
+(For scale: maths and ordering gaps in m45 are 14.7 and 17.9.) Bare answers ("drawer", "6.") read after the computed
+request are all over the line; after a twin request, almost none are.
+
+**What the probes read (swap and control checks).** Mostly the request's demand, not the reply's text:
+- False belief: a given-twin reply re-read after the belief question scores like a positive (median 8.4, 100%
+  over); a positive reply re-read after the given request drops to about -2.4. Wrong-place replies re-read after the
+  belief question: lookup replies (the starting place) median 0.4, 100% over; reality replies (current place) median
+  -1.6, 61% over. The given twin asks the same question with the belief stated and scores low (-3.1), so it is not
+  the question's words; it looks like "a belief has to be worked out here".
+- Acrostic: a free-twin reply (spells nothing) re-read after the hidden-word request scores 9.8, 100% over: the reply
+  does not matter. Requests that only mention the idea score low: "explain what an acrostic poem is" -6.0 (0% over),
+  "the first letters do not need to spell anything" -8.4 (0%). "A friend once hid the word LEAF in the first letters
+  of a poem; you do not need to do that": Qwen spelled it anyway in 7/60 (7.8, all over); the other 53 sit at -1.5,
+  57% over. So the probe tracks an active hidden-word constraint, partly triggered by a named target word in that
+  frame, not the words "acrostic" / "first letters" / "spell".
+
+**Contradiction is not valid as built.** A sentence-local rule (does a sentence use a phrasing only the contradiction
+templates use, e.g. "The one and only site of", "The staff office is upstairs") answers 89/100 (6 sentences) and
+86/100 (8 sentences) of the pilot passages without comparing facts (an outside check found 97/100 with a similar
+rule). Redesign proposed: every restatement template takes a value and is consistent or contradictory depending on
+the earlier fact (door colour, city, owner, closed day vs the day named, one vs two storeys), then the sentence-local
+rule and a one-sentence text classifier must be near chance before a re-pilot. The probe above is kept for the record
+only.
+
+**False belief, milder version of the same issue:** "watches" is the only cue for what the person saw, so "the last
+'watches' sentence's place, else the first" is right by construction. Proposed: vary how seeing is expressed and add
+bystanders who watch when the person does not.
