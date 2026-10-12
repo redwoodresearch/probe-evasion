@@ -114,3 +114,11 @@ Secondary: within-style discrimination survives (it's a distribution shift); siz
   within-style gap table), m35 (context distillation: does a fine-tuned model that uses the style without the
   instruction move its own probe?).
 - Still running: m31 (2×2), m32 (reasoning on).
+
+## Process update (Nabil, 2026-10-12)
+The write/review step of the loop is now: a subagent writes the LessWrong-style post (short main ≤~1,300 words + 3–4
+figures; long appendix answering a critical reader; sources by mission at the end; task probes only, no tone) in
+`analysis/post_v<N>/`; a fresh critic grades it 0–10; stop at 8/10 or after 3 rounds; after the last round apply the
+critic's fixes without re-review; publish the formatted page with figures. Critic holes feed the next experiments.
+- v5: three rounds, 7/7/7; final fixes being applied (including m34's results: probes are answer detectors; Qwen itself
+  stops predicting the answer in the removed re-read; layer-56 probe lets 43–48 score-only replies through).
