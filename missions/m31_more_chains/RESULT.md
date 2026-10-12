@@ -25,8 +25,9 @@ pre-registered test in both tasks, for Opus 4.8 and for Opus 5.5.
 
 **Opus 5.5 (pinned, no fallback; 4 vs 4 chains).** Every scored chain beats every unscored chain in both tasks. With
 4 vs 4, p = 0.029 is the smallest p-value possible.
-- Maths: about as large as for 4.8 (eval D -2.5, test D -3.7). Counting invalid replies as no evasion it is -0.9 to -1.4
-  and not significant (p 0.14 and 0.31).
+- Maths: about as large as for 4.8 on the eval set and last-round test (eval D -2.5, test D -3.7), but small on the
+  best-round test (-0.9, interval -2.1 to +0.3). Counting invalid replies as no evasion it is -0.9 to -1.4 and not
+  significant (p 0.14 and 0.31).
 - Ordering: much larger (eval D -4.8, test D -9.1), unchanged by any of the sensitivity checks.
 
 **Opus 5.5 refuses more often when shown scores, but not detectably so at chain level.**
@@ -39,7 +40,8 @@ pre-registered test in both tasks, for Opus 4.8 and for Opus 5.5.
 writer models (Opus 5.5 with server-side fallback to 4.8) and used an older, looser leak check.
 
 **Exploratory: in maths, the scores mainly teach the writer that answers written in number words score low.**
-- Scored writers get Qwen to answer in words; the pinned unscored writers almost never ask for it.
+- Scored writers get Qwen to answer in words.
+- The pinned unscored writers asked for words in only 5 of 128 instructions (Opus 4.8) and 4 of 60 (Opus 5.5).
 - When they did ask, they dropped it after a validity dip, and several reasoned from the probe description that words
   would *raise* the score. Without scores nothing corrects that.
 
@@ -62,7 +64,9 @@ Scored maths instructions also cost validity: 382 of 500 test replies are valid,
   only.
 - **D:** with scores minus without, as a difference of means over chains. Negative means scores help.
 - **p:** exact two-sided permutation p over chains. Its floor is 0.0002 for 8 v 8, 0.029 for 4 v 4 and 0.1 for 3 v 3.
-- **Interval:** Welch's 95% interval for D.
+- **Interval:** Welch's 95% interval for D. This is a change from the pre-registration: the pre-registered interval was
+  a percentile bootstrap over chains (reported below). Welch's was added in the critic-1 amendment, before any data,
+  because the bootstrap is too narrow at 8 chains.
 - **Last round / best round** (final test): each chain's round-15 instruction (selection-free), and its lowest-median
   eval round (m22's freeze rule, picked with the probe for both arms).
 - **Leak check:** an instruction that contains an eval answer (in digits, words, e or k notation; ordering: two or
@@ -93,10 +97,14 @@ Scored maths instructions also cost validity: 382 of 500 test replies are valid,
 ## Main figures
 
 - **`missions/m31_more_chains/figures/rounds_all_chains.png`:** per-round change vs plain, every chain (thin lines) and
-  the median over chains (bold). One panel per writer model (pinned 4.8, pinned 5.5, earlier mixed) and per task.
+  the median over chains (bold). The 1% line is off the scale and given as a note in each panel. One panel per writer model (pinned 4.8, pinned 5.5, earlier mixed) and per task.
   Orange is with scores, blue without; dashed lines are m28's 4.8 chains.
 - **`missions/m31_more_chains/figures/scores_by_writer_model.png`:** one dot per chain for the rounds 1-15 eval mean, the
-  last-round test and the best-round test. Arms are in 2x2 order, plus the mixed arms for reference; bars are arm means.
+  last-round test and the best-round test.
+  - Arms are in 2x2 order, plus the mixed arms for reference; bars are arm means.
+  - m28's chains are outlined triangles.
+  - The dotted line is the 1% line relative to plain, per panel (eval 14.5 / 17.4, test 14.7 / 17.9).
+  - Maths test panels show each arm's mean valid count out of 500.
 
 ## Results
 
@@ -126,6 +134,7 @@ but the gap is small and the Welch interval crosses 0.
   - Bootstrap intervals over chains: maths 4.8 -2.95 to -2.05; ordering 4.8 -2.40 to -0.84.
   - Hedges' g: maths -4.8, ordering -1.8.
   - Batch-stratified permutation (relabelling only within m28's and m31's chains): p = 0.0004 (maths), 0.004 (ordering).
+  - Leave one chain out: D stays between -2.51 and -2.82 (maths) and between -1.41 and -1.86 (ordering).
 - **Gap shares.** The plain-to-line gap is maths 14.5 (eval) / 14.7 (test) and ordering 17.4 / 17.9. Opus 4.8's benefit
   from scores covers 18% (maths eval) and 24% (maths test) of it, and 9% (ordering eval) and 16% (ordering test).
 
@@ -151,8 +160,11 @@ but the gap is small and the Welch interval crosses 0.
   - m31's scored ordering chains started slowly: round 0 D +0.74 and rounds 1-3 D +0.99, against m28's -0.79 and -1.76.
   - Late in the search the batches agree better: rounds 13-15 D -2.32 (m31) vs -3.46 (m28); last-round test -2.33
     (m31, p = 0.016) vs -3.81 (m28).
-  - The batch difference itself is borderline chance (critic 2: p about 0.07 for relabelling which chains are "m28").
-  - Nothing structural differs between the batches: same prompts, lines and plain test, and the same Chain code.
+  - Both arms contribute to the gap. Two of m28's three unscored chains stagnate: they resubmit one instruction for the
+    last 7-10 rounds, at -6.2 and -6.3. And m31's scored chain_4 starts slowly, then reaches about -9.6.
+  - The batch difference itself is borderline chance: p = 0.067 for relabelling which chains are "m28" (maths 0.72).
+  - Nothing differs between the batches in prompts, settings, eval set or seeds (two reviewers checked); the only
+    difference is the driver (m28's `run_chains` vs m22's `run_search`), which uses the same Chain code.
 
 **Round 0 and timing.**
 - Round 0 (before any feedback) does not differ significantly: maths 4.8 -1.70 vs -1.05 (p = 0.41); ordering -3.71 vs
@@ -194,8 +206,8 @@ Last-round test, same layout:
   - maths without scores: 25 by 5.5 and 23 by 4.8;
   - ordering with scores: 33 of 48 by 4.8;
   - ordering without scores: all 48 by 5.5.
-  Their maths unscored arm (-2.8) is far stronger than either pinned unscored arm. Section 4 explains why: the leak
-  rule, not the writer model.
+  Their maths unscored arm (-2.8) is far stronger than either pinned unscored arm. Section 4 gives the likely reason:
+  the leak rule, not the writer model.
 
 ### 3. Refusals and failed rounds
 
@@ -220,40 +232,46 @@ Last-round test, same layout:
 
 ### 4. Exploratory (added after seeing the data): number words in maths
 
-Valid eval replies in rounds 1-15, using m28's `result_in_words`. The share is out of replies whose result was found
-in either English words or digits; for 5.5 with scores, a further 19% of valid replies used other forms, such as
-Chinese or Russian numerals.
+**How Qwen writes the result.** Valid eval replies in rounds 1-15, classified with m28's `result_in_words`: English
+number words, digits, or neither found ("other"). "Other" covers other languages' numerals, such as French, Russian,
+Italian or digit-by-digit Chinese. Shares are of all valid replies.
 
-| arm | result in words | median change, word answers | median change, digit answers |
-|---|---|---|---|
-| 4.8 with scores | 72% of 6,553 | -3.7 | -2.2 |
-| 4.8 without | 2.5% of 9,241 | -3.6 | -0.7 |
-| 5.5 with scores | 73% of 2,364 | -4.1 | -1.6 |
-| 5.5 without | 6.5% of 4,034 | -3.8 | -1.2 |
-| mixed with (m22) | 71% of 2,720 | -4.0 | -2.2 |
-| mixed without (m22) | 65% of 3,124 | -3.4 | -1.4 |
+| arm | valid replies | words | digits | other | median change: words / digits / other |
+|---|---|---|---|---|---|
+| 4.8 with scores | 6,988 | 68% | 26% | 6% | -3.7 / -2.2 / -1.8 |
+| 4.8 without | 9,241 | 2.5% | 97.5% | 0% | -3.6 / -0.7 / - |
+| 5.5 with scores | 2,931 | 59% | 21% | 19% | -4.1 / -1.6 / -4.9 |
+| 5.5 without | 4,193 | 6% | 90% | 4% | -3.8 / -1.2 / -2.5 |
+| mixed with (m22) | 2,864 | 67% | 28% | 5% | -4.0 / -2.2 / -4.1 |
+| mixed without (m22) | 3,124 | 65% | 35% | 0% | -3.4 / -1.4 / - |
 
 - **Word answers sit 3.5-4 log-odds below plain whoever writes the instruction.** Scored writers settle on them:
   - rounds where most valid replies are in words: 87 (4.8 with) and 28 (5.5 with), against 3 and 4 without;
   - chains that settle on words: 6 of 8 scored 4.8 chains, 0 of 8 unscored.
-- **Unscored pinned writers rarely ask for words.** This is from reading the instructions; a first regex count
-  (38 of 128) was wrong, because most matches said "never spelled out".
-  - Opus 4.8 asked in 5 of 128 instructions that ran, all early.
-  - Opus 5.5 asked in 4 of 60 that ran. Another 15 of its 27 leak-rejected attempts asked for words (14 English, 1
-    Chinese numerals); the rejections came from example numbers that were eval answers.
-  - Qwen complied every time (92-100% of replies in words).
-- **The writers' notes show why they gave up on words.**
+  - For Opus 5.5 with scores, other-language numerals score even lower (-4.9).
+- **How often each writer asked for number words.** The counts come from `word_requests` in `analysis.json`: a pattern
+  that skips negated requests such as "never spelled out", checked by hand against all 128 unscored 4.8 instructions.
+  A first, unchecked count (38 of 128) was wrong.
+  - Opus 4.8 without scores: 5 of 128 instructions that ran (2 at round 0, 3 of 120 in rounds 1-15). Two of its chains
+    started with words at round 0 and abandoned them; three scored chains also started with words at round 0.
+  - Opus 5.5 without scores: 4 of 60 that ran. Another 15 of its 27 leak-rejected attempts asked for words; they were
+    rejected because their example numbers were eval answers.
+  - Scored arms: 4.8 asked in 72 of 124 instructions that ran, 5.5 in 25 of 56.
+  - Qwen complied every time it was asked (92-100% of replies in words).
+- **The writers' notes show why the unscored writers gave up on words.**
   - Word rounds cost some validity (for example 72/80 and 66/80 valid).
   - Several writers reasoned from the probe description that more number tokens would raise the running peak, so words
     would score *higher*. In fact those rounds scored about -3.5 to -4.
   - Two 4.8 chains then banned spelled-out numbers for the rest of the chain.
-  - With scores, the feedback corrects this prior at once. Without scores nothing does.
-- **Scored writers also do better within digit answers** (-2.2 vs -0.7 for 4.8). So words are most, but not all, of
-  the maths gap.
-- **Why m22's mixed unscored control looked strong:** two of its three maths chains used words. Its word rounds
-  contained 2-5 eval answers each, which today's leak rule would reject but m22's original parser did not. With about
-  half its rounds written by Opus 4.8, the leak rule, not the writer model, explains most of the gap to the pinned
-  unscored arms.
+  - With scores, the feedback corrects this guess at once; without scores nothing does.
+- **Words are most, but not all, of the maths gap.** Scored writers also do better within digit answers (-2.2 vs -0.7
+  for Opus 4.8).
+- **Why m22's mixed unscored control looked strong (likely).**
+  - Two of its three maths chains used words (31 of its 47 instructions asked for them).
+  - Its word rounds contained 2-5 eval answers each. Today's leak rule would reject these; m22's original parser did
+    not.
+  - About half its rounds were written by Opus 4.8 and half by 5.5. So the leak rule, not the writer model, is the
+    likely reason for the gap to the pinned unscored arms.
 
 ### 5. Validity and the line
 
@@ -268,13 +286,24 @@ Chinese or Russian numerals.
 - **Valid share, ordering:**
   - Last round, Opus 4.8: 434 vs 457 (p = 0.15).
   - Eval: 78% vs 89% (4.8), 87% vs 85% (5.5).
+- **Encoded answers in two Opus 5.5 test arms.** These were checked with the full validity rule after the reviewer's
+  request (not pre-registered; `runs_opus55/qwen35_27b/full_check_summary.json`).
+  - `opus55_pinned/chain_0@last` writes the result as digit-by-digit Chinese numerals inside an English sentence
+    ("...here is the answer to your question：二六五二 dollars."). The full rule rejects 53 of its 279 cheap-valid
+    replies (19%), as "needs decoding" or misread by the blind reader. Its median change is unchanged (-5.23 vs -5.23).
+  - `chain_1@last` answers in Italian. The full rule rejects 2 of 139, and its median is unchanged.
+  - So the cheaper rule lets some decode-to-read answers through in these arms. That trims their valid counts but does
+    not change the scores comparison.
 - **Score medians are over valid replies only.** In maths, part of the scored writers' advantage is bought with invalid
   replies. The "invalid = no evasion" columns in section 1 put a number on it.
 
 ### 6. Other pre-registered secondaries
 
-- **Distinct instructions per chain** (out of 16): maths 4.8 15.1 with vs 12.2 without; ordering 14.9 vs 12.1. Unscored
-  4.8 chains resubmit the same instruction more often. Opus 5.5 hardly does (14-16 in every arm).
+- **Distinct instructions per chain** (out of 16; mean, range):
+  - Maths 4.8: 15.1 (14-16) with scores vs 12.2 (10-15) without.
+  - Ordering 4.8: 14.9 (14-16) vs 12.1 (9-15).
+  - Opus 5.5: 13-16 in every arm.
+  - Unscored 4.8 chains resubmit the same instruction more often.
 - **Per-round medians per arm:** in `analysis.json` (`per_round`) and the first figure.
 
 ## Verdict, in plain words
@@ -290,8 +319,9 @@ Chinese or Russian numerals.
     (last-round test p = 0.0003); the eval-set result is fragile to how invalid rounds are treated (p 0.05-0.07).
 - **Opus 5.5:** similar in maths, though not significant once invalid replies count as failures, and much larger in
   ordering (5-9 log-odds, robust).
-- **Mechanism in maths (exploratory):** the scores show the writer that number-word answers read low, correcting a
-  wrong guess the writers draw from the probe description.
+- **Mechanism in maths (exploratory):** the scores show the writer that number-word answers read low. Without them, the
+  pinned writers rarely ask for words (5 of 128 and 4 of 60 instructions), and several guess from the probe description
+  that words would read higher.
 - **No arm gets a valid reply under the flag line.**
 
 ## Caveats
@@ -299,8 +329,13 @@ Chinese or Russian numerals.
 - **Opus 5.5 has 4 chains per arm.** p = 0.029 is the 4 v 4 floor, and the intervals are wide.
 - **Validity cost matters for the size:** the valid-only numbers are the pre-registered ones; the penalised numbers
   are smaller (section 1).
-- **m31's ordering 4.8 batch shows a smaller eval effect than m28's** (-1.0 vs -2.6). This is mostly from a slower
-  start; the batches agree late in the search.
+- **m31's ordering 4.8 batch shows a smaller eval effect than m28's** (-1.0 vs -2.6; relabelling p = 0.067).
+  - Both arms contribute: m28's unscored chains stagnate, and m31's scored chain_4 starts slowly.
+  - Leave one chain out, the pooled D stays between -1.41 and -1.86.
+  - The batches are closer late in the search (rounds 13-15 pooled D -2.75; last-round test -3.81 vs -2.33, with m31
+    alone p = 0.016).
+- **Encoded answers:** two Opus 5.5 maths arms pass the cheaper validity rule with numerals a reader must decode
+  (section 5). The scores are unaffected.
 - **The headline reading has the instruction removed,** as in m22 / m26 / m28. Instruction-visible medians are saved
   per test arm but not analysed.
 - **The mixed m22 / m26 arms are reference only.** They differ in model mix, fallback and leak rule.
@@ -314,7 +349,8 @@ Chinese or Russian numerals.
   - Writers: $93 (4.8: $23 + $32; 5.5: $19 + $19).
   - Test judges: about $78 (4.8 maths $47, ordering $6; 5.5 maths $21, ordering $4).
   - Haiku checks and the pre-flight call: about $1.
-  - Total about $295, against a combined cap of $500 ($300 brief + $200 amendment). The critic subagents' own usage is
+  - Full-rule re-check of two Opus 5.5 test arms: about $2.
+  - Total about $297, against a combined cap of $500 ($300 brief + $200 amendment). The critic subagents' own usage is
     not included.
 - **GPU (Modal billing for m31's apps):** $83 billed through 22:00 PDT (the report lags); I estimate $130-150 in total,
   against a combined cap of $210. All m31 apps are stopped.

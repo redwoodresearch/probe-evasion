@@ -4,7 +4,7 @@
 prompt-writer push Qwen3.5-27B's own-reply probe scores down on valid answers, and by how much? m28 ran 3 + 3 chains
 per task; m31 adds 5 + 5 per task (maths, ordering) so each arm has 8 chains.
 
-**Phase:** done. Searches, tests, analysis, critic 2 and RESULT.md are final. All m31 Modal apps stopped.
+**Phase:** done (10-12 ~00:40). Searches, tests, analysis, critic 2 and a second independent review applied; RESULT.md final. All m31 Modal apps stopped.
 
 ## Entry points
 
@@ -193,6 +193,38 @@ The critic recomputed every headline number from the raw files (all match exactl
    test-arm count corrected (36 new arms per task); audit 3 / 858 (m31) and 5 / 1,441 (with m28); Hedges' g, bootstrap
    intervals and distinct instructions reported.
 
+## Second independent review (via the lead) and actions
+
+It agreed with critic 2. Additions, all applied:
+
+- (a) **Word requests now counted in code.** `asks_for_words` / `word_requests` (negation-aware, saved in
+  `analysis.json`), checked against the reviewer's hand list: unscored 4.8 asked in 5 of 128 instructions (3 of 120 in
+  rounds 1-15). Two unscored chains started with words and abandoned them; three scored chains also started with words
+  at round 0. Unscored 5.5: 4 of 60 that ran, plus 15 of 27 leak-rejected attempts. Scored: 72 of 124 (4.8) and 25 of
+  56 (5.5).
+- (b) **`answer_format` now reports "other" replies** (neither words nor digits found) with their median, and gives
+  shares of all valid replies. For 5.5 with scores: 19% other, median -4.9. For 4.8 with scores: 6%, median -1.8.
+- (c) **Full validity rule run on the two encoded-answer 5.5 test arms** (`full_check`, about $2):
+  - `chain_0@last` (Chinese numerals inside English): 226 of 279 cheap-valid replies pass, median change unchanged
+    (-5.23).
+  - `chain_1@last` (Italian): 137 of 139 pass.
+  - Caveat added.
+- (d) Bootstrap intervals, Hedges' g and distinct-instruction ranges added. The switch to Welch is labelled as a change
+  (critic-1 amendment, before any data).
+- (e) **Batch caveat expanded:**
+  - relabelling p = 0.067 (maths 0.72);
+  - m28's unscored chains stagnate, and m31's scored chain_4 starts slowly;
+  - leave one chain out, pooled D stays between -1.41 and -1.86 (my computation over single chains; the reviewer's
+    -1.38 / -2.28 used a different leave-out);
+  - closer late in the search.
+- (f) Softened: Opus 5.5 maths best-round test noted as small; the mixed unscored arm is "about half 5.5"; "likely
+  reason".
+- (g) **Figures:**
+  - `rounds_all_chains`: the title says bold = median over chains; y-axis scaled to the data, with the 1% line as a
+    text note.
+  - `scores_by_writer_model`: dotted line per panel with test gaps 14.7 / 17.9, labelled; m28's triangles outlined;
+    maths validity counts per arm.
+
 ## Spend estimate (before runs)
 
 - Claude: maths judges ~12,800 search replies x ~$0.0045 ~ $58; ordering ~$28; writers (pinned 4.8) ~$18 scored + ~$8
@@ -255,5 +287,6 @@ The critic recomputed every headline number from the raw files (all match exactl
 |---|---|---|
 | 22:05 | 4 searches so far (driver logs): 4.8 maths ~$15 judges + ~$4.4 writer; 4.8 ordering ~$4 + ~$5.7; 5.5 maths ~$8 + ~$2.6; 5.5 ordering ~$5 + ~$4.2 | ~$49 Claude so far; projected ~$190 search + ~$80 tests (of $300 + $200) |
 | 23:40 | Final Claude (estimates): search judges ~$124, writers $93, test judges ~$78, Haiku + pre-flight ~$1 | ~$295 (cap $500 incl. amendment) |
+| 00:30 | Full-rule re-check of two 5.5 test arms (Sonnet judges, local) | ~$2 Claude |
 | 23:40 | GPU: Modal billing for m31 apps $83 through 22:00 PDT (lags); estimate incl. rest of searches + tests | ~$130-150 (cap $210) |
 | 22:05 | GPU: 4 drivers (2 samplers + 2 scorers each), ~25 min so far | ~$15 so far; projected ~$90 search + ~$40 tests (of $150 + $60) |

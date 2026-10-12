@@ -9,6 +9,7 @@ frozen arms are written here first, so m22's freeze reads them). Entry points an
 """
 
 import itertools
+import re
 from collections import Counter
 import json
 import shutil
@@ -178,6 +179,48 @@ def freeze(task: str, family: str = "opus48") -> dict:
     path.write_text(json.dumps(arms, indent=1, ensure_ascii=False))
     (root / "frozen_absent.json").write_text(json.dumps(absent))
     return arms
+
+
+def full_check(task: str, family: str, arms: str) -> dict:
+    """Reviewer's request (not pre-registered): re-judge every reply of the given test arms that passed the cheaper
+    validity rule with the full rule (number-extraction and blind judges, m19.validity with near=True), as m22's 5%
+    audit does for a sample. Saved to <root>/full_check.jsonl; returns per arm the valid counts and median change."""
+    from dotenv import load_dotenv
+
+    load_dotenv(".env")
+    root = root_of(task, family)
+    rows = jl(root / "test_rows.jsonl")
+    probe = m28.base_monitor(task).targets[TARGET]
+    plain_med = float(np.median([r["peaks"][probe] for r in rows if r["key"] == "plain" and r["valid"]]))
+    out = {}
+    judged = []
+    for arm in arms.split(","):
+        todo = [r for r in rows if r["key"] == arm and r["valid"]]
+        assert todo, arm
+        groups: dict = {}
+        for r in todo:
+            groups.setdefault((r["task"]["task"], r["reply"]), []).append(r)
+        firsts = [g[0] for g in groups.values()]
+        verdicts = m28.base_monitor(task).task.validity([r["task"] for r in firsts], [r["reply"] for r in firsts],
+                                                        [len(r["tokens"]) for r in firsts], [True] * len(firsts))
+        full_valid = []
+        for (key, g), v in zip(groups.items(), verdicts):
+            for r in g:
+                ok = bool(v["valid"] and r["finished"])
+                judged.append({"key": arm, "task_id": r["task"]["id"], "seed": r["seed"], "reply": r["reply"], "full_valid": ok,
+                               "why": v["why_invalid"]})
+                if ok:
+                    full_valid.append(r["peaks"][probe])
+        out[arm] = {"cheap_valid": len(todo), "full_valid": len(full_valid), "distinct_replies": len(groups),
+                    "median_valid_full": float(np.median(full_valid)) if full_valid else None,
+                    "change_full": float(np.median(full_valid)) - plain_med if full_valid else None,
+                    "change_cheap": float(np.median([r["peaks"][probe] for r in todo])) - plain_med}
+    with (root / "full_check.jsonl").open("w") as f:
+        for j in judged:
+            f.write(json.dumps(j, ensure_ascii=False) + "\n")
+    (root / "full_check_summary.json").write_text(json.dumps(out, indent=1))
+    print(out)
+    return out
 
 
 # ---------------------------------------------------------------- analysis (saved files only)
@@ -474,12 +517,13 @@ def refusal_table(chains: list[dict]) -> dict:
 
 
 def answer_format(task: str, info: dict) -> dict:
-    """Maths only: among valid eval replies in rounds 1-15, the share that give the result in number words (m28's
-    result_in_words), and the median paired change vs plain for word and digit answers, per arm."""
+    """Maths only: valid eval replies in rounds 1-15 split by how the result is written (m28's result_in_words: words,
+    digits, or neither found, e.g. other languages' numerals), with each group's share of all valid replies and its
+    median paired change vs plain, per arm."""
     base = {(p["task"]["id"], p["seed"]): p["peaks"][info["probe"]] for p in info["plain"] if p["valid"]}
     out = {}
     for arm, (_, _, sources) in ARMS.items():
-        fmt: dict[str, list[float]] = {"words": [], "digits": []}
+        fmt: dict[str, list[float]] = {"words": [], "digits": [], "unlocated": []}
         for _, root_fn, w in sources:
             for d in sorted((root_fn(task) / w / TARGET).glob("chain_*")):
                 for r in m28.rounds_view(d, info["leaked"]):
@@ -487,13 +531,64 @@ def answer_format(task: str, info: dict) -> dict:
                         continue
                     for x in r["rows"]:
                         k = (x["task"]["id"], x["seed"])
-                        words = m28.result_in_words(x["reply"], x["task"]["result"])
-                        if x["valid"] and k in base and words is not None:
-                            fmt["words" if words else "digits"].append(x["peaks"][info["probe"]] - base[k])
-        n = len(fmt["words"]) + len(fmt["digits"])
-        out[arm] = {"valid_replies": n, "share_words": len(fmt["words"]) / n if n else None,
+                        if x["valid"] and k in base:
+                            words = m28.result_in_words(x["reply"], x["task"]["result"])
+                            fmt["unlocated" if words is None else "words" if words else "digits"].append(x["peaks"][info["probe"]] - base[k])
+        n = sum(len(v) for v in fmt.values())
+        out[arm] = {"valid_replies": n, **{f"n_{f}": len(v) for f, v in fmt.items()},
+                    **{f"share_{f}": len(v) / n if n else None for f, v in fmt.items()},
                     **{f"median_change_{f}": float(np.median(v)) if v else None for f, v in fmt.items()}}
     return out
+
+
+WORDS_ASK = re.compile(
+    r"(written|write|writing|spelled|spelt|spell|state|give|giving)( it| the (final )?(answer|result|number))?( out)?( fully| in full| entirely| only)?"
+    r" (in|as|using) (ordinary |plain |standard )?(english |number |american )*words"
+    r"|(in|as|using) (english )?number words|\b(answer|result|number|value|amount|it)\b[^.]{0,30}\bin (english )?words\b"
+    r"|spell(ed|ing)? (it |the (final )?(answer|result|number) )?out|words,? (not|never|rather than) (digits|numerals)", re.I)
+WORDS_NEG = re.compile(r"\b(never|not|no|don't|do not|avoid|without|instead of)\b", re.I)
+
+
+def asks_for_words(instruction: str) -> bool:
+    """True if a sentence asks for the answer in (English) number words, with no negation in the 40 characters before
+    the request ("never spelled out" is not a request). Checked by hand against the 128 unscored 4.8 instructions
+    (5 genuine requests, reviewer's list)."""
+    for sent in re.split(r"(?<=[.!?\n])\s+", instruction):
+        for m in WORDS_ASK.finditer(sent):
+            if WORDS_NEG.search(sent[:m.start()][-40:]) is None:
+                return True
+    return False
+
+
+def word_requests(task: str) -> dict:
+    """Maths: per arm, the instructions that ran and asked for number words (round 0 vs rounds 1-15, which ones), and
+    the leak-rejected attempts that asked for them."""
+    out = {}
+    for arm, (_, _, sources) in ARMS.items():
+        ran, rejected = [], 0
+        n_ran = n_rejected = 0
+        for source, root_fn, w in sources:
+            for d in sorted((root_fn(task) / w / TARGET).glob("chain_*")):
+                for r in json.loads((d / "state.json").read_text())["rounds"]:
+                    if r["instruction"]:
+                        n_ran += 1
+                        if asks_for_words(r["instruction"]):
+                            ran.append(f"{source}/{d.name}/r{r['round']}")
+                for x in (json.loads(l) for l in (d / "proposals.jsonl").read_text().splitlines()):
+                    if "contains answers" in (x.get("problem") or ""):
+                        n_rejected += 1
+                        rejected += asks_for_words(x.get("instruction") or "")
+        out[arm] = {"instructions_ran": n_ran, "asked_for_words": len(ran), "asked_round_0": sum(x.endswith("/r0") for x in ran),
+                    "asked_rounds_1_15": sum(not x.endswith("/r0") for x in ran), "which": ran,
+                    "leak_rejected_attempts": n_rejected, "leak_rejected_asking_for_words": rejected}
+    return out
+
+
+def leave_one_out(values_a: list[float], values_b: list[float]) -> list[float]:
+    """D = mean(a) - mean(b) with each single chain left out in turn: [min, max]."""
+    ds = [np.mean(values_a[:i] + values_a[i + 1:]) - np.mean(values_b) for i in range(len(values_a))]
+    ds += [np.mean(values_a) - np.mean(values_b[:i] + values_b[i + 1:]) for i in range(len(values_b))]
+    return [float(min(ds)), float(max(ds))]
 
 
 def spend(task: str, chains: list[dict]) -> dict:
@@ -530,7 +625,10 @@ def analyse(task: str) -> dict:
     gap = info["plain_median"] - info["line"]
     return {"task": task, "plain_eval_median": info["plain_median"], "line": info["line"], "plain_to_line_gap": gap,
             "eval": eval_measures, "test": test_measures, "per_round": per_round(chains), "refusals": refusal_table(chains),
-            "spend_m31": spend(task, chains), "answer_format": answer_format(task, info) if task == "maths" else None, "chains": chains, "test_records": tests,
+            "spend_m31": spend(task, chains), "answer_format": answer_format(task, info) if task == "maths" else None,
+            "word_requests": word_requests(task) if task == "maths" else None,
+            "leave_one_out_4.8_primary": leave_one_out(*([c["primary"] for c in chains if c["arm"] == a] for a in ("4.8/scores", "4.8/no scores"))),
+            "chains": chains, "test_records": tests,
             "plain_test": {f: {"valid": sum(r["valid"] for r in rows), "median_valid": float(np.median([r["peaks"][info["probe"]] for r in rows if r["valid"]]))}
                            for f, rows in ((str(p), [r for r in jl(p) if r["key"] == "plain"]) for _, p in test_files(task)[:3] if p.exists())}}
 
@@ -572,14 +670,18 @@ def fig_rounds(results: dict) -> Path:
                     ax.plot([e["round"] for e in pr], [e["median"] for e in pr], color=ARM_COLOUR[kind], lw=2.4,
                             label=f"{'with' if kind == 'scores' else 'without'} probe scores: median of {n} chains")
             ax.axhline(0, color="#888", lw=0.8)
-            ax.axhline(res["line"] - res["plain_eval_median"], color="#555", lw=0.9, ls=":", label="1% line minus plain median (approx.)")
+            lo = min(e["paired_change"] for c in res["chains"] for e in c["rounds"] if not e.get("failed"))
+            ax.set_ylim(lo - 0.8, 1.2)
+            ax.text(0.99, 0.02, f"1% flag line: {res['line'] - res['plain_eval_median']:.1f} vs plain (off scale)", transform=ax.transAxes,
+                    ha="right", va="bottom", fontsize=7.5, color="#555")
             ax.set_title(f"{TASK_TITLE[task]}: {MODEL_TITLE[model]}", fontsize=10)
             ax.set_xlabel("round (0 = zero-shot)")
             if col == 0:
                 ax.set_ylabel("change vs plain, log-odds\n(median over valid replies, paired)")
-            ax.legend(fontsize=7.5, loc="lower left")
+            ax.legend(fontsize=7.5, loc="lower left", bbox_to_anchor=(0, 0.06))
             ax.grid(alpha=0.2)
-    fig.suptitle("Per-round score change on the 80 eval replies, every chain (Opus 4.8: dashed = m28's chains, solid = m31's)", fontsize=11)
+    fig.suptitle("Per-round score change on the 80 eval replies. Thin lines: individual chains (Opus 4.8: dashed = m28's, solid = m31's); "
+                 "bold: median over chains", fontsize=11)
     fig.tight_layout(rect=(0, 0, 1, 0.97))
     FIGURES.mkdir(parents=True, exist_ok=True)
     path = FIGURES / "rounds_all_chains.png"
@@ -607,21 +709,30 @@ def fig_summary(results: dict) -> Path:
                 vals = [(s, v) for a, s, v in pts if a == arm and v is not None]
                 colour = ARM_COLOUR[arm.split("/")[1]]
                 for s, v in vals:
-                    ax.scatter(xs[arm] + rng.uniform(-0.13, 0.13), v, color=colour, marker=MARKER[s], s=40, edgecolor="white", lw=0.7,
+                    ax.scatter(xs[arm] + rng.uniform(-0.13, 0.13), v, color=colour, marker=MARKER[s], s=58 if s == "m28" else 40,
+                               edgecolor="#111" if s == "m28" else "white", lw=0.9 if s == "m28" else 0.7,
                                alpha=0.5 if arm.startswith("mixed") else 1)
                 if vals:
                     ax.hlines(np.mean([v for _, v in vals]), xs[arm] - 0.28, xs[arm] + 0.28, color="#222", lw=1.6)
+                if kind is not None and task == "maths":  # mean valid replies of 500, under each arm
+                    valid = [t["valid"] for t in res["test_records"] if t["kind"] == kind and t["arm"] == arm]
+                    if valid:
+                        ax.text(xs[arm], 0.07, f"{np.mean(valid):.0f}/500\nvalid", transform=ax.get_xaxis_transform(),
+                                ha="center", va="bottom", fontsize=7, color="#444")
             ax.axhline(0, color="#888", lw=0.8)
-            ax.axhline(res["line"] - res["plain_eval_median"], color="#555", lw=0.9, ls=":")
+            plain_ref = res["plain_eval_median"] if kind is None else np.median([v["median_valid"] for v in res["plain_test"].values()])
+            ax.axhline(res["line"] - plain_ref, color="#555", lw=0.9, ls=":")
+            ax.text(0.01, 0.01, f"dotted: 1% line ({res['line'] - plain_ref:.1f} vs plain)", transform=ax.transAxes, fontsize=7.5, color="#555")
+            ax.set_ylim(res["line"] - plain_ref - 0.8, 1.6 if task == "maths" else 0.8)
             ax.set_xticks([xs[a] for a in order], [a.replace("/", "\n") for a in order], fontsize=8)
             ax.set_title(f"{TASK_TITLE[task]}: {title}", fontsize=10)
             if col == 0:
                 ax.set_ylabel("log-odds vs plain")
             ax.grid(alpha=0.2, axis="y")
-    handles = [plt.Line2D([], [], marker=MARKER[s], ls="", color="#555", label=lab)
+    handles = [plt.Line2D([], [], marker=MARKER[s], ls="", color="#555", markeredgecolor="#111" if s == "m28" else "#555", label=lab)
                for s, lab in (("m28", "m28 chain"), ("m31", "m31 chain"), ("earlier", "m22 / m26 chain (reference)"))]
     handles.append(plt.Line2D([], [], color="#222", lw=1.6, label="arm mean"))
-    handles.append(plt.Line2D([], [], color="#555", lw=0.9, ls=":", label="1% line minus plain median (approx.)"))
+    handles.append(plt.Line2D([], [], color="#555", lw=0.9, ls=":", label="1% flag line minus the plain median (eval or test)"))
     fig.legend(handles=handles, loc="upper right", fontsize=8, ncol=5)
     fig.tight_layout(rect=(0, 0, 1, 0.96))
     path = FIGURES / "scores_by_writer_model.png"
@@ -660,4 +771,4 @@ def report(tasks: str = ",".join(TASKS)) -> dict:
 
 
 if __name__ == "__main__":
-    {"prepare": prepare, "freeze": freeze, "report": report}[sys.argv[1]](*sys.argv[2:])
+    {"prepare": prepare, "freeze": freeze, "report": report, "full_check": full_check}[sys.argv[1]](*sys.argv[2:])
