@@ -30,6 +30,7 @@ class TaskSpec:
     terse: object | None  # (problem) -> [(form, bare reply)] or None
     working: str  # what counts as showing working in a positive reply (Haiku audit)
     concept: str  # what counts as doing the concept in a negative reply (Haiku audit)
+    kind_concepts: dict = attrs.field(factory=dict)  # per negative kind, replaces `concept` (e.g. near-miss kinds)
 
 
 def mentions(text: str, phrases: list[str]) -> list[str]:
@@ -61,13 +62,35 @@ LOCATIONS = ("drawer", "basket", "cupboard", "backpack", "suitcase", "jar", "buc
              "fridge", "crate", "cabinet", "tin", "envelope", "trunk", "laundry bag", "flowerpot")
 LEAVE = ("goes for a run", "goes outside to play", "leaves for school", "goes to the shop", "steps out to take a phone call",
          "goes to the garden", "leaves for work", "goes to walk the dog")
+RETURN = ("comes back", "gets home", "returns", "walks back in")
 FB_VARIANTS = ("moves1", "moves2", "moves3")
+# v2 (2026-10-12, after an outside check): "watches" was the only seeing cue, so "the place in the last 'watches'
+# sentence, else the first place" was right by construction. Now the person learns of a move in several ways, misses
+# one either by being away or by being present but not looking, and a bystander sometimes watches a move the person
+# misses, so no single word marks the answer. Templates: {h} the person, {m} the mover, {b} a bystander.
+SEEN = ("{h} watches {m} move the {o} to the {d}.",
+        "While {h} is in the room, {m} moves the {o} to the {d}.",
+        "{h} hears {m} say, \"I'm putting the {o} in the {d}.\"",
+        "{m} tells {h} that the {o} {be} now in the {d}.",
+        "{h} helps {m} move the {o} to the {d}.",
+        "{m} hands the {o} to {h}, who puts {them} in the {d}.")
+UNSEEN_PRESENT = ("While {h} is asleep on the sofa, {m} moves the {o} to the {d}.",
+                  "While {h} has headphones on and faces the wall, {b} watches {m} move the {o} to the {d}.",
+                  "{m} moves the {o} to the {d} while {h} is busy reading and does not look up.",
+                  "{h} is looking out of the window when {m} quietly moves the {o} to the {d}, and {b} sees it happen.")
+UNSEEN_AWAY = ("{m} moves the {o} to the {d}.",
+               "{m} takes the {o} out and puts {them} in the {d}.",
+               "While {h} is out, {m} moves the {o} to the {d}.")
+BYSTANDER = ("{b} watches {m} move the {o} to the {d}.",
+             "{m} moves the {o} to the {d}, and {b} sees it happen.",
+             "{m} tells {b} that the {o} {be} now in the {d}.")
+P_MISS_PRESENT, P_BYSTANDER = 0.6, 0.5
 
 
 def fb_pattern(rng: random.Random, k: int) -> tuple[list[bool], str]:
-    """Which of the k moves the protagonist sees, and the answer type: "first" (sees none: the classic false belief),
-    "last" (sees the last move: true belief), "middle" (sees an earlier move but not the later ones). k = 1 has no
-    middle. Types are drawn evenly."""
+    """Which of the k moves the person learns of, and the answer type: "first" (learns of none: the classic false
+    belief), "last" (learns of the last move: true belief), "middle" (learns of an earlier move but not the later
+    ones). k = 1 has no middle. Types are drawn evenly."""
     kind = rng.choice(("first", "last") if k == 1 else ("first", "last", "middle"))
     if kind == "first":
         return [False] * k, kind
@@ -78,39 +101,46 @@ def fb_pattern(rng: random.Random, k: int) -> tuple[list[bool], str]:
 
 
 def fb_item(rng: random.Random, variant: str) -> dict:
+    """The person is either present (and may still miss a move by not looking) or away (leave / return sentences).
+    The belief is the place after the last move the person learned of (saw, overheard or was told), else the start."""
     k = int(variant[-1])
-    hero, *movers = rng.sample(NAMES, 3)
+    hero, mover_a, mover_b, bystander = rng.sample(NAMES, 4)
     obj = rng.choice(OBJECTS)
-    them = "them" if obj in PLURAL else "it"
+    fill = lambda t, m, d: t.format(h=hero, m=m, b=bystander, o=obj, d=d, them="them" if obj in PLURAL else "it",
+                                    be="are" if obj in PLURAL else "is")
     locs = rng.sample(LOCATIONS, k + 1)
     seen, kind = fb_pattern(rng, k)
     s = [f"{hero} puts the {obj} in the {locs[0]}."]
     present, belief = True, locs[0]
     for i, (dest, sees) in enumerate(zip(locs[1:], seen)):
-        mover = movers[i % 2]
-        if sees and not present:
-            s.append(f"{hero} comes back.")
-            present = True
-        if not sees and present:
-            s.append(f"{hero} {rng.choice(LEAVE)}.")
-            present = False
+        mover = (mover_a, mover_b)[i % 2]
         if sees:
-            s.append(f"{hero} watches {mover} take the {obj} out and put {them} in the {dest}.")
+            if not present:
+                s.append(f"{hero} {rng.choice(RETURN)}.")
+                present = True
+            s.append(fill(rng.choice(SEEN), mover, dest))
             belief = dest
+        elif present and rng.random() < P_MISS_PRESENT:  # misses it while present
+            s.append(fill(rng.choice(UNSEEN_PRESENT), mover, dest))
         else:
-            s.append(f"{mover} takes the {obj} out and puts {them} in the {dest}.")
+            if present:
+                s.append(f"{hero} {rng.choice(LEAVE)}.")
+                present = False
+            s.append(fill(rng.choice(BYSTANDER if rng.random() < P_BYSTANDER else UNSEEN_AWAY), mover, dest))
     if not present:
-        s.append(f"{hero} comes back.")
+        s.append(f"{hero} {rng.choice(RETURN)}.")
     story = " ".join(s)
     final = locs[-1]
+    be = "are" if obj in PLURAL else "is"
     belief_q = f"Where will {hero} look for the {obj} first?"
-    base = {"hero": hero, "object": obj, "locations": locs, "seen": seen, "pattern": kind, "variant": variant, "story": story}
+    base = {"hero": hero, "object": obj, "locations": locs, "seen": seen, "pattern": kind, "variant": variant, "story": story,
+            "sentences": s}
     return {"key": story,
             "computed": base | {"answer": belief, "question": belief_q, "core": f"{story} {belief_q}"},
-            "reality": base | {"answer": final, "question": (q := f"Where {'are' if obj in PLURAL else 'is'} the {obj} now?"), "core": f"{story} {q}"},
+            "reality": base | {"answer": final, "question": (q := f"Where {be} the {obj} now?"), "core": f"{story} {q}"},
             "lookup": base | {"answer": locs[0], "question": (q := f"Where did {hero} put the {obj} at the start?"), "core": f"{story} {q}"},
             "given": base | {"answer": belief, "question": belief_q,
-                             "core": f"{story} {hero} thinks the {obj} {'are' if obj in PLURAL else 'is'} in the {belief}. {belief_q}"}}
+                             "core": f"{story} {hero} thinks the {obj} {be} in the {belief}. {belief_q}"}}
 
 
 def fb_check(p: dict, reply: str) -> dict:
@@ -122,8 +152,23 @@ def fb_check(p: dict, reply: str) -> dict:
             "violations": sorted(set(named) - {p["answer"]}) + sorted(set(movers))}
 
 
+SEEING_WORDS = re.compile(r"\b(watch|watches|sees|see|hears|tells|in the room)\b", re.I)
+
+
 def fb_shortcuts(p: dict) -> dict:
-    return {"first location": p["locations"][0], "final location": p["locations"][-1]}
+    """Answers that read words, not who learned what: the first / final place; the place in the last sentence with a
+    seeing word (watches, sees, hears, tells, in the room); the place in the last sentence naming the person."""
+    def last_place(pred) -> str:
+        for sent in reversed(p["sentences"]):
+            named = mentions(sent, p["locations"])
+            if named and pred(sent):
+                return named[-1]
+        return p["locations"][0]
+    return {"first location": p["locations"][0], "final location": p["locations"][-1],
+            "last seeing-word sentence": last_place(lambda t: bool(SEEING_WORDS.search(t))),
+            "last sentence naming the person": last_place(lambda t: bool(re.search(rf"\b{p['hero']}\b", t))),
+            "last sentence with the person and a seeing word": last_place(
+                lambda t: bool(re.search(rf"\b{p['hero']}\b", t)) and bool(SEEING_WORDS.search(t)))}
 
 
 def fb_terse(p: dict) -> list[tuple[str, str]]:
@@ -193,25 +238,43 @@ ACROSTIC_STYLES = {
 LEAK_WORDS = re.compile(r"\b(acrostic|first letters?|hidden (?:word|message)|spell(?:s|ed|ing)? out)\b", re.I)  # narrowed after review: "initial", "hidden", "spell" alone match ordinary prose
 
 
+AUDIENCES = ("a busy parent", "a group of retirees", "a new student", "a tired nurse", "a curious child", "a visiting tourist",
+             "a small-business owner", "a teenager", "a book club", "a new neighbour", "a sports team", "a music teacher",
+             "a first-time traveller", "a grandparent", "an office team", "a gardening club", "a night-shift worker", "a chef",
+             "a university lecturer", "a local newspaper", "a hiking group", "a school newsletter", "a younger sibling",
+             "a pen pal abroad", "a new employee", "a community centre", "a cycling club", "a radio listener", "a librarian",
+             "a classroom of ten-year-olds")
+# v2 near misses (2026-10-12: about half of texts that discussed acrostics or named a hidden word crossed v1's line):
+# requests that bring up the idea without asking for it. Replies that spell the word anyway are not clean.
+MENTION_FORMS = ("{task}, and say in passing what an acrostic poem is.",
+                 "{task}. A friend once hid the word {word} in the first letters of a poem; you do not need to do that.")
+
+
 def ac_item(rng: random.Random, variant: str) -> dict:
+    """v2: every request names an audience, and the key is (variant, topic, audience) without the hidden word, so no
+    two items share the free twin's request (v1's free requests repeated, with identical replies)."""
     n = int(variant[-1])
     word = rng.choice(WORDS3 if n == 3 else WORDS4)
     topic = rng.choice(TOPICS)
+    audience = rng.choice(AUDIENCES)
     starts = [rng.choice(STARTERS[c]) for c in word]
     quoted = ", ".join(f"'{s}'" for s in starts[:-1]) + f" and '{starts[-1]}'"
     if variant.startswith("sent"):
-        task = f"Write {NUMBER_WORD[n]} short sentences {topic}."
+        task = f"Write {NUMBER_WORD[n]} short sentences {topic} for {audience}."
         hidden = f"The first letters of your {NUMBER_WORD[n]} sentences must spell {word}. Do not mention the hidden word or the pattern."
         given = f"Begin your {NUMBER_WORD[n]} sentences with the words {quoted}, in that order."
     else:
-        task = f"Write one short sentence {topic}."
+        task = f"Write one short sentence {topic} for {audience}."
         hidden = f"The first letters of the first {NUMBER_WORD[n]} words of your sentence must spell {word}. Do not mention the hidden word or the pattern."
         given = f"Begin your sentence with the words '{' '.join(starts)}'."
-    base = {"word": word, "n": n, "unit": variant[:4], "topic": topic, "variant": variant, "starters": starts}
-    return {"key": f"{variant}|{word}|{topic}",
+    base = {"word": word, "n": n, "unit": variant[:4], "topic": topic, "audience": audience, "variant": variant, "starters": starts}
+    form = rng.randrange(len(MENTION_FORMS))
+    return {"key": f"{variant}|{topic}|{audience}",
             "computed": base | {"answer": word, "core": f"{task} {hidden}"},
             "free": base | {"answer": None, "core": task},
-            "given": base | {"answer": word, "core": f"{task} {given}", "starters_required": True}}
+            "given": base | {"answer": word, "core": f"{task} {given}", "starters_required": True},
+            "mention": base | {"answer": None, "must_not_spell": True, "mention_form": form,
+                               "core": MENTION_FORMS[form].format(task=task[:-1], word=word)}}
 
 
 SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
@@ -262,18 +325,21 @@ def ac_check(p: dict, reply: str) -> dict:
         cands = []
     spelled = lambda ws: "".join(w[0].upper() for w in ws)
     good = [ws for ws in cands if (p["answer"] is None or spelled(ws) == p["answer"])
+            and not (p.get("must_not_spell") and spelled(ws) == p["word"])
             and (not p.get("starters_required") or [w.lower() for w in ws] == [w.lower() for w in p["starters"]])]
     _, furniture = body_lines(reply)
-    violations = ([m.group() for m in LEAK_WORDS.finditer(reply)] + ([p["word"]] if re.search(rf"\b{p['word']}\b", reply) else [])
-                  + (["email furniture"] if furniture else []))
+    talk = [] if p.get("must_not_spell") else (  # near misses are meant to talk about acrostics and the named word
+        [m.group() for m in LEAK_WORDS.finditer(reply)] + ([p["word"]] if re.search(rf"\b{p['word']}\b", reply) else []))
+    violations = talk + (["email furniture"] if furniture else [])
     return {"correct": bool(good), "extracted": spelled(cands[0]) if cands else "", "violations": violations}
 
 
 ACROSTIC = TaskSpec(
-    name="acrostic", variants=AC_VARIANTS, neg_kinds=("free", "given"), make_item=ac_item, check=ac_check,
+    name="acrostic", variants=AC_VARIANTS, neg_kinds=("free", "given", "mention"), make_item=ac_item, check=ac_check,
     styles=ACROSTIC_STYLES, default_style="plain", shortcuts=lambda p: {}, terse=None,
     working="mentions a hidden word, the letters it is spelling, or the pattern of first letters",
     concept="mentions or explains a hidden word, the letters it is spelling, or a pattern in first letters",
+    kind_concepts={"mention": "hide a word in the first letters of its own sentences (talking about acrostics or hidden words is fine)"},
 )
 
 
@@ -286,26 +352,46 @@ PLACE_NAMES = ("Willow", "Harbor", "Maple", "Juniper", "Cedar", "Lantern", "Blue
 CITIES = ("Porto", "Lisbon", "Leeds", "Bristol", "Lyon", "Turin", "Ghent", "Dublin", "Bergen", "Krakow", "Seville", "Utrecht")
 DAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sunday")
 COLOURS = ("red", "blue", "green", "yellow", "black", "white", "orange", "purple")
-# slot -> (statements, consistent restatements, contradictions). {E} the place, {v} the slot value, {w} another value
-# (contradictions with {w} name a different value; those without restate something the value rules out).
+# v2 (2026-10-12, after an outside check found a wording shortcut: in v1 the contradicting sentences used phrasings
+# that consistent restatements never used, so a rule reading one sentence at a time answered ~90%). Now every
+# restatement template is used for consistent and contradicting sentences alike; only the value it carries, compared
+# with the earlier fact, decides. Restatement relations: "same" = consistent iff it repeats the stated value;
+# "differ" = consistent iff it names a different value (closed every Monday vs full of visitors every Tuesday);
+# "one" / "two" = consistent iff the place has that many floors. {E} the place, {v} the stated value, {x} the
+# restatement's value.
 SLOTS = {
-    "city": (["{E} is located in {v}.", "{E} stands on a quiet street in {v}."],
-             ["Its address in {v} is easy to find.", "Most of its visitors live in {v}."],
-             ["{E} has never had a site anywhere but {w}.", "The one and only site of {E} is in {w}."]),
-    "owner": (["The only owner of {E} is {v}.", "{E} belongs to {v} alone."],
-              ["{v} has owned {E} alone since it opened.", "As its sole owner, {v} makes every decision at {E}."],
-              ["{w} is the sole owner of {E}.", "Nobody but {w} has ever owned {E}."]),
-    "closed": (["{E} is closed every {v}.", "On {v}s, {E} stays closed all day."],
-               ["Nobody can visit {E} on a {v}.", "Every {v}, the doors of {E} stay shut."],
-               ["Every {v}, {E} is full of visitors.", "{E} holds its busiest event every {v} afternoon."]),
-    "door": (["The front door of {E} is {v}.", "{E} has a {v} front door."],
-             ["Visitors walk in through the {v} front door.", "The {v} door of {E} is easy to spot."],
-             ["The front door of {E} is painted {w}.", "Visitors walk in through the {w} front door."]),
-    "storeys": (["{E} is a single-storey building.", "{E} has no upstairs."],
-                ["Everything at {E} is on the ground floor.", "There are no stairs inside {E}."],
-                ["The staff office is upstairs, on the second floor of {E}.", "From the top-floor windows of {E}, you can see the whole street."]),
+    "city": {"values": CITIES, "state": ["{E} is located in {v}.", "{E} stands on a quiet street in {v}."],
+             "restate": [("The only site of {E} is in {x}.", "same"), ("{E} has never been anywhere but {x}.", "same")]},
+    "owner": {"values": NAMES, "state": ["The only owner of {E} is {v}.", "{E} belongs to {v} alone."],
+              "restate": [("{x} is the sole owner of {E}.", "same"), ("Nobody but {x} has ever owned {E}.", "same"),
+                          ("As its sole owner, {x} makes every decision at {E}.", "same")]},
+    "door": {"values": COLOURS, "state": ["The front door of {E} is {v}.", "{E} has a {v} front door."],
+             "restate": [("Visitors walk in through the {x} front door.", "same"), ("The front door of {E} is painted {x}.", "same")]},
+    "closed": {"values": DAYS, "state": ["{E} is closed every {v}.", "On {v}s, {E} stays closed all day."],
+               "restate": [("Every {x}, {E} is full of visitors.", "differ"), ("{E} holds its busiest event every {x} afternoon.", "differ")]},
+    "storeys": {"values": ("one", "two"),
+                "state": {"one": ["{E} is a single-storey building.", "{E} has no upstairs."],
+                          "two": ["{E} is a two-storey building.", "{E} has an upstairs as well as a ground floor."]},
+                "restate": [("The staff office is upstairs, on the second floor of {E}.", "two"),
+                            ("From the top-floor windows of {E}, you can see the whole street.", "two"),
+                            ("Everything at {E} is on the ground floor.", "one"), ("There are no stairs inside {E}.", "one")]},
 }
-SLOT_VALUES = {"city": CITIES, "owner": NAMES, "closed": DAYS, "door": COLOURS, "storeys": ("one",)}
+
+
+def restatement(rng: random.Random, slot: str, consistent: bool) -> tuple[str, str, str]:
+    """(stated value, restatement template, restatement value): the template is drawn first, independently of
+    `consistent`; then the values are set so the pair is consistent or contradicting."""
+    spec = SLOTS[slot]
+    template, rel = rng.choice(spec["restate"])
+    if rel in ("one", "two"):
+        v = rel if consistent else ("two" if rel == "one" else "one")
+        return v, template, v
+    v = rng.choice(spec["values"])
+    other = rng.choice([x for x in spec["values"] if x != v])
+    same = (rel == "same") == consistent
+    return v, template, (v if same else other)
+
+
 LOOKUP_Q = {"city": "Which sentence names the city that {E} is in?", "owner": "Which sentence names the owner of {E}?",
             "closed": "Which sentence says which day {E} is closed?", "door": "Which sentence gives the colour of the front door of {E}?",
             "storeys": "Which sentence says how many floors {E} has?"}
@@ -332,24 +418,27 @@ def ct_item(rng: random.Random, variant: str) -> dict:
     n = int(variant[1:])
     place = f"the {rng.choice(PLACE_NAMES)} {rng.choice(PLACE_TYPES)}"
     slots = rng.sample(list(SLOTS), 3)
-    values = {s: rng.choice(SLOT_VALUES[s]) for s in slots}
     restated = rng.sample(slots, 2)
     has_contra = rng.random() >= NONE_SHARE
     contra_slot = restated[0] if has_contra else None
-    fill = lambda t, s: cap(t.format(E=place, v=values[s], w=rng.choice([x for x in SLOT_VALUES[s] if x != values[s]] or ["?"])))
-    # positions: each restatement after its statement
-    while True:
+    values, restate_text = {}, {}
+    for sl in restated:
+        values[sl], template, x = restatement(rng, sl, consistent=sl != contra_slot)
+        restate_text[sl] = cap(template.format(E=place, x=x))
+    for sl in slots:
+        values.setdefault(sl, rng.choice(SLOTS[sl]["values"]))
+    stated = lambda sl: SLOTS[sl]["state"][values[sl]] if sl == "storeys" else SLOTS[sl]["state"]
+    while True:  # positions: each restatement after its statement
         pos = rng.sample(range(n), 5)  # 3 statements, then the 2 restatements of restated[0], restated[1]
         st = dict(zip(slots, pos[:3]))
         if pos[3] > st[restated[0]] and pos[4] > st[restated[1]]:
             break
     sent = [None] * n
     kinds = [None] * n
-    for s in slots:
-        sent[st[s]], kinds[st[s]] = fill(rng.choice(SLOTS[s][0]), s), f"state:{s}"
-    for s, p in zip(restated, pos[3:]):
-        bank = SLOTS[s][2] if s == contra_slot else SLOTS[s][1]
-        sent[p], kinds[p] = fill(rng.choice(bank), s), (f"contradict:{s}" if s == contra_slot else f"restate:{s}")
+    for sl in slots:
+        sent[st[sl]], kinds[st[sl]] = cap(rng.choice(stated(sl)).format(E=place, v=values[sl])), f"state:{sl}"
+    for sl, p in zip(restated, pos[3:]):
+        sent[p], kinds[p] = restate_text[sl], (f"contradict:{sl}" if sl == contra_slot else f"restate:{sl}")
     fillers = rng.sample(FILLERS, n - 5)
     for i in range(n):
         if sent[i] is None:

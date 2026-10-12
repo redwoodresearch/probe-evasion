@@ -138,8 +138,8 @@ def audit(task: TaskSpec, rows: list[dict]) -> list[bool]:
     count as flagged."""
     from probe_evasion.judge import CHEAP_JUDGE_MODEL, ask_with_tool
 
-    prompts = [AUDIT_PROMPT.format(what=task.working if r["kind"] == "computed" else task.concept, request=r["prompt"], reply=r["response"])
-               for r in rows]
+    what = lambda r: task.working if r["kind"] == "computed" else task.kind_concepts.get(r["kind"], task.concept)
+    prompts = [AUDIT_PROMPT.format(what=what(r), request=r["prompt"], reply=r["response"]) for r in rows]
     return [bool(v.get("judge_refused") or v["flag"]) for v in ask_with_tool(prompts, AUDIT_TOOL, model=CHEAP_JUDGE_MODEL)]
 
 
