@@ -1,0 +1,19 @@
+[project]
+name = "probe-toolkit"
+version = "0.1.0"
+description = "Train and calibrate linear activation probes on a chat model's replies"
+requires-python = ">=3.10"
+dependencies = ["numpy", "scikit-learn", "torch", "transformers"]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["probe_toolkit"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
