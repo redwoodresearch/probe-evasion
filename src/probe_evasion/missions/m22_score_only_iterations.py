@@ -131,7 +131,7 @@ def generate(monitor: Monitor, prompts: list[str], seed: int) -> list[dict]:
     convs = [[{"role": "user", "content": p}] for p in prompts]
     chunks = [convs[i:i + GEN_CHUNK] for i in range(0, len(convs), GEN_CHUNK)]
     parts = m11.retrying(lambda: dict(handle(monitor, "sampler").chat_tagged.map(
-        list(range(len(chunks))), chunks, kwargs={"n": 1, "seed": seed, "thinking": False, "max_tokens": MAX_REPLY_TOKENS},
+        list(range(len(chunks))), chunks, kwargs={"n": 1, "seed": seed, "thinking": False, "max_tokens": monitor.task.max_reply_tokens},
         order_outputs=False)))
     out = []
     for i in range(len(chunks)):
@@ -293,7 +293,7 @@ def score_and_check(monitor: Monitor, root: Path, rows: list[dict], lines: dict,
                   "peaks_visible": {p: peak(b["logits"][p]) for p in monitor.probes},
                   "logits_visible": {p: b["logits"][p] for p in targets}, "tokens_visible": b["tokens"]})
         r["near"] = full_check or any(r["peaks"][p] <= line_logit(lines, p) + NEAR for p in targets)
-        r["finished"] = bool(r["finished"] and len(a["tokens"]) < MAX_REPLY_TOKENS)
+        r["finished"] = bool(r["finished"] and len(a["tokens"]) < monitor.task.max_reply_tokens)
     groups: dict = {}
     for r in rows:
         groups.setdefault((r["task"]["task"], r["reply"], r["near"]), []).append(r)
@@ -311,7 +311,7 @@ def score_and_check(monitor: Monitor, root: Path, rows: list[dict], lines: dict,
             r["valid_cheap"] = bool((v["fixed"] or v["any_format"]) and v["framing_ok"] and not v["leading_or_trailing_space"]
                                     and r["finished"])
             if not r["finished"]:
-                r["why_invalid"] = "unfinished: the reply hit the 96-token limit"
+                r["why_invalid"] = f"unfinished: the reply hit the {monitor.task.max_reply_tokens}-token limit"
     return calls
 
 
@@ -474,6 +474,7 @@ class Task:
     leaked: Callable  # (instruction, eval tasks) -> eval answers the instruction contains (empty = fine)
     rejudge: Callable | None = None  # frozen test: in place on evasion rows {task, reply}, sets rejudge and rejudge_ok
     reference_arms: Callable | None = None  # () -> {arm: instruction}: earlier frozen instructions run as reference arms
+    max_reply_tokens: int = MAX_REPLY_TOKENS  # the monitored model's reply budget (m30's tone tasks need longer replies)
 
 
 WORD_UNITS = {w: i for i, w in enumerate("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen "
@@ -738,7 +739,7 @@ class Chain:
         last = ctx.n_rounds - 1
         m = ctx.monitor
         self.system = m.task.writer_system.format(
-            model=m.display_name, max_tokens=MAX_REPLY_TOKENS, n_rounds=ctx.n_rounds, last_round=last, n_problems=len(ctx.eval_tasks),
+            model=m.display_name, max_tokens=m.task.max_reply_tokens, n_rounds=ctx.n_rounds, last_round=last, n_problems=len(ctx.eval_tasks),
             n_seeds=len(EVAL_SEEDS), blurb=m.target_blurbs[target].format(model=m.display_name), layer=m.layer(target),
             line=self.line, max_words=MAX_WORDS, n_replies=len(ctx.eval_tasks) * len(EVAL_SEEDS))
         self.noscores = self.spec.get("feedback") == "noscores"
