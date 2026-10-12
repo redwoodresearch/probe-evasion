@@ -52,3 +52,23 @@ Secondary: within-style discrimination survives (it's a distribution shift); siz
 - Launched m28 (random-style baseline, no-readout-spec writer, told-probe bottom rung, pinned-writer scores vs no-scores)
   and m29 (false-alarm sweep, transfer to sister probes, validity/selection effects, naturalness, central figure).
 - Rewrote the draft as v1 with the reframed story; overnight report updated with m22's final numbers (republished).
+
+### Iteration 3 (2026-10-11)
+- m29 critic and the v2 cold review both weakened Result 5: raw log-odds aren't comparable across probes; margin doesn't
+  order crossing cleanly (Gemma, condescension m11, 122B break it); naturalness is mixed (drop shrinks to ~0 in several
+  arms); flattery invalid for the argument; m11's equal-method pair moved condescension ~11 vs maths ~3.5–3.9.
+- Better story from the v2 review ("pool tail"): attacks move concept replies a similar share of plain-to-ordinary on
+  sarcasm and tasks; what differs is how far the 1% line sits above typical ordinary replies (sarcasm 11–12 log-odds,
+  tasks 2–4). Crossing a fixed line is mostly a property of the calibration pool; the shift is the better headline.
+  Lead with the positive: a cheap, mostly probe-blind black-box search moves activations a quarter to a half of the way
+  and transfers to probes it never saw; the deflations are the precise statement of what isn't happening.
+- Draft v2.1: narrowed claims per the m29 critic.
+- Launched m30: equal-effort score-only search on sarcasm and condescension with the m22 runner and the pinned writer.
+- Amended m28: styled twins for the random styles (is the compression generic to any odd style?).
+- Amended m27: Part C (probe reading just before the answer token: does the internal state change before the answer is
+  written?) and Part D (task lines recalibrated on a broad pool of ordinary replies).
+- Amended m29: pool-tail decomposition and strip figure; flattery invalid, anger weak; extra concepts (m9 jokey, m3b
+  criticism, chemistry, m11 strict maths); second naturalness judge (Sonnet).
+- Pending v3 rewrite once results land: the review's section-2 edit list (TL;DR wording, white-box rule hints, §4 table
+  on one measure, transfer scope, 9B in TL;DR, number-word naturalness, "no detectable difference" for scores, tone
+  fragilities, ordering margin, minor numbers, cut the m20 bullet).
