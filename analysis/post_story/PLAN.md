@@ -151,3 +151,11 @@ Smuggling Capabilities", to be believed before use.
   binary-feedback sweeps, plus a real-scoring-rule arm), m42 (adaptive defender: leave-one-lab-out probe retraining,
   an augmented-style probe, a pooled probe). m38 amended with a system-prompt/scenario framing arm. m38's 397B
   stretch approved (GPU cap $1,100).
+- v7.1 critic round 2: 7/10. Holes: the headline reading fits neither threat; the "lower bound" argument for the
+  in-view slope is wrong (a constant offset moves the intercept, not the slope); the title overclaims; the maths tail
+  is carried by the two weakest writers; the maths drop may be re-encoding the answer rather than hiding the
+  computation. v7.2 fixes sent to the writer (round 3 is the last review).
+- Launched m43 (a decision task where the computed result is never written; its own probe; a 6-writer sweep) and m44
+  (writer effort ablation within a model; 48-round searches). m39 amended: per-instruction matched baselines, the
+  leading-digit causal check on sweep instructions, a realistic monitor (broad lines plus a text judge). m40 extended to
+  11 writers. m41's binary arm replaced by a per-reply-score arm plus a loose-line binary (ordering).
