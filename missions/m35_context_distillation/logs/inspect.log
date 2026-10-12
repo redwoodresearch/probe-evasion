@@ -1,0 +1,323 @@
+✓ Initialized. View run at 
+https://modal.com/apps/redwood-default/main/ap-sfpEGrT8JNRvb8xHCgIJZ0
+Building image im-Dg6o8l4iaQ5Q3UVQxzMqJ7
+
+=> Step 0: FROM base
+
+=> Step 1: COPY --from=ghcr.io/astral-sh/uv:latest /uv /.uv/uv
+Getting image source signatures
+Copying blob sha256:cede089c9d3d890075ed09dc7554e4290f3477c5b73b7a01b3a793c26f0b7125
+Copying blob sha256:6878d64b935bede41975b1d01f772d7ff731d12c9c6d3cf3a2877dba5cac24e0
+Copying config sha256:137dfab75bbb417aa3479ed225f79808c7abd76febda20cb8b5735a72f7ba5d4
+Writing manifest to image destination
+Unpacking OCI image
+   • unpacking rootfs ...     
+   • ... done                 
+   • unpacked image rootfs: /tmp/task-data/ta-01M4QA13Z2WES09FVBH1PRBGWB/registry-unpackvowp36
+
+=> Step 2: RUN /.uv/uv pip install --python $(command -v python) --compile-bytecode peft
+Using Python 3.12.1 environment at: /usr/local
+Resolved 56 packages in 229ms
+Prepared 1 package in 67ms
+Installed 1 package in 33ms
+Bytecode compiled 249 files in 139ms
+ + peft==0.21.2
+Saving image...
+Image saved, took 1.74s
+
+Built image im-Dg6o8l4iaQ5Q3UVQxzMqJ7 in 5.41s
+
+
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/results/chameleons/trained_probes
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/external/minimal_neural_chameleons/pro
+│   bes
+├── ✓ Uploaded PythonPackage:probe_evasion
+├── ✓ Created Function execute.
+├── ✓ Created Function Sampler.*.
+├── ✓ Created Function inspect_vllm.
+├── ✓ Created Function ProbeLab.*.
+├── ✓ Created Function ConceptGen.*.
+├── ✓ Created Function ConceptScorer.*.
+├── ✓ Created Function train_probes_remote.
+└── ✓ Created Function inspect_hf.
+
+[1AFetching 24 files:   0%|          | 0/24 [00:00<?, ?it/s]
+[1AFetching 24 files: 100%|██████████| 24/24 [00:00<00:00, 904.55it/s]
+{
+ "vllm": "0.30.0",
+ "Qwen3_5ForConditionalGeneration": {
+  "module": "vllm.model_executor.models.qwen3_5",
+  "supports_lora": true,
+  "packed_modules_mapping": {
+   "qkv_proj": [
+    "q_proj",
+    "k_proj",
+    "v_proj"
+   ],
+   "gate_up_proj": [
+    "gate_proj",
+    "up_proj"
+   ],
+   "qkv": [
+    "qkv"
+   ],
+   "in_proj_qkvz": [
+    "in_proj_qkv",
+    "in_proj_z"
+   ],
+   "in_proj_ba": [
+    "in_proj_b",
+    "in_proj_a"
+   ]
+  },
+  "embedding_modules": {},
+  "mro": [
+   "Qwen3_5ForConditionalGeneration",
+   "Qwen3VLForConditionalGeneration",
+   "Module",
+   "SupportsMultiModal",
+   "SupportsMultiModalEmbeddings",
+   "SupportsEncoderCudaGraph",
+   "SupportsLoRA",
+   "SupportsPP"
+  ]
+ },
+ "Qwen3_5ForCausalLM": {
+  "module": "vllm.model_executor.models.qwen3_5",
+  "supports_lora": true,
+  "packed_modules_mapping": {
+   "qkv_proj": [
+    "q_proj",
+    "k_proj",
+    "v_proj"
+   ],
+   "gate_up_proj": [
+    "gate_proj",
+    "up_proj"
+   ],
+   "in_proj_qkvz": [
+    "in_proj_qkv",
+    "in_proj_z"
+   ],
+   "in_proj_ba": [
+    "in_proj_b",
+    "in_proj_a"
+   ]
+  },
+  "embedding_modules": {
+   "embed_tokens": "input_embeddings",
+   "lm_head": "output_embeddings"
+  },
+  "mro": [
+   "Qwen3_5ForCausalLM",
+   "Qwen3_5ForCausalLMBase",
+   "Module",
+   "HasInnerState",
+   "IsHybrid",
+   "SupportsEagle3",
+   "SupportsEagleBase",
+   "SupportsLoRA"
+  ]
+ }
+}
+
+[1ALoading weights:   0%|          | 0/1184 [00:00<?, ?it/s]
+[1ALoading weights:   0%|          | 1/1184 [00:00<18:09,  1.09it/s]
+[1ALoading weights:   0%|          | 2/1184 [00:01<19:16,  1.02it/s]
+[1ALoading weights:   1%|          | 10/1184 [00:02<02:43,  7.19it/s]
+[1ALoading weights:   1%|          | 14/1184 [00:02<01:56, 10.02it/s]
+[1ALoading weights:   2%|▏         | 22/1184 [00:02<01:03, 18.37it/s]
+[1ALoading weights:   2%|▏         | 27/1184 [00:02<00:54, 21.13it/s]
+[1ALoading weights:   3%|▎         | 32/1184 [00:02<00:46, 24.82it/s]
+[1ALoading weights:   3%|▎         | 38/1184 [00:02<00:39, 29.21it/s]
+[1ALoading weights:   4%|▎         | 43/1184 [00:02<00:44, 25.49it/s]
+[1ALoading weights:   4%|▍         | 47/1184 [00:03<00:50, 22.60it/s]
+[1ALoading weights:   5%|▍         | 54/1184 [00:03<00:37, 30.04it/s]
+[1ALoading weights:   5%|▌         | 60/1184 [00:03<00:31, 35.35it/s]
+[1ALoading weights:   6%|▌         | 66/1184 [00:03<00:38, 29.14it/s]
+[1ALoading weights:   6%|▋         | 76/1184 [00:03<00:27, 40.30it/s]
+[1ALoading weights:   7%|▋         | 82/1184 [00:04<00:32, 33.83it/s]
+[1ALoading weights:   8%|▊         | 91/1184 [00:04<00:26, 41.77it/s]
+[1ALoading weights:   8%|▊         | 97/1184 [00:04<00:30, 35.23it/s]
+[1ALoading weights:   9%|▊         | 102/1184 [00:04<00:32, 33.03it/s]
+[1ALoading weights:   9%|▉         | 108/1184 [00:04<00:28, 37.70it/s]
+[1ALoading weights:  10%|▉         | 118/1184 [00:04<00:23, 44.77it/s]
+[1ALoading weights:  10%|█         | 123/1184 [00:05<00:24, 42.61it/s]
+[1ALoading weights:  11%|█         | 131/1184 [00:05<00:21, 50.10it/s]
+[1ALoading weights:  12%|█▏        | 137/1184 [00:05<00:23, 43.65it/s]
+[1ALoading weights:  12%|█▏        | 147/1184 [00:05<00:20, 50.49it/s]
+[1ALoading weights:  13%|█▎        | 153/1184 [00:05<00:26, 39.30it/s]
+[1ALoading weights:  13%|█▎        | 158/1184 [00:05<00:24, 41.19it/s]
+[1ALoading weights:  14%|█▍        | 168/1184 [00:05<00:20, 50.64it/s]
+[1ALoading weights:  15%|█▍        | 174/1184 [00:06<00:25, 39.66it/s]
+[1ALoading weights:  16%|█▌        | 186/1184 [00:06<00:20, 49.45it/s]
+[1ALoading weights:  16%|█▌        | 192/1184 [00:06<00:20, 47.62it/s]
+[1ALoading weights:  17%|█▋        | 198/1184 [00:06<00:22, 44.54it/s]
+[1ALoading weights:  17%|█▋        | 203/1184 [00:06<00:23, 42.05it/s]
+[1ALoading weights:  18%|█▊        | 208/1184 [00:07<00:27, 36.15it/s]
+[1ALoading weights:  18%|█▊        | 218/1184 [00:07<00:22, 42.94it/s]
+[1ALoading weights:  19%|█▉        | 226/1184 [00:07<00:22, 41.89it/s]
+[1ALoading weights:  20%|██        | 239/1184 [00:07<00:17, 54.07it/s]
+[1ALoading weights:  21%|██        | 245/1184 [00:07<00:18, 52.03it/s]
+[1ALoading weights:  21%|██▏       | 253/1184 [00:07<00:16, 54.80it/s]
+[1ALoading weights:  22%|██▏       | 259/1184 [00:08<00:22, 41.94it/s]
+[1ALoading weights:  22%|██▏       | 265/1184 [00:08<00:21, 42.19it/s]
+[1ALoading weights:  23%|██▎       | 277/1184 [00:08<00:17, 51.92it/s]
+[1ALoading weights:  24%|██▍       | 283/1184 [00:08<00:18, 49.78it/s]
+[1ALoading weights:  24%|██▍       | 290/1184 [00:08<00:16, 53.93it/s]
+[1ALoading weights:  25%|██▌       | 296/1184 [00:08<00:19, 46.06it/s]
+[1ALoading weights:  25%|██▌       | 301/1184 [00:08<00:19, 44.92it/s]
+[1ALoading weights:  26%|██▌       | 307/1184 [00:09<00:19, 46.14it/s]
+[1ALoading weights:  26%|██▋       | 312/1184 [00:09<00:22, 38.26it/s]
+[1ALoading weights:  27%|██▋       | 317/1184 [00:09<00:21, 39.80it/s]
+[1ALoading weights:  28%|██▊       | 327/1184 [00:09<00:16, 53.04it/s]
+[1ALoading weights:  28%|██▊       | 333/1184 [00:09<00:20, 41.04it/s]
+[1ALoading weights:  29%|██▉       | 342/1184 [00:09<00:16, 50.28it/s]
+[1ALoading weights:  29%|██▉       | 348/1184 [00:10<00:21, 39.06it/s]
+[1ALoading weights:  30%|███       | 358/1184 [00:10<00:16, 50.58it/s]
+[1ALoading weights:  31%|███       | 365/1184 [00:10<00:26, 30.92it/s]
+[1ALoading weights:  32%|███▏      | 378/1184 [00:10<00:20, 39.91it/s]
+[1ALoading weights:  33%|███▎      | 385/1184 [00:11<00:22, 35.88it/s]
+[1ALoading weights:  34%|███▎      | 397/1184 [00:11<00:16, 48.54it/s]
+[1ALoading weights:  34%|███▍      | 404/1184 [00:11<00:18, 42.76it/s]
+[1ALoading weights:  35%|███▍      | 410/1184 [00:11<00:17, 45.12it/s]
+[1ALoading weights:  35%|███▌      | 416/1184 [00:11<00:21, 35.12it/s]
+[1ALoading weights:  36%|███▌      | 421/1184 [00:11<00:24, 30.99it/s]
+[1ALoading weights:  36%|███▋      | 430/1184 [00:12<00:19, 37.85it/s]
+[1ALoading weights:  37%|███▋      | 435/1184 [00:12<00:19, 38.90it/s]
+[1ALoading weights:  37%|███▋      | 440/1184 [00:12<00:21, 35.14it/s]
+[1ALoading weights:  38%|███▊      | 448/1184 [00:12<00:16, 43.69it/s]
+[1ALoading weights:  38%|███▊      | 454/1184 [00:12<00:20, 35.06it/s]
+[1ALoading weights:  39%|███▉      | 462/1184 [00:12<00:16, 42.54it/s]
+[1ALoading weights:  40%|███▉      | 468/1184 [00:13<00:22, 32.29it/s]
+[1ALoading weights:  40%|███▉      | 473/1184 [00:13<00:25, 27.97it/s]
+[1ALoading weights:  40%|████      | 478/1184 [00:13<00:22, 31.35it/s]
+[1ALoading weights:  41%|████      | 487/1184 [00:13<00:17, 39.90it/s]
+[1ALoading weights:  42%|████▏     | 492/1184 [00:13<00:21, 31.59it/s]
+[1ALoading weights:  42%|████▏     | 500/1184 [00:14<00:17, 38.84it/s]
+[1ALoading weights:  43%|████▎     | 505/1184 [00:14<00:18, 36.18it/s]
+[1ALoading weights:  43%|████▎     | 510/1184 [00:14<00:17, 38.52it/s]
+[1ALoading weights:  44%|████▍     | 518/1184 [00:14<00:21, 30.59it/s]
+[1ALoading weights:  44%|████▍     | 524/1184 [00:14<00:19, 33.37it/s]
+[1ALoading weights:  45%|████▍     | 531/1184 [00:15<00:18, 36.20it/s]
+[1ALoading weights:  46%|████▌     | 541/1184 [00:15<00:13, 47.33it/s]
+[1ALoading weights:  46%|████▌     | 547/1184 [00:15<00:17, 37.44it/s]
+[1ALoading weights:  47%|████▋     | 553/1184 [00:15<00:15, 41.17it/s]
+[1ALoading weights:  47%|████▋     | 558/1184 [00:15<00:18, 34.70it/s]
+[1ALoading weights:  48%|████▊     | 569/1184 [00:15<00:13, 46.37it/s]
+[1ALoading weights:  49%|████▊     | 575/1184 [00:16<00:15, 38.36it/s]
+[1ALoading weights:  49%|████▉     | 580/1184 [00:16<00:17, 35.52it/s]
+[1ALoading weights:  50%|█████     | 592/1184 [00:16<00:12, 48.79it/s]
+[1ALoading weights:  51%|█████     | 598/1184 [00:16<00:14, 39.09it/s]
+[1ALoading weights:  51%|█████▏    | 609/1184 [00:16<00:12, 45.19it/s]
+[1ALoading weights:  52%|█████▏    | 615/1184 [00:16<00:12, 44.36it/s]
+[1ALoading weights:  53%|█████▎    | 623/1184 [00:17<00:11, 50.97it/s]
+[1ALoading weights:  53%|█████▎    | 629/1184 [00:17<00:14, 38.54it/s]
+[1ALoading weights:  54%|█████▎    | 634/1184 [00:17<00:14, 37.41it/s]
+[1ALoading weights:  54%|█████▍    | 643/1184 [00:17<00:13, 40.57it/s]
+[1ALoading weights:  55%|█████▍    | 649/1184 [00:17<00:12, 42.32it/s]
+[1ALoading weights:  55%|█████▌    | 654/1184 [00:17<00:13, 39.90it/s]
+[1ALoading weights:  56%|█████▌    | 663/1184 [00:18<00:12, 41.28it/s]
+[1ALoading weights:  57%|█████▋    | 673/1184 [00:18<00:10, 50.05it/s]
+[1ALoading weights:  57%|█████▋    | 679/1184 [00:18<00:12, 38.86it/s]
+[1ALoading weights:  58%|█████▊    | 684/1184 [00:18<00:14, 34.55it/s]
+[1ALoading weights:  59%|█████▉    | 696/1184 [00:18<00:11, 44.02it/s]
+[1ALoading weights:  59%|█████▉    | 702/1184 [00:19<00:11, 41.69it/s]
+[1ALoading weights:  60%|█████▉    | 710/1184 [00:19<00:09, 48.71it/s]
+[1ALoading weights:  60%|██████    | 716/1184 [00:19<00:09, 47.09it/s]
+[1ALoading weights:  61%|██████    | 722/1184 [00:19<00:10, 44.54it/s]
+[1ALoading weights:  62%|██████▏   | 730/1184 [00:19<00:09, 46.30it/s]
+[1ALoading weights:  62%|██████▏   | 735/1184 [00:19<00:11, 38.25it/s]
+[1ALoading weights:  62%|██████▎   | 740/1184 [00:20<00:11, 37.04it/s]
+[1ALoading weights:  63%|██████▎   | 751/1184 [00:20<00:09, 46.63it/s]
+[1ALoading weights:  64%|██████▍   | 756/1184 [00:20<00:10, 42.59it/s]
+[1ALoading weights:  64%|██████▍   | 763/1184 [00:20<00:08, 48.34it/s]
+[1ALoading weights:  65%|██████▍   | 769/1184 [00:20<00:09, 45.97it/s]
+[1ALoading weights:  65%|██████▌   | 774/1184 [00:20<00:09, 42.16it/s]
+[1ALoading weights:  66%|██████▌   | 783/1184 [00:20<00:08, 47.59it/s]
+[1ALoading weights:  67%|██████▋   | 788/1184 [00:21<00:10, 38.05it/s]
+[1ALoading weights:  67%|██████▋   | 793/1184 [00:21<00:10, 37.60it/s]
+[1ALoading weights:  68%|██████▊   | 801/1184 [00:21<00:08, 44.73it/s]
+[1ALoading weights:  68%|██████▊   | 807/1184 [00:21<00:08, 45.94it/s]
+[1ALoading weights:  69%|██████▊   | 812/1184 [00:21<00:08, 41.74it/s]
+[1ALoading weights:  69%|██████▉   | 820/1184 [00:21<00:07, 49.18it/s]
+[1ALoading weights:  70%|██████▉   | 826/1184 [00:21<00:08, 40.96it/s]
+[1ALoading weights:  71%|███████   | 835/1184 [00:22<00:06, 51.27it/s]
+[1ALoading weights:  71%|███████   | 841/1184 [00:22<00:09, 37.45it/s]
+[1ALoading weights:  71%|███████▏  | 846/1184 [00:22<00:09, 37.36it/s]
+[1ALoading weights:  74%|███████▎  | 872/1184 [00:22<00:03, 82.29it/s]
+[1ALoading weights:  78%|███████▊  | 919/1184 [00:22<00:01, 167.41it/s]
+[1ALoading weights:  85%|████████▌ | 1010/1184 [00:22<00:00, 338.10it/s]
+[1ALoading weights:  93%|█████████▎| 1097/1184 [00:22<00:00, 471.34it/s]
+[1ALoading weights:  99%|█████████▉| 1175/1184 [00:22<00:00, 525.79it/s]
+[1ALoading weights: 100%|██████████| 1184/1184 [00:23<00:00, 51.47it/s] 
+Stopping app - uncaught exception raised locally: DeserializationError("Deserialization failed because the 'torch' module is not available in the local environment.").
+Runner terminated.
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_serialization.py:117 in deserialize                                      │
+│                                                                              │
+│   116 │   try:                                                               │
+│ ❱ 117 │   │   return Unpickler(client, io.BytesIO(s)).load()                 │
+│   118 │   except AttributeError as exc:                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ModuleNotFoundError: No module named 'torch'
+
+The above exception was the direct cause of the following exception:
+
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m35_context │
+│ _distillation.py:126 in m35_inspect                                          │
+│                                                                              │
+│   125 │   print(json.dumps(vl.get(), indent=1, default=str))                 │
+│ ❱ 126 │   print(json.dumps(hf.get(), indent=1, default=str))                 │
+│   127                                                                        │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_object.py:49 in wrapped                                                  │
+│                                                                              │
+│    48 │   │   await self.hydrate()                                           │
+│ ❱  49 │   │   return await method(self, *args, **kwargs)                     │
+│    50                                                                        │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_functions.py:2405 in get                                                 │
+│                                                                              │
+│   2404 │   │   """                                                           │
+│ ❱ 2405 │   │   return await self._invocation().poll_function(timeout=timeout │
+│   2406                                                                       │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_functions.py:348 in poll_function                                        │
+│                                                                              │
+│    347 │   │                                                                 │
+│ ❱  348 │   │   return await _process_result(                                 │
+│    349 │   │   │   response.outputs[0].result, response.outputs[0].data_form │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_utils/function_utils.py:577 in _process_result                           │
+│                                                                              │
+│   576 │   try:                                                               │
+│ ❱ 577 │   │   return deserialize_data_format(data, data_format, client)      │
+│   578 │   except ModuleNotFoundError as deser_exc:                           │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_serialization.py:397 in deserialize_data_format                          │
+│                                                                              │
+│   396 │   if data_format == api_pb2.DATA_FORMAT_PICKLE:                      │
+│ ❱ 397 │   │   return deserialize(s, client)                                  │
+│   398 │   elif data_format == api_pb2.DATA_FORMAT_ASGI:                      │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_serialization.py:134 in deserialize                                      │
+│                                                                              │
+│   133 │   except ModuleNotFoundError as exc:                                 │
+│ ❱ 134 │   │   raise DeserializationError(                                    │
+│   135 │   │   │   f"Deserialization failed because the '{exc.name}' module i │
+╰──────────────────────────────────────────────────────────────────────────────╯
+DeserializationError: Deserialization failed because the 'torch' module is not 
+available in the local environment.
+EXIT 1
