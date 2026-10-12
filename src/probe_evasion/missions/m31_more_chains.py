@@ -219,6 +219,13 @@ def failure_cause(info: dict) -> str:
             else "other: " + last[:60])
 
 
+def invalid_as_plain(rows: list[dict], info: dict) -> float | None:
+    """Median over (problem, seed) of the change vs plain, counting an invalid reply as 0 (no evasion)."""
+    base = {(p["task"]["id"], p["seed"]): p["peaks"][info["probe"]] for p in info["plain"] if p["valid"]}
+    d = [(x["peaks"][info["probe"]] - base[k]) if x["valid"] else 0.0 for x in rows for k in [(x["task"]["id"], x["seed"])] if k in base]
+    return float(np.median(d)) if d else None
+
+
 def chain_records(task: str, info: dict) -> list[dict]:
     """One record per chain of every arm: per round the paired change vs plain (m22.paired_change through
     m28.unit_stats, leaked eval problems left out under the task's own rule via m28.rounds_view), valid count,
@@ -238,6 +245,8 @@ def chain_records(task: str, info: dict) -> list[dict]:
                     e |= (m28.unit_stats(r["rows"], info) if r["rows"] else {"failed": True})
                     if not e.get("failed") and e["paired_change"] is None:
                         e["failed"] = True  # ran, but no valid paired reply
+                    if r["rows"]:  # critic 2 (not pre-registered): an invalid reply counts as no evasion (change 0)
+                        e["penalised_change"] = invalid_as_plain(r["rows"], info)
                     rounds.append(e)
                 ran = {e["round"]: e["paired_change"] for e in rounds if not e.get("failed")}
                 mean_of = lambda rs: float(np.mean([ran[r] for r in rs if r in ran])) if any(r in ran for r in rs) else None
@@ -247,8 +256,11 @@ def chain_records(task: str, info: dict) -> list[dict]:
                     if rnd in PRIMARY_ROUNDS:
                         carry.append(current)
                 prim = mean_of(PRIMARY_ROUNDS)
+                pen = [e["penalised_change"] for e in rounds if e["round"] in PRIMARY_ROUNDS and "penalised_change" in e]
                 out.append({"arm": arm, "model": model, "scores": scores, "source": source, "writer": w, "chain": d.name, "rounds": rounds,
                             "primary": prim, "primary_carry_forward": float(np.mean(carry)),
+                            "primary_failed_as_plain": float(np.mean([ran.get(r, 0.0) for r in PRIMARY_ROUNDS])),
+                            "primary_invalid_as_plain": float(np.mean(pen)) if pen else None,
                             "rounds_1_3": mean_of([1, 2, 3]), "rounds_13_15": mean_of([13, 14, 15]), "round_0": ran.get(0),
                             "primary_minus_round_0": prim - ran[0] if prim is not None and 0 in ran else None,
                             "cost": float(sum(x["cost"] for x in st["rounds"])),
@@ -257,7 +269,8 @@ def chain_records(task: str, info: dict) -> list[dict]:
                                                         + Counter({"ran, no valid reply left (all invalid or leaked)": sum(
                                                             bool(e.get("failed")) and st["rounds"][e["round"]]["instruction"] is not None
                                                             for e in rounds)})),
-                            "valid_share": float(np.mean([e["valid"] / e["n"] for e in rounds if not e.get("failed")])) if ran else None,
+                            # rounds 1-15 whose instruction ran, including rounds with no valid reply
+                            "valid_share": float(np.mean([e["valid"] / e["n"] for e in rounds if "n" in e and e["round"] in PRIMARY_ROUNDS])) if ran else None,
                             "answered_by": dict(Counter(e["answered_by"] for e in rounds if e["answered_by"])),
                             "distinct_instructions": len({x["instruction"] for x in st["rounds"] if x["instruction"]}),
                             "refusals": refusal_stats(d)})
@@ -380,9 +393,12 @@ def test_records(task: str, info: dict, chains: list[dict]) -> list[dict]:
             if c is None:
                 continue
             m = m28.test_measures(rows, by["plain"], info)
+            plain_med = float(np.median([r["peaks"][info["probe"]] for r in by["plain"] if r["valid"]]))
+            m["change_invalid_as_plain"] = float(np.median([r["peaks"][info["probe"]] if r["valid"] else plain_med for r in rows])) - plain_med
             out.append({"arm": c["arm"], "model": c["model"], "scores": c["scores"], "source": c["source"], "chain": chain, "kind": kind,
                         "key": key, "file": str(path), **{k: m.get(k) for k in ("attempts", "valid", "median_valid", "plain_median", "change",
-                                                                                  "change_ci95", "paired_problem_change", "gap_line", "median_visible", "audit")},
+                                                                                  "change_ci95", "paired_problem_change", "gap_line", "median_visible", "audit",
+                                                                                  "change_invalid_as_plain")},
                         "under_1pct": m["under_0.01"], "under_1pct_share": m["under_0.01"]["per_attempt"] / m["attempts"]})
     return out
 
@@ -499,7 +515,8 @@ def analyse(task: str) -> dict:
     tests = test_records(task, info, chains)
     by = lambda key: {a: [c[key] for c in chains if c["arm"] == a] for a in ARMS}
     batches = {a: [c["source"] for c in chains if c["arm"] == a] for a in ARMS}
-    eval_measures = {k: two_by_two(by(k), batches) for k in ("primary", "primary_carry_forward", "rounds_1_3", "rounds_13_15", "round_0",
+    eval_measures = {k: two_by_two(by(k), batches) for k in ("primary", "primary_carry_forward", "primary_failed_as_plain",
+                                                               "primary_invalid_as_plain", "rounds_1_3", "rounds_13_15", "round_0",
                                                                "primary_minus_round_0", "valid_share", "distinct_instructions")}
     for src in ("m28", "m31"):  # batch check for the 4.8 scores effect
         pick = lambda a: [c["primary"] for c in chains if c["arm"] == a and c["source"] == src]
@@ -509,7 +526,7 @@ def analyse(task: str) -> dict:
         tk = [t for t in tests if t["kind"] == kind]
         tb = lambda key: {a: [t[key] for t in tk if t["arm"] == a] for a in ARMS}
         test_measures[kind] = {k: two_by_two(tb(k), {a: [t["source"] for t in tk if t["arm"] == a] for a in ARMS})
-                               for k in ("change", "median_valid", "under_1pct_share", "valid")}
+                               for k in ("change", "change_invalid_as_plain", "median_valid", "under_1pct_share", "valid")}
     gap = info["plain_median"] - info["line"]
     return {"task": task, "plain_eval_median": info["plain_median"], "line": info["line"], "plain_to_line_gap": gap,
             "eval": eval_measures, "test": test_measures, "per_round": per_round(chains), "refusals": refusal_table(chains),
@@ -604,7 +621,8 @@ def fig_summary(results: dict) -> Path:
     handles = [plt.Line2D([], [], marker=MARKER[s], ls="", color="#555", label=lab)
                for s, lab in (("m28", "m28 chain"), ("m31", "m31 chain"), ("earlier", "m22 / m26 chain (reference)"))]
     handles.append(plt.Line2D([], [], color="#222", lw=1.6, label="arm mean"))
-    fig.legend(handles=handles, loc="upper right", fontsize=8, ncol=4)
+    handles.append(plt.Line2D([], [], color="#555", lw=0.9, ls=":", label="1% line minus plain median (approx.)"))
+    fig.legend(handles=handles, loc="upper right", fontsize=8, ncol=5)
     fig.tight_layout(rect=(0, 0, 1, 0.96))
     path = FIGURES / "scores_by_writer_model.png"
     fig.savefig(path, dpi=140)

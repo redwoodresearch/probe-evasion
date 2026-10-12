@@ -4,22 +4,7 @@
 prompt-writer push Qwen3.5-27B's own-reply probe scores down on valid answers, and by how much? m28 ran 3 + 3 chains
 per task; m31 adds 5 + 5 per task (maths, ordering) so each arm has 8 chains.
 
-**Phase (handed back ~23:45):** all runs and tests done and pulled; all m31 apps stopped. analysis.json, figures and
-a full RESULT.md draft exist. **Critic 2 (before the verdict) was launched but its findings were not yet received or
-acted on.** To finish: rerun a fresh critic 2 on RESULT.md / analysis.json / the code (recompute headline numbers from
-raw files; check the regex-based "asked for number words" count and every number in RESULT), apply its fixes, rerun
-`uv run python -m probe_evasion.missions.m31_more_chains report` if code changes, and record it here.
-
-**Exact next steps for whoever resumes:**
-1. Wait until each `logs/search*.log` prints `finished m31_search_<task>[_opus55]` (or a Traceback: relaunch the same
-   command, which resumes from the saved rounds on the volume).
-2. Pull: `uv run modal run -m probe_evasion.remote_search::pull --paths missions/m31_more_chains/runs/qwen35_27b,missions/m31_more_chains/runs/qwen35_27b_ordering,missions/m31_more_chains/runs_opus55/qwen35_27b,missions/m31_more_chains/runs_opus55/qwen35_27b_ordering`
-3. Freeze locally BEFORE any test: `uv run python -m probe_evasion.missions.m31_more_chains freeze <task> <opus48|opus55>`
-   (4 calls), push the 4 roots again, then launch the 4 tests detached with
-   `-n probe-evasion_nabil-baugher_m31-test[55]-<task>_kill-2026-11-30 -m probe_evasion.missions.m22_score_only_iterations::m22_launch --chains-file missions/m31_more_chains/test_chain_<task>[_opus55].json`.
-4. Pull the tests, check m28's maths `m28_test_rows.jsonl` exists, run `uv run python -m probe_evasion.missions.m31_more_chains report`
-   (writes `analysis.json`, `figures/rounds_all_chains.png`, `figures/scores_by_writer_model.png`), critic 2 (before the
-   verdict), RESULT.md, spend log. Stop only m31's apps by id.
+**Phase:** done. Searches, tests, analysis, critic 2 and RESULT.md are final. All m31 Modal apps stopped.
 
 ## Entry points
 
@@ -171,6 +156,43 @@ scores help?" may depend on the writer model. Coordinator asked for the reconcil
   attacker keeps using its previous instruction. A chain with no round run is reported but has no primary value.
 - Budget: up to +$200 Claude, +$60 GPU (coordinator).
 
+## Critic 2 (before the verdict; fresh research-reviewer, rerun at the lead's request) and actions
+
+The critic recomputed every headline number from the raw files (all match exactly) and found no code bugs. Actions:
+
+1. *Must-fix:* the "asked for number words in 38 of 128" count came from a regex and was wrong. Most matches said
+   "never spelled out" or "in plain words". By reading the instructions: Opus 4.8 without scores asked in 5 of 128
+   (all early); Opus 5.5 without scores asked in 4 of 60 that ran, plus 15 of 27 leak-rejected attempts (my reading;
+   the critic counted 13). Qwen complied every time. The writers' notes show they dropped words after validity dips
+   and reasoned from the probe description that words would raise the score. Section 4 and the verdict were rewritten
+   around this, using behavioural counts (rounds where most valid replies are in words: 87 / 3 for 4.8, 28 / 4 for 5.5;
+   chains settling on words 6 of 8 vs 0 of 8).
+2. *Must-fix:* validity-penalised sensitivity added (not pre-registered; an invalid reply counts as no evasion):
+   - maths 4.8: eval D -1.63 (p 0.0002), test D -2.02 (p 0.005);
+   - maths 5.5: eval -0.88 (p 0.14), test -1.36 (p 0.31);
+   - ordering 4.8: eval -0.79 (p 0.067), test -2.80 (p 0.0008).
+   Now in the code (`primary_invalid_as_plain`, `change_invalid_as_plain`) and RESULT section 1. Size claims are given
+   as ranges.
+3. *Must-fix:* rounds with no valid reply counted as plain: ordering 4.8 D -0.94 (p 0.052). Ordering is now described
+   as firmest on the last-round test and less robust on the eval set ("beyond doubt" dropped).
+4. *Must-fix:* mixed-arm description corrected. Maths unscored was 25 rounds by 5.5 and 23 by 4.8; scored was 30 by
+   4.8. m22's maths control used words in 2 of 3 chains, and its word rounds contained 2-5 eval answers that today's
+   leak rule would reject. So the leak rule, not the writer model, explains the gap.
+5. Should-fix, all done:
+   - round 0 described as "not significant; part may be prompt framing";
+   - section 4 labelled exploratory, also in the short answer;
+   - refusals softened, with a chain-level test (maths p 0.17, ordering 0.14);
+   - valid share now over rounds 1-15 that ran, including 0-valid rounds;
+   - best-round spreads given, with a note on the maths 5.5 best-round permutation p vs its Welch interval;
+   - decision rule stated as pre-registered (p < 0.05, Holm alongside).
+6. Batch: m31's ordering scored chains started slowly (round 0 D +0.74, rounds 1-3 D +0.99), and the batches agree
+   late (rounds 13-15 -2.32 vs -3.46; last-round test -2.33 vs -3.81). The batch difference is borderline chance
+   (p about 0.07); nothing structural differs. Reworded.
+7. Minor, done: terms defined; maths test gap 14.7; words-share denominators and the other-numeral forms (19% of 5.5
+   scored replies) noted; dotted-line legend added to the summary figure; p-value floors stated (0.1 for 3 v 3);
+   test-arm count corrected (36 new arms per task); audit 3 / 858 (m31) and 5 / 1,441 (with m28); Hedges' g, bootstrap
+   intervals and distinct instructions reported.
+
 ## Spend estimate (before runs)
 
 - Claude: maths judges ~12,800 search replies x ~$0.0045 ~ $58; ordering ~$28; writers (pinned 4.8) ~$18 scored + ~$8
@@ -224,6 +246,8 @@ scores help?" may depend on the writer model. Coordinator asked for the reconcil
   attempts per arm; maths answer-format split (number words vs digits, m28's `result_in_words`), added after seeing that
   m22's mixed no-scores control beat both pinned no-scores arms (exploratory, labelled so in RESULT).
 - RESULT.md drafted; critic 2 launched.
+- Critic 2 rerun (fresh) at the lead's request; findings applied (section above). `report` rerun with the added
+  sensitivities; figures regenerated. RESULT.md final.
 
 ## Spend log
 
