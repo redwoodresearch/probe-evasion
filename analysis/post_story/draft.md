@@ -1,4 +1,4 @@
-# DRAFT v1: Prompting shifts activation-probe scores, but doesn't hide the task
+# DRAFT v2: Prompting shifts activation-probe scores by a similar amount everywhere; whether that crosses the line depends on the probe's margin
 
 *Working draft. [HOLE] marks a claim not yet backed by data or a missing control; [PENDING mXX] marks an experiment
 running now. Sources in brackets. v0 → v1 changes are logged in PLAN.md.*
@@ -14,7 +14,8 @@ running now. Sources in brackets. v0 → v1 changes are logged in PLAN.md.*
 - **Result 1: the scores move a lot, the monitor barely notices.** With a few rounds of feedback, the median correct
   answer drops 3–11 log-odds, a quarter to a half of the way from plain answers to the 1% flag line. But on fresh test
   problems not one of 27 searched maths instructions got a single correct answer under the line (0/500 each), and
-  [PENDING m29] every attacked answer still scores above every ordinary reply. [m22, m25, m26]
+  every attacked maths, code and ordering answer on 27B still scores above every ordinary reply that set the line
+  (the median attacked answer sits 6–10 log-odds above the highest one). [m22, m25, m26, m29]
 - **Result 2: it's a shift, not hiding.** The same instructions applied to requests that don't need the task make those
   replies score *higher* (up to +6), so task and non-task replies converge from both sides. Within the attack's style
   the probe still separates them almost perfectly (AUROC 0.989–1.000). A line set on replies in that style catches
@@ -27,9 +28,13 @@ running now. Sources in brackets. v0 → v1 changes are logged in PLAN.md.*
   found instructions that put 384–407 of 500 correct maths answers under the line, and those answers genuinely look like
   same-style non-task replies (within-style AUROC 0.93). Even they are caught when the probe reads the instruction too
   and the line is set in that context. [m19, m27]
-- **Context.** Earlier, tone concepts (sarcasm, flattery, condescension) crossed the line outright with an ordinary
-  score-guided search; whether the probe was trained on the model's own text or Claude's made no consistent difference.
-  [m3a, m8a, m11, m20]
+- **Result 5: tone vs task is mostly margin.** Earlier, tone concepts (sarcasm, flattery, anger, condescension) crossed
+  the line outright with an ordinary score-guided search. Across concepts the attack's drop is similar (median 6.8
+  log-odds for tone, 5.9 for tasks), but tone probes' plain answers sit about half as far above their line (6.5 vs 14.0).
+  So the same shift crosses tone probes and not task probes. Within style, no probe is blinded (AUROC 0.97–1.00, flattery
+  0.88). [m29; exceptions: condescension's 42-round search dropped 11 log-odds; maths 122B has a small gap but the
+  smallest drop]
+- Whether the probe was trained on the model's own text or Claude's depended on the concept. [m20]
 
 ## 1. Set-up
 
@@ -54,7 +59,7 @@ running now. Sources in brackets. v0 → v1 changes are logged in PLAN.md.*
 
 ## 2. How far scores move, and what it means operationally
 
-Central figure [PENDING m29]: share of the gap closed per arm, final tests, every run as a dot, on three scales:
+Central figure [m29 central_figure.png; m28 arms to be added]: share of the gap closed per arm, final tests, every run as a dot, on three scales:
 to the 1% line; to the level of in-context non-answers (Qwen's replies to the real request that skip the task); to the
 level of same-style non-task replies.
 
@@ -67,8 +72,15 @@ Numbers so far (Claude writer, final tests where available):
 | Code 27B | −4.2 (main run) | 27% | 0 [m25] |
 | Ordering 27B | −6.5 to −11.2 | 36–63% | 0 [m26] |
 
-- Operational meaning: [PENDING m29: false-alarm sweep; share above the calibration pool's maximum; false-alarm rate
-  needed to catch the median attacked answer.]
+- Operational meaning: on maths 27B, code and ordering every valid score-only reply scores above every one of the
+  1,301–1,697 ordinary replies (0 of 7,829 on the maths own-reply probe); catching the median attacked reply needs a 0%
+  false-alarm rate. Exceptions: maths 9B (half of Opus's best arm is inside the ordinary range, 97% still caught at 1%),
+  a few replies on 122B and Gemma. Only the white-box template lands among ordinary replies (catching its median reply
+  needs 3.8–12.8% false alarms). [m29]
+- Pairing each reply with plain Qwen's reply on the same problem and seed changes the drop by at most 1 log-odds;
+  counting invalid replies as caught costs most arms ~2 points of gap closed. [m29]
+- The drop is biggest where the answer is shortest (maths division with 2-digit answers −7.4 vs subtraction −2.5; code
+  integers −6.5 vs dicts −2.6), not where computation is least; plain difficulty barely predicts it. [m29]
 - Zero-shot instructions move little: 2–19% of the gap, most for ordering and the 9B model. [m22, m23, m25, m26]
 - Model size matters mainly at zero-shot (9B moves more; permutation p 0.004–0.02); after feedback no ordering by
   size. Correct-answer rates fall more on 9B, 122B and Gemma (to 45–64%) than on 27B (85%). [m23]
@@ -85,12 +97,17 @@ Numbers so far (Claude writer, final tests where available):
   ordering, 5–40 per arm for maths 9B. [m27]
 - **In-context non-answers** (replies to the real request that skip the task) score close to the line (−4.5 to −6.1) and
   still separate from attack replies (AUROC 0.97–0.999). [m27]
-- **Transfer.** [PENDING m29: the maths drop on probes that were never attacked — other seeds, a size-matched probe, the
-  Claude-text probe. The reviewer's spot check found similar or larger drops on all of them: the writers move every
-  maths probe, not this probe's weights.]
+- **Transfer.** On maths 27B, Opus arms aimed at the own-reply probe close 33% of its gap but 51% of the never-attacked
+  Claude-text probe's; the no-scores writer moves all nine maths probes by 24–39%. The writers aren't exploiting the
+  probe they're shown. Ordering and code look more probe-specific (ordering 61% on target vs 29% on sister seeds), partly
+  because frozen rounds were picked with the target probe. [m29]
 - **What evading replies look like.** Maths: the result in English words, or framings like "As the question itself
   already tells us…". Code: "Yes, exactly as you wrote above: [34, 18]". Ordering: filler before the first name.
-  [m22, m25, m26] [PENDING m29: does the drop survive among replies a judge rates as normal-looking?]
+  [m22, m25, m26]
+- **Normal-looking replies.** A Haiku judge (validated on plain and obviously odd replies) rates most of the strongest
+  arms' replies as odd; every white-box reply is rated odd. But the drop survives among normal-looking replies for maths
+  (no-scores number-word answers: 99% normal, −3.3) and ordering (Opus chain 0: 86% normal, −6.5); for code it mostly
+  vanishes. [m29]
 
 ## 4. How much does attacker knowledge matter?
 
@@ -116,8 +133,9 @@ Numbers so far (Claude writer, final tests where available):
   caught by a layer-16 probe; flattery mostly because the probe only detects gushing wording (calm neutral replies pass
   too). Patching the probe, broad style coverage and layer ensembles each lost to a fresh search. [m3a, m3a2, m3a4,
   m8a, m11]
-- So the contrast is between concepts: tone probes are crossed by an ordinary search; task probes are only shifted.
-  [HOLE: is that contrast about the concept, or about how far apart task and non-task replies sit to begin with?]
+- The contrast is mostly margin (Result 5): a similar shift crosses probes with little room and not those with a lot.
+  [Figure: m29 margin_figure.png, right panel — drop vs plain-to-line gap with the diagonal where the median attacked
+  reply reaches the line.] [HOLE: tone and task searches had different budgets, judges and validity rules]
 - Who wrote the probe's training data depended on the concept across five matched pairs (e.g. the own-reply sarcasm
   probe was *more* exploitable; condescension the other way). [m20]
 
