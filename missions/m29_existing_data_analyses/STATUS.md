@@ -37,3 +37,30 @@ task margin comparison.
   invalid-as-caught summary. m28 hook tested with a fake source built from m22's rows (reproduces the m22 dots); smoke
   and pilot folders are skipped. m28 has no test_rows.jsonl yet.
 - Spawned the critic (research-reviewer) on RESULT + code.
+- Lead relayed critic 1 (MUST 1-3, SHOULD 4-10, nits) and critic 2 / cold review (A-E; tie-aware Spearman etc.).
+  Applied (all saved-data except the extra judging):
+  - Item 6 rebuilt as a pool-tail decomposition (scale = plain - median normal reply; d'; tail = line - normal median;
+    line position and attack drop on the 0-1 scale); new `pool_tail_figure.png` (strips) replaces the near-tautological
+    panel; margin figure decluttered, neutral title. Added m11's strict maths arms (#7, #40; same method as m11's
+    condescension), m9 jokey (Gemma), m3b criticism (weak: searched against a mean-trained probe). Chemistry left out:
+    no peak-trained chemistry probe exists. Flattery marked invalid for the argument, anger weak. "Similar shift"
+    dropped; lead statement is now line position / d'. Ordering's position vs its in-context non-answers added.
+  - Short answer 1 fixed (own-reply probe only; Claude-text 5 of 3,617 in range; 6-15 log-odds above the line; pool
+    resolution phrasing). 9B pool-max outlier reported with the share above the second-highest reply.
+  - Central: "21-61% per arm type (chains 4-67%)" for Qwen3.5; own-reply group first; half-filled dots under 60% valid
+    with their invalid-as-caught values listed; per-row under-line counts; ordering line-scale explanation in caption
+    and on the figure.
+  - Naturalness: "rated 4-5 (normal or with a small quirk)" + rated-5 columns, split by target; borderline check set
+    (plain answers with number words / filler openers); Sonnet 5.5 second judge on a stratified 341 (+ borderline,
+    oddities); Haiku pairwise plain-vs-attack check (240 pairs). Result: Haiku-normal attack replies carry a device;
+    Sonnet rates only 35% of them 4-5; pairwise picks plain 100% for maths and ordering. Claude cap raised to $40 by
+    the lead; total spend $7.6.
+  - Validity: tie-aware Spearman (scipy); difficulty can't be tested (plain 96-100% correct); paired drop smaller in
+    66/89 arms (median +0.11); the four <50%-valid arms named; per-template gap closed; "shortest answer" reworded
+    (template and answer length confounded).
+  - Transfer: per-probe table with raw log-odds; reworded to "not a particular seed or recipe at layer 48"; ordering's
+    gap is mostly seed 2; code's persists in last-round arms; shallow-layer disagreement noted.
+  - m28 hook rewritten: reads m28's real layout (`runs/<root>/m28_test_rows.jsonl`, `fixed/<key>.jsonl`, chain round
+    0s, `plain_eval.jsonl`), classifies m28's actual keys (pinned / no-spec writers, random / words blocks, told,
+    m26 last rounds), target from m28.TARGET, partial file skipped. Tested on a fake m28 folder (8 dots, all correct).
+  - Added "What this result cannot answer".
