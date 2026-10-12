@@ -138,7 +138,7 @@ m22, m19]:
 | Zero-shot instruction (round 0) | −0.2 | −3.7 |
 | One random odd style (no probe knowledge) | −1.2 | −3.1 |
 | Random odd styles, best of 16 picked by the probe | −2.0 | −4.6 |
-| Writer told nothing about the readout, no scores (pinned Opus 4.8; last round) | −0.6 (eval −0.7) | −0.6 (eval −0.3) |
+| Writer told nothing about the readout, no scores (pinned Opus 4.8; last round) | −1.0 (eval −0.7) | −0.6 (eval −0.3) |
 | Writer told the readout formula, no scores (pinned Opus 4.8; last round) | −1.0 | −6.1 |
 | Writer told the readout formula, with per-token scores (pinned Opus 4.8; last round) | −5.2 | −9.9 |
 | Search with scores, best round (m22/m26 writers, mostly Opus 4.8) | −5.2 | −9.5 |
