@@ -66,10 +66,10 @@ def correct_shares(task: str, writer: str) -> dict[str, tuple[float, float]]:
 
 def fig_cost(m45: dict) -> None:
     """Dot = writer mean over its 3 searches; bars = range over the 3 searches (both axes)."""
-    fig, axes = plt.subplots(1, 2, figsize=(15, 6.2), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6.4), sharey=True)
     for ax, task in zip(axes, F.TASKS):
         for r in F.writer_rows(m45, task):
-            costs = [100 * (off - on) for on, off in correct_shares(task, r["writer"]).values()]
+            costs = [off - on for on, off in correct_shares(task, r["writer"]).values()]
             cost, c = float(np.mean(costs)), colour(r["eci"])
             ax.hlines(cost, min(r["values"]), max(r["values"]), color=c, lw=1.5, alpha=0.5)
             ax.vlines(r["mean"], min(costs), max(costs), color=c, lw=1.5, alpha=0.5)
@@ -77,15 +77,28 @@ def fig_cost(m45: dict) -> None:
             if r["writer"] in LABELLED:
                 ax.annotate(F.SHORT[r["writer"]], (r["mean"], cost), xytext=(6, 5), textcoords="offset points",
                             fontsize=9.5, color=F.v6.MUTED)
-            print(f"[{task}] {F.SHORT[r['writer']]}: cost {cost:+.1f} points (searches {', '.join(f'{x:+.1f}' for x in costs)})")
+            print(f"[{task}] {F.SHORT[r['writer']]}: cost {cost:+.3f} (searches {', '.join(f'{x:+.3f}' for x in costs)})")
         ax.axhline(0, color=F.v6.MUTED, lw=0.8)
         ax.set_title(f"{task.capitalize()} (after 16 rounds)")
-        ax.set_xlim(-0.05, 0.75)
+        square_axes(ax)
         ax.grid(color=F.v6.GRID)
-    axes[0].set_ylabel("accuracy cost of switching ON\n(OFF correct % minus ON correct %, points)")
+    axes[0].set_ylabel("accuracy cost of switching ON\n(OFF correct share minus ON correct share)")
     fig.supxlabel("probe-dodging score (share of OFF-to-line distance closed by ON); bars = range over 3 searches", y=-0.02)
     colourbar(fig, axes)
     fig.savefig(F.OUT / "cost.png", bbox_inches="tight")
+
+
+SQUARE_LIMITS = (-0.05, 1.0)
+
+
+def square_axes(ax) -> None:
+    """Same scale on both axes (shares from 0 to 1) with the y = x diagonal: above it, a writer loses more accuracy than
+    it closes of the distance to the line."""
+    ax.plot(SQUARE_LIMITS, SQUARE_LIMITS, ls="--", color=F.v6.MUTED, lw=1)
+    ax.text(0.80, 0.88, "y = x", ha="right", fontsize=10, color=F.v6.MUTED)
+    ax.set_xlim(*SQUARE_LIMITS)
+    ax.set_ylim(*SQUARE_LIMITS)
+    ax.set_aspect("equal")
 
 
 def colour(eci: float):

@@ -66,14 +66,14 @@ def point_biserial(scores: list[float], correct: list[bool]) -> float | None:
 def main() -> None:
     m45 = F.load_m45()
     report = ["# Probe dodging on all pairs vs correctness (m45 frozen test, B = 16, 14 writers)\n"]
-    fig, axes = plt.subplots(1, 2, figsize=(15, 6.2), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6.4), sharey=True)
     for ax, task in zip(axes, F.TASKS):
         broad = BROAD_LINES[task]["broad_cal_iv_1pct"]["line"]
         within, wrong_minus_right, confusion = [], [], {"on": np.zeros((2, 2), int), "off": np.zeros((2, 2), int)}
         for r in F.writer_rows(m45, task):
             chains = arm_rows(task, r["writer"])
             dodges = [dodge_all(rows, STRICT_LINE[task]) for rows in chains.values()]
-            costs = [100 * (np.mean([x[3] for x in rows]) - np.mean([x[1] for x in rows])) for rows in chains.values()]
+            costs = [float(np.mean([x[3] for x in rows]) - np.mean([x[1] for x in rows])) for rows in chains.values()]
             c = R.colour(r["eci"])
             ax.hlines(np.mean(costs), min(dodges), max(dodges), color=c, lw=1.5, alpha=0.5)
             ax.vlines(np.mean(dodges), min(costs), max(costs), color=c, lw=1.5, alpha=0.5)
@@ -93,6 +93,7 @@ def main() -> None:
                     confusion["off"][int(x[2] <= broad), int(x[3])] += 1
         ax.axhline(0, color=F.v6.MUTED, lw=0.8)
         ax.set_title(f"{task.capitalize()} (after 16 rounds)")
+        R.square_axes(ax)
         ax.grid(color=F.v6.GRID)
         report += [f"\n## {task.capitalize()}\n",
                    f"**Within each template** ({len(within)} searches with at least 5 wrong ON answers): correlation of ON "
@@ -105,7 +106,7 @@ def main() -> None:
         for label, side in (("ON", "on"), ("OFF (baseline)", "off")):
             m = confusion[side]
             report += [f"| {label} dodged | {m[1, 1]:,} | {m[1, 0]:,} |", f"| {label} caught | {m[0, 1]:,} | {m[0, 0]:,} |"]
-    axes[0].set_ylabel("accuracy cost of switching ON\n(OFF correct % minus ON correct %, points)")
+    axes[0].set_ylabel("accuracy cost of switching ON\n(OFF correct share minus ON correct share)")
     fig.supxlabel("probe-dodging score on ALL pairs, correct or not (share of OFF-to-line distance closed by ON); "
                   "bars = range over 3 searches", y=-0.02)
     R.colourbar(fig, axes)
