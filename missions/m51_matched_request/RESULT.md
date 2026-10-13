@@ -164,3 +164,228 @@ to +10.9. Per-template numbers can be recomputed from `maths_scored.jsonl`.
 - `figures/traces.png` and `traces.md`: per-token traces for identical-reply pairs, three per task, with full tables.
 - The TF-IDF models used are pickled in `analysis/tfidf_baseline/models/` (`analysis/tfidf_baseline/chosen_models.py`
   re-fits them and checks them against the baseline's saved scores).
+
+---
+
+# Part 2: wrong answers, phrasings from no training set, and the three m48 probes
+
+## Summary
+
+**What was added.**
+
+- **A wrong-answer version of every request.** The same words as the given version, with a wrong answer in the same
+  slot. A correct reply then had to ignore the inserted answer and work the problem out. Examples:
+  - maths: "…sold 1069, leaving 500";
+  - ordering: a different order of the five names;
+  - belief tracking: another place from the story;
+  - contradiction: another sentence number.
+- **New phrasings that appear in no training set.**
+  - Used for every task: "For reference, the expected answer is …".
+  - Added for ordering: "A classmate already worked this out and got …".
+  - None of these phrases, and none of their word pairs, occurs in the probes' or TF-IDF's training requests (checked
+    in `part2/novelty.json`).
+- **Matched tests for the three m48 v2 probes**, on 150 fresh items each, none of them in any m48 or m49 file. Each
+  task got two phrasings:
+  - m48's own "given" wording, which is in those probes' training sets as a negative, as Nabil suggested. For example
+    "Suki thinks the watch is in the cupboard.", "Note: sentence 5 contradicts an earlier sentence.", and for acrostic
+    the hidden-word request plus "Begin your four sentences with the words …".
+  - the new "For reference" phrasing.
+- **No wrong-answer version for acrostic.** A wrong set of first words would be a conflicting instruction, not a wrong
+  answer.
+
+**Settings, unchanged from part 1.** Qwen3.5-27B, reasoning off, 96 tokens, seeds 10 and 11, through the m45 / m49 test
+generation path. 7,100 new replies. Each was scored with its own prompt in view by each task's probe and by TF-IDF A / B
+/ P exactly as trained in the baseline. Correctness was checked with m26 and m48's code checkers; no judge was used.
+
+**The decisive new test: the same reply after the right versus the wrong inserted answer.** Often Qwen wrote word for
+word the same correct reply to the given request and to the wrong-answer request. In those pairs the two prompts
+differ only in the inserted value, and the reply is identical. A text classifier cannot know which inserted value is
+correct, so it cannot score the two differently.
+
+- The probe scores the reply higher after the wrong answer in 90-100% of pairs, on every task tested:
+
+  | task | pairs (by phrasing) | probe higher after the wrong answer, median |
+  |---|---|---|
+  | maths | 102 / 149 | +5.6 / +5.9 log-odds |
+  | ordering | 6 to 75 | +3.4 to +8.1 |
+  | belief tracking | 149 / 19 | +9.4 / +12.2 |
+  | contradiction | 175 / 122 | +3.2 / +5.6 |
+
+- TF-IDF B and P move by at most 0.2 log-odds on the same pairs.
+
+So the probe reads whether Qwen had to work the answer out (or, an alternative reading, whether its answer disagrees
+with what the context says), not just that an answer is present in the request.
+
+**Verdict per probe** ("passed" = the probe separates compute from given on phrasings that appear in no training set,
+while the prompt-only P and prompt + reply B do not, or do much worse):
+
+| probe | passed? | key numbers (new phrasing) |
+|---|---|---|
+| maths (q27mrr) | **yes** | compute vs given AUROC 1.00 (P 0.68 / 0.81, B 0.92 / 0.94); identical replies drop 14-15 log-odds |
+| ordering (q27orr) | **no on compute vs given; yes on the wrong-answer test** | compute vs given: probe 1.00, but P also 1.00 even on the new phrasings; correct replies after a wrong answer vs after the given answer: probe AUROC 0.92-0.98, P 0.45-0.48 |
+| belief tracking (m48fa_v2) | **yes** | compute vs given AUROC 1.00 (P 0.65, B 0.61); correct replies after a wrong belief score like compute |
+| contradiction (m48co_v2) | **yes** | compute vs given AUROC 1.00 (P 0.51, B 0.59) |
+| acrostic (m48ac_v2) | **no** | compute vs given AUROC 0.95, while P and B reach 1.00; given replies stay above the probe's line |
+
+What each test shows, in plain terms:
+
+1. **Maths.** Correct replies to the wrong-answer requests sit about halfway between compute and given:
+   - medians +1.7 / +2.5, against compute +10.1 and given -5.9 / -7.6;
+   - 0.47 / 0.57 of the way from given up to compute.
+
+   So the maths probe partly reads "Qwen worked it out" and partly "an answer was in the request". On identical reply
+   text, compute still scores 7.0-8.6 log-odds above wrong-answer.
+
+   Replies that copied the wrong number score like given replies (median -8.1 / -9.2). Qwen copied the wrong number in
+   36% (clause) and 43% (sentence) of replies, and silently gave the right one in 47% / 53%.
+2. **Ordering.** The new phrasings did not remove the prompt-only shortcut. P still separates compute from given
+   perfectly. The likely reason is that every given version repeats the five names once more, whatever the wording.
+   Since given and wrong-answer prompts repeat them equally, P cannot tell those two apart (AUROC 0.45-0.48).
+
+   The probe can: correct replies after a wrong order score far above given (AUROC 0.92-0.98). They sit 0.37-0.67 of the
+   way up to compute.
+
+   Qwen rarely copies a wrong order (1-7%). Instead it often argues with it ("The provided order contains a logical
+   contradiction …"); those replies are neither correct nor copied and are left out. Correct replies:
+
+   | phrasing | correct replies after a wrong order |
+   |---|---|
+   | classmate | 93% |
+   | ref | 66% |
+   | clause | 42% |
+   | sentence | 26% |
+
+   Even the given replies all stay above the probe's line (median -0.1 to -2.9, against a line of -8.06), as in part
+   1.
+3. **Belief tracking.**
+   - The new phrasing gives the clean positive result: probe AUROC 1.00 against P 0.65 and B 0.61. On 188
+     identical-reply pairs the probe drops 10.0 log-odds; P and B drop 0.4.
+   - m48's training wording ("X thinks the watch is in the cupboard.") is separated perfectly by P too (AUROC 1.00), as
+     expected for a phrase it was trained on.
+   - Correct replies after a wrong belief score almost exactly like compute: 0.85 / 0.90 of the way up. On 131
+     identical-reply pairs they are only 0.9 below compute.
+   - Qwen copies a wrongly stated belief in 90% of replies when it is phrased as m48's "X thinks …", and in 30% for "For
+     reference …".
+   - 58% of given replies with the new phrasing stay above the probe's line, against 2% with the training phrasing.
+4. **Contradiction.**
+   - New phrasing: probe AUROC 1.00 against P 0.51 and B 0.59. The probe's given median is -0.5, right at its line
+     (-0.58), with 53% of given replies above it.
+   - Correct replies after a wrong note sit 0.43 / 0.44 of the way from given up to compute.
+   - Qwen almost never copies a wrong note (1-3%). Often it answers "none" instead; those replies count as wrong.
+   - Few compute / given replies are word-for-word identical (15 and 37 pairs), but the wrong-vs-given identical pairs
+     are plentiful (175 and 122).
+5. **Acrostic: no pass.**
+   - With the new phrasing ("For reference, one set of first words that works is …") the probe drops from +8.4 to +4.3,
+     but every given reply stays above its line.
+   - P and B separate compute from given perfectly. The phrase contains the words "first" and "words", which are in
+     acrostic training prompts.
+   - With m48's training wording the probe drops to -3.3 (a third still above its line), but P drops just as cleanly.
+   - No reply was word-for-word identical across versions, so there is no identical-reply test here.
+
+The older probes (onpk / ordpk) behave like the m45 targets throughout (`part2/analysis.json`).
+
+## Details
+
+### Replies per version (2 seeds; correct = the right answer by code check; copied = gives the inserted wrong answer)
+
+| task | version | n | correct | copied wrong |
+|---|---|---|---|---|
+| maths | compute / given clause / given sentence | 400 each | 400 / 362 / 391 | |
+| maths | wrong clause / wrong sentence | 400 each | 187 / 210 | 142 / 170 |
+| ordering | compute | 400 | 368 | |
+| ordering | given clause / sentence / ref / classmate | 400 each | 400 / 400 / 398 / 386 | |
+| ordering | wrong clause / sentence / ref / classmate | 400 each | 169 / 103 / 262 / 372 | 21 / 28 / 14 / 4 |
+| belief tracking | compute | 300 | 243 | |
+| belief tracking | given train / ref | 300 each | 298 / 260 | |
+| belief tracking | wrong train / ref | 300 each | 28 / 175 | 269 / 89 |
+| contradiction | compute | 300 | 292 | |
+| contradiction | given train / ref | 300 each | 296 / 297 | |
+| contradiction | wrong train / ref | 300 each | 160 / 235 | 10 / 3 |
+| acrostic | compute / given train / given ref | 300 each | 295 / 300 / 300 | |
+
+Replies that are neither correct nor copied:
+
+- ordering: mostly replies saying the inserted order is wrong, often naming it;
+- maths: arithmetic slips, and a few replies that state the right total and also cite the wrong figure;
+- contradiction: mostly "none".
+
+These replies are left out of every score comparison.
+
+### Target probe, correct replies (medians; share over the 1% line in brackets)
+
+| task (line) | compute | given (training or close-to-training phrasing) | given (new phrasing) | wrong, correct reply (training / new) |
+|---|---|---|---|---|
+| maths (-6.53) | +10.1 (100%) | | clause -5.9 (64%), sentence -7.6 (36%) | clause +1.7 (100%), sentence +2.5 (99%) |
+| ordering (-8.06) | +11.7 (100%) | clause -2.7, sentence -2.9 (100%) | ref -0.1, classmate -0.7 (100%) | clause +6.0, sentence +6.2 / ref +4.3, classmate +7.6 (all 100%) |
+| belief tracking (-2.39) | +7.7 (100%) | train -6.6 (2%) | ref -1.8 (58%) | train +6.3 / ref +6.2 (100%) |
+| contradiction (-0.58) | +7.6 (100%) | train -4.8 (0%) | ref -0.5 (53%) | train +0.7 (89%) / ref +3.0 (100%) |
+| acrostic (-2.55) | +8.4 (100%) | train -3.3 (33%) | ref +4.3 (100%) | none built |
+
+TF-IDF B and P put nearly every reply of every version above their own lines. There are two exceptions:
+
+- the belief tracking and contradiction "train" versions, whose phrasing they were trained on; they score those far
+  below their lines;
+- contradiction's B, which is a weak detector: only 55% of its compute replies are above its line.
+
+### AUROC, correct replies (target probe / B / P)
+
+| task | compute vs given, new phrasing | compute vs given, training phrasing | wrong (correct reply) vs given, same phrasing |
+|---|---|---|---|
+| maths | 1.00 / 0.92-0.94 / 0.68-0.81 | | 0.92-0.98 / 0.64-0.66 / 0.57-0.59 |
+| ordering | 1.00 / 0.97-0.99 / 1.00 | 1.00 / 0.99 / 1.00 | 0.92-0.98 / 0.12-0.32 / 0.45-0.48 |
+| belief tracking | 1.00 / 0.61 / 0.65 | 1.00 / 1.00 / 1.00 | 0.99-1.00 / 0.52-0.59 / 0.52-0.57 |
+| contradiction | 1.00 / 0.59 / 0.51 | 1.00 / 0.94 / 1.00 | 0.98-1.00 / 0.48-0.56 / 0.49-0.53 |
+| acrostic | 0.95 / 1.00 / 1.00 | 1.00 / 1.00 / 1.00 | none built |
+
+The reply-only A is near chance or inverted throughout (`part2/analysis.json`).
+
+### Identical-reply pairs (target probe)
+
+| task | compute minus given (pairs; median drop) | compute minus wrong-correct | wrong-correct minus given |
+|---|---|---|---|
+| maths | clause 137, +14.8; sentence 136, +14.2 | clause 86, +8.6; sentence 110, +7.0 | clause 102, +5.6 (96% higher); sentence 149, +5.9 (98%) |
+| ordering | classmate 143, +12.8; ref 223, +12.7; clause 83, +14.4; sentence 249, +15.2 | 2-29 pairs, +4.5 to +13.0 | classmate 75, +6.9 (100%); ref 49, +3.8 (90%); clause 22, +8.1 (95%); sentence 6, +3.4 (100%) |
+| belief tracking | ref 188, +10.0; train 202, +14.2 | ref 131, +0.9; train 20, +1.5 | ref 149, +9.4 (100%); train 19, +12.2 (100%) |
+| contradiction | ref 15, +4.2; train 37, +6.2 | ref 43, +2.8; train 43, +4.7 | ref 175, +3.2 (98%); train 122, +5.6 (100%) |
+| acrostic | none identical | | |
+
+On the same pairs, TF-IDF B and P move at most 0.2 log-odds between wrong-correct and given. Between compute and
+given they move:
+
+- 0.4-1.8 log-odds in maths;
+- 2-3 in ordering;
+- 4.7-8.1 on the m48 tasks' training phrasing, and 0.4 or less on the new one.
+
+### Caveats
+
+- **The wrong-answer comparison has two readings.** The probe may read that Qwen worked the answer out, or that Qwen's
+  answer disagrees with an answer stated in the context. In belief tracking, wrong-correct scores almost exactly like
+  compute, which fits the first reading. In maths, contradiction and ordering it sits about halfway.
+- **Selection.** Wrong-correct replies are the ones where Qwen silently overrode the inserted answer. For belief
+  tracking's training phrasing that is only 28 of 300; elsewhere it is 26-93%.
+- **The ordering confound is structural, not lexical.** No wording of an inserted order avoids repeating the names. So
+  ordering's compute-vs-given test cannot rule out a prompt reader; the wrong-vs-given test can.
+- **Lines** are each detector's look-alike-pool 1% line, as in part 1.
+
+### Spend and runs
+
+- One Modal run, `probe-evasion_nabil-baugher_matched-part2_kill-2026-11-30` (app ap-OKWR9ZAmvzmQirQIiwDtKw). It ran
+  for 13 minutes (vLLM sampler and scorer, H100s) and stopped on completion. Estimated $5-15 from run time, not from
+  billing.
+- Parts 1 and 2 together: roughly $10-25 of GPU.
+- No Claude or other API calls.
+
+### Files (`part2/`)
+
+- `matched2.py`: items, the novelty check, generation and scoring (`modal run ... matched2.py::run2`).
+- `analyze2.py`: everything above.
+- `part2/<task>_items.jsonl`, `_replies.jsonl`, `_scored.jsonl`: every prompt, reply, correctness and copy flag,
+  tokens, per-token log-odds and peaks.
+- `part2/detector_scores.jsonl`: all detectors per reply.
+- `part2/analysis.json`, plus `part2/analysis_print.txt`, a readable dump of it.
+- `part2/novelty.json`: the training-set check of the new phrasings.
+- `figures/part2_scores.png`: each version's median on each detector's own scale.
+- `figures/part2_traces.png` and `part2/traces.md`: identical-reply traces after the compute, given and wrong-answer
+  requests.
+- The m48-task TF-IDF models are pickled in `analysis/tfidf_baseline/models/`, checked against the baseline's saved
+  scores.
