@@ -6,6 +6,7 @@ HERE = Path(__file__).parent
 N_LAYERS = 64
 PROBE_LAYER = 48
 FREEZE_ROUNDS = (0, 4, 8, 16)
+PROBE_ORDER = ("maths", "ordering", "belief_tracking", "acrostic", "contradiction")
 ECI_RANGE = (130.0, 170.0)
 WRITERS = [  # (name, ECI, Anthropic)
     ("Claude Opus 5.5", 167.3, True), ("GPT-6 Astra", 166.4, False), ("GPT-6.1 Sol", 166.1, False),
@@ -43,6 +44,7 @@ def main() -> None:
         "%%LAYERWHY%%": (HERE / "fragments" / "layer_why.html").read_text(),
         "%%TRAINING%%": (HERE / "fragments" / "training.html").read_text(),
         "%%CHECKS%%": (HERE / "fragments" / "checks.html").read_text(),
+        "%%PROBES%%": "\n".join((HERE / "fragments" / f"probe_{task}.html").read_text() for task in PROBE_ORDER),
     }
     for key, value in fills.items():
         assert page.count(key) == 1, key
