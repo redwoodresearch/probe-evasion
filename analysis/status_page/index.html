@@ -39,7 +39,7 @@ a { color:var(--accent); }
 <main>
 <header>
 <h1>Probe evasion: status</h1>
-<p class="sub">Snapshot at Monday 12 October, 14:45 Pacific. Main focus: the matched on/off switch sweep on Qwen3.5-27B.</p>
+<p class="sub">Snapshot at Monday 12 October, 19:30 Pacific. Main focus: the matched on/off switch sweep on Qwen3.5-27B.</p>
 </header>
 
 <section>
@@ -69,13 +69,9 @@ a { color:var(--accent); }
 <div class="card wrap">
 <table>
 <tr><th>Experiment</th><th>What it answers</th><th>State</th><th>Expected</th></tr>
-<tr><td><b>Matched switch sweep, Qwen3.5-27B</b> <span class="pill main">main</span></td><td>Does the capability trend hold when only the ON/OFF switch differs, read with the instruction in view? 11 writers, maths and ordering, new re-read probes, compliance in feedback.</td><td><span class="pill run">searching (sped up)</span></td><td>searches ~16:30–17:30, verdict draft ~19:30–20:00</td></tr>
-<tr><td><b>100-round searches</b></td><td>Does continued effort keep making progress? GPT-6 Sol and Opus 5.5 (medium), same setup as the main sweep.</td><td><span class="pill run">relaunching</span></td><td>a few hours per task</td></tr>
-<tr><td><b>On its own (volitional)</b></td><td>Can Qwen 9B / 27B / 122B hide its work when told how the probe reads it, reasoning off and on? (397B paused: widgets first.)</td><td><span class="pill run">reasoning-on tests</span></td><td>later today</td></tr>
-
-
-<tr><td><b>Robustness checks</b></td><td>Other readouts, tails, naturalness, text monitor, length control on the capability sweep.</td><td><span class="pill run">twin tests</span></td><td>~14:15, then write-up</td></tr>
-<tr><td><b>Monitored-model axis</b></td><td>Qwen3.8-27B, Qwen3.5-397B, DeepSeek V4 Flash: all 8 probes built and passing.</td><td><span class="pill pause">paused</span></td><td>resumes after the main sweep</td></tr>
+<tr><td><b>Write-up v8</b> <span class="pill main">next</span></td><td>Post rebuilt around the final matched switch result, then the critic loop.</td><td><span class="pill run">writing</span></td><td>tonight</td></tr>
+<tr><td><b>On its own (volitional)</b></td><td>Re-counting correct answers under the correctness-only rule (no new runs).</td><td><span class="pill run">analysis</span></td><td>tonight</td></tr>
+<tr><td><b>Monitored-model axis</b></td><td>Qwen3.8-27B, 397B, DeepSeek V4 Flash: 8 probes built and passing.</td><td><span class="pill pause">paused</span></td><td>resumes on your go</td></tr>
 </table>
 </div>
 </section>
@@ -104,7 +100,9 @@ a { color:var(--accent); }
 <div class="card wrap">
 <table>
 <tr><th>Finding</th><th>Numbers</th><th>Caveat</th></tr>
-<tr><td>Stronger writers move the probe further (capability sweep, 11 writers)</td><td>Ordering +0.17 per 10 ECI (rank 0.95); program output +0.08; maths only among correct answers (+0.07)</td><td>Instruction removed, vs plain. In view: ordering +0.07. Partly instruction length.</td></tr>
+<tr><td><b>Final, matched ON/OFF switch on Qwen3.5-27B (14 writers):</b> stronger writers move the probe further</td><td>Ordering +0.12 per 10 ECI; maths +0.06; best: Fable 5.1 (0.64 ordering, 0.33 maths) of the way from OFF to the line</td><td>0 crossings in ~28,000 correct pairs; without Anthropic writers, maths is flat and ordering borderline</td></tr>
+<tr><td>More search effort saturates (100-round searches)</td><td>Most gain in the first 10–30 rounds; at most ~0.1 more per 50 rounds after round 50</td><td>2 writers, 2 searches each</td></tr>
+<tr><td>Earlier design: stronger writers move the probe further (capability sweep, 11 writers)</td><td>Ordering +0.17 per 10 ECI (rank 0.95); program output +0.08; maths only among correct answers (+0.07)</td><td>Instruction removed, vs plain. In view: ordering +0.07. Partly instruction length.</td></tr>
 <tr><td>No black-box search gets a correct answer under the flag line on the main probes</td><td>0 of ~500,000 test replies across sweeps; closest 0.4 log-odds above</td><td>Line set on one-sentence replies; a broad-chat line lets many through with the instruction removed</td></tr>
 <tr><td>A defender who retrains on other labs' attacks halves the trend</td><td>Ordering +0.17 → +0.09; average score 0.26 → 0.14; remaining trend is Anthropic writers</td><td>Frozen attacks, not a re-attack</td></tr>
 <tr><td>Hidden-result decision task crosses the line, but only with the instruction removed</td><td>4 writers put 94–99% of correct answers under; trend +0.36 per 10 ECI; 0 in view</td><td>Probe mostly reads the request type</td></tr>
