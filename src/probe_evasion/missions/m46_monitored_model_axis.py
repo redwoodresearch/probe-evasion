@@ -103,6 +103,29 @@ MODELS = {m.key: m for m in [
     Monitored("ds4", "DeepSeek-V4-Flash-0731", "deepseek-ai/DeepSeek-V4-Flash-0731", "deepseek", 43, (32, 11), 284.0, 13.0, 154.49,
               (152.08, 156.35), "openrouter", "deepseek/deepseek-v4-flash-0731", "coreweave/fp8", "CoreWeave", DEEPSEEK_CHAT, "B200", 4,
               note="substitute for DeepSeek V4.1 Flash (not feasible: no transformers support, encoder-decoder layout)"),
+    # gate screen (lead, 10-13 ~05:30): large candidates for a switch-comparable monitored model; only the compliance
+    # gate runs on these (generation only, no probes yet). Sampling = each model card's non-thinking recommendation.
+    # the screen's control: the baseline model itself through the screen's generation path, to check the path reproduces
+    # the baseline's gate (m45's own gate ran on Modal vLLM bf16). Novita serves bf16 (the baseline's weights) but does
+    # not take min_p, which is 0 (off) in the Qwen settings, so it is left out. (DeepInfra was rate-limited upstream on
+    # 27B; AtlasCloud answered "bad request".)
+    Monitored("q27or", "Qwen3.5-27B (OpenRouter control)", "Qwen/Qwen3.5-27B", "qwen35", 64, (48, 16), 27.0, 27.0, None, None,
+              "openrouter", "qwen/qwen3.5-27b", "novita/bf16", "Novita", {k: v for k, v in QWEN_NO_THINKING.items() if k != "min_p"}, "H100", 1,
+              note="gate screen control"),
+    # GLM-5.3-Flash (ECI 151.9) was rejected: reasoning cannot be turned off (OpenRouter: "Reasoning is mandatory for this
+    # endpoint" on Novita, Morph and Near AI; the card offers only low / high / max effort), so no reply-only reading
+    Monitored("glm52", "GLM-5.2", "zai-org/GLM-5.2-FP8", "glm", 78, (58, 19), 753.0, float("nan"), 151.78, (149.81, 153.8),
+              "openrouter", "z-ai/glm-5.2", "novita/fp8", "Novita", {"temperature": 1.0, "top_p": 0.95}, "B200:8", 1,
+              note="gate screen; official FP8 checkpoint (transformers glm_moe_dsa); active parameters not stated on the card"),
+    Monitored("kimi26", "Kimi K2.6", "moonshotai/Kimi-K2.6", "kimi", 61, (46, 15), 1027.0, 32.0, 151.05, (149.26, 152.79),
+              "openrouter", "moonshotai/kimi-k2.6", "parasail/int4", "Parasail", {"temperature": 0.6, "top_p": 0.95}, "B200:4", 1,
+              note="gate screen; checkpoint native INT4 (transformers kimi_k25)"),
+    Monitored("inks", "Inkling-Small", "thinkingmachines/Inkling-Small", "inkling", 42, (32, 10), 276.0, 12.0, 150.15, (147.39, 151.96),
+              "openrouter", "thinkingmachines/inkling-small", "deepinfra/fp8", "DeepInfra", {"temperature": 0.7, "top_p": 0.95}, "B200:4", 1,
+              note="gate screen; checkpoint BF16 (transformers inkling_mm_model); the only OpenRouter provider serves FP8"),
+    Monitored("dsv4p", "DeepSeek-V4-Pro-0813", "deepseek-ai/DeepSeek-V4-Pro-0813", "deepseek", 61, (46, 15), 1650.0, float("nan"), 155.31,
+              (153.48, 157.45), "openrouter", "deepseek/deepseek-v4-pro-0813", "coreweave/fp8", "CoreWeave", DEEPSEEK_CHAT, "B200:8", 1,
+              note="gate screen; checkpoint FP8 + FP4 experts (transformers deepseek_v4); active parameters not stated on the card"),
 ]}
 
 # m23's SizeLab asserts the layer count of the model it loads; registered here so containers of QwenLab46 (defined in
@@ -128,7 +151,7 @@ def data_file(m: Monitored, task: str, split: str) -> Path:
 
 
 GEN_CHUNK = 128
-OR_CONCURRENCY = {"q397": 32, "ds4": 64}  # per call batch; DeepInfra's 397B pool rate-limits at ~50 parallel calls
+OR_CONCURRENCY = {"q397": 32, "ds4": 64, "q27or": 16, "glm52": 32, "kimi26": 32, "inks": 32, "dsv4p": 32}  # per call batch; DeepInfra's 397B pool rate-limits at ~50 parallel calls
 
 
 OR_TRIES = 16
@@ -983,6 +1006,169 @@ def compliance(key: str, tasks: str = "maths,ordering", tag: str = "") -> dict:
         (model_out(key) / "compliance" / f"gate_{t}{tag}.json").write_text(json.dumps({t: g}, indent=1))
     print(json.dumps(out, indent=1), flush=True)
     return out
+
+
+# ---------------------------------------------------------------- gate screen (lead, 10-13 ~05:30): the switch-compliance
+# gate alone on candidate monitored models, generation only (no probes). The same pre-registered gate as `compliance`:
+# m45's v1 arms (6 templates, switch_after, no parity), 20 test problems x seed 10, Haiku compliance judge, m22's cheap
+# validity rule, compliance_gate's thresholds. Reply lengths come from the provider's completion-token count (the
+# probed runs used the scorer's tokenizer). Rows and summaries go to gate_screen/<key>/.
+
+SCREEN = OUT / "gate_screen"
+SCREEN_KIND = "switch_after"  # m45's v1, as COMPLIANCE_SETS[COMPLIANCE_TAG]
+
+
+def screen_summary(rows: list[dict], task: str) -> dict:
+    """m45.compliance_summary without the probe readings: per template and pooled over templates, the keys the gate
+    reads plus the judge's OFF readings."""
+    from probe_evasion.missions import m28_baselines_and_writer_knowledge as m28
+    from probe_evasion.missions import m45_toggle_sweep as m45
+
+    share = lambda xs: float(np.mean(xs)) if xs else None
+    plain = [r for r in rows if r["key"] == "plain"]
+    out = {"task": task, "templates": {}}
+    for tpl, kind in sorted({(r["template"], r["kind"]) for r in rows if r["key"] != "plain"}):
+        on = [r for r in rows if r.get("template") == tpl and r.get("kind") == kind and r["version"] == "on"]
+        off = [r for r in rows if r.get("template") == tpl and r.get("kind") == kind and r["version"] == "off"]
+        pl = [r for r in plain if r.get("judged_against") == tpl]
+        top = Counter(m45.opener(r["reply"]) for r in on).most_common(1)[0][0]
+        e = {"n": len(on), "on_follows_fully": share([r["compliance"].get("follows") == "fully" for r in on]),
+             "on_follows_fully_or_partly": share([r["compliance"].get("follows") in ("fully", "partly") for r in on]),
+             "off_ignores": share([r["compliance"].get("follows") == "not_at_all" for r in off]),
+             "off_plain_like": share([bool(r["compliance"].get("plain_answer")) for r in off]),
+             "off_leakage_any_element": share([bool(r["compliance"].get("style_elements")) for r in off]),
+             "plain_any_element": share([bool(r["compliance"].get("style_elements")) for r in pl]),
+             "on_valid_cheap": share([r["valid_cheap"] for r in on]), "off_valid_cheap": share([r["valid_cheap"] for r in off]),
+             "plain_valid_cheap": share([r["valid_cheap"] for r in pl]) if pl else None,
+             "modal_on_opener": top, "on_opener_share": share([m45.opener(r["reply"]) == top for r in on]),
+             "off_opener_share": share([m45.opener(r["reply"]) == top for r in off]), "plain_opener_share": share([m45.opener(r["reply"]) == top for r in pl])}
+        if task == "maths":
+            words = lambda rs: share([w for w in (m28.result_in_words(r["reply"], r["task"]["result"]) for r in rs) if w is not None])
+            e |= {"on_result_in_words": words(on), "off_result_in_words": words(off), "plain_result_in_words": words(pl)}
+        if all("valid_cheap_edge_space_ok" in r for r in on + off + pl):  # the screen's sensitivity (absent in the probed runs' rows)
+            e |= {f"{v}_valid_edge_space_ok": share([r["valid_cheap_edge_space_ok"] for r in rs]) for v, rs in (("on", on), ("off", off), ("plain", pl))}
+        e["evasion"] = on[0]["evasion"]
+        e["examples"] = [{"task": a["task"]["task"], "on": a["reply"], "off": b["reply"]} for a, b in
+                         list(zip(sorted(on, key=lambda r: r["task"]["id"]), sorted(off, key=lambda r: r["task"]["id"])))[:3]]
+        out["templates"][f"{tpl} ({kind})"] = e
+    for kind in sorted({k.split("(")[-1][:-1] for k in out["templates"]}):
+        ts = [v for k, v in out["templates"].items() if k.endswith(f"({kind})")]
+        keys = [k for k in ts[0] if isinstance(ts[0][k], float)]
+        out[f"pooled_{kind}"] = {k: float(np.mean([t[k] for t in ts if t.get(k) is not None])) for k in keys}
+    return out
+
+
+def screen_run(key: str, task: str, n: int = 0) -> dict:
+    """Generate the gate's replies on this model through its pinned OpenRouter provider (no fallback; the serving
+    provider is asserted and kept per row), check validity (m22's cheap rule), judge compliance (Haiku), summarise and
+    apply the gate. n > 0: a smoke on the first n problems (rows not saved as the screen's)."""
+    from probe_evasion.missions import m19_maths_whitebox_redteam as m19
+    from probe_evasion.missions import m28_baselines_and_writer_knowledge as m28
+    from probe_evasion.missions import m45_toggle_sweep as m45
+
+    n = int(n)  # from the command line
+    assert m45.DESIGN == {"kind": "switch", "placement": "switch_after"}, m45.DESIGN
+    assert _USING.get("key") is None, "the screen reads Qwen3.5-27B's frozen m36 arms through m28.base_monitor: no use_model in this process"
+    m = MODELS[key]
+    assert m.gen == "openrouter", key
+    mon = m28.base_monitor(task)  # Qwen3.5-27B's monitor: the test problems, m36's frozen arms and the validity rule only
+    arms = m45.compliance_arms(task, (SCREEN_KIND,), ())
+    tasks = mon.task.problems()["test"][: n or m45.COMPLIANCE_N]
+    jobs = [(k, a, t, f"{a['instruction']}\n\n{t['task']}" if a["instruction"] else t["task"]) for k, a in arms.items() for t in tasks]
+    gens = openrouter_chat(m, [j[3] for j in jobs], m45.COMPLIANCE_SEED, mon.task.max_reply_tokens)
+    rows = []
+    for (k, a, t, prompt), g in zip(jobs, gens):
+        n_tok = g["meta"]["usage"]["completion_tokens"]
+        rows.append({"key": k, "task": t, "seed": m45.COMPLIANCE_SEED, "prompt": prompt, "reply": g["text"], "n_reply_tokens": n_tok,
+                     "finished": bool(g["finish_reason"] == "stop" and g["text"].strip() and n_tok < mon.task.max_reply_tokens),
+                     "openrouter": g["meta"] | {"finish_reason": g["finish_reason"]}, **{x: y for x, y in a.items() if x != "instruction"},
+                     "instruction": a["instruction"]})
+    vals = mon.task.validity([r["task"] for r in rows], [r["reply"] for r in rows], [r["n_reply_tokens"] for r in rows], [False] * len(rows))
+    for r, v in zip(rows, vals):
+        r.update(v)
+        r["valid"] = bool(v["valid"] and r["finished"])
+        r["valid_cheap"] = bool((v["fixed"] or v["any_format"]) and v["framing_ok"] and not v["leading_or_trailing_space"] and r["finished"])
+        # sensitivity only (not the gate): the rule's edge-whitespace clause targets a Qwen tokenisation artefact; some
+        # providers return every reply with a leading space
+        r["valid_cheap_edge_space_ok"] = bool((v["fixed"] or v["any_format"]) and v["framing_ok"] and r["finished"])
+    ref = {k: a for k, a in arms.items() if a["evasion"]}
+    judged = [r for r in rows if r["key"] in ref] + [{**r, "evasion": e, "judged_against": tpl} for r in rows if r["key"] == "plain"
+                                                      for tpl, e in {a["template"]: a["evasion"] for a in ref.values()}.items()]
+    verdicts = m19.ask_judge([m45.COMPLIANCE_PROMPT.format(item=m45.ITEM[task]["item"], task=r["task"]["task"], instruction=r["evasion"],
+                                                          reply=r["reply"]) for r in judged], m45.COMPLIANCE_TOOL, model=m45.CHEAP_JUDGE_MODEL)
+    for r, v in zip(judged, verdicts):
+        r["compliance"] = v
+    rows = [r for r in rows if r["key"] != "plain"] + [r for r in judged if r["key"] == "plain"]
+    summ = screen_summary(rows, task)
+    gate = compliance_gate(task, summ[f"pooled_{SCREEN_KIND}"])
+    providers = Counter(g["meta"]["provider"] for g in gens)  # every generated reply, once
+    out = {"model": key, "task": task, "n_problems": len(tasks), "provider_pinned": m.or_provider, "providers_served": dict(providers),
+           "unfinished": sum(not r["finished"] for r in rows), "judge_calls": len(judged), "gate": gate, "summary": summ}
+    d = SCREEN / key
+    d.mkdir(parents=True, exist_ok=True)
+    sfx = f"_smoke{n}" if n else ""
+    write_jsonl(d / f"{task}_rows{sfx}.jsonl", rows)
+    (d / f"{task}_gate{sfx}.json").write_text(json.dumps(out, indent=1, ensure_ascii=False))
+    print(key, task, "PASS" if gate["passes"] else "FAIL", gate["checks"], {k: round(v, 3) for k, v in gate["numbers"].items() if v is not None},
+          "served by", dict(providers), "unfinished", out["unfinished"], flush=True)
+    return out
+
+
+def screen_check_summary(key: str, task: str) -> None:
+    """The probe-free summary against m45's on a model that ran the full gate (its saved rows): the gate's numbers must match."""
+    from probe_evasion.missions import m45_toggle_sweep as m45
+
+    rows = jl(model_out(key) / "compliance" / f"{task}_rows{COMPLIANCE_TAG}.jsonl")
+    mine = compliance_gate(task, screen_summary(rows, task)[f"pooled_{SCREEN_KIND}"])
+    saved = json.loads((model_out(key) / "compliance" / f"gate_{task}{COMPLIANCE_TAG}.json").read_text())[task][SCREEN_KIND]
+    for k, v in mine["numbers"].items():
+        if v is not None and saved["numbers"].get(k) is not None:
+            assert abs(v - saved["numbers"][k]) < 1e-9, (key, task, k, v, saved["numbers"][k])
+    assert mine["passes"] == saved["passes"], (mine, saved)
+    print(key, task, "screen summary matches the saved gate:", mine["passes"], flush=True)
+
+
+def screen_report() -> str:
+    """gate_screen.md's tables: per model and task the gate (pass / fail and its numbers) and per-template OFF leakage."""
+    screen_rows = {  # model -> (rows file per task with {task}, label, generation path); the screen's own runs, then the probed models' gates
+        "q27": (M45_OUT / "compliance" / "{task}_rows_variants.jsonl", "Qwen3.5-27B (baseline; m45's gate)", "Modal vLLM bf16"),
+        "q27or": (SCREEN / "q27or" / "{task}_rows.jsonl", "Qwen3.5-27B, screen path (control)", "OpenRouter Novita bf16"),
+        "q38": (OUT / "models" / "q38" / "compliance" / "{task}_rows_v1.jsonl", "Qwen3.8-27B (earlier gate)", "Modal vLLM bf16"),
+        "ds4": (OUT / "models" / "ds4" / "compliance" / "{task}_rows_v1.jsonl", "DeepSeek-V4-Flash-0731 (earlier gate)", "OpenRouter CoreWeave fp8"),
+        **{k: (SCREEN / k / "{task}_rows.jsonl", MODELS[k].label, f"OpenRouter {MODELS[k].or_provider}") for k in ("q397", "glm52", "kimi26", "inks", "dsv4p")},
+    }
+    head = ("| model | ECI | generation | task | gate | ON follows | OFF leakage (code) | plain leakage | leakage - plain (<= 10 pp) | "
+            "valid: plain / OFF (drop <= 10 pp) | OFF ignores the style (judge) | valid ignoring edge spaces: plain / OFF |")
+    lines, per_tpl, out = [head, "|" + "---|" * 12], [], {}
+    pct = lambda x: "-" if x is None else f"{100 * x:.0f}%"
+    for k, (pattern, label, path) in screen_rows.items():
+        for task in TASKS:
+            f = Path(str(pattern).format(task=task))
+            if not f.exists():
+                continue
+            rows = [r for r in jl(f) if r["key"] == "plain" or r.get("kind") == SCREEN_KIND]
+            summ = screen_summary(rows, task)
+            pooled = summ[f"pooled_{SCREEN_KIND}"]
+            g = compliance_gate(task, pooled)
+            lk = g["leak_keys"]
+            eci = MODELS[k].eci if k in MODELS and MODELS[k].eci else None
+            out[f"{k} {task}"] = {"gate": g, "pooled": pooled}
+            lines.append(f"| {label} | {eci or '-'} | {path} | {task} | **{'PASS' if g['passes'] else 'FAIL'}** | {pct(pooled['on_follows_fully_or_partly'])} | "
+                         f"{pct(pooled[lk[0]])} | {pct(pooled[lk[1]])} | {100 * (pooled[lk[0]] - pooled[lk[1]]):+.0f} pp | "
+                         f"{pct(pooled['plain_valid_cheap'])} / {pct(pooled['off_valid_cheap'])} | {pct(pooled['off_ignores'])} | "
+                         f"{pct(pooled.get('plain_valid_edge_space_ok'))} / {pct(pooled.get('off_valid_edge_space_ok'))} |")
+            per_tpl.append(f"| {label} | {task} | " + " | ".join(
+                f"{pct(v[lk[0]])} / {100 * (v['plain_valid_cheap'] - v['off_valid_cheap']):+.0f}" for _, v in sorted(summ["templates"].items())) + " |")
+            if "openrouter" in rows[0]:
+                out[f"{k} {task}"]["openrouter_cost"] = float(sum(r["openrouter"]["usage"].get("cost") or 0 for r in rows
+                                                                 if r["key"] != "plain" or r["judged_against"] == rows[-1]["judged_against"]))
+            tpl_names = [t.split(" (")[0] for t in sorted(summ["templates"])]
+    tpl_head = "| model | task | " + " | ".join(tpl_names) + " |"
+    text = ("## Gate per model and task\n\n" + "\n".join(lines) + "\n\n## Per template: OFF leakage (maths: result in number words; "
+            "ordering: the template's modal ON opener) / validity drop, plain minus OFF, in points\n\n" + tpl_head + "\n|" + "---|" * (2 + len(tpl_names)) + "\n" + "\n".join(per_tpl) + "\n")
+    (SCREEN / "gate_tables.md").write_text(text)
+    (SCREEN / "gate_tables.json").write_text(json.dumps(out, indent=1))
+    return text
 
 
 # ---------------------------------------------------------------- detached drivers on m46's volume (steps = [module, function, kwargs])
@@ -2160,5 +2346,5 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
 
     load_dotenv(".env")
-    {"report": batch_report, "fig_paired_differences": fig_paired_differences, "companions": companions, "rank_measures": rank_measures, "compliant_differences": compliant_differences, "extras_table": extras_table, "cross_model_tables": cross_model_tables, "refusal_scan_slot": refusal_scan_slot, "context_2x2": context_2x2, "compliant_offref": compliant_offref, "m45": m45_call, "leakage_by_round": leakage_by_round, "design_check_report": design_check_report, "probe_table": probe_table, "prepare_sweep": prepare_sweep, "put": volume_put, "marker": volume_marker, "cross_model": cross_model,
+    {"report": batch_report, "screen_report": screen_report, "screen_run": screen_run, "screen_check_summary": screen_check_summary, "fig_paired_differences": fig_paired_differences, "companions": companions, "rank_measures": rank_measures, "compliant_differences": compliant_differences, "extras_table": extras_table, "cross_model_tables": cross_model_tables, "refusal_scan_slot": refusal_scan_slot, "context_2x2": context_2x2, "compliant_offref": compliant_offref, "m45": m45_call, "leakage_by_round": leakage_by_round, "design_check_report": design_check_report, "probe_table": probe_table, "prepare_sweep": prepare_sweep, "put": volume_put, "marker": volume_marker, "cross_model": cross_model,
      "probe_quality_table": probe_quality_table, "compliance_table": compliance_table}[sys.argv[1]](*sys.argv[2:])
