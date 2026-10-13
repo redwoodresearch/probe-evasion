@@ -16,6 +16,7 @@ Per writer: the mean over its chains (error bar: the chains' range); a least-squ
 
 import json
 import sys
+import textwrap
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -182,9 +183,13 @@ def frozen_writers(runs: Path, task: str, b: int) -> dict:
         drop = float(np.median([sv(b2) - sv(a) for a, b2 in ok])) if ok else 0.0
         off_med = float(np.median([sv(b2) for _, b2 in ok])) if ok else None
         m["raw"] = drop
-        m["off_ref"] = drop / (off_med - line) if off_med is not None and off_med - line > 0.5 else float("nan")  # unstable near the line
+        # undefined where OFF's median is within 1 log-odds of the line or under it (m45's guard for this framing)
+        m["off_ref"] = drop / (off_med - line) if off_med is not None and off_med - line > OFF_REF_MIN else float("nan")
         out.setdefault(writer, []).append(m)
     return {"writers": out, "line": line, "plain": plain}
+
+
+OFF_REF_MIN = 1.0
 
 
 def writer_points(m: dict, key: str, names: list[str]):
@@ -228,8 +233,8 @@ def frozen_figure(runs: Path, b: int, panels: tuple, path: Path, note: str) -> P
             ax.grid(color="#e6e5e0", lw=0.6)
             for side in ("top", "right"):
                 ax.spines[side].set_visible(False)
-    fig.suptitle(note, fontsize=11, color=INK)
-    fig.tight_layout(rect=(0, 0, 1, 0.97))
+    fig.suptitle("\n".join(textwrap.wrap(note, 170)), fontsize=11, color=INK)
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=150, facecolor=SURFACE)
     plt.close(fig)
@@ -250,7 +255,7 @@ if __name__ == "__main__":
                   "v2 probes. One dot per writer (mean of 3 chains; bar = chains' range, net crossings: 95% problem-resampled interval).")
         print(frozen_figure(Path(runs_dir), b, HEADLINE, OUT / "figures" / f"frozen_B{b}.png", common))
         print(frozen_figure(Path(runs_dir), b, FRAMINGS, OUT / "figures" / f"frozen_B{b}_framings.png",
-                            common + " OFF-referenced is left out where median OFF is within 0.5 of the line."))
+                            common + " OFF-referenced is left out where median OFF is within 1 log-odds of the line or under it."))
         raise SystemExit
     assert cmd == "early"
     w = int(rest[0]) if rest else 3
