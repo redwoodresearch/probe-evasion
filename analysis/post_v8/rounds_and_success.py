@@ -1,11 +1,14 @@
 """Two figures from m45's frozen test (all 14 writers, mean of 3 searches each):
   rounds.png   probe-dodging score (S_offref) against feedback rounds, B = 0, 4, 8, 16, one line per writer;
-  success.png  task success against probe-dodging score at B = 16, one dot per writer.
+  success.png  task success against probe-dodging score at B = 16, one dot per writer;
+  cost.png     each writer's own accuracy cost of switching ON (OFF correct share minus ON correct share) against
+               its probe-dodging score at B = 16, from the frozen-test rows.
 
     .venv/bin/python analysis/post_v8/rounds_and_success.py
 """
 
 import importlib.util
+import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -38,6 +41,48 @@ def spread(ys: list[float]) -> list[float]:
     out = np.empty(len(ys))
     out[order] = placed
     return list(out)
+
+
+RUNS = F.M45 / "runs"
+WRITER_BATCH = lambda w: "d" if w in F.ADDED_LATER else "c"
+
+
+def correct_shares(task: str, writer: str) -> tuple[float, float]:
+    """(ON, OFF) share of correct answers over the writer's 3 searches x 500 test pairs at B = 16. Maths: correct in any
+    format (m45's correctness-only re-judge, keyed arm|problem|seed); ordering: the task's validity rule."""
+    root = RUNS / WRITER_BATCH(writer) / F.TASK_ROOT[task]
+    rejudge = json.loads((root / "correctness_only.json").read_text()) if task == "maths" else None
+    hits = {"on": [], "off": []}
+    for line in (root / "test_checked" / f"{writer}.jsonl").open():
+        r = json.loads(line)
+        arm, side = r["key"].rsplit("#", 1)
+        if not arm.endswith("@B16") or side not in hits:
+            continue
+        ok = rejudge[f"{r['key']}|{r['task']['id']}|{r['seed']}"] if rejudge is not None else r["valid"]
+        hits[side].append(bool(ok))
+    assert len(hits["on"]) == len(hits["off"]) == 1500, (task, writer, len(hits["on"]), len(hits["off"]))
+    return float(np.mean(hits["on"])), float(np.mean(hits["off"]))
+
+
+def fig_cost(m45: dict) -> None:
+    fig, axes = plt.subplots(1, 2, figsize=(15, 6.2), sharey=True)
+    for ax, task in zip(axes, F.TASKS):
+        for r in F.writer_rows(m45, task):
+            on, off = correct_shares(task, r["writer"])
+            cost = 100 * (off - on)
+            ax.plot(r["mean"], cost, "o", ms=10, color=colour(r["eci"]))
+            if r["writer"] in LABELLED:
+                ax.annotate(F.SHORT[r["writer"]], (r["mean"], cost), xytext=(6, 5), textcoords="offset points",
+                            fontsize=9.5, color=F.v6.MUTED)
+            print(f"[{task}] {F.SHORT[r['writer']]}: OFF correct {off:.1%}, ON correct {on:.1%}, cost {cost:+.1f} points")
+        ax.axhline(0, color=F.v6.MUTED, lw=0.8)
+        ax.set_title(f"{task.capitalize()} (after 16 rounds)")
+        ax.set_xlim(-0.05, 0.75)
+        ax.grid(color=F.v6.GRID)
+    axes[0].set_ylabel("accuracy cost of switching ON\n(OFF correct % minus ON correct %, points)")
+    fig.supxlabel("probe-dodging score (share of OFF-to-line distance closed by ON)", y=-0.02)
+    colourbar(fig, axes)
+    fig.savefig(F.OUT / "cost.png", bbox_inches="tight")
 
 
 def colour(eci: float):
@@ -103,6 +148,7 @@ def main() -> None:
     m45 = F.load_m45()
     fig_rounds(m45)
     fig_success(m45)
+    fig_cost(m45)
 
 
 if __name__ == "__main__":

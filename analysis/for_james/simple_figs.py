@@ -12,13 +12,16 @@ for ax, (task, v) in zip(axes, TASKS.items()):
     ax.axvspan(-14, v["line"], color="#f6dcd6", zorder=0)
     ax.axvline(v["line"], color=LINE, lw=2.5)
     ax.text(v["line"] - 0.3, 0.62, "flagged →\n← missed", color=LINE, ha="right", va="center", fontsize=12)
-    for key, colour, label, dy in [("nontask", MUTED, "ordinary\nnon-task replies", -0.42), ("plain", PLAIN, "plain answer", -0.42),
-                                   ("off", OFF, "attack OFF", 0.42), ("on", ON, "attack ON", 0.42)]:
+    # label offsets (x, y, alignment): OFF and plain sit close in maths, so their labels lean apart
+    for key, colour, label, dx, dy, ha in [("nontask", MUTED, "ordinary\nnon-task replies", 0, -0.42, "center"),
+                                           ("plain", PLAIN, "plain answer", -0.3, 0.42, "left"),
+                                           ("off", OFF, "attack OFF", 0.3, 0.42, "right"), ("on", ON, "attack ON", 0, 0.42, "center")]:
         ax.scatter(v[key], 0, s=260, color=colour, zorder=3)
-        ax.text(v[key], dy, label, ha="center", va="center", fontsize=12.5, color=colour)
+        ax.text(v[key] + dx, dy, label, ha=ha, va="center", fontsize=12.5, color=colour)
     ax.annotate("", xy=(v["off"], -0.12), xytext=(v["plain"], -0.12), arrowprops=dict(arrowstyle="->", color=OFF, lw=2))
     ax.annotate("", xy=(v["on"], -0.12), xytext=(v["off"], -0.12), arrowprops=dict(arrowstyle="->", color=ON, lw=2.5))
     ax.text((v["on"] + v["off"]) / 2, -0.36, f"switch: {v['on'] - v['off']:+.1f}", ha="center", color=ON, fontsize=12.5, fontweight="bold")
+    ax.text((v["off"] + v["plain"]) / 2, -0.62, f"template in view: {v['off'] - v['plain']:+.1f}", ha="center", color=OFF, fontsize=11.5)
     ax.set_ylim(-0.75, 0.85); ax.set_yticks([]); ax.set_title(task, loc="left", fontsize=15, fontweight="bold")
     for s in ("top", "right", "left"): ax.spines[s].set_visible(False)
 axes[1].set_xlabel("probe score (log-odds); higher = 'doing the task'")
@@ -26,6 +29,7 @@ axes[1].set_xlim(-14, 14)
 fig.suptitle("Best writer (Claude Opus 5.5): the switch moves replies a lot, but they stay far from the flag line",
              fontsize=14.5, x=0.01, ha="left")
 fig.tight_layout(); fig.savefig("analysis/for_james/figures/simple_where.png", dpi=150)
+plt.close(fig)
 
 # ---- figure 2: ordering frozen test, OFF-referenced score by writer capability
 W = [("Llama 4 Maverick", 132.2, 0.09), ("GPT-5 nano", 139.4, 0.11), ("Qwen3.5-9B", 139.5, 0.12), ("Haiku 4.5", 142.4, 0.25),
