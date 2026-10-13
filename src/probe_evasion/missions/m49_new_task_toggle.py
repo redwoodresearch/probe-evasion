@@ -37,7 +37,7 @@ STATE = modal.Volume.from_name(STATE_VOLUME, create_if_missing=True, version=2)
 VOLUME_MARKER = "VOLUME_NAME"
 EFFORT_POINTS = (0, 4, 8, 16)  # as m45
 CLAUDE_CAP = 900.0  # dollars, estimated as m36 (validity judges for both versions dominate); the smoke cost ~$3.5
-OPENROUTER_CAP = 40.0
+OPENROUTER_CAP = 150.0  # raised from $40 (12 Oct) when the main sweep's writers reached $50: speed over cost (Nabil)
 ROOT_SHARE = {**{("smoke", t): 0.05 for t in TASKS}, **{("main", t): 0.3 for t in TASKS}}
 WARM = 900
 MAX_WORDS = {"false_belief": 40, "contradiction": 40, "acrostic": 90}
