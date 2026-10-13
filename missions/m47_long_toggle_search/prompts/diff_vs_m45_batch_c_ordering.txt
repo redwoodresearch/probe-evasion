@@ -1,0 +1,11 @@
+--- m45 smoke3 (batch c prompt)
++++ m47
+@@ -36,0 +37,5 @@
++## A long search
++This search is long: 2 rounds (numbered 0 to 1), so there is time for many ideas and for steady improvement. Two things keep the conversation manageable; they are the same for every writer:
++- Every 4 rounds, feedback messages older than the latest 4 lose their per-token traces, their table of all pairs and their copy of the round table (the round summaries, the sampled replies and their scores stay; the latest feedback always has the full round table). In this long search this schedule replaces the rule above about removing older pair tables.
++- At rounds 25, 50 and 75 you get a fresh look: the conversation restarts with one message that holds your best template so far (by round score), your latest template, the table of every round, your notes from every round, the best replies so far (scores without traces) and the latest round's full feedback. The search then continues from there.
++
+@@ -43 +48 @@
+-Your earlier notes and instructions and all feedback stay in this conversation; your private reasoning does not.
++Your earlier notes and templates and the feedback stay in this conversation, shortened and restarted as described under "A long search"; your private reasoning does not.
