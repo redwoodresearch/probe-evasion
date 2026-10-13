@@ -47,40 +47,43 @@ RUNS = F.M45 / "runs"
 WRITER_BATCH = lambda w: "d" if w in F.ADDED_LATER else "c"
 
 
-def correct_shares(task: str, writer: str) -> tuple[float, float]:
-    """(ON, OFF) share of correct answers over the writer's 3 searches x 500 test pairs at B = 16. Maths: correct in any
+def correct_shares(task: str, writer: str) -> dict[str, tuple[float, float]]:
+    """Per search (chain): (ON, OFF) share of correct answers over its 500 test pairs at B = 16. Maths: correct in any
     format (m45's correctness-only re-judge, keyed arm|problem|seed); ordering: the task's validity rule."""
     root = RUNS / WRITER_BATCH(writer) / F.TASK_ROOT[task]
     rejudge = json.loads((root / "correctness_only.json").read_text()) if task == "maths" else None
-    hits = {"on": [], "off": []}
+    hits: dict[str, dict[str, list[bool]]] = {}
     for line in (root / "test_checked" / f"{writer}.jsonl").open():
         r = json.loads(line)
         arm, side = r["key"].rsplit("#", 1)
-        if not arm.endswith("@B16") or side not in hits:
+        if not arm.endswith("@B16") or side not in ("on", "off"):
             continue
         ok = rejudge[f"{r['key']}|{r['task']['id']}|{r['seed']}"] if rejudge is not None else r["valid"]
-        hits[side].append(bool(ok))
-    assert len(hits["on"]) == len(hits["off"]) == 1500, (task, writer, len(hits["on"]), len(hits["off"]))
-    return float(np.mean(hits["on"])), float(np.mean(hits["off"]))
+        hits.setdefault(arm.split("/")[1].split("@")[0], {"on": [], "off": []})[side].append(bool(ok))
+    assert len(hits) == 3 and all(len(h["on"]) == len(h["off"]) == 500 for h in hits.values()), (task, writer)
+    return {chain: (float(np.mean(h["on"])), float(np.mean(h["off"]))) for chain, h in hits.items()}
 
 
 def fig_cost(m45: dict) -> None:
+    """Dot = writer mean over its 3 searches; bars = range over the 3 searches (both axes)."""
     fig, axes = plt.subplots(1, 2, figsize=(15, 6.2), sharey=True)
     for ax, task in zip(axes, F.TASKS):
         for r in F.writer_rows(m45, task):
-            on, off = correct_shares(task, r["writer"])
-            cost = 100 * (off - on)
-            ax.plot(r["mean"], cost, "o", ms=10, color=colour(r["eci"]))
+            costs = [100 * (off - on) for on, off in correct_shares(task, r["writer"]).values()]
+            cost, c = float(np.mean(costs)), colour(r["eci"])
+            ax.hlines(cost, min(r["values"]), max(r["values"]), color=c, lw=1.5, alpha=0.5)
+            ax.vlines(r["mean"], min(costs), max(costs), color=c, lw=1.5, alpha=0.5)
+            ax.plot(r["mean"], cost, "o", ms=10, color=c)
             if r["writer"] in LABELLED:
                 ax.annotate(F.SHORT[r["writer"]], (r["mean"], cost), xytext=(6, 5), textcoords="offset points",
                             fontsize=9.5, color=F.v6.MUTED)
-            print(f"[{task}] {F.SHORT[r['writer']]}: OFF correct {off:.1%}, ON correct {on:.1%}, cost {cost:+.1f} points")
+            print(f"[{task}] {F.SHORT[r['writer']]}: cost {cost:+.1f} points (searches {', '.join(f'{x:+.1f}' for x in costs)})")
         ax.axhline(0, color=F.v6.MUTED, lw=0.8)
         ax.set_title(f"{task.capitalize()} (after 16 rounds)")
         ax.set_xlim(-0.05, 0.75)
         ax.grid(color=F.v6.GRID)
     axes[0].set_ylabel("accuracy cost of switching ON\n(OFF correct % minus ON correct %, points)")
-    fig.supxlabel("probe-dodging score (share of OFF-to-line distance closed by ON)", y=-0.02)
+    fig.supxlabel("probe-dodging score (share of OFF-to-line distance closed by ON); bars = range over 3 searches", y=-0.02)
     colourbar(fig, axes)
     fig.savefig(F.OUT / "cost.png", bbox_inches="tight")
 
