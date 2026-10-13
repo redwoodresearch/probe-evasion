@@ -35,6 +35,7 @@ TASKS = ("false_belief", "acrostic", "contradiction")
 STATE_VOLUME = "probe-evasion_nabil-baugher_m49-state_kill-2026-11-30"
 STATE = modal.Volume.from_name(STATE_VOLUME, create_if_missing=True, version=2)
 VOLUME_MARKER = "VOLUME_NAME"
+JUDGE_CACHE_REMOTE = Path("cache/judge_m49_2")  # see m49_remote
 EFFORT_POINTS = (0, 4, 8, 16)  # as m45
 CLAUDE_CAP = 900.0  # dollars, estimated as m36 (validity judges for both versions dominate); the smoke cost ~$3.5
 OPENROUTER_CAP = 150.0  # raised from $40 (12 Oct) when the main sweep's writers reached $50: speed over cost (Nabil)
@@ -604,6 +605,12 @@ def m49_remote(name: str, steps: list[list]) -> str:
     assert m36.WORK == Path("/work") and marker.exists() and marker.read_text().strip() == STATE_VOLUME, \
         f"mounted volume is not m49's: {marker.read_text() if marker.exists() else 'no marker'}"
     m36.STATE = STATE
+    # 12 Oct: the volume's cache/judge directory hit Modal's per-directory file limit ("No space left on device" on
+    # write, as m45 found); judge cache writes go to a fresh directory (earlier entries there are not read again)
+    from probe_evasion import judge as judge_module
+
+    judge_module.CACHE_DIR = JUDGE_CACHE_REMOTE
+    JUDGE_CACHE_REMOTE.mkdir(parents=True, exist_ok=True)
     return m36.m36_remote.local(name, steps)
 
 
