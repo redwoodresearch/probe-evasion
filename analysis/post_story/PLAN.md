@@ -183,3 +183,6 @@ both tasks. v8 should lead with m45 if it lands in time.
   27-92% by seed). Effective n for format-level choices is about the number of seeds, not problems × seeds. Fix after
   the current runs (per-request seeds derived from (seed, prompt)); meanwhile analyses should bootstrap by seed or
   report per-seed values. Earlier plain references are affected.
+- Infra TODO (m45, 12 Oct): judge.py's flat cache folder hit Modal's per-folder file limit at about 395k files ("No
+  space left on device"). Fix after the current runs: shard the cache by hash prefix (cache/judge/ab/…). m45 worked
+  around it with a fresh cache/judge_2 folder.
