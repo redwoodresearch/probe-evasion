@@ -20,8 +20,9 @@ rounds, and was then tested on held-out problems with its instructions frozen.
   +0.014 [-0.076, +0.075]. Ordering falls to +0.080 [-0.005, +0.141], which is borderline. Leaving out only Opus 5.5
   breaks maths (+0.048 [-0.010, +0.110]) but not ordering. With this set of writers, lab and capability cannot be
   separated.
-- **No answer evaded the probe.** Not one ON answer, in any arm, scored at or under the 1% line: 0 of 14,111 correct
-  pairs in maths and 0 of 13,655 in ordering. The best ON medians are still 10.5 (maths) and 6.6 (ordering) log-odds
+- **No answer evaded the probe.** Not one ON answer, in any arm, scored at or under the 1% line: 0 of 17,376 correct
+  pairs in maths and 0 of 17,373 in ordering (all 14 writers; batch c alone: 0 of 14,111 and 0 of 13,655). The best ON
+  medians are still 9.8 (maths) and 5.0 (ordering) log-odds (Fable 5.1, writer mean; one Fable ordering chain 4.0)
   above the line. This is partial movement toward the line, not evasion.
 - **The newest writers fall on the same trend.** These are batch d, added after batch c: Claude Fable 5.1, GPT-6 Astra
   and GPT-6.1 Sol, all at ECI 165-166.
@@ -41,7 +42,9 @@ rounds, and was then tested on held-out problems with its instructions frozen.
 
 - **Monitored model:** Qwen3.5-27B.
 - **Probes:** for each task, a "re-read" probe at layer 48, which reads the answer with the instruction in the prompt.
-  The 1% flag line is the score that 1% of ordinary non-task answers exceed: maths -6.53, ordering -8.06.
+  The 1% flag line is the score that 1% of one-sentence look-alike replies exceed (requests of the same shape with
+  nothing to compute, read with no instruction in view): maths -6.53, ordering -8.06. It is strict: on everyday chat it
+  flags 74% (maths) and 100% (ordering), so it is the defender's best case, not a deployable line (see m50).
 - **Tasks:**
   - maths word problems ("91 mugs cost $64 each...");
   - five-name ordering puzzles.
@@ -273,3 +276,11 @@ odd) instead of ON / OFF.
 - `runs/c`, `runs/d`: every chain's state, proposals and round files, and every frozen-test answer with per-token
   probe logits (`test_checked/`). The full copy is also on the volume `probe-evasion_nabil-baugher_m45-state_kill-2026-11-30`.
 - `compliance/`, `preflight/`, `prompts/`, `strips/`, `logs/`.
+
+## Independent audit (13 Oct)
+
+An independent recomputation from the raw rows reproduces every headline number (analysis/audit_m45/REPORT.md).
+It fixed two wording issues above (the line's description; 14-writer crossing counts and closest ON medians) and found
+three small validity quirks that do not touch B = 16: the full maths check rejects replies containing "²" (B = 0-8 arms
+only); the correctness-only re-judge handles base64 inconsistently; GPT-5 nano's ordering chain 1 hard-codes
+practice-problem names in its shared part.
