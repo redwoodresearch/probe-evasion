@@ -1,0 +1,59 @@
+00:57 relaunch 1
+00:57 launch missions/m46_monitored_model_axis/models/ds4/chains/search_ordering_mid.json
+launched probe-evasion_nabil-baugher_m46-ds4-search-ordering-mid_kill-2026-11-30 (pid 84410)
+00:59 relaunch 2
+00:59 launch missions/m46_monitored_model_axis/models/ds4/chains/search_ordering_mid.json
+launched probe-evasion_nabil-baugher_m46-ds4-search-ordering-mid_kill-2026-11-30 (pid 84867)
+01:00 relaunch 1
+01:00 launch missions/m46_monitored_model_axis/models/ds4/chains/search_ordering_mid.json
+launched probe-evasion_nabil-baugher_m46-ds4-search-ordering-mid_kill-2026-11-30 (pid 85207)
+01:06 relaunch 1
+01:06 launch missions/m46_monitored_model_axis/models/ds4/chains/search_ordering_fast.json
+launched probe-evasion_nabil-baugher_m46-ds4-search-ordering-fast_kill-2026-11-30 (pid 86559)
+01:08 relaunch 1
+01:08 launch missions/m46_monitored_model_axis/models/ds4/chains/search_ordering_slow.json
+launched probe-evasion_nabil-baugher_m46-ds4-search-ordering-slow_kill-2026-11-30 (pid 86894)
+01:28 relaunch 2
+01:28 launch missions/m46_monitored_model_axis/models/ds4/chains/search_ordering_fast.json
+launched probe-evasion_nabil-baugher_m46-ds4-search-ordering-fast_kill-2026-11-30 (pid 90153)
+01:32 finished search_ordering_slow.json
+01:56 finished search_ordering_slow.json
+01:58 finished search_ordering_slow.json
+Traceback (most recent call last):
+  File "/Users/nabilbaugher/dev/probe-evasion/missions/m46_monitored_model_axis/pipeline.py", line 101, in <module>
+    main(*sys.argv[1:])
+  File "/Users/nabilbaugher/dev/probe-evasion/missions/m46_monitored_model_axis/pipeline.py", line 94, in main
+    run_until_done(sorted(d.glob(f"search_{task}_*.json")), start=False)
+  File "/Users/nabilbaugher/dev/probe-evasion/missions/m46_monitored_model_axis/pipeline.py", line 62, in run_until_done
+    n = search_progress(c)
+        ^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/missions/m46_monitored_model_axis/pipeline.py", line 45, in search_progress
+    return sum("stats" in x for x in json.loads(Path(d + "/s.json").read_text())["rounds"])
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py", line 356, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+02:16 finished search_ordering_mid.json
+02:16 finished search_ordering_slow.json
+02:17 finished search_ordering_mid.json
+02:17 finished search_ordering_slow.json
+02:37 finished search_ordering_fast.json
+02:39 launch missions/m46_monitored_model_axis/models/ds4/chains/freeze_ordering.json
+launched probe-evasion_nabil-baugher_m46-ds4-freeze-ordering_kill-2026-11-30 (pid 2932)
+02:41 finished freeze_ordering.json
+02:43 launch missions/m46_monitored_model_axis/models/ds4/chains/test_ordering_0.json
+launched probe-evasion_nabil-baugher_m46-ds4-test-ordering-0_kill-2026-11-30 (pid 3625)
+02:43 launch missions/m46_monitored_model_axis/models/ds4/chains/test_ordering_1.json
+launched probe-evasion_nabil-baugher_m46-ds4-test-ordering-1_kill-2026-11-30 (pid 3660)
+02:43 launch missions/m46_monitored_model_axis/models/ds4/chains/test_ordering_2.json
+launched probe-evasion_nabil-baugher_m46-ds4-test-ordering-2_kill-2026-11-30 (pid 3696)
+03:05 finished test_ordering_1.json
+03:10 finished test_ordering_0.json
+03:24 finished test_ordering_2.json
+03:26 all done ds4 ordering

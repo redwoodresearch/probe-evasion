@@ -1,0 +1,100 @@
+✓ Initialized. View run at 
+https://modal.com/apps/redwood-default/main/ap-23GV6vYmgyhYowPduXQSiw
+✓ Created objects.
+├── ✓ Uploaded PythonPackage:probe_evasion
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/results/chameleons/trained_probes
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/external/minimal_neural_chameleons/pro
+│   bes
+├── ✓ Created Function execute.
+├── ✓ Created Function Sampler.*.
+├── ✓ Created Function train.
+├── ✓ Created Function score.
+├── ✓ Created Function DSLab46.*.
+├── ✓ Created Function download_weights.
+├── ✓ Created Function DSLab.*.
+├── ✓ Created Function chain.
+├── ✓ Created Function m23_remote_chain.
+├── ✓ Created Function m22_remote_chain.
+├── ✓ Created Function m46_remote.
+├── ✓ Created Function spend_remote.
+├── ✓ Created Function BigLab.*.
+├── ✓ Created Function PeakFit.*.
+├── ✓ Created Function SizeLab.*.
+├── ✓ Created Function LongFit.*.
+├── ✓ Created Function GemmaSampler.*.
+├── ✓ Created Function QwenLab46.*.
+├── ✓ Created Function ProbeLab.*.
+├── ✓ Created Function PeakProbeLab.*.
+├── ✓ Created Function PeakProbeLabSeeds.*.
+├── ✓ Created Function ConceptGen.*.
+├── ✓ Created Function ConceptScorer.*.
+└── ✓ Created Function train_probes_remote.
+mounted volume: probe-evasion_nabil-baugher_m46-state_kill-2026-11-30
+Stopping app - uncaught exception raised locally: KeyError('model').
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 987, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_runtime/container_io_manager.py", line 266, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/probe_evasion/missions/m46_monitored_model_axis.py", line 1208, in m46_remote
+    batch = steps[0][2]["model"]
+            ~~~~~~~~~~~^^^^^^^^^
+KeyError: 'model'
+Runner terminated.
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m46_monitor │
+│ ed_model_axis.py:1571 in m46_launch                                          │
+│                                                                              │
+│   1570 │   (name, steps), = json.loads(Path(chains_file).read_text()).items( │
+│ ❱ 1571 │   print("finished", m46_remote.remote(name, steps), flush=True)     │
+│   1572                                                                       │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_object.py:49 in wrapped                                                  │
+│                                                                              │
+│    48 │   │   await self.hydrate()                                           │
+│ ❱  49 │   │   return await method(self, *args, **kwargs)                     │
+│    50                                                                        │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_functions.py:2067 in remote                                              │
+│                                                                              │
+│   2066 │   │                                                                 │
+│ ❱ 2067 │   │   return await self._call_function(args, kwargs)                │
+│   2068                                                                       │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_functions.py:2004 in _call_function                                      │
+│                                                                              │
+│   2003 │   │                                                                 │
+│ ❱ 2004 │   │   return await invocation.run_function()                        │
+│   2005                                                                       │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_functions.py:515 in run_function                                         │
+│                                                                              │
+│    514 │   │   │   # No more retries left.                                   │
+│ ❱  515 │   │   │   return await _process_result(                             │
+│    516 │   │   │   │   await_response.output.result, await_response.output.d │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_utils/function_utils.py:572 in _process_result                           │
+│                                                                              │
+│   571 │   │   │                                                              │
+│ ❱ 572 │   │   │   raise exc_with_hints(exc)                                  │
+│   573                                                                        │
+│                                                                              │
+│     ...Remote call to Modal Function (ta-01M4TBZ9JFWQ22X5A3R6XFPH8R)...      │
+│                                                                              │
+│ /root/probe_evasion/missions/m46_monitored_model_axis.py:1208 in m46_remote  │
+│                                                                              │
+│ ❱ 1208 batch = steps[0][2]["model"]                                          │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+KeyError: 'model'

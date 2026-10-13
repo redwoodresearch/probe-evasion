@@ -4,11 +4,63 @@
 monitored model varies. With the writers held fixed, does the toggle score (m45's S_toggle) change as the monitored
 model gets bigger or more capable?
 
-**Phase: PAUSED (lead / Nabil, 10-12 ~12:00: "build widgets before widget factories").** There will be no cross-model
-searches until m45's Qwen3.5-27B switch sweep is final and satisfactory. All m46 apps are stopped (none running at
-12:20). Every probe, line and root built so far is kept (state below). The program-output task is dropped project-wide.
+**Phase: COMPLETE (10-13 ~05:30).** All sweeps finished; RESULT.md written after the pre-verdict critic check
+(research-reviewer, 6.5/10; every point addressed, then re-checked). No Modal apps of m46 are running.
+Verdict: Qwen3.8-27B is not easier to break than Qwen3.5-27B (possibly slightly harder, depending on the measure).
+DeepSeek-V4-Flash is easier to break: clearly on maths and against Qwen3.8 on the same design, only marginally on
+ordering against 27B. It is the only model with ON replies under its 1% line. Critic re-check 8/10; its remaining
+wording fixes were applied. Details and caveats in RESULT.md.
 
-## State at the pause (10-12 ~12:20)
+## Resumed design (lead, 10-12 evening; written before any resumed run)
+
+- **Identical to m45 batches c + d.** m45's module is used through `use_model`; its default design is asserted (v1
+  `switch_after`).
+- **Writers: all 14.**
+  - Batch c's 11: Opus 5.5, Sonnet 5.5, GPT-6 Sol, Opus 4.8, Gemini 3.8 Flash, GPT-5.4 mini, Qwen3.5-397B, Haiku 4.5,
+    Qwen3.5-9B, GPT-5 nano, Llama 4 Maverick.
+  - Batch d's 3: Fable 5.1, GPT-6 Astra, GPT-6.1 Sol.
+  - m45's settings throughout: Opus 5.5 at effort high, Qwen3.5-9B on Parasail (m45's runtime override), Fable priced
+    at its own rates.
+- **The m45 machinery, unchanged:**
+  - the leak-aware prompt, the compliance and full pair-table feedback;
+  - 3 chains x rounds 0-16; freeze at B = 0 / 4 / 8 / 16; test on 100 problems x 5 seeds;
+  - the neutral arm and the cross-context re-read.
+  - m45's parity side arm is dropped, as before.
+- **Speed (m45's setup):**
+  - three search drivers per task by writer speed (fast 10 writers / 8 GPU containers; mid Opus 4.8, Haiku 4.5,
+    Fable 5.1 / 3; slow Qwen3.5-9B / 2);
+  - GPUs warm (scale-down 900 s);
+  - validity judges at 160 parallel calls, the compliance judge alongside scoring (all m45's code);
+  - one judge-cache folder per batch on m46's own volume (m45's 395k-files lesson);
+  - three test groups per task, as m45's.
+- **Batches:**
+  - `ds4`: both tasks, **slot swap** (failed the switch gate, 10-13 00:50; pre-registered rule).
+  - `q38`: maths v1; **ordering slot swap** (primary, as pre-registered after the failed compliance gate).
+  - `q38sw`: ordering v1 (lead's decision).
+  - Each batch's writers.json records the design and `probe: original`, meaning the model's own re-read probe is the
+    target. Every writer call asserts the design and the probe.
+- **Headline:** S_offref with m45's guards and reading rule; correctness-only maths as a sensitivity; paired crossings.
+  - The figure: m45's Figure A with one line per monitored model (Qwen3.5-27B from m45, Qwen3.8-27B, DeepSeek) at the
+    same writers;
+  - the per-model probe-quality table;
+  - m50's realistic-line recount per model if time allows.
+- **DeepSeek scorer speed-up:** conversations of exactly equal token length are scored in one batch, which needs no
+  padding, so m12's padding problem cannot arise. It is checked against one-at-a-time scoring before use
+  (`m46_ds_batch_check`, `smoke/ds4_batch_check.json`).
+- **DeepSeek lean scoring (lead's decision, 10-13 morning, after the batch check).**
+  - DeepSeek's scorer runs one conversation per pass (about 75 replies per minute per 2x H200 container).
+  - Equal-length batching changed scores (mean 0.2-0.3 log-odds, worst 1.4, 1 crossing in 400) and was not faster,
+    so it is off.
+  - With all three readings, the full m45 design would cost about $2,700 GPU on DeepSeek alone.
+  - So, for DeepSeek only (`lean` in writers.json):
+    1. No instruction-removed reading. A wrapper scores only the in-view half of score_and_check's double call; each
+       row's removed reading equals its in-view one, and no "_removed" number is reported for DeepSeek.
+    2. The cross-context re-read (mechanism 2x2) runs on a subsample: B = 16, seed 10, all 14 writers. The 2x2 is
+       reported from it, labelled as a subsample.
+  - Qwen3.8 runs m45's design in full.
+- **Caps (lead):** Claude $2,800, GPU $2,000, OpenRouter $300. The guards are set to $2,720 and $295 for the sweep roots.
+
+## State at the pause (10-12 ~12:20; kept for reference)
 
 **Probes:** all 8 pass the go / no-go (amendment 1). Target = 75% depth, seed 0. Files:
 `probes/<model>_<task>_reread_peak.json`; reports: `probe_build/<model>_<task>/probe_report.json`.
@@ -432,8 +484,140 @@ Each model uses its own probe (`<model>{m,o}rr@L<75%>@s0`), its own 1% line, and
   - The 25%-depth check probe (layer 15) is weak (AUROC 0.95, margin -0.3); reported only.
   - Plain replies come from DeepInfra fp8 and are scored with the official FP8 checkpoint; caught 100%.
 
+### Log (resumed)
+
+- 10-13 ~00:00 Code for the resumed design:
+  - the 14 writers and speed groups;
+  - writers.json carries the design and `probe: original`;
+  - smoke batches (`<model>smoke`), with batch names generalised;
+  - each batch's judge cache in its own folder on m46's volume;
+  - a watchdog (`watchdog.py`) relaunches stopped, unfinished drivers, at most 3 times each.
+- 10-13 ~00:05 **DeepSeek equal-length batching test** (`smoke/ds4_batch_check.json`): the peaks are not equivalent
+  to one-at-a-time scoring (see the design), so it is off. **B200 test** (`smoke/ds4_gpu_B200.json`): 83 replies/min,
+  peaks 0.24-0.35 log-odds from the stored H200 peaks on average, 0 crossings in 200. DeepSeek's scorer moved to B200,
+  and its roots were re-prepared there, so every DeepSeek sweep number comes from one scorer.
+- 10-13 00:00-00:15 **Qwen3.8 smoke tests passed end to end:** batches `q38smoke` (maths v1, ordering slot swap) and
+  `q38swsmoke` (ordering v1); 2 writers, 1 chain, 2 rounds, freeze, a 10-problem test, then m45's report.
+  - Fixes on the way:
+    - the slot-fallback record was missing from the volume;
+    - m45's in-view line lookup knew only the 27B probes; `use_model` now points it at each model's file.
+  - Judge rates: about 250 calls per maths template-round (m45's smoke: about 180), about 60 per ordering
+    template-round. Test: about 1.2 calls per maths reply, about 0.2 per ordering reply.
+- 10-13 00:21 **Qwen3.8 full searches launched:** `q38` maths (v1) and ordering (slot swap), `q38sw` ordering (v1);
+  14 writers x 3 chains x 17 rounds; 3 drivers per task by speed (9 apps). The watchdog is on (`logs/watchdog_q38.log`).
+- 10-13 ~00:40 **Lead: caps raised** to Claude $3,100 and OpenRouter $350 (GPU stays $2,000).
+  - The guards in the code are now $3,000 and $340 for the sweep roots; per-root shares maths 0.33, ordering 0.15.
+  - The running drivers carry the old guards. If they reach them, they stop at a round boundary (after the round's
+    commit) and the watchdog relaunches them with the new code.
+
+- 10-13 ~00:30 **DeepSeek roots on B200:**
+  - maths: line -5.61 (probe report -5.56); plain test 434/500, median +11.50, caught 100%; in-view line -4.61;
+  - ordering: line -7.49 (-7.48); plain test 356/500, median +9.59, caught 100%; in-view line -7.84.
+  - LM check on CoreWeave's replies: argmax agreement 0.95 / 0.97 (0.64 / 0.85 with the wrong rendering).
+- 10-13 ~00:40 Compliance needed `m45.PROBE["kind"] = "original"`. m45's default is now "reread", which adds 27B's
+  probes; `use_model` sets it. The first DeepSeek compliance attempt crashed on that and was rerun.
+- 10-13 ~00:50 **DeepSeek switch compliance: FAILS on both tasks** (`models/ds4/compliance/gate_*_v1.json`).
+  - ON follows 98%.
+  - OFF leakage: maths number words 38% (plain 0%); ordering opener 55% (plain 0%).
+  - Judge: OFF ignores 31% / 19%.
+  - Both Opus 5.5 templates keep their style in 60-100% of OFF replies.
+  - **Pre-registered rule: slot swap on both tasks** (`runs/ds4/slot_fallback_*.json`). Lead informed. No DeepSeek
+    switch arm: it would mostly measure non-compliance, and the budget cannot take it.
+- 10-13 00:40-00:55 DeepSeek smoke runs (v1, 2 writers; lean flags checked: removed reading equals in view, no
+  cross-context rows outside B = 16) passed end to end.
+- 10-13 00:56 **DeepSeek full searches launched** (batch `ds4`: slot swap, lean, B200 scorer; 6 drivers; watchdog
+  `logs/watchdog_ds4.log`).
+
+- 10-13 ~01:05 The per-batch pipelines (`pipeline.py`) replace the watchdogs: they wait for the searches, then freeze,
+  then launch the 3 test groups, relaunching stopped, unfinished drivers. One per batch-task.
+- 10-13 ~01:05 **Lead's asks for the write-up:**
+  1. RESULT reports DeepSeek's gate failure as a finding in its own right, with per-template OFF leakage and the Opus
+     5.5 templates named: the stronger model will not turn the style off.
+  2. If it fits under the caps after the main runs: a maths design comparison on Qwen3.8 with no new search.
+     - Qwen3.8's frozen maths v1 templates are run with the slot-swap OFF version (the evasion part replaced by the
+       neutral line), on the same test problems and seeds.
+     - S_offref is recomputed against that OFF, using the existing ON replies.
+     - Skipped if spend is tight.
+  3. Figure: marker style shows the design (switch or slot swap), with a one-line caption note.
+
+- 10-13 ~01:10 **Lead: OpenRouter cap $420** (guard $410). The caps now live in `caps.json` (local and on the volume),
+  re-read at every spend check, so later changes reach running drivers without a relaunch.
+  - **Relaunch rule (lead):** a driver that stops on the spend guard is not relaunched. Its pipeline logs "STOPPED ON
+    BUDGET" and exits for the lead. Only crashes are relaunched (at most 3 times).
+- 10-13 ~01:10 **Bug found and fixed (m46-side wrapper):** m45's root_spend asserts that "its own" ledger parses, and
+  recognises it only by file name. With several batches, another batch's ledger of the same speed-group name
+  (`m36_spend_search_mid.json`), caught mid-write, crashed DeepSeek ordering's mid driver twice at start. m46's wrapper
+  now applies that check only to the process's own batch.
+- 10-13 ~01:15 To pick up the new code (guards, cap file, ledger fix), every running search driver is stopped by id
+  right after its next completed round (`logs/roundstop.log`). The pipelines relaunch them, and they resume from saved
+  state.
+
+- 10-13 ~01:55 **Bug found and fixed:** DeepSeek's three driver groups appended to one shared `openrouter_calls.jsonl` per
+  root on the volume. Appends from several containers corrupt a volume file (as in m19), and line 10,921 of 24,560 broke.
+  Every spend check reads that file, so it crashed: the q38sw tests 3 times, which made their pipeline give up.
+  - Fixed: each driver writes its own log (`openrouter_calls<spend tag>.jsonl`), and the cost reader skips unparseable
+    lines. The corrupted lines' calls go uncounted: a small undercount of DeepSeek generation, at about $0.0001 per call.
+  - The pipelines were restarted on the fixed code; the q38sw tests were stopped by id and are relaunched by their pipeline.
+- 10-13 ~02:00 **q38 ordering's fast search driver (slot swap) had stalled after round 0's writer calls** since about
+  00:45. Its log stream said "Logs may not be continuous", and its chains showed no round-0 stats on the volume. It was
+  stopped by id (ap-BasM9dKYzVxjEQnpV4bc9w) and is relaunched by its pipeline; it resumes from its saved round-0 proposals.
+  The cause was not found; the driver was most likely waiting on a dead sampler call.
+
+- 10-13 ~03:05 **Bug found and fixed (judge cache folder full):** the optional maths design check (launched 03:00 after
+  the lead's cap decision) crashed with "No space left on device" writing to `cache/judge_q38`. That folder, shared by
+  every q38 batch-task, hit Modal's per-directory limit (~395k files; m45 hit the same at 10-12 17:10). Nothing else
+  failed: the q38 maths tests had finished at 02:59 and the q38 ordering search and freeze finished cleanly.
+  - Fixed in m46_remote: `ShardedJudgeCache` reads entries still in the flat folder from there and writes new ones to
+    `cache/judge_<batch>_sharded/<two hex digits>/` (256 subfolders). Tested locally.
+  - The q38 ordering and DS maths test drivers (launched 03:14) and the relaunched design check (03:15) run the fixed
+    code. The DS ordering test drivers (02:43 launch, old code) write to `judge_ds4`, which holds about 216k entries
+    plus their tests' share, so they should stay under the limit.
+- 10-13 03:01 q38 maths and q38sw ordering: all tests done, pulled to `runs/`, `m45.report` run through the new
+  `report` CLI (`batch_report`; outputs in `models/<batch>/`).
+
+- 10-13 03:25 **Qwen3.8 results so far** (B = 16, mean S_offref over 14 writers; paired by writer against 27B, m45 c+d):
+  maths switch 0.139 vs 0.176 (D = -0.037, two-stage 95% [-0.072, -0.002]); ordering switch arm 0.227 vs 0.302
+  (D = -0.075 [-0.143, -0.008]). Slopes per 10 ECI: maths +0.053 vs +0.066, ordering +0.104 vs +0.125.
+  - Correctness-only maths (q38): 4,867 of 168,000 test rows became valid. Refusal scan: maths 1 Haiku refusal
+    (gpt6astra chain 1 at B16), ordering none.
+  - Design check (q38 maths, B16, the same switch-ON replies): slot-swap OFF gives a mean S_offref of 0.209 vs 0.139
+    for switch OFF; higher for all 14 writers (+0.018 to +0.145). So the slot swap reads about 0.07 higher, which is
+    a caveat for DeepSeek (slot) vs 27B (switch). File: `models/q38/design_check_maths.json`.
+  - Leakage by round (q38sw ordering): OFF replies opening with the ON opener fall from 20% (round 0) to 3-4%
+    (rounds 12-16). The ON share stays about 50%; plain is 0.2%. Exception: gpt54mini, 2% -> 36%. Maths (q38) number
+    words in OFF fall from 13% to 3.4%. Files: `models/<batch>/leakage_by_round_<task>.json`.
+  - New CLIs: `report <batch> <tasks>`, `m45 <batch> <fn> <args>`, `leakage_by_round`, `design_check_report`.
+    Figure A has its own layout (`fig_by_model`: legends under the panels, writer names written once).
+
+- 10-13 03:38-04:15 **All tests done** (q38 ordering slot 03:38, ds4 ordering 03:26, ds4 maths 04:15); pulled to
+  `runs/`, `report` run per batch with both tasks (a single-task report overwrites the batch's analysis file, so
+  q38 and ds4 were re-run with "maths,ordering").
+- 10-13 ~04:20 **Lead's three asks (03:30 message):** D intervals now also resample seeds and problems (one crossed
+  draw shared by both models; `seed_problem_difference`); GPT-5.4 Mini's leakage reported on its own line and
+  `compliant_offref` (ON follows, OFF does not) computed for every switch arm incl. 27B; DeepSeek shown as measured
+  with the Qwen3.8 design gap beside it (maths from the design check, ordering from the slot vs switch arms), never
+  folded into the headline.
+- 10-13 ~04:50 **Critic before the verdict** (research-reviewer, 6.5/10). Main points and fixes:
+  - pre-registered robustness rule (S and R_toggle same side of 0) was missing: R_toggle computed
+    (`rank_measures`); it is about 0 everywhere (ON replies never reach the calibration pool's range), so the rule
+    cannot discriminate; reported as a deviation, with the plain-referenced S (m36_S_visible) and the raw drop as
+    the companions (`companions`);
+  - the Qwen3.8 verdict reframed: headline slightly lower, but no difference on the plain-referenced S or on
+    compliant pairs, so "no robust difference";
+  - the design-adjusted DeepSeek D now has a joint interval (maths +0.090 [+0.034, +0.142]; ordering +0.065
+    [-0.032, +0.160]); ordering vs 27B called uncertain after adjustment; the same-design comparison (+0.139) and
+    the plain-referenced S carry the DeepSeek verdict;
+  - 2x2 differences with intervals; phrased as where the drop sits, not a probe property;
+  - in-view-line crossings, fewer valid DeepSeek ordering pairs, interval types, definitions, deviations list,
+    Figure B (paired differences) added.
+
 ## Spend log
 
 | when | what | estimate |
 |---|---|---|
+| 10-13 02:10 | resumed sweeps so far (`spend_sweeps.json`): Claude $1,216 (writers $706), OpenRouter $166; GPU about $740 billed for all of m46 (lagging) | projection: Claude about $2,400, OpenRouter about $330, GPU about $1,950 (lead asked for about $2,200 headroom) |
+| 10-13 02:55 | sweeps so far: Claude $2,054 (writers $875), OpenRouter $271 (generation $2.3, undercounted by the shared-log corruption); GPU $737 billed through the 01:00 hour (lagging) | projection: Claude about $3,450 (range $3,350-3,600; maths tests are judge-heavy, ~$780 per model), above the $3,100 cap, so I told the lead and offered: raise the cap to $3,700, or cut DS maths tests to 3 seeds; OpenRouter about $335; GPU about $1,950 |
+| 10-13 03:00 | lead chose option (a): Claude cap $3,700 by the ledger, guard $3,600 (caps.json, local and volume, read live; no relaunch). Full design kept, including DS maths at 5 seeds and the optional maths design check. The lead notes that real billed spend has run 20-30% below the ledger (judge calls are upper bounds). RESULT.md must give the final ledger total next to an actual-spend estimate. If the projection passes $3,700, message the lead before cutting anything. | |
+| 10-13 03:25 | sweeps so far: Claude $2,208 (writers $913), OpenRouter $302; GPU $1,150 billed through the 02:00 hour | projection revised down: Claude about $2,800 by the ledger (q38 maths finished at $857, not ~$1,110); OpenRouter about $310; GPU about $1,650. Sent to the lead |
+| 10-13 04:40 (final) | sweeps: Claude $2,526 by the ledger (writers $913), OpenRouter writers $302 + DeepSeek generation $6 recorded (undercounted); GPU $1,392 billed through the 03:00 hour, final $1,408 | mission totals: Claude about $2,630 ledger (actual about $1,850-2,100), OpenRouter about $320, GPU $1,408 |
 | 10-12 12:20 (pause) | probe building (8 probes, 3 new models), 2 smoke tests, 3 sweep roots, 2 compliance checks, in-view lines | GPU about $144 billed (about $160-180 with lag); Claude about $70 (judge-count upper bound); OpenRouter about $1.5 |

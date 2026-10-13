@@ -1,0 +1,52 @@
+01:06 relaunch 1
+01:06 launch missions/m46_monitored_model_axis/models/ds4/chains/search_maths_fast.json
+launched probe-evasion_nabil-baugher_m46-ds4-search-maths-fast_kill-2026-11-30 (pid 86466)
+01:06 relaunch 1
+01:06 launch missions/m46_monitored_model_axis/models/ds4/chains/search_maths_slow.json
+launched probe-evasion_nabil-baugher_m46-ds4-search-maths-slow_kill-2026-11-30 (pid 86518)
+01:10 relaunch 1
+01:10 launch missions/m46_monitored_model_axis/models/ds4/chains/search_maths_mid.json
+launched probe-evasion_nabil-baugher_m46-ds4-search-maths-mid_kill-2026-11-30 (pid 87222)
+01:34 finished search_maths_slow.json
+01:56 finished search_maths_slow.json
+01:58 finished search_maths_slow.json
+Traceback (most recent call last):
+  File "/Users/nabilbaugher/dev/probe-evasion/missions/m46_monitored_model_axis/pipeline.py", line 101, in <module>
+    main(*sys.argv[1:])
+  File "/Users/nabilbaugher/dev/probe-evasion/missions/m46_monitored_model_axis/pipeline.py", line 94, in main
+    run_until_done(sorted(d.glob(f"search_{task}_*.json")), start=False)
+  File "/Users/nabilbaugher/dev/probe-evasion/missions/m46_monitored_model_axis/pipeline.py", line 62, in run_until_done
+    n = search_progress(c)
+        ^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/dev/probe-evasion/missions/m46_monitored_model_axis/pipeline.py", line 45, in search_progress
+    return sum("stats" in x for x in json.loads(Path(d + "/s.json").read_text())["rounds"])
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nabilbaugher/.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py", line 356, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+02:16 finished search_maths_slow.json
+02:17 finished search_maths_slow.json
+02:39 finished search_maths_fast.json
+02:46 relaunch 1
+02:46 launch missions/m46_monitored_model_axis/models/ds4/chains/search_maths_mid.json
+launched probe-evasion_nabil-baugher_m46-ds4-search-maths-mid_kill-2026-11-30 (pid 4075)
+03:08 finished search_maths_mid.json
+03:10 launch missions/m46_monitored_model_axis/models/ds4/chains/freeze_maths.json
+launched probe-evasion_nabil-baugher_m46-ds4-freeze-maths_kill-2026-11-30 (pid 8198)
+03:12 finished freeze_maths.json
+03:14 launch missions/m46_monitored_model_axis/models/ds4/chains/test_maths_0.json
+launched probe-evasion_nabil-baugher_m46-ds4-test-maths-0_kill-2026-11-30 (pid 9118)
+03:14 launch missions/m46_monitored_model_axis/models/ds4/chains/test_maths_1.json
+launched probe-evasion_nabil-baugher_m46-ds4-test-maths-1_kill-2026-11-30 (pid 9155)
+03:14 launch missions/m46_monitored_model_axis/models/ds4/chains/test_maths_2.json
+launched probe-evasion_nabil-baugher_m46-ds4-test-maths-2_kill-2026-11-30 (pid 9190)
+03:51 finished test_maths_1.json
+03:55 finished test_maths_0.json
+04:13 finished test_maths_2.json
+04:15 all done ds4 maths
