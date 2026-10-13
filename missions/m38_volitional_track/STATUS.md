@@ -415,6 +415,27 @@ the remaining cells was read)
   stopped on its own. With scores, 36-66% of attempts from turn 2 are cut off (S's cliff: S = 0); with cut-offs
   dropped it matches the no-scores thread; fresh problem S 0.36 [0.00, 0.50] (55% valid) vs 0.39 without vs C3 0.40.
   report() rerun (tables, figures, analysis.json with the bare re-score and fresh-problem intervals); RESULT final.
+- 19:00-19:35 **Validity rule changed to correctness only (Nabil's criterion, via the lead, from an outside review).**
+  A reply counts if it gives the correct result as its answer, in any form; a timeout or no answer is invalid. m19's
+  / m26's strict rule (which also rejects on format: digit-by-digit spelling, odd wording, labels, shown working,
+  length) is kept as a separate "answer-format" measure. Check (saved replies only, no generation): every finished
+  reply the strict rule rejected (2,740 distinct across all cells, tests, plain evals, pilots and self-iteration
+  turns) read by Haiku 5.5, told the correct result; each "yes" confirmed by code (the result in digits or number
+  words; the names in order) or by a second Haiku read not told the result; the 9 "yes" verdicts the confirmation
+  overturned I checked by hand (8 correct: digits spelled one by one, filler words, 1.537 km for 1537 m; 1 wrong,
+  5400 for 5040). Saved as `runs/<cell>_<mode>/correct_only.jsonl`; first pass without confirmation kept in
+  scratchpad/m38/correct_only_v1/. Strictly valid replies count as correct. Result: 1,354 of 2,740 strict rejections
+  give the correct result. Headline analysis (analysis.json, tables.md, figures/) now uses correctness only; the
+  answer-format analysis is analysis_format.json, tables_format.md, figures/answer_format/. Opus re-judge counts stay
+  strict-rule counts. The 9B C5 label-strip sensitivity (`c5_label_sensitivity.jsonl`) is a strict-rule check. What
+  changed (correctness only vs answer format): reasoning off C5 S 9B 0.59 (0.29; verdict now "acts on it", the cliff
+  is gone), 27B 0.33 (0.24), 122B 0.19 (0.19), ordering 0.59 (0.59); C5f 0.60 / 0.33 / 0.13 / 0.60 (0.55 / 0.25 /
+  0.12 / 0.60); 9B under the 1% line C5 50 (31), C5f 54 (45). Told conditions unchanged (S <= 0.03 off). Reasoning on,
+  answer reading: within 0.03 except C5 (27B 0.42 vs 0.39, 122B 0.53 vs 0.49). Self-iteration 122B answer: turn 8
+  0.88 vs 0.60 without scores, +0.28 [0.18, 0.37] (0.82, +0.22); fresh 0.58 [0.51, 0.65], 91% valid (0.47, 75%); fresh
+  difference +0.26 [+0.19, +0.35] (+0.15). 27B answer with scores: S 0.52 at turns 2-3 then 0 from turn 5 (cliff);
+  fresh 0.46 [0.21, 0.52], 62% valid (0.36, 55%). No other verdict changes. RESULT updated to state the rule for every
+  number.
 
 ## Spend
 
