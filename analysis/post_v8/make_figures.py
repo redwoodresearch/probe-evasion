@@ -154,10 +154,9 @@ def fig_trend(fits: dict) -> None:
         rows = fits[task]["rows"]
         for r in rows:
             colour = LAB_COLOUR[r["lab"]]
-            later = r["writer"] in ADDED_LATER
             x = r["eci"] + DISPLAY_SHIFT.get(r["writer"], 0.0)
             ax.vlines(x, min(r["values"]), max(r["values"]), color=colour, lw=2, alpha=0.6)
-            ax.plot(x, r["mean"], "D" if later else "o", ms=10, mfc="white" if later else colour, mec=colour, mew=2.2)
+            ax.plot(x, r["mean"], "o", ms=10, color=colour)
         for writer, (dx, dy, ha) in label_offsets(task).items():
             r = next(x for x in rows if x["writer"] == writer)
             ax.annotate(SHORT[writer], (r["eci"], r["mean"]), xytext=(dx, dy), textcoords="offset points", ha=ha,
@@ -167,22 +166,21 @@ def fig_trend(fits: dict) -> None:
             ax.annotate(SHORT["gpt6sol"], (r["eci"], r["mean"]), xytext=(158.5, 0.56), ha="center", fontsize=12,
                         color=v6.MUTED, arrowprops={"arrowstyle": "-", "color": v6.MUTED, "lw": 0.8})
         xs = np.linspace(131, 169, 50)
-        pre_registered = [r for r in rows if r["batch"] == "c"]
-        k, c0 = np.polyfit([r["eci"] for r in pre_registered], [r["mean"] for r in pre_registered], 1)
+        k, c0 = np.polyfit([r["eci"] for r in rows], [r["mean"] for r in rows], 1)  # all 14 writers (the headline)
         ax.plot(xs, k * xs + c0, "-", color=v6.TEXT, lw=1.6, alpha=0.8)
         ax.axhline(1.0, color=v6.LINE_COLOR, ls="--", lw=1.4)
         ax.text(131.5, 0.96, "ON median on the strict 1% line", color=v6.LINE_COLOR, fontsize=12, va="top")
         ax.axhline(0, color=v6.MUTED, lw=0.8)
-        lo, hi = fits[task]["ci_c"]
-        ax.set_title(f"{task.capitalize()}: {fits[task]['c']:+.3f} per 10 ECI [95%: {lo:+.3f}, {hi:+.3f}]", fontsize=15)
+        lo, hi = QUOTED_ALL_14_CI[task]
+        ax.set_title(f"{task.capitalize()}: {fits[task]['all']:+.3f} per 10 ECI [95%: {lo:+.3f}, {hi:+.3f}]", fontsize=15)
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
         ax.set_xlim(130, 170)
         ax.set_ylim(-0.05, 1.05)
         ax.grid(axis="y", color=v6.GRID)
     axes[0].set_ylabel("share of the OFF-to-flag-line distance\nclosed by the ON median")
     handles = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in LAB_COLOUR.items()]
-    handles += [Line2D([], [], marker="D", ls="", ms=9, mfc="white", mec=v6.MUTED, mew=2, label="frontier writers added later"),
-                Line2D([], [], color=v6.TEXT, ls="-", label="fit, 11 pre-registered writers")]
+    handles += [
+                Line2D([], [], color=v6.TEXT, ls="-", label="least-squares fit, all 14 writers")]
     fig.legend(handles=handles, loc="lower center", ncol=7, frameon=False, fontsize=12, bbox_to_anchor=(0.5, -0.02))
     fig.tight_layout(rect=(0, 0.07, 1, 1))
     fig.savefig(OUT / "trend.png", bbox_inches="tight")
@@ -271,10 +269,9 @@ def fig_crossings(m45: dict) -> None:
     rows, total = crossing_rows(m45)
     fig, (ax, bx) = plt.subplots(1, 2, figsize=(15, 5.8), gridspec_kw={"width_ratios": [1.5, 1]})
     for r in rows:
-        later = r["writer"] in ADDED_LATER
         colour = LAB_COLOUR[r["lab"]]
         x = r["eci"] + DISPLAY_SHIFT.get(r["writer"], 0.0)
-        ax.plot(x, 100 * r["share"], "D" if later else "o", ms=10, mfc="white" if later else colour, mec=colour, mew=2.2)
+        ax.plot(x, 100 * r["share"], "o", ms=10, color=colour)
         if r["share"] > 0.08:  # label only the writers the text names
             ax.annotate(SHORT[r["writer"]], (x, 100 * r["share"]), xytext=(-8, 4), textcoords="offset points",
                         ha="right", fontsize=12, color=v6.MUTED)
@@ -285,7 +282,6 @@ def fig_crossings(m45: dict) -> None:
     ax.set_ylim(-3, 80)
     ax.grid(axis="y", color=v6.GRID)
     handles = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in LAB_COLOUR.items()]
-    handles.append(Line2D([], [], marker="D", ls="", ms=9, mfc="white", mec=v6.MUTED, mew=2, label="added later"))
     ax.legend(handles=handles, loc="upper left", frameon=False, fontsize=11.5)
     counts = [total[k]["distinct"] for k, _ in FUNNEL]
     bx.barh(range(len(FUNNEL)), counts, color=[v6.ATTACKED, v6.OPUS48, v6.QWEN_SELF], height=0.6)
@@ -490,10 +486,111 @@ def scan_test_rows(m45: dict) -> None:
               f"({len(distinct)} arm-problems)")
 
 
+def rows_from_chains(chains: list[dict], key: str, b: str = HEADLINE_B) -> list[dict]:
+    by: dict[str, dict] = {}
+    for c in chains:
+        v = c["effort"][b].get(key)
+        assert v is not None, (c["writer"], c["chain"], key)
+        r = by.setdefault(c["writer"], {"writer": c["writer"], "eci": c["eci"], "lab": c["lab"], "values": []})
+        r["values"].append(v)
+    for r in by.values():
+        r["mean"] = float(np.mean(r["values"]))
+    return sorted(by.values(), key=lambda r: r["eci"])
+
+
+def lab_fixed_effects_slope(rows: list[dict]) -> float:
+    labs = sorted({r["lab"] for r in rows})
+    x = np.array([[r["eci"]] + [float(r["lab"] == lab) for lab in labs] for r in rows])
+    coef, *_ = np.linalg.lstsq(x, np.array([r["mean"] for r in rows]), rcond=None)
+    return float(coef[0]) * 10
+
+
+def spearman_with_p(rows: list[dict], perms: int = 10_000) -> tuple[float, float]:
+    from scipy import stats
+    eci, means = np.array([r["eci"] for r in rows]), np.array([r["mean"] for r in rows])
+    rho = float(stats.spearmanr(eci, means).statistic)
+    rng = np.random.default_rng(45)
+    null = [stats.spearmanr(eci, rng.permutation(means)).statistic for _ in range(perms)]
+    return rho, float(np.mean(np.abs(null) >= abs(rho) - 1e-12))
+
+
+def fmt_fit(rows: list[dict]) -> str:
+    slope, (lo, hi) = two_stage_slope(rows)
+    return f"{slope:+.3f} [{lo:+.3f}, {hi:+.3f}]"
+
+
+def seed_problem_slope_ci(m45: dict, task: str, draws: int = 2000) -> list[float]:
+    """As m45's offref_seed_bootstrap, over all 14 writers: one crossed draw of the 5 seeds and 100 problems shared by
+    every arm, then writers and chains (two-stage); S_offref per arm from its resampled correct pairs."""
+    import warnings
+    chains = chains_of(m45, task)
+    mats = np.array([c["effort"][HEADLINE_B]["offon_matrix"] for c in chains], float)  # chains x seeds x problems x 3
+    valid, off, on = mats[..., 0] > 0, np.where(mats[..., 0] > 0, mats[..., 1], np.nan), np.where(mats[..., 0] > 0, mats[..., 2], np.nan)
+    line = np.array([m45[c["batch"]][task]["line"] for c in chains])
+    names = sorted({c["writer"] for c in chains}, key=lambda w: next(c["eci"] for c in chains if c["writer"] == w))
+    eci = np.array([next(c["eci"] for c in chains if c["writer"] == w) for w in names])
+    by = {w: [i for i, c in enumerate(chains) if c["writer"] == w] for w in names}
+    rng = np.random.default_rng(4545)
+    slopes = []
+    for _ in range(draws):
+        sd, pr = rng.integers(0, 5, 5), rng.integers(0, 100, 100)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            m_off = np.nanmedian(off[:, sd][:, :, pr].reshape(len(chains), -1), axis=1)
+            m_on = np.nanmedian(on[:, sd][:, :, pr].reshape(len(chains), -1), axis=1)
+        s_arm = np.where(np.isnan(m_off), 0.0, (m_off - m_on) / (m_off - line))
+        pick = rng.choice(len(names), len(names))
+        if np.ptp(eci[pick]) == 0:
+            continue
+        means = np.array([np.mean(s_arm[rng.choice(by[names[i]], len(by[names[i]]))]) for i in pick])
+        slopes.append(ols_slope_per_10(eci[pick], means))
+    return [float(np.quantile(slopes, 0.025)), float(np.quantile(slopes, 0.975))]
+
+
+def all14_robustness(m45: dict) -> None:
+    """The post's headline is the fit over all 14 writers; every robustness row the appendix reports is recomputed here
+    on all 14 (m45's own tables give the 11-writer versions)."""
+    keys = [("switch score (headline)", "S_offref"), ("mean of per-pair ratios", "S_offref_mean"),
+            ("floor version", "S_offref_floor"), ("plain-referenced, correct pairs", "S_toggle_valid"),
+            ("plain-referenced, wrong = no movement", "S_toggle"), ("sibling probe", "secondary_S_offref"),
+            ("raw drop (log-odds)", "drop_valid_logodds"), ("wording, both after ON", "offref_reply_on_context"),
+            ("wording, both after OFF", "offref_reply_off_context"), ("switch word only, ON answers", "offref_context_on_reply"),
+            ("switch word only, OFF answers", "offref_context_off_reply"), ("clean-OFF pairs (plain-referenced)", "S_toggle_valid_clean_off"),
+            ("compliance: ON follows fully", "on_follows_fully"), ("compliance: OFF ignores", "off_ignores")]
+    for task in TASKS:
+        chains = chains_of(m45, task)
+        out = []
+        for name, key in keys:
+            out.append(f"{name} {fmt_fit(rows_from_chains(chains, key))}")
+        if task == "maths":
+            out.append(f"correctness-only {fmt_fit(rows_from_chains(chains, 'S_offref_correct_only'))}")
+        out.append(f"B = 0 {fmt_fit(rows_from_chains(chains, 'S_offref', b='0'))}")
+        out.append(f"earlier design's measure of the ON version (instruction removed) {fmt_fit(rows_from_chains(chains, 'm36_S'))}")
+        out.append(f"leakage minus plain {fmt_fit(rows_from_chains(chains, 'off_leakage_minus_plain'))}")
+        out.append(f"instruction removed, plain-referenced correct pairs {fmt_fit(rows_from_chains(chains, 'S_toggle_valid_removed'))}")
+        lo, hi = seed_problem_slope_ci(m45, task)
+        out.append(f"also resampling seeds and problems [{lo:+.3f}, {hi:+.3f}]")
+        rows = rows_from_chains(chains, "S_offref")
+        for drop in ("opus55", "fable51", "llama4maverick", "gpt5nano"):
+            out.append(f"without {SHORT[drop]} {fmt_fit([r for r in rows if r['writer'] != drop])}")
+        out.append(f"without Anthropic (9 writers) {fmt_fit([r for r in rows if r['lab'] != 'Anthropic'])}")
+        out.append(f"one intercept per lab {lab_fixed_effects_slope(rows):+.3f}")
+        rho, perm_p = spearman_with_p(rows)
+        out.append(f"Spearman {rho:.2f} (permutation p {perm_p:.4f})")
+        print(f"[{task}] ALL 14 WRITERS: " + "; ".join(out))
+    m50 = json.loads((M50 / "analysis_ordering.json").read_text())
+    key = f"on_under_share|{PRIMARY}"  # m50's "share of answers under the line" (of all ON attempts)
+    rows = rows_from_chains(m50["chains"], key)
+    pre = [r for r in rows if r["writer"] not in ADDED_LATER]
+    print(f"[ordering] share of ON attempts correct and under the everyday-chat line, slope per 10 ECI: 11 writers {fmt_fit(pre)}, "
+          f"all 14 {fmt_fit(rows)}, all 14 without Anthropic {fmt_fit([r for r in rows if r['lab'] != 'Anthropic'])}")
+
+
 def main() -> None:
     OUT.mkdir(exist_ok=True)
     m45 = load_m45()
     fits = check_and_print_trends(m45)
+    all14_robustness(m45)
     fig_trend(fits)
     fig_crossings(m45)
     print_distance_to_line(m45)
