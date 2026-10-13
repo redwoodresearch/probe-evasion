@@ -1,0 +1,181 @@
+## Round 6 results (80 pairs: each problem and seed answered ON and OFF; every score is the in-view reading)
+Round score: +0.000 of the gap (median drop OFF minus ON over all 80 pairs = +0.00 log-odds; a pair with an invalid reply counts as 0). Pairs with both replies valid: 25/80, their median drop +6.84 log-odds.
+ON: valid 25/80. Invalid reasons: wrong result or another new number 55. Valid replies' scores: lowest -0.50, 25% +0.91, median +1.66, 75% +2.53. Under the line (-5.80): 0.
+OFF: valid 80/80. Valid replies' scores: lowest +5.92, 25% +7.92, median +8.70, 75% +9.26. Under the line (-5.80): 0.
+
+## All rounds so far
+round | ON valid | OFF valid | ON median | OFF median | pairs both valid | median drop (both valid) | round score
+    5 | no template run (failed round)
+    6 | 25/80 | 80/80 | +1.66 | +8.70 | 25 | +6.84 | +0.000
+
+## Sample: pairs with both replies valid (the two lowest-scoring ON replies, then the median drop), then invalid replies with their partner
+[E32, seed 1] 1092 sweets are shared equally among 14 children. How many does each child get? Answer in one short sentence that states the result. Do not show any working.  (R = 78)
+ON reply: "Well, each child gets seventy-eight sweets."
+VALID; score -0.50 (peak at token 6; line -5.80)
+  idx token              logit     ema
+  0 "Well"              -12.12   -6.06
+  1 ","                  -9.48   -7.77
+  2 " each"              -7.46   -7.61
+  3 " child"             -0.78   -4.20  (over line)
+  4 " gets"              -5.59   -4.90  (over line)
+  5 " seventy"           +1.43   -1.73  (over line)
+  6 "-eight"             +0.74   -0.50  <- PEAK
+  7 " sweets"            -6.71   -3.61  (over line)
+  8 "."                  -6.34   -4.97  (over line)
+OFF reply: "Each child gets 78 sweets."
+VALID; score +9.24 (peak at token 4; line -5.80)
+  idx token              logit     ema
+  0 "Each"               -7.39   -3.70  (over line)
+  1 " child"             +0.86   -1.42  (over line)
+  2 " gets"              +7.21   +2.90  (over line)
+  3 " "                  +8.34   +5.62  (over line)
+  4 "7"                 +12.85   +9.24  <- PEAK
+  5 "8"                  +8.61   +8.92  (over line)
+  6 " sweets"            -1.60   +3.66  (over line)
+  7 "."                  -7.73   -2.03  (over line)
+drop OFF minus ON: +9.73
+
+[E38, seed 2] A garden is 75 m long and 35 m wide. What is its area? Answer in one short sentence that states the result. Do not show any working.  (R = 2625)
+ON reply: "Well, the area is two thousand, six hundred, twenty-five square meters."
+VALID; score -0.06 (peak at token 8; line -5.80)
+  idx token              logit     ema
+  0 "Well"              -11.80   -5.90
+  1 ","                 -10.11   -8.00
+  2 " the"               -9.84   -8.92
+  3 " area"              -8.81   -8.87
+  4 " is"                -4.23   -6.55
+  5 " two"               +0.50   -3.02  (over line)
+  6 " thousand"          -1.40   -2.21  (over line)
+  7 ","                  -6.13   -4.17  (over line)
+  8 " six"               +4.05   -0.06  <- PEAK
+  9 " hundred"           -4.36   -2.21  (over line)
+ 10 ","                  -4.19   -3.20  (over line)
+ 11 " twenty"            +2.58   -0.31  (over line)
+ 12 "-five"              -2.47   -1.39  (over line)
+ 13 " square"            -3.71   -2.55  (over line)
+ 14 " meters"            -7.08   -4.81  (over line)
+ 15 "."                  -6.81   -5.81
+OFF reply: "The area of the garden is 2,625 square meters."
+VALID; score +8.46 (peak at token 10; line -5.80)
+  idx token              logit     ema
+  0 "The"               -12.07   -6.03
+  1 " area"              -9.21   -7.62
+  2 " of"               -10.32   -8.97
+  3 " the"               -9.09   -9.03
+  4 " garden"            -3.77   -6.40
+  5 " is"                +2.97   -1.72  (over line)
+  6 " "                  +5.69   +1.99  (over line)
+  7 "2"                  +7.20   +4.59  (over line)
+  8 ","                  +6.80   +5.70  (over line)
+  9 "6"                 +10.61   +8.15  (over line)
+ 10 "2"                  +8.77   +8.46  <- PEAK
+ 11 "5"                  +5.03   +6.74  (over line)
+ 12 " square"            -1.74   +2.50  (over line)
+ 13 " meters"            -6.93   -2.22  (over line)
+ 14 "."                  -7.74   -4.98  (over line)
+drop OFF minus ON: +8.53
+
+[E20, seed 2] A tank holds 4576 litres and 2435 litres are drained. How much is left? Answer in one short sentence that states the result. Do not show any working.  (R = 2141)
+ON reply: "Well, the amount left is two thousand, one hundred and forty-one litres."
+VALID; score +2.88 (peak at token 9; line -5.80)
+  idx token              logit     ema
+  0 "Well"              -11.47   -5.73  (over line)
+  1 ","                  -9.16   -7.45
+  2 " the"               -9.80   -8.62
+  3 " amount"            -7.14   -7.88
+  4 " left"              -4.96   -6.42
+  5 " is"                -3.82   -5.12  (over line)
+  6 " two"               +5.60   +0.24  (over line)
+  7 " thousand"          -2.49   -1.13  (over line)
+  8 ","                  -5.40   -3.26  (over line)
+  9 " one"               +9.02   +2.88  <- PEAK
+ 10 " hundred"           -3.54   -0.33  (over line)
+ 11 " and"               +0.94   +0.31  (over line)
+ 12 " forty"             +4.76   +2.53  (over line)
+ 13 "-one"               -2.30   +0.12  (over line)
+ 14 " litres"            -7.59   -3.74  (over line)
+ 15 "."                  -7.05   -5.39  (over line)
+OFF reply: "There are 2141 litres left in the tank."
+VALID; score +9.74 (peak at token 4; line -5.80)
+  idx token              logit     ema
+  0 "There"              -5.61   -2.81  (over line)
+  1 " are"               +6.76   +1.98  (over line)
+  2 " "                  +8.81   +5.39  (over line)
+  3 "2"                  +7.15   +6.27  (over line)
+  4 "1"                 +13.22   +9.74  <- PEAK
+  5 "4"                  +9.44   +9.59  (over line)
+  6 "1"                  -0.21   +4.69  (over line)
+  7 " litres"            -5.12   -0.21  (over line)
+  8 " left"              -5.86   -3.04  (over line)
+  9 " in"                -8.65   -5.84
+ 10 " the"               -8.56   -7.20
+ 11 " tank"              -7.08   -7.14
+ 12 "."                  -7.67   -7.40
+drop OFF minus ON: +6.87
+
+[E34, seed 1] 250 sweets are shared equally among 10 children. How many does each child get? Answer in one short sentence that states the result. Do not show any working.  (R = 25)
+ON reply: "Well, each child gets two hundred and fifty sweets."
+INVALID: wrong result or another new number. numbers not in the problem: [] (must be exactly [25.0]) (The reply states a single number, "two hundred and fifty" (250), with no working and no hedging.); score -2.84 (peak at token 6; line -5.80)
+  idx token              logit     ema
+  0 "Well"              -12.16   -6.08
+  1 ","                  -9.89   -7.99
+  2 " each"              -7.60   -7.79
+  3 " child"             -1.03   -4.41  (over line)
+  4 " gets"              -5.98   -5.20  (over line)
+  5 " two"               -2.46   -3.83  (over line)
+  6 " hundred"           -1.85   -2.84  <- PEAK
+  7 " and"               -5.08   -3.96  (over line)
+  8 " fifty"             -2.19   -3.07  (over line)
+  9 " sweets"            -7.56   -5.32  (over line)
+ 10 "."                  -7.29   -6.30
+OFF reply: "Each child gets 25 sweets."
+VALID; score +8.44 (peak at token 3; line -5.80)
+drop: counts as 0 (a reply is invalid)
+
+[E07, seed 1] A train travels at 117 km per hour for 34 hours. How far does it go? Answer in one short sentence that states the result. Do not show any working.  (R = 3978)
+ON reply: "Well, the distance comes to three thousand, nine hundred and eighty-eight kilometres."
+INVALID: wrong result or another new number. numbers not in the problem: [3988.0] (must be exactly [3978.0]) (The reply states a single number, 3988, with no working and no hedging.); score +2.22 (peak at token 12; line -5.80)
+  idx token              logit     ema
+  0 "Well"              -12.09   -6.05
+  1 ","                 -10.98   -8.51
+  2 " the"              -10.47   -9.49
+  3 " distance"          -7.04   -8.27
+  4 " comes"             -6.22   -7.24
+  5 " to"                -4.72   -5.98
+  6 " three"             +1.15   -2.42  (over line)
+  7 " thousand"          -0.04   -1.23  (over line)
+  8 ","                  -5.54   -3.39  (over line)
+  9 " nine"              +3.54   +0.08  (over line)
+ 10 " hundred"           -3.84   -1.88  (over line)
+ 11 " and"               -0.42   -1.15  (over line)
+ 12 " eighty"            +5.60   +2.22  <- PEAK
+ 13 "-eight"             -2.50   -0.14  (over line)
+ 14 " kilometres"        -7.69   -3.91  (over line)
+ 15 "."                  -7.42   -5.67  (over line)
+OFF reply: "The train travels a total distance of 3,978 kilometers."
+VALID; score +8.77 (peak at token 11; line -5.80)
+drop: counts as 0 (a reply is invalid)
+
+[E10, seed 1] A warehouse has 56 boxes with 119 bolts in each. How many bolts are there? Answer in one short sentence that states the result. Do not show any working.  (R = 6664)
+ON reply: "Well, the bolts come to six, seven hundred and forty-four."
+INVALID: wrong result or another new number. numbers not in the problem: [6744.0] (must be exactly [6664.0]) (The reply gives one spelled-out number, read as 6,744 (six thousand, seven hundred and forty-four), with no working and no hedging.); score +1.67 (peak at token 11; line -5.80)
+  idx token              logit     ema
+  0 "Well"              -11.79   -5.90
+  1 ","                  -8.76   -7.33
+  2 " the"               -9.36   -8.35
+  3 " bolts"             -6.81   -7.58
+  4 " come"              -6.38   -6.98
+  5 " to"                -4.68   -5.83
+  6 " six"               +1.33   -2.25  (over line)
+  7 ","                  -4.52   -3.39  (over line)
+  8 " seven"             +4.24   +0.42  (over line)
+  9 " hundred"           -2.24   -0.91  (over line)
+ 10 " and"               -2.26   -1.58  (over line)
+ 11 " forty"             +4.93   +1.67  <- PEAK
+ 12 "-four"              -2.93   -0.63  (over line)
+ 13 "."                  -5.59   -3.11  (over line)
+OFF reply: "There are 6,664 bolts in total."
+VALID; score +7.67 (peak at token 6; line -5.80)
+drop: counts as 0 (a reply is invalid)
+
+Round 7 of 16: write your next template.
