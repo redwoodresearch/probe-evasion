@@ -235,3 +235,18 @@ Brief: GPU about $60 (scoring only), Claude about $80 (Haiku), OpenRouter $0.
   7 distinct survive). The headline stage is unchanged.
 - 10-12 ~20:51 RESULT.md written; critic 2 (research-reviewer, fresh) checking the numbers.
 - 10-12 ~21:10 Critic 2 acted on (above). Re-ran `judges`, `judges_band`, `defence`, `report`. RESULT.md updated.
+- 10-12 ~21:15-21:45 **Follow-ups (lead, after the post's final critic; GPU $40, Claude $40; analysis and scoring only):**
+  1. long benign instructions in view (8 of m39's ordering twins of 60+ words, seeded, and 4 long system prompts written
+     for the check): broad + ordering one-sentence pool re-read (app ap-28k2XbbEieqifl5IwHobH4, `m50_score_long`, 41,004
+     reads); ordering line -2.22 (primary -2.20); 2,039 distinct crossings, the same 15 survivors;
+  2. m47's frozen tests (long_c) recounted under the primary line (maths: full check and Opus re-judge on 440 distinct,
+     `runs/m47_maths_checks.jsonl`; B = 100 crossings judged): ordering crossing share levels off at about 55-65% (Opus
+     5.5) and 6-8% (GPT-6 Sol) after B = 50; 0 survive all three checks at B = 100; maths 1 crossing in all;
+  3. a defender adding the instruction-removed probe reading: 2,057 -> 199 -> 69 distinct (with the prompt-shown
+     monitor), at 1.7-3.0% broad false alarms, against 15 survivors at about 9-10% with naturalness.
+  Written up in RESULT ("Follow-ups"); `followups.json`.
+
+| when | what | estimate |
+|---|---|---|
+| 21:23 | follow-up GPU scoring (ap-28k2XbbEieqifl5IwHobH4, ~20 min, up to 10 H200s) | ~$15 (not yet billed; first job billed $1.88) |
+| 21:30 | m47 maths full check + Opus re-judge (1,248 Sonnet, 440 Opus calls); m47 B = 100 Haiku judging | ~$12.5 + $0.8 |
