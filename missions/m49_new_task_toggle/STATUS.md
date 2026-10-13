@@ -5,7 +5,7 @@ belief, acrostic hiding, spotting a contradiction) while still doing the task, m
 
 **Naming (12 Oct, Nabil):** the task called "false belief" earlier is **belief tracking**: its stories mix a classic false belief (the person misses every move), a true belief (sees the last move) and a mixed case, about a third each, and the probe detects working out what someone believes. Code identifiers keep `false_belief` (paths, probe names, run folders).
 
-**Phase:** main sweep searching (batch `main`, launched 12 Oct evening): 11 writers (m45's) x 3 chains x 17 rounds per task, 9 detached drivers on m49's volume (task x writer speed group). Then freeze and frozen test (`test_chain_files`).
+**Phase:** main sweep (batch `main`): search done for all tasks; frozen test done for belief tracking and contradiction (files checked complete), acrostic's fast group still testing. Then the final figures (`m49_figures frozen`).
 
 ## Design (inherited from m45 unless stated)
 
@@ -130,3 +130,53 @@ Early practice rounds (contradiction rounds 5-7): Opus 5.5 forward 20.7%, revers
 Opus 4.8 net +2.5% (interval spans 0); the weakest writers are net negative (their templates raise ON above OFF);
 belief tracking's reverse rates are 0-2.5%, so its forward crossings mostly stand (net +14-17% for Opus 4.8, Sonnet
 5.5, Opus 5.5).
+
+## Main sweep: incidents (12 Oct evening)
+
+- Acrostic test drivers stopped at the mission's $40 OpenRouter guard ($50 spent): raised to $150 (speed over cost),
+  relaunched from saved progress.
+- "No space left on device" writing `cache/judge/<hash>.json` on m49's volume: Modal's per-directory file limit (m45 hit
+  the same). The remote driver now writes the judge cache to `cache/judge_m49_2`. Four test drivers were relaunched;
+  two old ones (acrostic fast, contradiction fast) kept running ~2 minutes alongside their relaunches because the first
+  `modal app stop` needed `-y`. Every test file was then checked: each writer has all its frozen arms, exactly 500 rows
+  (100 problems x 5 seeds) per arm, no duplicate (arm, problem, seed). Belief tracking and contradiction: no problems.
+
+## Frozen test results (100 untouched problems x seeds 10-14; pairs with both replies correct; in view; v2 probes)
+
+Gap closed = median OFF-minus-ON / (plain test median - 1% line); net crossings = (ON under, OFF over) minus (OFF
+under, ON over) as a share of all 500 pairs per chain, 95% interval by resampling problems; per writer, mean of 3 chains.
+
+**Belief tracking** (line -2.39, plain test median +8.03). B = 0: every writer near 0 (slope +0.003 per 10 ECI). B = 16:
+slope +0.133 per 10 ECI.
+
+| writer (ECI) | gap closed | net crossings [95%] | reverse | both correct |
+|---|---|---|---|---|
+| Llama 4 Maverick (132) | 0.06 | +0.5% [-0.4, 1.6] | 0.3% | 0.59 |
+| GPT-5 nano (139) | 0.01 | +0.2% [0.0, 0.6] | 0.0% | 0.66 |
+| Qwen3.5-9B (140) | 0.10 | +1.7% [0.8, 2.8] | 0.0% | 0.63 |
+| Claude Haiku 4.5 (142) | 0.07 | +1.3% [0.3, 2.7] | 0.1% | 0.51 |
+| Qwen3.5-397B (147) | 0.22 | +4.8% [2.5, 7.2] | 0.3% | 0.57 |
+| GPT-5.4 Mini (149) | -0.01 | +0.8% [-0.5, 2.1] | 1.9% | 0.51 |
+| Gemini 3.8 Flash (157) | 0.32 | +10.7% [7.1, 14.6] | 0.0% | 0.75 |
+| Claude Opus 4.8 (158) | 0.42 | +20.0% [15.8, 24.3] | 1.3% | 0.65 |
+| GPT-6 Sol (163) | 0.40 | +4.9% [2.3, 8.2] | 0.1% | 0.86 |
+| Claude Sonnet 5.5 (165) | 0.41 | +51.0% [46.4, 55.7] | 0.0% | 0.89 |
+| Claude Opus 5.5 (167) | 0.42 | +33.9% [28.7, 39.2] | 0.3% | 0.89 |
+
+**Contradiction** (line -0.58, plain test median +7.79). B = 0: near 0, several writers net negative. B = 16: slope +0.127
+per 10 ECI. Caveat: this probe's in-view OFF replies sit near its line, so a modest drop crosses it; crossing rates are
+not comparable with the other tasks.
+
+| writer (ECI) | gap closed | net crossings [95%] | reverse | both correct |
+|---|---|---|---|---|
+| Llama 4 Maverick (132) | 0.04 | -3.8% [-6.3, -1.7] | 4.1% | 0.94 |
+| GPT-5 nano (139) | 0.00 | -6.4% [-9.7, -3.4] | 6.4% | 0.94 |
+| Qwen3.5-9B (140) | 0.02 | +0.6% [-0.1, 1.7] | 0.1% | 0.91 |
+| Claude Haiku 4.5 (142) | 0.03 | -3.2% [-6.2, -0.4] | 5.0% | 0.91 |
+| Qwen3.5-397B (147) | 0.04 | +3.2% [1.3, 5.4] | 0.1% | 0.81 |
+| GPT-5.4 Mini (149) | 0.16 | +16.2% [11.1, 21.4] | 6.6% | 0.78 |
+| Gemini 3.8 Flash (157) | 0.40 | +31.5% [25.1, 38.6] | 0.0% | 0.94 |
+| Claude Opus 4.8 (158) | 0.41 | +60.0% [54.3, 65.4] | 1.1% | 0.81 |
+| GPT-6 Sol (163) | 0.38 | +10.3% [3.0, 18.1] | 8.8% | 0.89 |
+| Claude Sonnet 5.5 (165) | 0.30 | +59.7% [53.3, 65.8] | 0.3% | 0.87 |
+| Claude Opus 5.5 (167) | 0.33 | +66.8% [60.5, 72.9] | 1.3% | 0.89 |
