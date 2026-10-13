@@ -122,3 +122,11 @@ uv run modal run --detach -n probe-evasion_nabil-baugher_m49-main-<name>_kill-20
 uv run python -c "from probe_evasion.missions import m49_new_task_toggle as M; M.test_chain_files('main')"
 ```
 Cap: CLAUDE_CAP $900 (root share 0.3 each); GPUs per driver: fast 6, mid 2, slow 1.
+
+**Net crossings (outside review, 12 Oct; adopted):** noise crosses the line in both directions, so crossings are now
+reported as forward (ON under, OFF over), reverse (OFF under, ON over) and their difference (net), as shares of all
+pairs, with a 95% interval from resampling problems (`m49_figures.net_rate_ci`; `paired_crossings` in the summary).
+Early practice rounds (contradiction rounds 5-7): Opus 5.5 forward 20.7%, reverse 9.3%, net +11.4% [+4.3, +17.9];
+Opus 4.8 net +2.5% (interval spans 0); the weakest writers are net negative (their templates raise ON above OFF);
+belief tracking's reverse rates are 0-2.5%, so its forward crossings mostly stand (net +14-17% for Opus 4.8, Sonnet
+5.5, Opus 5.5).

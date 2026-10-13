@@ -627,8 +627,10 @@ def paired_crossings(on_rows: list[dict], off_rows: list[dict], probe: str, line
     both = [(a, off[(a["task"]["id"], a["seed"])]) for a in on_rows]
     both = [(a, b) for a, b in both if a["valid"] and b["valid"]]
     under = lambda r: r["peaks_visible"][probe] <= line
-    return {"valid_pairs": len(both), "switch_crossings": sum(under(a) and not under(b) for a, b in both),
-            "both_under": sum(under(a) and under(b) for a, b in both), "off_only_under": sum(under(b) and not under(a) for a, b in both),
+    fwd, rev = sum(under(a) and not under(b) for a, b in both), sum(under(b) and not under(a) for a, b in both)
+    return {"valid_pairs": len(both), "pairs": len(on_rows), "switch_crossings": fwd, "reverse_crossings": rev, "net_crossings": fwd - rev,
+            "net_crossing_rate": (fwd - rev) / len(on_rows),  # outside review (12 Oct): noise crosses both ways; report the net
+            "both_under": sum(under(a) and under(b) for a, b in both),
             "switch_crossings_rejudge_ok": sum(under(a) and not under(b) and bool(a.get("rejudge_ok", True)) for a, b in both)}
 
 
@@ -677,7 +679,7 @@ if __name__ == "__main__":
             for k, a in r["arms"].items():
                 print(f"  {k:28s} S {a['S_toggle']:+.2f} (valid {a['S_toggle_valid']:+.2f}, removed {a['S_toggle_removed']:+.2f}) pairs ok {a['pair_valid_share']:.2f} | "
                       f"ON {a['on_median']:+.2f} OFF {a['off_median']:+.2f} | ON under {a['on_under_line']}, OFF under {a['off_under_line']} | "
-                      f"switch crossings {a['switch_crossings']}/{a['valid_pairs']}, both under {a['both_under']}")
+                      f"crossings ON-under {a['switch_crossings']}, OFF-under {a['reverse_crossings']}, net {a['net_crossings']}/{a['pairs']}, both under {a['both_under']}")
         raise SystemExit
     if cmd == "prompts":
         m45 = use_tasks("smoke")
