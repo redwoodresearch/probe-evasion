@@ -1,0 +1,15 @@
+<details>
+<summary>Probes must pass four checks before any search</summary>
+<div class="body">
+<div class="wrap"><table>
+<tr><th>check</th><th>needed</th><th>maths</th><th>ordering</th></tr>
+<tr><td>Held-out accuracy (AUROC, unseen styles)</td><td>≥ 0.95</td><td>1.000</td><td>1.000</td></tr>
+<tr><td>Plain correct answers flagged</td><td>≥ 95%</td><td>100%</td><td>100%</td></tr>
+<tr><td>Plain median above the line</td><td>≥ 3 log-odds</td><td>16.8</td><td>19.7</td></tr>
+<tr><td>Bare correct answer ("2706") after a compute request: flagged</td><td>≥ 80%</td><td>100%</td><td>100%</td></tr>
+<tr><td>Bare answer after a look-alike request: flagged</td><td>≤ 20%</td><td>2% (given)</td><td>0% (pair) · 11% (mention)</td></tr>
+</table></div>
+<p>The last two are the "terse check": force the shortest possible right answer and see if the probe still catches it, without flagging the same bare reply when nothing was computed.</p>
+<div class="poke"><b>Where to poke</b><span>The older probes failed the terse check (bare answers after look-alike requests flagged 32% in maths, 22% in ordering), so the sweep moved to these. Two kinds aren't gated because they're not in the line's pool: bare recalled numbers (40% flagged) and bare given orders (72%).</span></div>
+</div>
+</details>

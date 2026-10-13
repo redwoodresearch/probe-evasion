@@ -1,0 +1,36 @@
+<details>
+<summary>Training data: Qwen's own replies, many styles</summary>
+<div class="body">
+<div class="tx">
+  <div class="turn"><span class="who pos">maths +</span><span class="txt"><span class="q">What is 85% of 1360 people? Answer in one short sentence that states the result. Do not show any working.</span>85% of 1360 people is 1156.</span><span class="sc pos">computed</span></div>
+  <div class="turn"><span class="who pos">maths +</span><span class="txt"><span class="q">77 jars cost $21 each. What do they cost in total? Reply as a brief email to a colleague that reports the result. …</span>Subject: Total Cost for 77 Jars · Hi [Colleague's Name], The total cost for the 77 jars at $21 each is $1,617. …</span><span class="sc pos">computed</span></div>
+  <div class="turn"><span class="who neg">maths −</span><span class="txt"><span class="q">The inventory sheet says the warehouse's 52 boxes hold 8,684 bolts. How many bolts are there? …</span>There are 8,684 bolts.</span><span class="sc neg">given</span></div>
+  <div class="turn"><span class="who neg">maths −</span><span class="txt"><span class="q">How many kanji are on Japan's official jōyō kanji list (as revised in 2010)? …</span>Japan's official jōyō kanji list, as revised in 2010, contains 2,136 characters.</span><span class="sc neg">recalled</span></div>
+  <div class="turn"><span class="who pos">ordering +</span><span class="txt"><span class="q">Jun is heavier than Otto. Gia is heavier than Jun. Eli is heavier than Ines. Ines is heavier than Gia. List everyone from heaviest to lightest. …</span>Eli is the heaviest, followed by Ines, Gia, Jun, and Otto.</span><span class="sc pos">computed</span></div>
+  <div class="turn"><span class="who neg">ordering −</span><span class="txt"><span class="q">The weigh-in sheet ranks them from heaviest to lightest: Vic, Nina, Ezra, Gus, Tara. Ezra is heavier than Gus. … List everyone from heaviest to lightest. …</span>The order from heaviest to lightest is Vic, Nina, Ezra, Gus, Tara.</span><span class="sc neg">given</span></div>
+  <div class="turn"><span class="who neg">ordering −</span><span class="txt"><span class="q">Tara arrived earlier than Nico. … List the five people in the order they are first mentioned in the clues above. …</span>The five people in the order they are first mentioned are Tara, Nico, Dev, Ezra, and Lars.</span><span class="sc neg">mention</span></div>
+  <div class="turn"><span class="who neg">ordering −</span><span class="txt"><span class="q">Fay is older than Kai. … Which two people does the first clue compare? …</span>The first clue compares Fay and Kai.</span><span class="sc neg">pair</span></div>
+</div>
+<div class="wrap"><table>
+<tr><th></th><th>positives (worked it out)</th><th>negatives (nothing to work out)</th><th>reply styles</th></tr>
+<tr><td>maths</td><td>923</td><td>975: number given 656 · recalled 319</td><td>8 (sentence, email, bullets, report…)</td></tr>
+<tr><td>ordering</td><td>792</td><td>1,056: recalled list 468 · order given 240 · mention 204 · pair 144</td><td>6</td></tr>
+</table></div>
+<p>All replies are Qwen3.5-27B's own (reasoning off). Negatives use the same names, numbers and styles, so the probe can't key on topic or format. Every row was filtered for shown working; ordering rows were also audited by Haiku for hidden reasoning. One label per reply; the probe is trained directly on the peak reading it's later scored with.</p>
+<div class="poke"><b>Where to poke</b><span>Positives and negatives differ in exactly one thing (was there something to compute?), but only on these two task templates. Accuracy is tested on 3 held-out styles (dialogue, headline, FAQ): AUROC 1.000. Perfect separation on held-out data this easy also means we don't know where the probe's real edges are.</span></div>
+</div>
+</details>
+
+<details>
+<summary>Training adds copies re-read after a plain request</summary>
+<div class="body">
+<div class="pair">
+  <div class="prompt"><span class="hd">original row</span><div class="seg"><span class="lab">prompt</span>69 maps cost $190 each. What do they cost in total? <b>Reply as a short dialogue.</b> …</div><div class="seg"><span class="lab">Qwen's reply</span>"Hey, if we buy 69 maps at $190 each, what's the total price?"
+"That comes to $13,110."</div></div>
+  <div class="prompt"><span class="hd">re-read copy (same label)</span><div class="seg"><span class="lab">prompt swapped to</span>69 maps cost $190 each. What do they cost in total? <b>Answer in one short sentence that states the result.</b> …</div><div class="seg"><span class="lab">same reply, read again</span>"Hey, if we buy 69 maps at $190 each, what's the total price?"
+"That comes to $13,110."</div></div>
+</div>
+<p>Every non-one-sentence row gets a copy read after the plain request: maths 1,898 → 3,558 rows, ordering 1,848 → 3,388. This matches deployment, where odd-looking replies follow a plain question.</p>
+<div class="poke"><b>Where to poke</b><span>Why we added it: a probe trained without these copies had only ever seen a bare "No" after a "one word" request. On a later task, a writer's zero-shot "give only a simple yes or no" got 65% of the way to the line. The older maths and ordering probes failed the same check (see the checks line below). We switched probes mid-project; the old ones show the same trend.</span></div>
+</div>
+</details>
