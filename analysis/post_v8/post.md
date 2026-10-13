@@ -68,18 +68,19 @@ maths, 4.5 on ordering), so comparing ON with OFF, which differ in one word, iso
 (grey: OFF; pink: ON). Top three rows: reference replies.*
 
 Where the line sits decides the verdict (Figure 2). No correct ON answer reaches the strict line. The everyday-chat
-line sits 3–6 log-odds higher, and on ordering 1,654 of about 18,000 correct ON answers fall under it. The
-crossings are concentrated: 71% of Fable 5.1's correct answers and 35% of Opus 5.5's are under it, against at most 10%
-for anyone else. Fable 5.1, added after the pre-registered writers, alone gives 68% of the distinct crossings. Across
-the eleven pre-registered writers, the share crossing rises only weakly with capability (+0.044 per 10 ECI,
-[+0.004, +0.117]). On maths, nothing crosses.
+line sits 3–6 log-odds higher (attack-length benign instructions give the same line), and on ordering 1,654 of about
+18,000 correct ON answers fall under it. The crossings are concentrated: 71% of Fable 5.1's correct answers and 35% of
+Opus 5.5's, against at most 10% for anyone else. Fable 5.1, added after the pre-registered writers, alone gives 68% of
+the distinct crossings. Across the eleven pre-registered writers, the share crossing rises only weakly with capability
+(+0.044 per 10 ECI, [+0.004, +0.117]). Longer searches cross more: in 100-round searches, about 51–65% of Opus 5.5's ON
+attempts cross from round 50 on. On maths, nothing crosses.
 
-**Text checks.** A text monitor shown the prompt and the reply flags 73% of the crossings; shown the reply alone it
-flags 86%, because the instruction explains the odd form; either view together catches 90%. Neither view flags plain
-or everyday replies. Adding a naturalness judge leaves 15 survivors. For 12 of them, the reply itself reads +7 to +9.5
-without the prompt: their low score comes from the ON instruction in context, and against a probe reading the reply
-without the instruction, none survives. But the naturalness judge flags 7.7% of everyday chat, too many for a 1%
-budget (appendix M).
+**Added checks.** A text monitor shown the prompt and reply flags 73% of the crossings (86% if shown the reply alone,
+since the instruction explains the odd form) and no ordinary replies. The cheapest strong layer is a second probe
+reading with the instruction removed: flagging if either reading is over its line cuts the 2,057 distinct crossings
+to 199, and to 69 with the text monitor, for under 1 point of extra false alarms on everyday chat (two 1% lines
+together flag 2.6–3.0%). A naturalness judge instead gets to 15, but flags 7.7% of everyday chat. No writer targeted
+any of these checks (appendix M).
 
 ## Supporting evidence: stronger writers move the probe further
 
@@ -94,8 +95,7 @@ Per 10 ECI points, the switch score rises **+0.056 on maths [95% interval +0.009
 [+0.070, +0.173]**, and the pre-registered robustness checks agree. Without the four Anthropic writers neither
 interval excludes 0, so on maths lab and capability cannot be separated (appendix E).
 
-Most of the gain comes in the first 10–30 search rounds; 100-round searches level off (appendix I). For the top
-writers, 75% or more of the drop is in what Qwen writes rather than in the switch word (appendix H). The winning forms
+Most of the gain comes in the first 10–30 search rounds (appendix I). For the top writers, 75% or more of the drop is in what Qwen writes rather than in the switch word (appendix H). The winning forms
 are number words, which the probe never saw in training, and scripted chatter around the names.
 
 ## The monitored model on its own
@@ -110,10 +110,9 @@ mostly through the reasoning trace in context. These tests used the earlier prob
 
 Frontier writers given per-token probe scores, which a real attacker may lack, can beat a realistically calibrated
 probe on one task. The crossings come mostly from two Anthropic models, and the trend with capability is weak, so
-this is a strong result for the frontier, not yet a clean scaling law. A probe plus text checks still catches nearly
-all crossings, but the text checks were never attacked, and the cheapest one to deploy, the text monitor, lets a
-quarter through when it sees the prompt. The eval itself works as an instrument: the switch gives a clean in-view
-score that can be re-run as new models appear.
+this is a strong result for the frontier, not yet a clean scaling law. Layered checks still catch nearly all
+crossings, a second probe reading most cheaply, but none of them was ever attacked. The eval itself works as an
+instrument: the switch gives a clean in-view score that can be re-run as new models appear.
 
 Next: a second monitored model, non-Anthropic writers at the frontier, and writers that target the probe and the text
 checks together.
@@ -381,6 +380,17 @@ searches; grey verticals: conversation restarted from a summary).*
   above it, on ordering, from the round-50 template with only 54% of pairs correct.
 - **Correctness cost.** Maths Opus 5.5's share of correct pairs falls from 0.98 at B = 0 to 0.70 at B = 10, then stays at
   0.65–0.82.
+- **Crossings of the everyday-chat line in the 100-round searches** (ordering; share of all ON attempts that are
+  correct and under the line):
+
+  | B | 0 | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 | 100 |
+  |---|---|---|---|---|---|---|---|---|---|---|---|
+  | Opus 5.5 (medium) | 0.5% | 10.7% | 31.5% | 46.7% | 14.5% | 60.3% | 59.2% | 60.7% | 64.7% | 51.0% | 57.9% |
+  | GPT-6 Sol | 0% | 0% | 2.5% | 1.5% | 6.5% | 6.1% | 6.0% | 4.5% | 6.2% | 6.5% | 6.8% |
+
+  The share levels off after about round 50. At B = 100, Opus 5.5 has 137 distinct crossings and GPT-6 Sol 17; 55 and
+  2 pass the prompt-shown monitor, and none passes the monitor and naturalness together. Maths has 1 crossing in all
+  (Opus 5.5, B = 30).
 - **Is 16 rounds enough?** For ranking writers, roughly. The 100-round levels are 0.1–0.2 above the same writers'
   16-round values (Opus 5.5 at a different effort setting).
 
@@ -436,9 +446,11 @@ one-sentence replies, all read with a generic harmless instruction in view (beca
 
 No plain or neutral-line answer falls under any broad 1% line (0 of about 480 per task). Pooling the one-sentence
 replies makes the primary line flag 2.0% (ordering) and 1.7% (maths) of the chat replies; it is the strictest broad
-variant. **Calibration caveat:** the pool was read with three short generic instructions in view, while the attack
-templates are long, and per-instruction lines differ by up to 0.5 log-odds (maths) and 0.2 (ordering); a check with
-long instructions is running.
+variant. **Attack-length instructions give the same line.** The primary pool was read with three short generic
+instructions, while attack templates run a median 89 words plus the switch block. Re-read with 12 attack-length
+benign instructions in view (8 neutralised attack templates of 60–236 words and 4 realistic system prompts of 117–130
+words), the ordering line is −2.22 [−2.39, −2.03] against −2.20; per-instruction lines run from −2.69 to −1.97. Under
+it there are 2,039 distinct crossings (against 2,057) and the same 15 survivors.
 
 **Crossings under the primary line.**
 - **Maths: 0.** Under the other broad variants at most 7 answers cross (6 distinct, Sonnet 5.5 and Opus 4.8), and none
@@ -484,7 +496,32 @@ with the bare question, and as a 1–5 naturalness judge (4–5 = ordinary).
 - **The pre-registered "framing flip" bar** (one template with 10 or more survivors) is not met at the 1% lines (at most
   6 under the primary line, 7–8 under the others; 23–37 survivors in all under the other three). It is met at the 0.1%
   lines (69–125 survivors, up to 25 from one Fable 5.1 template), which are set by 2–5 replies and are descriptive only.
-- **Untested:** no writer saw the text monitor or the naturalness judge.
+- **A cheaper layer: a second probe reading.** Flag a reply if the probe read with the prompt in view is over the
+  primary line, or the probe read with the instruction removed is over the no-instruction broad line (ordering −1.75,
+  maths −3.21):
+
+  | Ordering stage | Distinct (answers) |
+  |---|---|
+  | Probe in view | 2,057 (3,282) |
+  | + probe with the instruction removed | 199 (353) |
+  | + prompt-shown text monitor | 69 (189) |
+  | + naturalness (for reference) | 0 |
+
+  The 69 come from Opus 5.5 (32), Fable 5.1 (30), Llama 4 Maverick (5), GPT-6.1 Sol (1) and GPT-6 Astra (1), mostly
+  strong writers' styles that the prompt-shown monitor accepts as "following the requested format". Maths is 0 at every
+  stage. False alarms on everyday chat (range over the three generic instructions; ordering / maths):
+
+  | Defender | Ordering | Maths |
+  |---|---|---|
+  | In-view probe alone | 1.8–2.4% | 1.0–2.3% |
+  | Both probe readings | 2.6–3.0% | 1.9–2.9% |
+  | Both readings + prompt-shown monitor (300-reply sample) | 1.7–2.7% | 1.7–2.3% |
+  | In-view probe + monitor + naturalness (300-reply sample) | 9.0–10.3% | 8.3–9.7% |
+
+  So the second reading removes 90% of distinct crossings for under 1 point of extra false alarms, against about 7–8
+  points for naturalness. OR-ing two 1% lines gives a defender at about 2.5–3% false alarms, not a matched 1% budget;
+  a matched comparison would lower each line and was not done. Both readings flag every plain answer, as they should.
+- **Untested:** no writer saw the text monitor, the naturalness judge or the second reading.
 
 **Examples** (primary line; each OFF partner is a plain sentence above the line):
 - *Survivor, GPT-6 Astra* (template: a "playful sung refrain", "La la la ... NAME; ..."). Qwen ignored it: "Sam, Gus,
@@ -567,9 +604,9 @@ later attempts).
 activations, and sees the prompt; an attacker uses a frontier model to find prompts that get a probed task done
 unflagged. Arithmetic and ordering stand in for harmful concepts because correctness can be checked.
 
-**Defence in depth.** The probe alone is beaten on ordering; a prompt-aware text monitor plus a naturalness judge
-stops nearly all crossings (section M), but the judge's false alarms are too high for a 1% budget and no writer
-attacked the text checks.
+**Defence in depth.** The probe alone is beaten on ordering. A second probe reading with the instruction removed is
+the cheapest strong layer (2,057 to 199 distinct crossings, 69 with the text monitor, at 2.6–3.0% combined false
+alarms); a naturalness judge gets to 15 at about 9% (section M). No writer attacked any of these layers.
 
 **Writer compute.** Equal rounds, not equal compute: writer spend for 3 searches ranged from $0.15 (GPT-5 nano) to $45
 (Opus 4.8, ordering) among the pre-registered writers, and $74–106 for Fable 5.1. In the earlier writer-effort test,
@@ -579,8 +616,8 @@ compute explained 14% of the ECI trend [−22%, +45%].
 - One monitored model, one probe layer per task, one readout, reasoning off; two tasks.
 - Lab and capability are confounded, and the crossings come mostly from two Anthropic models (sections E, M).
 - Writers see per-token probe scores; without them the earlier ordering slope halved (section N).
-- The verdict depends on the line. The everyday-chat line was set with three short generic instructions in view, while
-  attack templates are long, and per-instruction lines differ by up to 0.5 log-odds (section M).
+- The verdict depends on the line: nothing crosses the strict line, thousands of ordering answers cross the
+  everyday-chat line (attack-length benign instructions give the same line; section M).
 - 3 searches per writer; ECI is a proxy; model judges decide correctness edge cases and compliance.
 - The switch relies on a literal word (section G).
 
@@ -596,7 +633,7 @@ so they are not part of the eval.
 | Switch sweep (14 writers, both tasks) | $725 | about $1,234 | $119 |
 | 100-round searches | about $191 | about $526 | about $38 |
 | Volitional track | about $1,464 | about $368 | – |
-| Everyday-chat recount and text checks | about $5 | about $41 | – |
+| Everyday-chat recount, text checks and follow-ups | about $20 (estimate) | about $54 | – |
 
 Most Claude spend is validity judges.
 
@@ -639,8 +676,9 @@ Most Claude spend is validity judges.
 Each experiment has a folder `missions/<id>/` with RESULT.md, STATUS.md and tables. `analysis/post_v8/make_figures.py`
 builds every figure and the post-hoc numbers from the saved analyses and test rows, checking plotted values against
 them.
-- **Figure 1, Figure 2's everyday-chat line, appendix M:** m50 (lines.json, analysis_ordering.json, defence.json,
-  tables.md, survivors.md, examples.md); per-writer shares use m45's valid counts.
+- **Figure 1, Figure 2's everyday-chat line, appendix M and the crossings table in I:** m50 (lines.json,
+  analysis_ordering.json, defence.json, followups.json, tables.md, survivors.md, examples.md, and RESULT.md's
+  follow-ups); per-writer shares use m45's valid counts.
 - **Figures 2, 3 and A1, appendix A–H, J–L, the strict-line crossings in M:** m45 (tables.md, tables_d.md,
   analysis.json, analysis_d.json, STATUS.md amendments A–E); probes and lines from m46.
 - **Figure A2 and appendix I:** m47.
