@@ -5,7 +5,7 @@ belief, acrostic hiding, spotting a contradiction) while still doing the task, m
 
 **Naming (12 Oct, Nabil):** the task called "false belief" earlier is **belief tracking**: its stories mix a classic false belief (the person misses every move), a true belief (sees the last move) and a mixed case, about a third each, and the probe detects working out what someone believes. Code identifiers keep `false_belief` (paths, probe names, run folders).
 
-**Phase:** main sweep (batch `main`): search done for all tasks; frozen test done for belief tracking and contradiction (files checked complete), acrostic's fast group still testing. Then the final figures (`m49_figures frozen`).
+**Phase:** main sweep done (batch `main`): search, freeze and frozen test for all three tasks, every test file checked complete; final figures `figures/frozen_B16.png` (headline), `frozen_B16_framings.png` (appendix), `frozen_B0.png` (round 0).
 
 ## Design (inherited from m45 unless stated)
 
@@ -180,3 +180,25 @@ not comparable with the other tasks.
 | GPT-6 Sol (163) | 0.38 | +10.3% [3.0, 18.1] | 8.8% | 0.89 |
 | Claude Sonnet 5.5 (165) | 0.30 | +59.7% [53.3, 65.8] | 0.3% | 0.87 |
 | Claude Opus 5.5 (167) | 0.33 | +66.8% [60.5, 72.9] | 1.3% | 0.89 |
+
+**Acrostic** (line -2.55, plain test median +8.34). B = 0: all near 0. B = 16: slope +0.167 per 10 ECI (the steepest), but
+crossings stay rare: the leading-indicator shape (scores move most of the way, almost nothing gets past).
+
+| writer (ECI) | gap closed | net crossings [95%] | reverse | both correct |
+|---|---|---|---|---|
+| Llama 4 Maverick (132) | -0.07 | 0.0% | 0.0% | 0.84 |
+| GPT-5 nano (139) | -0.04 | 0.0% [-0.3, 0.3] | 0.1% | 0.63 |
+| Qwen3.5-9B (140) | -0.03 | 0.0% | 0.0% | 0.93 |
+| Claude Haiku 4.5 (142) | 0.00 | +0.1% [-0.1, 0.3] | 0.1% | 0.73 |
+| Qwen3.5-397B (147) | 0.04 | -0.3% [-0.7, 0.0] | 0.3% | 0.63 |
+| GPT-5.4 Mini (149) | 0.14 | +0.3% [-0.6, 1.2] | 1.1% | 0.73 |
+| Gemini 3.8 Flash (157) | 0.47 | +0.1% [-0.1, 0.5] | 0.1% | 0.95 |
+| Claude Opus 4.8 (158) | 0.15 | +1.8% [1.0, 2.7] | 0.1% | 0.83 |
+| GPT-6 Sol (163) | 0.34 | +1.1% [0.3, 2.2] | 0.0% | 0.93 |
+| Claude Sonnet 5.5 (165) | 0.45 | +0.1% [-0.2, 0.4] | 0.1% | 0.96 |
+| Claude Opus 5.5 (167) | 0.46 | +3.8% [2.1, 5.8] | 0.1% | 0.96 |
+
+**All three tasks, B = 16:** gap-closed slopes +0.133 (belief tracking), +0.167 (acrostic), +0.127 (contradiction) per 10
+ECI, every task near 0 at B = 0; the trend holds in all three framings (raw log-odds slopes +1.39, +1.82, +1.07 per 10
+ECI). Net crossings at the top: belief tracking Sonnet 5.5 51%, Opus 5.5 34%; contradiction Opus 5.5 67%, Opus 4.8 60%,
+Sonnet 5.5 60% (inflated by its line sitting near in-view scores); acrostic at most 3.8%.
