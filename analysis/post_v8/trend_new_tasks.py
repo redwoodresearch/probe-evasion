@@ -1,4 +1,4 @@
-"""The trend figure for the three newer probes (m49, batch main: 11 writers), at round 0 and after 16 rounds, in the
+"""The trend figure for the three newer probes (m49, batches main + d: all 14 writers), at round 0 and after 16 rounds, in the
 style of trend.png. The score is m49's headline: median (OFF - ON) over pairs with both answers correct, as a share of
 (plain median - line). The OFF-referenced score is unstable on these probes (OFF sits close to the line).
 
@@ -18,7 +18,7 @@ _spec = importlib.util.spec_from_file_location("post_v8_figures", Path(__file__)
 F = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(F)
 
-RUNS = F.REPO / "missions/m49_new_task_toggle/runs/main"
+RUNS = [F.REPO / "missions/m49_new_task_toggle/runs" / batch for batch in ("main", "d")]  # 11 + 3 newest writers
 TASKS = {"false_belief": "Belief tracking", "acrostic": "Acrostic hiding", "contradiction": "Spotting a contradiction"}
 EFFORT_POINTS = (16, 0)
 FIT_XS = np.linspace(131, 169, 50)
@@ -30,7 +30,7 @@ def writer_meta(m45: dict) -> dict[str, dict]:
 
 
 def rows_for(task: str, b: int, meta: dict) -> list[dict]:
-    chains = m49_figures.frozen_writers(RUNS, task, b)["writers"]
+    chains = m49_figures.frozen_all(RUNS, task, b)["writers"]
     rows = []
     for writer, ms in chains.items():
         values = [m["gap_closed"] for m in ms]

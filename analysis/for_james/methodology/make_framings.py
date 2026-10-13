@@ -11,9 +11,9 @@ import numpy as np
 from make_dots import COLORS, OUT, TASKS, flag_line, strips
 
 # Capability slopes per 10 ECI [95%], two-stage bootstrap: maths/ordering over 14 writers (analysis/post_v8, m45),
-# the new tasks over 11 writers (m49 STATUS / frozen_B16_framings.png).
+# the new tasks over 14 writers (m49 RESULT_14writers.md).
 SLOPES = {"maths": ("+0.07", "+0.06"), "ordering": ("+0.13", "+0.10"), "acrostic": ("+0.21", "+0.17"),
-          "belief_tracking": ("+0.38", "+0.13"), "contradiction": ("+0.47", "+0.13")}
+          "belief_tracking": ("+0.32", "+0.12"), "contradiction": ("+0.34", "+0.13")}
 ORDER = ("maths", "ordering", "acrostic", "belief_tracking", "contradiction")
 XLIM = (-12, 14)
 

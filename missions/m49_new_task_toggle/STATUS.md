@@ -227,3 +227,44 @@ contradiction rows. Corrections made:
    drop; acrostic's OFF sits ~6-7. Gap closed cannot approach 1 on these tasks.
 4. Code: dead parity filter removed; duplicate rows now fail an assertion; `summary()` fails loudly when the neutral
    reference arm was not run (it was not, in batch `main`) instead of silently using the plain median.
+
+## Batch d: the three newest writers (13 Oct; lead's brief: same design as batch `main`)
+
+Writers as m45's batch d (registered by m45's module, unchanged): Claude Fable 5.1 (`claude-fable-5-1`, Anthropic,
+adaptive thinking, effort high, ECI 164.7), GPT-6 Astra (`openai/gpt-6-astra`, OpenRouter pinned to OpenAI, reasoning at
+default, ECI 166.45), GPT-6.1 Sol (`openai/gpt-6.1-sol`, same, ECI 166.09). Everything else as batch `main`: 3 chains x
+rounds 0-16, freeze at B = 0, 4, 8, 16, frozen test 100 problems x seeds 10-14, same probes, lines, validity, judges,
+feedback and writer prompts.
+
+What changed in m49's module for batch d (no design change): mission caps Claude $1,520 (= smoke + main's ~$717 + batch
+d's $800) and OpenRouter $249 (main's ~$50 + batch d's $200, raised from $150 by the lead after the smoke); per-root Claude
+shares for d ($243 / $243 / $304 for belief tracking / contradiction / acrostic); one detached driver per new writer
+(`BATCH_SPEED_GROUPS`, 3 GPUs each); remote judge cache for d in `cache/judge_m49_d/<task>` (fresh, per task: the
+per-directory file limit). `m49_figures`: `frozen_all` (several batches merged), `check_complete`, m45's S_offref per
+chain, `report` / `report_markdown`, and `frozen14` (figures and tables over batch main + d). Watchdog:
+`pipeline.py <batch> <task>` (m46's rules: relaunch a stopped unfinished driver up to 3 times, stop a search driver with
+no new round for 45 min, never relaunch after a spend guard), then freeze, then the test drivers; `launch.sh` names apps
+`probe-evasion_nabil-baugher_m49d-<label>_kill-2026-11-30`.
+
+- 13 Oct 09:40 **Smoke** (batch `dsmoke`: Fable 5.1, 1 chain, rounds 0-1, contradiction; freeze; test on 4 problems x seeds
+  10-14): end to end in ~15 min; 160 test rows (8 arms x 20); measures compute; no file under runs/main, runs/source or
+  runs/smoke changed. Fable's round-1 template made every ON reply two sentences (invalid): the writer's behaviour, not
+  the plumbing. Cost ~$1.5 Claude, ~$15 GPU.
+- 13 Oct 09:55 Batch d searches launched (9 drivers). The first watchdog could relaunch a driver whose app was not yet
+  listed; stopped before its first check (no relaunch happened), fixed (an unlisted app is waited for), restarted 09:56.
+  Projection sent to the lead: Claude ~$300-450, OpenRouter ~$120-165, GPU ~$60-150. The running search drivers carry
+  the earlier OpenRouter guard ($200 mission); if they stop on it, they are relaunched by hand with the new one.
+- 13 Oct 10:17-10:50 All 9 searches finished (17 rounds; no relaunch, no stall, no guard stop). Freezes: 73 arms per task
+  (9 chains x 4 B x ON/OFF + neutral), every text distinct, nothing carried forward, every chain with a template at B = 0.
+  Refusal-word scan of the 216 evasion parts: 2 hits (one GPT-6.1 Sol contradiction template's ON/OFF pair), not refusals.
+- 13 Oct 11:04-11:27 All tests finished and pulled into `runs/d`. Completeness as for batch main (`m49_figures.check_complete`):
+  every task 72 arms x exactly 500 rows, no duplicate (arm, problem, seed), test and test_checked agree, 100 test problems,
+  none among the 40 search problems.
+- **14-writer result: `RESULT_14writers.md`** (tables `report_14writers.md` / `.json`; figures `figures/frozen14_B16.png`,
+  `frozen14_B16_framings.png`, `frozen14_B0*.png`). Gap-closed slopes at B = 16 per 10 ECI (14 writers): belief tracking
+  +0.121 [+0.072, +0.181], acrostic +0.165 [+0.130, +0.206], contradiction +0.129 [+0.092, +0.178] (11 writers: +0.133,
+  +0.167, +0.127); B = 0 all near 0. Fable 5.1 is the top writer on gap closed on every task (~0.1 above the 11-writer
+  line) and has acrostic's highest net crossings (+7.3% [+1.1, +16.4]); GPT-6 Astra is on or below the line; GPT-6.1
+  Sol is far below it on belief tracking (0.15, net -6.3%).
+- Spend, batch d (smoke included): Claude ~$408 (ledger; cap $800), OpenRouter $129.70 (cap $200), Modal GPU $194 billed
+  through the 17:00 UTC hour (estimate ~$230-260 final; cap $800). All batch d apps stopped.

@@ -181,6 +181,12 @@ def figure(runs: Path, window: int, path: Path, note: str) -> Path:
 # ---------------------------------------------------------------- the frozen test (pre-registered effort points)
 
 
+def offref_measures(valid_pairs: list, line: float, pair_valid_share: float) -> dict:
+    from probe_evasion.missions.m45_toggle_sweep import offref_measures as m45_offref
+
+    return m45_offref(valid_pairs, line, pair_valid_share)
+
+
 def frozen_writers(runs: Path, task: str, b: int) -> dict:
     """{writer: [per-chain measures]} on the frozen test at effort point b (100 problems x seeds 10-14; the arms
     <writer>/chain_<i>@B<b>#on / #off), plus the test's plain median and line. A chain with no template by b ("none yet")
@@ -205,7 +211,7 @@ def frozen_writers(runs: Path, task: str, b: int) -> dict:
         if not rs:
             # no template by b: no movement (0) for the evasion measures; task success is not defined (left out)
             out.setdefault(writer, []).append({"gap_closed": 0.0, "forward_rate": 0.0, "reverse_rate": 0.0, "pairs_correct": float("nan"),
-                                               "pairs": 0, "per_pair": [], "off_ref": 0.0, "raw": 0.0})
+                                               "pairs": 0, "per_pair": [], "off_ref": 0.0, "raw": 0.0, "S_offref": 0.0, "S_offref_defined": True})
             continue
         rs = [r | {"round": 0, "version": r["key"].rsplit("#", 1)[1]} for r in rs]  # test rows carry the version in the arm key
         m = chain_measures(rs, probe, line, plain)
@@ -218,11 +224,55 @@ def frozen_writers(runs: Path, task: str, b: int) -> dict:
         m["raw"] = drop
         # undefined where OFF's median is within 1 log-odds of the line or under it (m45's guard for this framing)
         m["off_ref"] = drop / (off_med - line) if off_med is not None and off_med - line > OFF_REF_MIN else float("nan")
+        # m45's headline: (median OFF - median ON) / (median OFF - line) over the same pairs; where OFF's median is within 1
+        # log-odds of the line or under it, undefined and replaced by the plain-referenced value (m45.toggle_measures' rule)
+        off_ref45 = offref_measures([(sv(a), sv(b2)) for a, b2 in ok], line, m["pairs_correct"])
+        m["S_offref_defined"] = off_ref45["S_offref_defined"]
+        m["S_offref"] = off_ref45["S_offref"] if m["S_offref_defined"] else m["gap_closed"]
         out.setdefault(writer, []).append(m)
     return {"writers": out, "line": line, "plain": plain}
 
 
 OFF_REF_MIN = 1.0
+
+
+def frozen_all(runs_dirs: list[Path], task: str, b: int) -> dict:
+    """frozen_writers over several batches' runs folders (same probe, line and plain test rows; disjoint writers).
+    "batch_of": the runs folder each writer came from."""
+    parts = [frozen_writers(r, task, b) for r in runs_dirs]
+    assert all(p["line"] == parts[0]["line"] and p["plain"] == parts[0]["plain"] for p in parts), [(p["line"], p["plain"]) for p in parts]
+    out = {"writers": {}, "batch_of": {}, "line": parts[0]["line"], "plain": parts[0]["plain"]}
+    for r, p in zip(runs_dirs, parts):
+        assert not set(p["writers"]) & set(out["writers"]), (r, set(p["writers"]) & set(out["writers"]))
+        out["writers"] |= p["writers"]
+        out["batch_of"] |= {w: r.name for w in p["writers"]}
+    return out
+
+
+def check_complete(runs: Path, task: str) -> dict:
+    """m49's completeness check of a batch's frozen test: every frozen arm with a template has exactly 500 rows (100
+    problems x seeds 10-14) in test_checked, no duplicate (arm, problem, seed), test and test_checked hold the same rows,
+    and no test problem appears in any search round (the practice set)."""
+    root = runs / f"m49_{task}"
+    frozen = json.loads((root / "frozen.json").read_text())
+    want = {k for k, v in frozen.items() if v["instruction"] is not None and "#" in k}
+    checked = [r for f in sorted((root / "test_checked").glob("*.jsonl")) for r in jl(f)]
+    raw = [r for f in sorted((root / "test").glob("*.jsonl")) if f.stem != "plain" for r in jl(f)]
+    keys = [(r["key"], r["task"]["id"], r["seed"]) for r in checked]
+    assert len(keys) == len(set(keys)), f"{task}: duplicate (arm, problem, seed) rows"
+    assert sorted(keys) == sorted((r["key"], r["task"]["id"], r["seed"]) for r in raw), f"{task}: test and test_checked differ"
+    per_arm: dict = {}
+    for k, pid, sd in keys:
+        per_arm.setdefault(k, set()).add((pid, sd))
+    assert set(per_arm) == want, (task, sorted(want - set(per_arm))[:5], sorted(set(per_arm) - want)[:5])
+    bad = {k: len(v) for k, v in per_arm.items() if len(v) != 500}
+    assert not bad, (task, bad)
+    test_ids = {r["task"]["id"] for r in checked}
+    search_ids = {json.loads(line)["task"]["id"] for f in root.glob("*/own/chain_*/round_*.jsonl") for line in f.read_text().splitlines()}
+    assert not test_ids & search_ids, (task, sorted(test_ids & search_ids)[:5])
+    no_template = sorted(k for k, v in frozen.items() if v["instruction"] is None and k.endswith("#on"))
+    return {"arms": len(per_arm), "rows": len(keys), "test_problems": len(test_ids), "search_problems": len(search_ids),
+            "no_template_arms": no_template}
 
 
 def writer_points(m: dict, key: str, names: list[str]):
@@ -235,23 +285,30 @@ def writer_points(m: dict, key: str, names: list[str]):
     return mean, mean - np.array([min(v) for v in vals]), np.array([max(v) for v in vals]) - mean
 
 
-def frozen_figure(runs: Path, b: int, panels: tuple, path: Path, note: str) -> Path:
+def frozen_figure(runs: Path | list[Path], b: int, panels: tuple, path: Path, note: str, marked: str = "") -> Path:
+    """runs: one runs folder, or several (merged with frozen_all); writers from the runs folder named `marked` are drawn
+    as hollow diamonds."""
     from probe_evasion.missions.m36_attacker_capability_sweep import WRITERS
 
+    runs_dirs = runs if isinstance(runs, list) else [runs]
     fig, axes = plt.subplots(len(TASKS), len(panels), figsize=(5.4 * len(panels), 4.3 * len(TASKS)), facecolor=SURFACE)
     for i, task in enumerate(TASKS):
-        m = frozen_writers(runs, task, b)
+        m = frozen_all(runs_dirs, task, b)
         names = sorted((w for w in m["writers"] if WRITERS[w].eci is not None), key=lambda w: WRITERS[w].eci)
         x = np.array([WRITERS[w].eci for w in names])
         for j, (key, label) in enumerate(panels):
             ax = axes[i, j]
             ax.set_facecolor(SURFACE)
             mean, lo, hi = writer_points(m, key, names)
-            ax.errorbar(x, mean, yerr=[lo, hi], fmt="o", color=COLOR, ms=7, capsize=0, lw=1.5)
+            hollow = np.array([m["batch_of"][w] == marked for w in names])
+            ax.errorbar(x[~hollow], mean[~hollow], yerr=[lo[~hollow], hi[~hollow]], fmt="o", color=COLOR, ms=7, capsize=0, lw=1.5)
+            if hollow.any():
+                ax.errorbar(x[hollow], mean[hollow], yerr=[lo[hollow], hi[hollow]], fmt="D", color=COLOR, mfc=SURFACE, mew=1.5, ms=7,
+                            capsize=0, lw=1.5)
             for xi, yi, w in zip(x, mean, names):
                 ax.annotate(WRITERS[w].label, (xi, yi), xytext=(4, 5), textcoords="offset points", fontsize=7.5, color=MUTED)
             fin = ~np.isnan(mean)
-            if key in ("gap_closed", "off_ref", "raw") and fin.sum() > 2:
+            if key in ("gap_closed", "off_ref", "raw", "S_offref") and fin.sum() > 2:
                 slope, icpt = np.polyfit(x[fin], mean[fin], 1)
                 xs = np.array([x.min(), x.max()])
                 vals = {w: [c[key] for c in m["writers"][w] if not np.isnan(c[key])] for w, ok in zip(names, fin) if ok}
@@ -282,8 +339,79 @@ FRAMINGS = (("gap_closed", "plain-referenced: median (OFF − ON) / (plain − l
             ("off_ref", "OFF-referenced: median (OFF − ON) / (median OFF − line)"), ("raw", "raw: median (OFF − ON), log-odds"))
 
 
+def report(runs_dirs: list[Path], points: tuple = (16, 0), base: str = "main") -> dict:
+    """Per task and effort point, over every writer of these runs folders: per writer gap closed, net crossings (two-stage
+    interval), reverse rate, task success and S_offref (means over chains); slopes per 10 ECI with two-stage intervals for
+    gap closed and S_offref, over all writers and over the `base` batch's writers alone; and each other writer's distance
+    from the base batch's line at its ECI."""
+    from probe_evasion.missions.m36_attacker_capability_sweep import WRITERS
+
+    out: dict = {}
+    for task in TASKS:
+        for b in points:
+            m = frozen_all(runs_dirs, task, b)
+            eci = {w: WRITERS[w].eci for w in m["writers"]}
+            rows = {}
+            for w in sorted(m["writers"], key=eci.get):
+                cs = m["writers"][w]
+                net, lo, hi = net_rate_ci(cs)
+                success = [c["pairs_correct"] for c in cs if not np.isnan(c["pairs_correct"])]
+                rows[w] = {"label": WRITERS[w].label, "eci": eci[w], "batch": m["batch_of"][w], "gap_closed": float(np.mean([c["gap_closed"] for c in cs])),
+                           "gap_closed_chains": [c["gap_closed"] for c in cs], "net": net, "net_lo": lo, "net_hi": hi,
+                           "forward": float(np.mean([c["forward_rate"] for c in cs])), "reverse": float(np.mean([c["reverse_rate"] for c in cs])),
+                           "pairs_correct": float(np.mean(success)) if success else float("nan"),
+                           "S_offref": float(np.mean([c["S_offref"] for c in cs])), "S_offref_undefined_chains": sum(not c["S_offref_defined"] for c in cs)}
+            slopes = {}
+            for key in ("gap_closed", "S_offref"):
+                vals = {w: [c[key] for c in m["writers"][w]] for w in m["writers"]}
+                base_vals = {w: v for w, v in vals.items() if m["batch_of"][w] == base}
+                slopes[key] = {"all": slope_ci(vals, eci), "base": slope_ci(base_vals, eci)}
+                xs = np.array([eci[w] for w in base_vals])
+                k, c0 = np.polyfit(xs, [np.mean(v) for v in base_vals.values()], 1)
+                for w in vals:
+                    if m["batch_of"][w] != base:
+                        rows[w][f"{key}_base_fit"] = float(k * eci[w] + c0)
+            out[f"{task}@B{b}"] = {"line": m["line"], "plain": m["plain"], "writers": rows, "slopes": slopes}
+    return out
+
+
+def report_markdown(rep: dict) -> str:
+    lines = []
+    for key, r in rep.items():
+        task, b = key.split("@")
+        sl = r["slopes"]
+        f = lambda t: f"{t[0]:+.3f} [{t[1]:+.3f}, {t[2]:+.3f}]"
+        lines += [f"\n### {TASK_LABEL[task]}, {b.replace('B', 'B = ')} (line {r['line']:+.2f}, plain test median {r['plain']:+.2f})\n",
+                  f"Slopes per 10 ECI (95% interval resampling writers, then chains): gap closed, 14 writers {f(sl['gap_closed']['all'])}; "
+                  f"11 writers {f(sl['gap_closed']['base'])}. S_offref, 14 writers {f(sl['S_offref']['all'])}; 11 writers {f(sl['S_offref']['base'])}.\n",
+                  "| writer (ECI) | gap closed | net crossings [95%] | reverse | both correct | S_offref | 11-writer line at its ECI (gap closed / S_offref) |",
+                  "|---|---|---|---|---|---|---|"]
+        for w, x in r["writers"].items():
+            und = f" ({x['S_offref_undefined_chains']} of 3 chains fall back)" if x["S_offref_undefined_chains"] else ""
+            fit = f"{x['gap_closed_base_fit']:.2f} / {x['S_offref_base_fit']:.2f}" if "gap_closed_base_fit" in x else ""
+            name = f"**{x['label']}** ({x['eci']:.0f})" if fit else f"{x['label']} ({x['eci']:.0f})"
+            lines.append(f"| {name} | {x['gap_closed']:.2f} | {100 * x['net']:+.1f}% [{100 * x['net_lo']:+.1f}, {100 * x['net_hi']:+.1f}] | "
+                         f"{100 * x['reverse']:.1f}% | {x['pairs_correct']:.2f} | {x['S_offref']:.2f}{und} | {fit} |")
+    return "\n".join(lines) + "\n"
+
+
 if __name__ == "__main__":
     cmd, runs_dir, *rest = sys.argv[1:]
+    if cmd == "frozen14":  # runs_dir: comma-separated runs folders (batch main first); writers of the last one drawn hollow
+        dirs = [Path(x) for x in runs_dir.split(",")]
+        rep = report(dirs)
+        (OUT / "report_14writers.json").write_text(json.dumps(rep, indent=1))
+        (OUT / "report_14writers.md").write_text(report_markdown(rep))
+        for b in (16, 0):
+            common = (f"Frozen test (100 untouched problems x 5 seeds), effort point B = {b}; 14 writers (batch main dots, batch d hollow diamonds); "
+                      "pairs with both replies correct; instruction in view; v2 probes. One marker per writer (mean of 3 chains; bar = chains' range; "
+                      "net crossings: 95% interval resampling chains, then problems). Slopes over all 14 writers: 95% interval resampling writers, then chains.")
+            print(frozen_figure(dirs, b, HEADLINE, OUT / "figures" / f"frozen14_B{b}.png", common, marked=dirs[-1].name))
+            print(frozen_figure(dirs, b, FRAMINGS + (("S_offref", "m45's S_offref (falls back to plain-referenced near the line)"),),
+                                OUT / "figures" / f"frozen14_B{b}_framings.png",
+                                common + " OFF-referenced (m49) is left out where median OFF is within 1 log-odds of the line or under it; m45's S_offref "
+                                "uses the plain-referenced value there.", marked=dirs[-1].name))
+        raise SystemExit
     if cmd == "frozen":
         b = int(rest[0]) if rest else 16
         common = (f"Frozen test (100 untouched problems x 5 seeds), effort point B = {b}; pairs with both replies correct; instruction in view; "

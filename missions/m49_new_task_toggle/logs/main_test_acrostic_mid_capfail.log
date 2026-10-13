@@ -1,0 +1,136 @@
+Note that running a local entrypoint in detached mode only keeps the last triggered Modal function alive after the parent process has been killed or disconnected.
+✓ Initialized. View run at 
+https://modal.com/apps/redwood-default/main/ap-f2n510u8dyZ38M4RhznLi1
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/results/chameleons/trained_probes
+├── ✓ Uploaded 
+│   /Users/nabilbaugher/dev/probe-evasion/external/minimal_neural_chameleons/pro
+│   bes
+├── ✓ Uploaded PythonPackage:probe_evasion
+├── ✓ Created Function chain.
+├── ✓ Created Function m22_remote_chain.
+├── ✓ Created Function m49_remote.
+├── ✓ Created Function execute.
+├── ✓ Created Function Sampler.*.
+├── ✓ Created Function train.
+├── ✓ Created Function score.
+├── ✓ Created Function ProbeLab.*.
+├── ✓ Created Function PeakProbeLab.*.
+├── ✓ Created Function PeakProbeLabSeeds.*.
+├── ✓ Created Function ConceptGen.*.
+├── ✓ Created Function ConceptScorer.*.
+└── ✓ Created Function train_probes_remote.
+[m49_main_test_acrostic_mid] step_test {'batch': 'main', 'task': 'acrostic', 'writers': 'opus48,haiku45', 'rounds': 17}
+acrostic main: design {'kind': 'switch', 'placement': 'switch_after'}, probe original (target m48ac_v2@L48@s0)
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 987, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_runtime/container_io_manager.py", line 266, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/probe_evasion/missions/m49_new_task_toggle.py", line 607, in m49_remote
+    return m36.m36_remote.local(name, steps)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_functions.py", line 2148, in local
+    return fun(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/probe_evasion/missions/m36_attacker_capability_sweep.py", line 527, in m36_remote
+    getattr(importlib.import_module(module), fn)(**kwargs)
+  File "/root/probe_evasion/missions/m49_new_task_toggle.py", line 533, in step_test
+    use_tasks(batch).test(task, batch, writers, rounds, n_test)
+  File "/root/probe_evasion/missions/m45_toggle_sweep.py", line 1261, in test
+    m36.run_test(task, batch, writers=writers, n_rounds=n_rounds, n_test=n_test)
+  File "/root/probe_evasion/missions/m36_attacker_capability_sweep.py", line 382, in run_test
+    check_caps(root, (batch, task))
+  File "/root/probe_evasion/missions/m36_attacker_capability_sweep.py", line 266, in check_caps
+    assert tot["openrouter"] < OPENROUTER_CAP, f"mission OpenRouter spend ${tot['openrouter']:.0f} passed the cap"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: mission OpenRouter spend $50 passed the cap
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Users/nabilbaugher/dev/probe-evasion/src/probe_evasion/missions/m49_new_tas │
+│ k_toggle.py:616 in m49_launch                                                │
+│                                                                              │
+│   615 │   (name, steps), = json.loads(Path(chains_file).read_text()).items() │
+│ ❱ 616 │   print("finished", m49_remote.remote(name, steps), flush=True)      │
+│   617                                                                        │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_object.py:49 in wrapped                                                  │
+│                                                                              │
+│    48 │   │   await self.hydrate()                                           │
+│ ❱  49 │   │   return await method(self, *args, **kwargs)                     │
+│    50                                                                        │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_functions.py:2067 in remote                                              │
+│                                                                              │
+│   2066 │   │                                                                 │
+│ ❱ 2067 │   │   return await self._call_function(args, kwargs)                │
+│   2068                                                                       │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_functions.py:2004 in _call_function                                      │
+│                                                                              │
+│   2003 │   │                                                                 │
+│ ❱ 2004 │   │   return await invocation.run_function()                        │
+│   2005                                                                       │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_functions.py:515 in run_function                                         │
+│                                                                              │
+│    514 │   │   │   # No more retries left.                                   │
+│ ❱  515 │   │   │   return await _process_result(                             │
+│    516 │   │   │   │   await_response.output.result, await_response.output.d │
+│                                                                              │
+│ /Users/nabilbaugher/dev/probe-evasion/.venv/lib/python3.12/site-packages/mod │
+│ al/_utils/function_utils.py:572 in _process_result                           │
+│                                                                              │
+│   571 │   │   │                                                              │
+│ ❱ 572 │   │   │   raise exc_with_hints(exc)                                  │
+│   573                                                                        │
+│                                                                              │
+│     ...Remote call to Modal Function (ta-01M4SCPE5BGMZ0QR964CS60A0R)...      │
+│                                                                              │
+│ /root/probe_evasion/missions/m49_new_task_toggle.py:607 in m49_remote        │
+│                                                                              │
+│ ❱ 607 return m36.m36_remote.local(name, steps)                               │
+│                                                                              │
+│                                                                              │
+│ /pkg/modal/_functions.py:2148 in local                                       │
+│                                                                              │
+│ ❱ 2148 return fun(*args, **kwargs)                                           │
+│                                                                              │
+│                                                                              │
+│ /root/probe_evasion/missions/m36_attacker_capability_sweep.py:527 in         │
+│ m36_remote                                                                   │
+│                                                                              │
+│ ❱ 527 getattr(importlib.import_module(module), fn)(**kwargs)                 │
+│                                                                              │
+│                                                                              │
+│ /root/probe_evasion/missions/m49_new_task_toggle.py:533 in step_test         │
+│                                                                              │
+│ ❱ 533 use_tasks(batch).test(task, batch, writers, rounds, n_test)            │
+│                                                                              │
+│                                                                              │
+│ /root/probe_evasion/missions/m45_toggle_sweep.py:1261 in test                │
+│                                                                              │
+│ ❱ 1261 m36.run_test(task, batch, writers=writers, n_rounds=n_rounds, n_test= │
+│                                                                              │
+│                                                                              │
+│ /root/probe_evasion/missions/m36_attacker_capability_sweep.py:382 in         │
+│ run_test                                                                     │
+│                                                                              │
+│ ❱ 382 check_caps(root, (batch, task))                                        │
+│                                                                              │
+│                                                                              │
+│ /root/probe_evasion/missions/m36_attacker_capability_sweep.py:266 in         │
+│ check_caps                                                                   │
+│                                                                              │
+│ ❱ 266 assert tot["openrouter"] < OPENROUTER_CAP, f"mission OpenRouter spend  │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+AssertionError: mission OpenRouter spend $50 passed the cap

@@ -36,10 +36,16 @@ STATE_VOLUME = "probe-evasion_nabil-baugher_m49-state_kill-2026-11-30"
 STATE = modal.Volume.from_name(STATE_VOLUME, create_if_missing=True, version=2)
 VOLUME_MARKER = "VOLUME_NAME"
 JUDGE_CACHE_REMOTE = Path("cache/judge_m49_2")  # see m49_remote
+JUDGE_CACHE_BY_BATCH = {"d": Path("cache/judge_m49_d")}  # sharded per task under this (see m49_remote)
 EFFORT_POINTS = (0, 4, 8, 16)  # as m45
-CLAUDE_CAP = 900.0  # dollars, estimated as m36 (validity judges for both versions dominate); the smoke cost ~$3.5
-OPENROUTER_CAP = 150.0  # raised from $40 (12 Oct) when the main sweep's writers reached $50: speed over cost (Nabil)
-ROOT_SHARE = {**{("smoke", t): 0.05 for t in TASKS}, **{("main", t): 0.3 for t in TASKS}}
+# Mission caps (all batches on this disk / volume). Smoke + main spent ~$717 Claude and ~$50 OpenRouter under $900 / $150;
+# batch d (13 Oct, lead: the three newest writers) adds hard caps of $800 Claude and $200 OpenRouter on top (OpenRouter
+# first $150, raised to $200 by the lead after the smoke's projection).
+CLAUDE_CAP = 1520.0  # dollars, estimated as m36 (validity judges for both versions dominate); the smoke cost ~$3.5
+OPENROUTER_CAP = 249.0  # raised from $40 (12 Oct) when the main sweep's writers reached $50: speed over cost (Nabil); +$200 batch d
+ROOT_SHARE = {**{("smoke", t): 0.05 for t in TASKS}, **{("main", t): 0.3 for t in TASKS},
+              **{("dsmoke", t): 0.01 for t in TASKS},  # batch d's smoke (Fable 5.1, 1 chain, rounds 0-1)
+              ("d", "false_belief"): 0.16, ("d", "contradiction"): 0.16, ("d", "acrostic"): 0.2}  # batch d: $790 of 1520
 WARM = 900
 MAX_WORDS = {"false_belief": 40, "contradiction": 40, "acrostic": 90}
 MAX_REPLY_TOKENS = 96  # m22 / m45: every task's plain replies fit (pilot: 0-4% unfinished at 96)
@@ -514,16 +520,23 @@ def step_search(batch: str, task: str, writers: str, chains: int, rounds: int, g
 
 SPEED_GROUPS = {"fast": ("opus55,sonnet55,gpt6sol,gemini38flash,gpt54mini,qwen35_397b,gpt5nano,llama4maverick", 6),
                 "mid": ("opus48,haiku45", 2), "slow": ("qwen35_9b", 1)}  # m45's groups; fewer GPUs each (m45's own sweep shares the pool)
+BATCH_SPEED_GROUPS = {  # batch d (13 Oct): m45's batch d writers, one driver each (each writer's 3 chains move at its own pace)
+    "d": {"fable": ("fable51", 3), "astra": ("gpt6astra", 3), "sol": ("gpt61sol", 3)},
+    "dsmoke": {"fable": ("fable51", 2)}}
+
+
+def speed_groups(batch: str) -> dict:
+    return BATCH_SPEED_GROUPS.get(batch, SPEED_GROUPS)
 
 
 def search_chain_files(batch: str, rounds: int = 17, tasks: str = ",".join(TASKS)) -> list[Path]:
     """One detached search driver per task and writer speed group (m45.prepare_groups' pattern); every group resumes
     its own chains from saved state."""
     w = json.loads((RUNS / batch / "writers.json").read_text())
-    assert sorted(sum((v[0].split(",") for v in SPEED_GROUPS.values()), [])) == sorted(w["writers"]), w["writers"]
+    assert sorted(sum((v[0].split(",") for v in speed_groups(batch).values()), [])) == sorted(w["writers"]), w["writers"]
     return [chain_file(batch, f"search_{t}_{g}", [[ME, "step_search", {"batch": batch, "task": t, "writers": names, "chains": w["chains"],
                                                                       "rounds": rounds, "group": g, "containers": n}]])
-            for t in tasks.split(",") for g, (names, n) in SPEED_GROUPS.items()]
+            for t in tasks.split(",") for g, (names, n) in speed_groups(batch).items()]
 
 
 def step_freeze(batch: str, task: str, rounds: int) -> None:
@@ -555,7 +568,7 @@ def test_chain_files(batch: str, rounds: int = 17, tasks: str = ",".join(TASKS))
     for t in tasks.split(","):
         out.append(chain_file(batch, f"freeze_{t}", [[ME, "step_freeze", {"batch": batch, "task": t, "rounds": rounds}]]))
         out += [chain_file(batch, f"test_{t}_{g}", [[ME, "step_test", {"batch": batch, "task": t, "writers": names, "rounds": rounds}]])
-                for g, (names, _) in SPEED_GROUPS.items()]
+                for g, (names, _) in speed_groups(batch).items()]
     return out
 
 
@@ -609,8 +622,12 @@ def m49_remote(name: str, steps: list[list]) -> str:
     # write, as m45 found); judge cache writes go to a fresh directory (earlier entries there are not read again)
     from probe_evasion import judge as judge_module
 
-    judge_module.CACHE_DIR = JUDGE_CACHE_REMOTE
-    JUDGE_CACHE_REMOTE.mkdir(parents=True, exist_ok=True)
+    # batch d (13 Oct): a fresh directory per task (Modal's per-directory file limit, ~395k files, bit m45, m46 and m49)
+    batch = name.split("_")[1]
+    cache = JUDGE_CACHE_BY_BATCH[batch] / steps[0][2]["task"] if batch in JUDGE_CACHE_BY_BATCH else JUDGE_CACHE_REMOTE
+    judge_module.CACHE_DIR = cache
+    cache.mkdir(parents=True, exist_ok=True)
+    print(f"judge cache: {cache}", flush=True)
     return m36.m36_remote.local(name, steps)
 
 
