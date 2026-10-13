@@ -660,7 +660,8 @@ def summary(batch: str) -> dict:
         frozen = json.loads((root / "frozen.json").read_text())
         rows = [r for f in (root / "test_checked").glob("*.jsonl") for r in jl(f)]
         neutral_rows = [r for r in rows if r["key"] == "neutral" and r["valid"]]
-        neutral = float(np.median([r["peaks_visible"][probe] for r in neutral_rows])) if neutral_rows else plain
+        assert neutral_rows, f"{task}: the neutral reference arm was not run in this batch (run it before using the summary's guards)"
+        neutral = float(np.median([r["peaks_visible"][probe] for r in neutral_rows]))
         tests = mon.task.problems()["test"]
         arms = {}
         for key in sorted({r["key"].rsplit("#", 1)[0] for r in rows if r["key"].endswith(("#on", "#off"))}):

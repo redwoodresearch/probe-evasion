@@ -153,7 +153,7 @@ slope +0.133 per 10 ECI.
 |---|---|---|---|---|
 | Llama 4 Maverick (132) | 0.06 | +0.5% [-0.4, 1.6] | 0.3% | 0.59 |
 | GPT-5 nano (139) | 0.01 | +0.2% [0.0, 0.6] | 0.0% | 0.66 |
-| Qwen3.5-9B (140) | 0.10 | +1.7% [0.8, 2.8] | 0.0% | 0.63 |
+| Qwen3.5-9B (139) | 0.10 | +1.7% [0.8, 2.8] | 0.0% | 0.63 |
 | Claude Haiku 4.5 (142) | 0.07 | +1.3% [0.3, 2.7] | 0.1% | 0.51 |
 | Qwen3.5-397B (147) | 0.22 | +4.8% [2.5, 7.2] | 0.3% | 0.57 |
 | GPT-5.4 Mini (149) | -0.01 | +0.8% [-0.5, 2.1] | 1.9% | 0.51 |
@@ -171,7 +171,7 @@ not comparable with the other tasks.
 |---|---|---|---|---|
 | Llama 4 Maverick (132) | 0.04 | -3.8% [-6.3, -1.7] | 4.1% | 0.94 |
 | GPT-5 nano (139) | 0.00 | -6.4% [-9.7, -3.4] | 6.4% | 0.94 |
-| Qwen3.5-9B (140) | 0.02 | +0.6% [-0.1, 1.7] | 0.1% | 0.91 |
+| Qwen3.5-9B (139) | 0.02 | +0.6% [-0.1, 1.7] | 0.1% | 0.91 |
 | Claude Haiku 4.5 (142) | 0.03 | -3.2% [-6.2, -0.4] | 5.0% | 0.91 |
 | Qwen3.5-397B (147) | 0.04 | +3.2% [1.3, 5.4] | 0.1% | 0.81 |
 | GPT-5.4 Mini (149) | 0.16 | +16.2% [11.1, 21.4] | 6.6% | 0.78 |
@@ -188,7 +188,7 @@ crossings stay rare: the leading-indicator shape (scores move most of the way, a
 |---|---|---|---|---|
 | Llama 4 Maverick (132) | -0.07 | 0.0% | 0.0% | 0.84 |
 | GPT-5 nano (139) | -0.04 | 0.0% [-0.3, 0.3] | 0.1% | 0.63 |
-| Qwen3.5-9B (140) | -0.03 | 0.0% | 0.0% | 0.93 |
+| Qwen3.5-9B (139) | -0.03 | 0.0% | 0.0% | 0.93 |
 | Claude Haiku 4.5 (142) | 0.00 | +0.1% [-0.1, 0.3] | 0.1% | 0.73 |
 | Qwen3.5-397B (147) | 0.04 | -0.3% [-0.7, 0.0] | 0.3% | 0.63 |
 | GPT-5.4 Mini (149) | 0.14 | +0.3% [-0.6, 1.2] | 1.1% | 0.73 |
@@ -202,3 +202,28 @@ crossings stay rare: the leading-indicator shape (scores move most of the way, a
 ECI, every task near 0 at B = 0; the trend holds in all three framings (raw log-odds slopes +1.39, +1.82, +1.07 per 10
 ECI). Net crossings at the top: belief tracking Sonnet 5.5 51%, Opus 5.5 34%; contradiction Opus 5.5 67%, Opus 4.8 60%,
 Sonnet 5.5 60% (inflated by its line sitting near in-view scores); acrostic at most 3.8%.
+
+## Independent check of the frozen-test numbers (autonomous-task-reviewer, 12 Oct) and corrections
+
+The reviewer recomputed everything from the raw test files with its own script: all 33 writer rows, the lines, plain
+medians, slopes and intervals reproduce exactly; every arm has 500 rows, test and test_checked agree, no test problem
+appears in the search set; 30 sampled valid replies under the line are all correct answers (odd formats, as the
+correctness-only rule allows), and the blind reader matches the answer on all ~205,000 belief-tracking and
+contradiction rows. Corrections made:
+
+1. **Intervals now resample chains, then problems** (the earlier ones held the 3 chains fixed, but chains vary far more
+   than problems: e.g. Sonnet 5.5 on belief tracking 23 / 57 / 73% net crossings by chain). Net crossings at B = 16 with
+   the two-stage interval: belief tracking Sonnet 5.5 +51.0% [+24.0, +71.9], Opus 5.5 +33.9% [+5.6, +53.7], Opus 4.8
+   +20.0% [-1.7, +41.1]; contradiction Opus 5.5 +66.8% [+33.0, +87.5], Opus 4.8 +60.0% [+33.2, +78.5], Sonnet 5.5
+   +59.7% [+37.9, +74.7]; acrostic Opus 5.5 +3.8% [+1.9, +6.3]. So the ordering among the top writers is not reliable;
+   the trend is. **Gap-closed slopes with a two-stage interval (writers, then chains):** belief tracking +0.133 [+0.088,
+   +0.200], acrostic +0.167 [+0.124, +0.216], contradiction +0.127 [+0.084, +0.199] per 10 ECI (the tables' interval
+   column above is the earlier problem-only one).
+2. **A chain with no template** counts as no movement for gap closed and net crossings (its pairs are zeros, in both
+   measures alike) and is left out of task success (it was 0.0, which made acrostic GPT-5 nano 0.63; now 0.95).
+3. **The plain-referenced yardstick is larger than the room available in view** for belief tracking as well as
+   contradiction: with an instruction in view, OFF medians sit about 1.6-3.6 (belief tracking) and 1.0-3.0
+   (contradiction) log-odds, only ~4 and ~2-3 above their lines, so crossings on both tasks are helped by the in-view
+   drop; acrostic's OFF sits ~6-7. Gap closed cannot approach 1 on these tasks.
+4. Code: dead parity filter removed; duplicate rows now fail an assertion; `summary()` fails loudly when the neutral
+   reference arm was not run (it was not, in batch `main`) instead of silently using the plain median.
