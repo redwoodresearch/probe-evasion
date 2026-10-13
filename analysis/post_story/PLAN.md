@@ -186,3 +186,7 @@ both tasks. v8 should lead with m45 if it lands in time.
 - Infra TODO (m45, 12 Oct): judge.py's flat cache folder hit Modal's per-folder file limit at about 395k files ("No
   space left on device"). Fix after the current runs: shard the cache by hash prefix (cache/judge/ab/…). m45 worked
   around it with a fresh cache/judge_2 folder.
+- Validity issue (12 Oct, Codex and m47's critic): m19's strict maths rule rejects some correct answers on format
+  alone: the number-extraction judge splits "six hundred, and thirty-three" into [600, 33]; the framing judge rejects
+  dialect or labelled forms; showing working is also rejected. Nabil's criterion is correctness only. m38, m45 and m47
+  now report a correctness-only flag next to the strict rule. Fix the extraction judge after the current runs.
