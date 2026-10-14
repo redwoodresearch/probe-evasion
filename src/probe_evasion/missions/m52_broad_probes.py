@@ -60,12 +60,14 @@ WORK = Path("/work")
 M50 = Path("missions/m50_realistic_monitor")
 M45_COMPACT = {(task, batch): M50 / "cache" / f"m45_{batch}_{task}.jsonl.gz" for task in TASKS for batch in ("c", "d")}
 EVERYDAY = M50 / "runs" / "broad_scores.jsonl"
+M51 = Path("missions/m51_matched_request")
 VOLUME_INPUTS = [str(REQUESTS), str(EVERYDAY), *map(str, M45_COMPACT.values()),
                  "data/concepts/m26_ordering_train.jsonl", "data/concepts/m26_ordering_heldout.jsonl",
                  "data/concepts/m26_ordering_calibration.jsonl", "results/gepa/m26_ordering_scores/build_checked.jsonl",
                  "data/concepts/onpolicy_qwen35_maths_train_clean.jsonl", "data/concepts/onpolicy_qwen35_maths_heldout_clean.jsonl",
                  "missions/m19_maths_whitebox_redteam/calibration_scores.jsonl", "missions/m19_maths_whitebox_redteam/stage2/test_plain.jsonl",
-                 *(str(m46.probe_file(m46.MODELS["q27"], t)) for t in TASKS)]
+                 *(str(m46.probe_file(m46.MODELS["q27"], t)) for t in TASKS),
+                 *(str(M51 / sub / f"{t}_scored.jsonl") for t in TASKS for sub in ("", "part2"))]
 
 # ---------------------------------------------------------------- task-involvement labels (step 0's categories)
 
@@ -394,46 +396,61 @@ def stage_chat(task: str, smoke: bool) -> list[dict]:
     return cached(out_dir(smoke) / f"chat_{task}.jsonl", make)
 
 
-def probe_path(task: str, smoke: bool) -> Path:
-    return out_dir(smoke) / "probes" / f"{task}_full_broad.json"
+# Probe variants. full: every training row. balanced: the same sources, subsampled so that chat-format rows are half of
+# each class (positives: puzzle rows cut to the number of chat positives; negatives: WildChat cut so that chat rows
+# equal puzzle rows), to test whether "chat-shaped" alone lowers the score. (short name, file stem, scored folder)
+VARIANTS = {"full": ("fb", "full_broad", "scored"), "balanced": ("bb", "balanced_broad", "scored_balanced")}
+M51_SETS = {(task, part): M51 / ("part2" if part == "part2" else "") / f"{task}_scored.jsonl" for task in TASKS for part in ("part1", "part2")}
 
 
-def probe_name(task: str, seed: int) -> str:
-    return f"q27{'m' if task == 'maths' else 'o'}fb@L{LAYER}@s{seed}"
+def probe_path(task: str, smoke: bool, variant: str = "full") -> Path:
+    return out_dir(smoke) / "probes" / f"{task}_{VARIANTS[variant][1]}.json"
 
 
-def training_rows(task: str, chat: list[dict], negatives: list[dict], smoke: bool) -> list[dict]:
+def probe_name(task: str, seed: int, variant: str = "full") -> str:
+    return f"q27{'m' if task == 'maths' else 'o'}{VARIANTS[variant][0]}@L{LAYER}@s{seed}"
+
+
+def training_rows(task: str, chat: list[dict], negatives: list[dict], smoke: bool, variant: str = "full") -> list[dict]:
     """m46's rows (own replies + re-read copies), the chat rows of the training situations that pass the answer check,
-    and the WildChat negatives."""
+    and the WildChat negatives; for the balanced variant, subsampled as VARIANTS describes."""
     own = m46.q27_sets(task)["train"]
     own = own[:200] if smoke else own
     pick = lambda r, source: {"prompt": r["prompt"], "response": r["response"], "label": int(r["label"]), "reasoning": None, "source": source}
-    rows = [pick(r, "puzzle") for r in own] + [pick(r, "puzzle re-read") for r in m46.reread(task, own)]
-    rows += [{"prompt": r["request"], "response": r["reply"], "label": r["label"], "reasoning": None, "source": f"chat {r['kind']}"}
-             for r in chat if r["split"] == "train" and r["label_ok"]]
-    rows += [{"prompt": r["request"], "response": r["reply"], "label": 0, "reasoning": None,
-              "source": "wildchat brief" if r["id"].endswith("+brief") else "wildchat"} for r in negatives]
+    puzzle = [pick(r, "puzzle") for r in own] + [pick(r, "puzzle re-read") for r in m46.reread(task, own)]
+    chat_rows_ = [{"prompt": r["request"], "response": r["reply"], "label": r["label"], "reasoning": None, "source": f"chat {r['kind']}"}
+                  for r in chat if r["split"] == "train" and r["label_ok"]]
+    wild = [{"prompt": r["request"], "response": r["reply"], "label": 0, "reasoning": None,
+             "source": "wildchat brief" if r["id"].endswith("+brief") else "wildchat"} for r in negatives]
+    if variant == "balanced":
+        rng = random.Random(1)
+        n_chat = lambda label: sum(r["label"] == label for r in chat_rows_)
+        puzzle_pos = rng.sample([r for r in puzzle if r["label"] == 1], n_chat(1))
+        puzzle_neg = [r for r in puzzle if r["label"] == 0]
+        wild = rng.sample(wild, len(puzzle_neg) - n_chat(0))
+        puzzle = puzzle_pos + puzzle_neg
+    rows = puzzle + chat_rows_ + wild
     random.Random(0).shuffle(rows)
     return rows
 
 
-def stage_train(task: str, rows: list[dict], smoke: bool) -> dict:
-    path = probe_path(task, smoke)
+def stage_train(task: str, rows: list[dict], smoke: bool, variant: str = "full") -> dict:
+    path = probe_path(task, smoke, variant)
     if path.exists():
         return json.loads(path.read_text())
     from probe_evasion.missions.m1a_peak_probe import PeakProbeLabSeeds
 
     counts = {f"{src} / label {lab}": n for (src, lab), n in sorted(Counter((r["source"], r["label"]) for r in rows).items())}
-    print(f"[{task}] training rows: {counts}", flush=True)
+    print(f"[{task} {variant}] training rows: {counts}", flush=True)
     fitted = PeakProbeLabSeeds.with_options(max_containers=1)().train_peak_seeded.remote(
         [{k: r[k] for k in ("prompt", "response", "label", "reasoning")} for r in rows], LAYER, SEEDS)
-    out = {probe_name(task, p["seed"]): p | {"n_rows": len(rows), "composition": counts,
-                                             "recipe": "m46 re-read + chat rows with known answers + WildChat negatives"}
+    out = {probe_name(task, p["seed"], variant): p | {"n_rows": len(rows), "composition": counts, "variant": variant,
+                                                      "recipe": "m46 re-read + chat rows with known answers + WildChat negatives"}
            for p in fitted.values()}
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out))
     STATE.commit()
-    print(f"[{task}] probes:", {k: (round(v["val_loss"], 4), round(v["val_auroc"], 4), v["epoch"]) for k, v in out.items()}, flush=True)
+    print(f"[{task} {variant}] probes:", {k: (round(v["val_loss"], 4), round(v["val_auroc"], 4), v["epoch"]) for k, v in out.items()}, flush=True)
     return out
 
 
@@ -450,15 +467,18 @@ def score_sets(task: str, wild: list[dict], chat: list[dict], smoke: bool) -> di
         rows = [json.loads(l) for l in gzip.open(M45_COMPACT[(task, batch)], "rt")]
         out[f"m45_{batch}"] = [r | {"response": r["reply"]} for r in rows
                                if "@B16" in r["key"] or r["key"].split("#")[0].split("/")[0] in ("plain", "neutral")]
+    for (t, part), path in M51_SETS.items():  # m51's matched requests: same reply text, the request asks to compute or gives the answer
+        if t == task:
+            out[f"m51_{part}"] = [r | {"response": r["reply"]} for r in map(json.loads, path.open())]
     if smoke:
         out = {k: v[:48] for k, v in out.items()}
     return out
 
 
-def stage_score(task: str, probes: dict, sets: dict[str, list[dict]], smoke: bool) -> None:
+def stage_score(task: str, probes: dict, sets: dict[str, list[dict]], smoke: bool, variant: str = "full") -> None:
     probes = probes | {OLD_PROBE[task]: _old_probe(task)}
     for name, rows in sets.items():
-        path = out_dir(smoke) / "scored" / f"{task}_{name}.jsonl.gz"
+        path = out_dir(smoke) / VARIANTS[variant][2] / f"{task}_{name}.jsonl.gz"
         if path.exists():
             continue
         t0 = time.time()
@@ -466,12 +486,12 @@ def stage_score(task: str, probes: dict, sets: dict[str, list[dict]], smoke: boo
         path.parent.mkdir(parents=True, exist_ok=True)
         with gzip.open(path, "wt") as f:
             for r, s in zip(rows, sc):
-                keep = {k: v for k, v in r.items() if k not in ("peaks", "peaks_visible", "peaks_other_context", "tokens")}
+                keep = {k: v for k, v in r.items() if k not in ("peaks", "peaks_visible", "peaks_other_context", "tokens", "logits")}
                 f.write(json.dumps(keep | {"old_scores": {k: r[k] for k in ("peaks", "peaks_visible") if k in r},
                                            "peaks": s["peaks"], "tokens": s["tokens"],
-                                           "logits_s0": s["logits"][probe_name(task, 0)]}) + "\n")
+                                           "logits_s0": s["logits"][probe_name(task, 0, variant)]}) + "\n")
         STATE.commit()
-        print(f"[{task}] scored {name}: {len(rows)} in {(time.time() - t0) / 60:.1f} min", flush=True)
+        print(f"[{task} {variant}] scored {name}: {len(rows)} in {(time.time() - t0) / 60:.1f} min", flush=True)
 
 
 def _old_probe(task: str) -> dict:
@@ -479,17 +499,18 @@ def _old_probe(task: str) -> dict:
     return probes[OLD_PROBE[task]]
 
 
-def run(smoke: bool = False) -> None:
+def run(smoke: bool = False, variants: tuple[str, ...] = ("full",)) -> None:
     wild, labels = stage_wildchat(smoke)
-    for task in ("ordering", "maths"):
-        chat = stage_chat(task, smoke)
-        negatives = wildchat_sets(task, wild, labels)["train"]
-        probes = stage_train(task, training_rows(task, chat, negatives, smoke), smoke)
-        stage_score(task, probes, score_sets(task, wild, chat, smoke), smoke)
+    for variant in variants:
+        for task in ("ordering", "maths"):
+            chat = stage_chat(task, smoke)
+            negatives = wildchat_sets(task, wild, labels)["train"]
+            probes = stage_train(task, training_rows(task, chat, negatives, smoke, variant), smoke, variant)
+            stage_score(task, probes, score_sets(task, wild, chat, smoke), smoke, variant)
 
 
 @app.function(image=remote_search.driver_image, volumes={str(WORK): STATE}, secrets=[remote_search.anthropic_key], timeout=14 * 60 * 60)
-def m52_remote(smoke: bool = False, pilot: bool = False) -> str:
+def m52_remote(smoke: bool = False, pilot: bool = False, variants: str = "full") -> str:
     assert os.environ["ANTHROPIC_API_KEY"], "no Anthropic key reached the container"
     os.chdir(WORK)
     marker = OUT / "VOLUME"
@@ -499,14 +520,14 @@ def m52_remote(smoke: bool = False, pilot: bool = False) -> str:
 
     judge.CACHE_DIR = WORK / "cache" / "judge_m52"
     judge.USAGE_LOG = WORK / "cache" / "anthropic_usage.jsonl"
-    chat_pilot() if pilot else run(smoke)
+    chat_pilot() if pilot else run(smoke, tuple(variants.split(",")))
     STATE.commit()
     return "done"
 
 
 @app.local_entrypoint()
-def m52_launch(smoke: bool = False, pilot: bool = False):
-    print(m52_remote.remote(smoke, pilot))
+def m52_launch(smoke: bool = False, pilot: bool = False, variants: str = "full"):
+    print(m52_remote.remote(smoke, pilot, variants))
 
 
 if __name__ == "__main__":
