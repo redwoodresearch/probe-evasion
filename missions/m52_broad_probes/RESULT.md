@@ -106,3 +106,11 @@ The wrong-answer version scores higher than the right-answer version in 90-100% 
 
 Files: `analysis/broad_probe/m52/results.json` (balanced readout), `matched.json`; probes
 `missions/m52_broad_probes/probes/*_balanced_broad.json`.
+
+## Status (14 Oct): abandoned
+
+Nabil decided not to use the broad probes in the write-up. The q27bb sweep (writers attacking the balanced probe
+directly) was stopped about an hour into its searches: all six search apps and both local pipelines stopped by id. Its partial
+rounds stay on m46's volume (`runs/q27bb`) and are not analysed. The results above (gate, transfer of m45's attacks,
+balanced-chat check, matched test, TF-IDF on the balanced data in `analysis/tfidf_baseline/balanced/`) stand as
+recorded but are not part of the post.
