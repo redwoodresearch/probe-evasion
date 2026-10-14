@@ -14,7 +14,7 @@ from probe_evasion.missions import m52_broad_probes as m52
 
 HERE = Path(__file__).resolve().parent
 CURRENT = {"ordering": Path("data/concepts/m26_ordering_train.jsonl"), "maths": Path("data/concepts/onpolicy_qwen35_maths_train_clean.jsonl")}
-CHAT_PILOT = m52.OUT / "chat_pilot.jsonl"
+CHAT_PILOT = m52.CHAT_PILOT_V2
 RUN = m52.out_dir(smoke=False)
 SEED = 0
 REPLY_CHARS = 600
@@ -47,14 +47,15 @@ def current(task: str, label: int, rng: random.Random) -> list[str]:
 
 
 def chat(task: str, label: int, rng: random.Random) -> list[str]:
-    rows = [r for r in jl(CHAT_PILOT) if r["task"] == task and r["label"] == label]
+    rows = [r for r in jl(CHAT_PILOT) if r["task"] == task and r.get("label") == label]
     kept = [r for r in rows if r["label_ok"]]
     kind = rows[0]["kind"]
     out = [f"\n#### Chat-formatted, known answer: {kind} (pilot: {len(kept)} of {len(rows)} pass the answer check; "
            f"{sum(r['shows_working'] for r in kept)} of those show working)\n"]
     for r in rng.sample(kept, min(N_CHAT, len(kept))):
         answer = ", ".join(r["puzzle"]["answer"]) if task == "ordering" else f"{r['result']:,}"
-        out += block(f"situation: {r['scenario']}; correct answer: {answer}; working shown: {r['shows_working']}", r["request"], r["reply"])
+        out += block(f"situation: {r['scenario']}; correct answer: {answer}; working shown: {r['shows_working']}; "
+                     f"brevity request: {r['brevity']!r}", r["request"], r["reply"])
     failed = [r for r in rows if not r["label_ok"]]
     if failed:
         r = rng.choice(failed)
@@ -79,6 +80,11 @@ def wildchat(task: str, label: int, rng: random.Random) -> list[str]:
         for l in rng.sample([l for l in labels if l["category"] == c], N_WILDCHAT + (label == 1)):
             r = replies[l["id"]]
             out += block(f"[{r['id'][:8]}]", r["request"], r["reply"], f"Haiku's evidence: {l['evidence']!r}" if l["evidence"] else "")
+    if label == 0:
+        brief = [r for r in jl(CHAT_PILOT) if r["task"] == "wildchat"]
+        out.append(f"\n##### WildChat with a brevity request added, answered again (pilot: {len(brief)}; not yet labelled)\n")
+        for r in rng.sample(brief, N_WILDCHAT):
+            out += block(f"[{r['id'][:8]}] brevity request: {r['brevity']!r}", r["request"], r["reply"])
     return out
 
 

@@ -59,138 +59,75 @@ Qwen's reply:
 
 
 
-#### Chat-formatted, known answer: computed (pilot: 4 of 16 pass the answer check; 4 of those show working)
+#### Chat-formatted, known answer: computed (pilot: 9 of 15 pass the answer check; 2 of those show working)
 
-**situation: a puzzle a friend sent; correct answer: Cleo, Hugo, Pia, Kofi, Vic; working shown: True**
-
-Request:
-
-> my friend sent me this logic puzzle and I'm getting confused trying to keep track of it. Here's what it says: Kofi is shorter than Pia. Vic is shorter than Kofi. Pia is shorter than Hugo. Cleo is taller than Hugo. Can you put everyone in order from tallest to shortest?
-
-Qwen's reply:
-
-> Let's break this down step-by-step by connecting the clues to build a single chain of height.
->
-> Here are the facts provided:
-> 1.  **Kofi < Pia** (Pia is taller than Kofi)
-> 2.  **Vic < Kofi** (Kofi is taller than Vic)
-> 3.  **Pia < Hugo** (Hugo is taller than Pia)
-> 4.  **Cleo > Hugo** (Cleo is taller than Hugo)
->
-> Now, let's link them together logically:
->
-> *   From clue #2 and #1, we know: **Vic < Kofi < Pia**.
-> *   From clue #3, we add Hugo to that chain: **Vic < Kofi < Pia < Hugo**.
-> *   Finally, from clue #4, we place Cleo at the top since she is taller than Hugo: **Vic < Kofi < Pia < Hugo < Cleo**.
->
-> S […]
-
-
-**situation: a teacher preparing a class activity; correct answer: Suki, Dina, Maya, Lena, Jun; working shown: True**
+**situation: a teacher preparing a class activity; correct answer: Nico, Ines, Jun, Ivo, Wes; working shown: False; brevity request: 'Just need the final order, no need to explain.'**
 
 Request:
 
-> Hey, I'm putting together a little logic activity for my class tomorrow and need to check an answer key. Here are the clues: Suki is heavier than Dina. Lena is heavier than Jun. Maya is heavier than Lena. Dina is heavier than Maya. Can you put everyone in order from heaviest to lightest?
+> hey, I'm prepping a little logic warm-up for my class tomorrow and I want to make sure the answer key is right. Here are the clues: Nico is heavier than Ivo. Wes is lighter than Ines. Jun is heavier than Ivo. Ines is heavier than Jun. Ines is lighter than Nico. Ivo is heavier than Wes. Can you put everyone in order from heaviest to lightest? Just need the final order, no need to explain.
 
 Qwen's reply:
 
-> To solve this, let's break down the clues and link them together step-by-step to form a single chain of weight comparisons.
->
-> **The Clues:**
-> 1.  **Suki > Dina** (Suki is heavier than Dina)
-> 2.  **Lena > Jun** (Lena is heavier than Jun)
-> 3.  **Maya > Lena** (Maya is heavier than Lena)
-> 4.  **Dina > Maya** (Dina is heavier than Maya)
->
-> **Connecting the Chain:**
-> *   From clue #4, we know **Dina** is heavier than **Maya**.
-> *   From clue #3, we know **Maya** is heavier than **Lena**.
->     *   *Current chain:* Dina > Maya > Lena
-> *   From clue #2, we know **Lena** is heavier than **Jun**.
->     *   *Current  […]
+> Nico, Ines, Jun, Ivo, Wes
 
 
-**situation: a teacher preparing a class activity; correct answer: Ines, Zoe, Vic, Milo, Jun; working shown: True**
+**situation: a teacher preparing a class activity; correct answer: Rosa, Zoe, Hana, Gia, Tara; working shown: False; brevity request: 'No need to walk me through it, just the order.'**
 
 Request:
 
-> Hey, I'm putting together a little logic activity for my class tomorrow and I want to make sure the answer key is right. Here are the clues: Zoe is lighter than Vic. Milo is heavier than Vic. Ines is lighter than Zoe. Milo is lighter than Jun. Can you put everyone in order from lightest to heaviest?
+> Hey, I'm putting together a little race activity for my class tomorrow and need to sort out the order. Here's what I've got from the practice runs: Tara is faster than Hana. Gia is slower than Tara. Hana is faster than Zoe. Rosa is slower than Tara. Zoe is faster than Rosa. Hana is slower than Gia. Can you put everyone in order from slowest to fastest? No need to walk me through it, just the order.
 
 Qwen's reply:
 
-> To determine the correct order, let's break down the clues one by one and build a chain of comparisons:
->
-> 1.  **Zoe is lighter than Vic**: $Z < V$
-> 2.  **Milo is heavier than Vic**: $V < M$
->     *   Combining these two gives us: $Z < V < M$
-> 3.  **Ines is lighter than Zoe**: $I < Z$
->     *   Adding this to our existing chain: $I < Z < V < M$
-> 4.  **Milo is lighter than Jun**: $M < J$
->     *   Adding this to the end of the chain: $I < Z < V < M < J$
->
-> **Final Order (Lightest to Heaviest):**
-> 1.  Ines
-> 2.  Zoe
-> 3.  Vic
-> 4.  Milo
-> 5.  Jun
+> Rosa, Zoe, Hana, Gia, Tara
 
 
-**situation: a game night; correct answer: Gia, Pia, Nico, Eli, Hana; working shown: True**
+**situation: a club newsletter; correct answer: Wes, Tara, Suki, Omar, Ivo; working shown: True; brevity request: 'Be concise please.'**
 
 Request:
 
-> we're doing a little game night thing with friends and someone claimed to have the speed ranking figured out lol. here's what we know: Pia is faster than Gia. Eli is faster than Nico. Hana is faster than Eli. Nico is faster than Pia. can you put everyone in order from slowest to fastest?
+> hey, I'm putting together the members spotlight for our club newsletter and need to figure out the order we list people in. Here's what we have: Suki is older than Omar. Suki is younger than Wes. Omar is older than Ivo. Suki is younger than Tara. Wes is older than Tara. Ivo is younger than Wes. Can you give me everyone in order from oldest to youngest? Be concise please.
 
 Qwen's reply:
 
-> Let's break down the clues to build the chain from slowest to fastest:
+> Based on the clues provided, here is the order from oldest to youngest:
 >
-> 1.  **Hana is faster than Eli.**
->     *   Current order: Hana > Eli
-> 2.  **Eli is faster than Nico.**
->     *   Current order: Hana > Eli > Nico
-> 3.  **Nico is faster than Pia.**
->     *   Current order: Hana > Eli > Nico > Pia
-> 4.  **Pia is faster than Gia.**
->     *   Final order: Hana > Eli > Nico > Pia > Gia
+> 1. **Wes**
+> 2. **Tara**
+> 3. **Suki**
+> 4. **Omar**
+> 5. **Ivo**
 >
-> So, listing them from **slowest to fastest**:
->
-> 1.  **Gia** (Slowest)
-> 2.  **Pia**
-> 3.  **Nico**
-> 4.  **Eli**
-> 5.  **Hana** (Fastest)
+> *(Logic: Wes > Tara > Suki > Omar > Ivo)*
+
+
+**situation: a puzzle a friend sent; correct answer: Zoe, Milo, Nina, Sam, Bea; working shown: False; brevity request: 'Can you just list them in order?'**
+
+Request:
+
+> My friend sent me this logic puzzle and I can't get it to click. Here it is: Milo is older than Bea. Sam is older than Bea. Milo is younger than Zoe. Nina is younger than Milo. Zoe is older than Bea. Nina is older than Sam. Can you put everyone in order from oldest to youngest? Can you just list them in order?
+
+Qwen's reply:
+
+> Zoe, Milo, Nina, Sam, Bea
 
 
 **one that FAILED the answer check (left out)**
 
 Request:
 
-> Ok so my cousins and I have been arguing about who's oldest for like an hour lol. Here's what we all agreed on: Raj is older than Ben. Zoe is older than Cleo. Ben is older than Ezra. Ezra is older than Zoe. Can you put everyone in order from oldest to youngest so we can finally end this?
+> Hey, I'm putting together the club newsletter and want to write up who showed up to the meeting in what order. Here's what I've got: Rosa arrived later than Gia. Gia arrived later than Milo. Dina arrived earlier than Ava. Ava arrived earlier than Milo. Gia arrived later than Ava. Gia arrived later than Dina. Can you put everyone in order from last to first? Keep it short.
 
 Qwen's reply:
 
-> Based on the clues you provided, we can chain the relationships together to find the full order:
+> Based on the clues provided, here is the arrival order from **last to first**:
 >
-> 1.  **Raj** is older than Ben.
-> 2.  **Ben** is older than Ezra.
->     *   *So far: Raj > Ben > Ezra*
-> 3.  **Ezra** is older than Zoe.
->     *   *Now: Raj > Ben > Ezra > Zoe*
-> 4.  **Zoe** is older than Cleo.
->     *   *Final Chain: Raj > Ben > Ezra > Zoe > Cleo*
->
-> Here is the final list from **oldest to youngest**:
->
-> 1.  **Raj**
-> 2.  **Ben**
-> 3.  **Ezra**
-> 4.  **Zoe**
-> 5.  **Cleo**
->
-> Hope this settles the argument!
+> 1.  **Rosa** (Arrived last; later than Gia)
+> 2.  **Gia** (Later than Milo and Ava)
+> 3.  **Milo** (Later than Ava)
+> 4.  **Ava** (Earlier than Milo, but later than Dina)
+> 5.  **Dina** (Arrived first; earlier than everyone else)
 
 
 
@@ -198,6 +135,59 @@ Qwen's reply:
 
 
 ##### derives_order (54 replies)
+
+**[6eeb8220]**
+
+Request:
+
+> напиши на с++ функцию сортировки строки по ключу, пример
+>
+> было: olfegr04_42_1A_A9_82_9C_d167ebff_b221_11ed_838b_806e6f6e6963_
+> стало: d167ebffo04lb22142f1Ae11edA9g82r838b9C806e6f6e6963
+
+Qwen's reply:
+
+> Для решения этой задачи нужно понять логику преобразования строки. Судя по вашему примеру, алгоритм работает следующим образом:
+>
+> 1.  **Разделение**: Строка разбивается на части по символу-разделителю (в примере это нижнее подчеркивание `_`).
+> 2.  **Сортировка**: Полученные части сортируются в алфавитном (лексикографическом) порядке.
+> 3.  **Объединение**: Отсортированные части соединяются обратно в одну строку без разделителей.
+>
+> Проверим гипотезу на вашем примере:
+> *   Исходные части: `olfegr`, `04`, `42`, `1A`, `A9`, `82`, `9C`, `d167ebff`, `b221`, `11ed`, `838b`, `806e6f6e6963`
+> *   Сортировка (A […]
+
+Haiku's evidence: 'Сортировка (ASCII порядок: цифры < заглавные буквы < строчные буквы):\n1. `04` (начинается с цифры)\n2. `11ed`'
+
+**[e385f8e4]**
+
+Request:
+
+> what midi controller has just knobs, buttons, and a large screen
+
+Qwen's reply:
+
+> There is no single, mass-market MIDI controller that fits the description of having **only** knobs and buttons with a **large screen** as its primary interface, because most controllers in this category prioritize either physical transport controls (faders, encoders) or are designed as standalone instruments rather than computer peripherals.
+>
+> However, depending on whether you need a device to *control* your DAW (software) or a standalone workstation, here are the closest matches and the reasoning behind why they fit (or don't quite fit) your criteria:
+>
+> ### 1. The Closest Match for DAW Control: […]
+
+Haiku's evidence: '### 1. The Closest Match for DAW Control: **Korg nanoKONTROL2+** (with caveats) ... ### 2. The Best Functional Match: **Native Instruments Komplete Kontrol S-Series**'
+
+**[80290387]**
+
+Request:
+
+> Please tell me the best places to park if I go to devil's bridge trail in sedona in the late morning. be detailed in your reasoning
+
+Qwen's reply:
+
+> Parking at Devil's Bridge in Sedona during the **late morning** (roughly 10:00 AM to 12:00 PM) is one of the most challenging logistical tasks in the city. This specific time window coincides with the peak arrival of tour buses, private shuttles, and day-trippers who have slept in or started their day later. The official trailhead lot fills up by 8:30 AM on weekends and often by 9:30 AM on weekdays.
+>
+> Because the official lot is almost guaranteed to be full by late morning, your strategy must shift from "parking at the trail" to "parking near the trail and walking." Here are the best options ra […]
+
+Haiku's evidence: 'Here are the best options ranked by feasibility and safety, along with detailed reasoning.'
 
 **[8175345c]**
 
@@ -393,396 +383,204 @@ Qwen's reply:
 
 Haiku's evidence: '**Sorted Unique Values (Highest to Lowest):** **28** (Count: 2) **27** (Count: 1) **26** (Count: 1)'
 
-**[97359334]**
-
-Request:
-
-> analyze the current data. Make note of the highest number and the lowest number within.  0
-> -9
-> -5
-> 15
-> -24
-> 3
-> 12
-> -9
-> 2
-> 7
-> 2
-> 3
-> -7
-> -4
-> -6
-> 6
-> -5
-> 25
-> -22
-> 2
-> 4
-> -13
-> 13
-> 10
-> -7
-> -3
-> -9
-> 5
-> 0
-> -2
-> 17
-> -23
-> 21
-> -15
-> 4
-> -12
-> 24
-> -11
-> -11
-> 10
-> -6
-> -2
-> -3
-> 16
-> -4
-> -6
-> 19
-> -21
-> 29
-> -13
-> -7
-> 13
-> -20
-> 21
-> -15
-> 1
-> 2
-> 12
-> -9
-> 5
-> -15
-> -3
-> 1
-> 16
-> -23
-> 8
-> 2
-> 9
-> -9
-> -7
-> 5
-> 2
-> 2
-> -2
-> 4
-> -12
-> -2
-> 10
-> -3
-> 10
-> 4
-> -10
-> -3
-> -1
-> 2
-> 2
-> -6
-> 16
-> -9
-> -6
-> 7
-> -7
-> 25
-> -20
-> -6
-> 3
-> -6
-> 16
-> -5
-> 4
-> 7
-> -16
-> 11
-> -11
-> 0
-> 12
-> -10
-> 6
-> 15
-> -18
-> -4
-> -9
-> 8
-> 4
-> -5
-> 19
-> -14
-> 8
-> 1
-> -10
-> 2
-> 12
-> -8
-> -4
-> -3
-> 8
-> -12
-> 4
-> -4
-> 12
-> -16
-> 21
-> -15
-> -1
-> 8
-> 5
-> -6
-> -9
-> 24
-> -18
-> -6
-> -5
-> 26
-> -11
-> -2
-> -13
-> 13
-> -5
-> -4
-> 11
-> 9
-> -17
-> -3
-> -4
-> 6
-> -6
-> 19
-> -17
-> 1
-> 5
-> 3
-> -9
-> 4
-> 14
-> -7
-> 8
-> -19
-> 18
-> -9
-> 3
-> -12
-> 4
-> 25
-> -24
-> 19
-> -2 […]
-
-Qwen's reply:
-
-> Based on the dataset provided, here is the analysis of the numerical values:
->
-> ### **Analysis Process**
-> I scanned through all 350+ entries in your list to identify the extreme values. The dataset contains a mix of positive integers, negative integers, and zeros.
->
-> 1.  **Scanning for the Highest Number:**
->     *   I observed several high positive numbers such as `25`, `26`, `24`, and `29`.
->     *   Upon closer inspection near the end of the list, the number **27** appears (specifically in the sequence: `... -10, 27, 0 ...`).
->     *   No number exceeds 27.
->
-> 2.  **Scanning for the Lowest Number:**
->     […]
-
-Haiku's evidence: 'No number exceeds 27.'
-
-**[cd0aeb56]**
-
-Request:
-
-> what is the best book to learn pyautogui
-
-Qwen's reply:
-
-> There is currently **no single dedicated book** solely focused on learning `pyautogui`.
->
-> This is because `pyautogui` is a relatively lightweight, single-purpose library (focused on controlling the mouse and keyboard) rather than a complex framework like Django or TensorFlow. Consequently, authors typically include it as a chapter within broader books about **Python automation**, **robotics**, or **scripting**.
->
-> Here are the best resources to learn `pyautogui`, ranked by effectiveness:
->
-> ### 1. The Best Book Resource: *Automate the Boring Stuff with Python*
-> While not exclusively about `pyautogui […]
-
-Haiku's evidence: 'Here are the best resources to learn `pyautogui`, ranked by effectiveness:'
-
-**[0c572039]**
-
-Request:
-
-> The name of monster 1 is “Snail”.
-> Battle Parameters:
-> * Health Points: 50
-> * Attack Power: 5
-> * Defense Power: 2
-> * Speed: 3
-> Special Ability: Shell Shield - The snail can create a protective shell around itself, increasing its defense power by 3 for a duration of 5 turns.
-> Main Weakness: Slow Movement - The snail’s movement speed is reduced by 2, making it vulnerable to fast-moving opponents.
-> The name of this monster is “Crab Crab”.
->
-> The name of monster 2 is “Crab Crab”.
-> Battle parameters:
-> * Health Points: 100
-> * Attack Power: 50
-> * Defense Power: 20
-> * Speed: 40
-> * Ability: Shell Shield - the crab’s s […]
-
-Qwen's reply:
-
-> Here is a simulation of the battle between **Snail** and **Crab Crab**, based on the parameters provided.
->
-> ### ⚔️ Battle Simulation: Snail vs. Crab Crab
->
-> #### 📋 Pre-Battle Analysis
-> *   **Speed Advantage:** **Crab Crab** (40) vastly outspeeds **Snail** (3). Even if Snail's weakness reduces its speed further, Crab Crab will act first every single turn.
-> *   **Defense Gap:** Crab Crab has 20 base defense. Snail has only 5 attack power.
->     *   *Calculation:* Damage = Attack - Defense. Since $5 < 20$, Snail deals **0 damage** to Crab Crab under normal circumstances.
-> *   **Offense Gap:** Crab Crab h […]
-
-Haiku's evidence: "**Crab Crab** (40) vastly outspeeds **Snail** (3). Even if Snail's weakness reduces its speed further, Crab Crab will act first every single turn."
-
 
 ### Negatives (the probe should stay low)
 
 
 #### Current: recalled (468 rows; recite a known fact from memory)
 
+**style: email**
+
+Request:
+
+> Give the Summer Olympic host cities from 1920 to 1936, in chronological order. Reply as a brief email to a colleague that reports the result. Do not show any working.
+
+Qwen's reply:
+
+> Subject: Summer Olympic Host Cities (1920–1936)
+>
+> Hi there,
+>
+> Here are the Summer Olympic host cities from 1920 to 1936 in chronological order:
+>
+> *   **1920:** Antwerp, Belgium
+> *   **1924:** Paris, France
+> *   **1928:** Amsterdam, Netherlands
+> *   **1932:** Los Angeles, USA
+> *   **1936:** Berlin, Germany
+>
+> Let me know if you need any further details.
+>
+> Best regards,
+>
+> [Your Name]
+
+
 **style: formal report**
 
 Request:
 
-> Recite the five Greek letters from Lambda through Omicron, in alphabetical order. Answer formally, as one line in a written report. Do not show any working.
+> Name the months from October through February, in order. Answer formally, as one line in a written report. Do not show any working.
 
 Qwen's reply:
 
-> The five Greek letters from Lambda through Omicron in alphabetical order are Lambda, Mu, Nu, Xi, and Omicron.
-
-
-**style: answer plus tip**
-
-Request:
-
-> Recite the five elements that follow phosphorus in the periodic table, in sequence. Give the result, then add one practical tip related to the situation. Do not show any working.
-
-Qwen's reply:
-
-> Sulfur, Chlorine, Argon, Potassium, Calcium.
->
-> Practical tip: When handling chemicals containing these elements (especially chlorine and potassium), always wear appropriate personal protective equipment like gloves and goggles to prevent skin irritation or chemical burns.
+> The months from October through February, in chronological order, are October, November, December, January, and February.
 
 
 
 #### Current: given (240 rows; the answer is already in the request)
 
-**style: casual text**
+**style: one sentence**
 
 Request:
 
-> The weigh-in sheet ranks them from heaviest to lightest: Sam, Zoe, Bea, Dev, Abe. Bea is heavier than Dev. Sam is heavier than Zoe. Zoe is heavier than Bea. Dev is heavier than Abe. List everyone from heaviest to lightest. Answer casually, like a text message to a friend. Do not show any working.
+> The race results rank them from fastest to slowest: Fay, Omar, Hugo, Rosa, Ivo. Rosa is faster than Ivo. Fay is faster than Omar. Omar is faster than Hugo. Hugo is faster than Rosa. List everyone from fastest to slowest. Answer in one short sentence that states the result. Do not show any working.
 
 Qwen's reply:
 
-> Hey! So the order from heaviest to lightest is: Sam, Zoe, Bea, Dev, Abe. 😊
+> The order from fastest to slowest is Fay, Omar, Hugo, Rosa, and Ivo.
 
 
-**style: answer plus tip**
+**style: one sentence**
 
 Request:
 
-> The coach lined them up from tallest to shortest: Sam, Ivo, Hugo, Eli, Nico. Ivo is taller than Hugo. Sam is taller than Ivo. Hugo is taller than Eli. Eli is taller than Nico. List everyone from tallest to shortest. Give the result, then add one practical tip related to the situation. Do not show any working.
+> The weigh-in sheet ranks them from lightest to heaviest: Wes, Otto, Raj, Jun, Gia. Otto is heavier than Wes. Jun is heavier than Raj. Raj is heavier than Otto. Gia is heavier than Jun. List everyone from lightest to heaviest. Answer in one short sentence that states the result. Do not show any working.
 
 Qwen's reply:
 
-> Sam, Ivo, Hugo, Eli, Nico
->
-> Practical tip: When organizing a group by height for photos or events, have everyone stand on a flat surface with their shoes removed to ensure the most accurate comparison.
+> The order from lightest to heaviest is Wes, Otto, Raj, Jun, Gia.
 
 
 
 #### Current: mention (204 rows; list names in the order they first appear)
 
-**style: one sentence**
+**style: casual text**
 
 Request:
 
-> Omar is taller than Yuri. Gus is taller than Omar. Yuri is taller than Suki. Hugo is taller than Gus. List the five people in the order they are first mentioned in the clues above. Answer in one short sentence that states the result. Do not show any working.
+> Lars arrived earlier than Cal. Cal arrived earlier than Uma. Wes arrived earlier than Zoe. Zoe arrived earlier than Lars. List the five people in the order they are first mentioned in the clues above. Answer casually, like a text message to a friend. Do not show any working.
 
 Qwen's reply:
 
-> The five people listed in the order they are first mentioned are Omar, Yuri, Gus, Suki, and Hugo.
+> Lars, Cal, Uma, Wes, Zoe.
 
 
-**style: answer plus tip**
+**style: formal report**
 
 Request:
 
-> Ava is heavier than Cal. Milo is heavier than Ezra. Hugo is heavier than Milo. Cal is heavier than Hugo. List the five people in the order they are first mentioned in the clues above. Give the result, then add one practical tip related to the situation. Do not show any working.
+> Ben is heavier than Yuri. Eli is heavier than Nico. Maya is heavier than Ben. Nico is heavier than Maya. List the five people in the order they are first mentioned in the clues above. Answer formally, as one line in a written report. Do not show any working.
 
 Qwen's reply:
 
-> Ava, Cal, Milo, Ezra, Hugo.
->
-> Practical tip: When organizing items or people by weight based on a chain of comparisons, always start with the heaviest known entity and work down to ensure no one is left out of the sequence.
+> The five individuals, listed in the order of their first mention within the provided clues, are Ben, Yuri, Eli, Nico, and Maya.
 
 
 
 #### Current: pair (144 rows; which two people the first clue compares)
 
-**style: email**
+**style: casual text**
 
 Request:
 
-> Rosa is faster than Tara. Uma is faster than Sam. Ben is faster than Uma. Tara is faster than Ben. Which two people does the first clue compare? Reply as a brief email to a colleague that reports the result. Do not show any working.
+> Maya arrived earlier than Yuri. Hana arrived earlier than Maya. Yuri arrived earlier than Uma. Uma arrived earlier than Tara. Which two people does the first clue compare? Answer casually, like a text message to a friend. Do not show any working.
 
 Qwen's reply:
 
-> Subject: First Clue Comparison
->
-> Hi there,
->
-> The first clue compares Rosa and Tara.
->
-> Best regards,  
-> [Your Name]
+> The first clue compares Maya and Yuri.
 
 
-**style: one sentence**
+**style: formal report**
 
 Request:
 
-> Lars arrived earlier than Gia. Yuri arrived earlier than Wes. Gia arrived earlier than Yuri. Dina arrived earlier than Lars. Which two people does the first clue compare? Answer in one short sentence that states the result. Do not show any working.
+> Omar is taller than Hana. Gia is taller than Ben. Cal is taller than Gia. Ben is taller than Omar. Which two people does the first clue compare? Answer formally, as one line in a written report. Do not show any working.
 
 Qwen's reply:
 
-> The first clue compares Lars and Gia.
+> The first clue compares Omar and Hana.
 
 
 
-#### Chat-formatted, known answer: given (pilot: 0 of 16 pass the answer check; 0 of those show working)
+#### Chat-formatted, known answer: given (pilot: 12 of 16 pass the answer check; 0 of those show working)
+
+**situation: picking a sports team line-up; correct answer: Raj, Otto, Yuri, Fay, Cal; working shown: False; brevity request: 'Can you just list them in order?'**
+
+Request:
+
+> Hey, I'm setting up the lineup for our rec basketball team and need to sort out who's standing where. Here's what the coach told me: The coach lined them up from shortest to tallest: Raj, Otto, Yuri, Fay, Cal. Otto is taller than Raj. Yuri is taller than Otto. Cal is taller than Fay. Fay is taller than Yuri. Can you put everyone in order from shortest to tallest? Can you just list them in order?
+
+Qwen's reply:
+
+> Raj, Otto, Yuri, Fay, Cal
+
+
+**situation: a teacher preparing a class activity; correct answer: Lena, Hugo, Yuri, Cleo, Sam; working shown: False; brevity request: 'Only the order please, skip the reasoning.'**
+
+Request:
+
+> hey, I'm putting together a quick warm-up activity for my class tomorrow and I want to make sure the logic works before I hand it out. here's the setup I wrote: The race results rank them from fastest to slowest: Lena, Hugo, Yuri, Cleo, Sam. Yuri is faster than Cleo. Hugo is faster than Cleo. Sam is slower than Yuri. Lena is faster than Hugo. Hugo is faster than Yuri. Cleo is faster than Sam. can you put everyone in order from fastest to slowest? Only the order please, skip the reasoning.
+
+Qwen's reply:
+
+> Lena, Hugo, Yuri, Cleo, Sam
+
+
+**situation: a wedding; correct answer: Yuri, Wes, Bea, Ivo, Vic; working shown: False; brevity request: 'Can you just list them in order?'**
+
+Request:
+
+> ok so my cousin's wedding is this weekend and the best man is making us do a silly weigh-in thing for a bet, long story lol. anyway I'm trying to settle an argument with my aunt about who's who. here's what I've got from the sheet: The weigh-in sheet ranks them from heaviest to lightest: Yuri, Wes, Bea, Ivo, Vic. Vic is lighter than Ivo. Yuri is heavier than Wes. Vic is lighter than Bea. Ivo is lighter than Yuri. Ivo is lighter than Bea. Wes is heavier than Bea. can you put everyone in order from heaviest to lightest for me? thanks!! Can you just list them in order?
+
+Qwen's reply:
+
+> Based on the clues provided, here is the order from heaviest to lightest:
+>
+> 1. **Yuri**
+> 2. **Wes**
+> 3. **Bea**
+> 4. **Ivo**
+> 5. **Vic**
+>
+> *(Note: This matches the "heaviest to lightest" ranking you mentioned seeing on the sheet, and it satisfies all the specific comparisons you listed.)*
+
+
+**situation: arranging people for a group photo; correct answer: Ben, Zoe, Jun, Eli, Cleo; working shown: False; brevity request: 'Just the answer, thanks.'**
+
+Request:
+
+> hey, I'm lining people up for a group photo after our fun run club session and want to place everyone by how they finished. The race results rank them from slowest to fastest: Ben, Zoe, Jun, Eli, Cleo. Zoe is faster than Ben. Cleo is faster than Eli. Eli is faster than Jun. Zoe is slower than Jun. Can you list everyone in order from slowest to fastest? Just the answer, thanks.
+
+Qwen's reply:
+
+> Ben, Zoe, Jun, Eli, Cleo
+
 
 **one that FAILED the answer check (left out)**
 
 Request:
 
-> I'm trying to figure out a seating chart for our group dinner, and the weights matter for who sits where on the bench. Here's what I have: The weigh-in sheet ranks them from heaviest to lightest: Ben, Zoe, Ivo, Suki, Milo. Ivo is lighter than Zoe. Ben is heavier than Milo. Milo is lighter than Ivo. Suki is lighter than Ivo. Zoe is lighter than Ben. Milo is lighter than Suki. Can you put everyone in order from heaviest to lightest?
+> hey, I'm stuck on a logic puzzle for my school project on family trees and I can't figure out the order. Here's what we were given: The family records list them from oldest to youngest: Quinn, Sam, Ivo, Dev, Ines. Ivo is older than Dev. Quinn is older than Sam. Sam is older than Ivo. Dev is older than Ines. Can you put everyone in order from oldest to youngest? Can you just list them in order?
 
 Qwen's reply:
 
-> Based on the clues you provided, let's break down the relationships to determine the correct order from heaviest to lightest.
+> Based on the clues provided, here is the logical deduction to find the correct order:
 >
-> **1. Analyze the direct comparisons:**
-> *   **Ben vs. Others:** "Ben is heavier than Milo" and "Zoe is lighter than Ben." This tells us Ben > Zoe and Ben > Milo.
-> *   **Zoe vs. Ivo:** "Ivo is lighter than Zoe." So, **Zoe > Ivo**.
-> *   **Milo vs. Others:** "Milo is lighter than Ivo" (Ivo > Milo) and "Milo is lighter than Suki" (Suki > Milo).
-> *   **Suki vs. Ivo:** "Suki is lighter than Ivo." So, **Ivo > Suki**.
+> 1.  **Quinn** is older than Sam.
+> 2.  **Sam** is older than Ivo.
+> 3.  **Ivo** is older than Dev.
+> 4.  **Dev** is older than Ines.
 >
-> **2. Chain the logic together:**
-> *   We know **Ben** is heavie […]
+> Connecting these points creates a single continuous chain: Quinn → Sam → Ivo → Dev → Ines. This matches the list you were originally given in the records.
+>
+> Here is the final order from oldest to youngest:
+>
+> 1. Quinn
+> 2. Sam
+> 3. Ivo
+> 4. Dev
+> 5. Ines
 
 
 
@@ -898,6 +696,58 @@ Qwen's reply:
 
 
 
+##### WildChat with a brevity request added, answered again (pilot: 16; not yet labelled)
+
+**[89773893] brevity request: 'Keep it short.'**
+
+Request:
+
+> 我本地有在 script.rand.utils目录下有个文件叫noise.py，我在script.aa 目录下的test.py文件去使用noise.py中的函数，我在test.py中from script。rand.util import noise as noise_lib 提示expected type union got noise.py instead Keep it short.
+
+Qwen's reply:
+
+> 这是类型检查器（如 Pyright 或 mypy）的常见提示，通常是因为**导入路径不匹配**或**缺少 `__init__.py`**。
+>
+> 请执行以下两步修复：
+>
+> 1.  **修正导入语句**
+>     你的目录是 `script.rand.utils`（复数），但代码写的是 `util`（单数）。请将 `test.py` 中的导入改为：
+>     ```python
+>     from script.rand.utils import noise as noise_lib
+>     ```
+>
+> 2.  **确保包结构完整**
+>     确认以下三个目录下都有 `__init__.py` 文件（可以是空文件），否则 Python 无法识别为包：
+>     *   `script/__init__.py`
+>     *   `script/rand/__init__.py`
+>     *   `script/rand/utils/__init__.py`
+>
+> 修正后重启编辑器即可消除报错。
+
+
+**[bd0b8887] brevity request: 'Just the answer, thanks.'**
+
+Request:
+
+> Write a current and up to date information of a constructive guide for my Florence travel guide on "Top 10 delicious Delicious foods you should try" with humanlike style, non repetitive phrases and avoidance of unnatural sentences and randomness while explaining in details. Please prevent writing listing/numbered format while generating the travel guide content. Just the answer, thanks.
+
+Qwen's reply:
+
+> Stepping into Florence feels like wandering through a living Renaissance painting, but the true soul of this city is found not just in its art galleries, but in the humble yet profound flavors that have defined Tuscan cuisine for centuries. Your culinary journey should begin with the iconic Bistecca alla Fiorentina, a massive T-bone steak grilled over wood embers to a perfect medium-rare, seasoned simply with salt, pepper, and olive oil to let the high-quality Chianina beef speak for itself; it is a dish best shared at a bustling osteria where the sizzle of the grill competes with the lively c […]
+
+
+**[6f365475] brevity request: 'Just the answer, thanks.'**
+
+Request:
+
+> What are some traits of the Aquarious star sign? Just the answer, thanks.
+
+Qwen's reply:
+
+> Aquarius is known for being independent, innovative, humanitarian, intellectual, unconventional, and idealistic.
+
+
+
 ## Maths
 
 
@@ -906,150 +756,101 @@ Qwen's reply:
 
 #### Current: computed (923 rows; Qwen works it out)
 
-**style: bullets**
+**style: formal report**
 
 Request:
 
-> A train travels at 59 km per hour for 36 hours. How far does it go? Answer as two or three short bullet points, one of which gives the result. Do not show any working.
+> 648 sweets are shared equally among 12 children. How many does each child get? Answer formally, as one line in a written report. Do not show any working.
 
 Qwen's reply:
 
-> - The train maintains a constant speed of 59 km/h over the duration of the trip.
-> - It travels for a total time period of 36 hours.
-> - The total distance covered is 2,124 kilometers.
+> Each of the 12 children receives an equal share of 54 sweets.
 
 
-**style: bullets**
+**style: formal report**
 
 Request:
 
-> Three invoices are for $561, $771 and $660. What is the total? Answer as two or three short bullet points, one of which gives the result. Do not show any working.
+> A warehouse has 66 boxes with 65 bolts in each. How many bolts are there? Answer formally, as one line in a written report. Do not show any working.
 
 Qwen's reply:
 
-> - The three invoice amounts are $561, $771, and $660.
-> - Summing these figures yields a combined total of $1,992.
+> The warehouse contains a total of 4,290 bolts.
 
 
-**style: email**
+**style: short paragraph**
 
 Request:
 
-> Three invoices are for $636, $871 and $643. What is the total? Reply as a brief email to a colleague that reports the result. Do not show any working.
+> What is 15% of 1340 people? Answer in a short paragraph of three or four sentences that puts the result in context. Do not show any working.
 
 Qwen's reply:
 
-> Subject: Total Invoice Amount
->
-> Hi,
->
-> The total for the three invoices ($636, $871, and $643) is $2,150.
->
-> Best regards,  
-> [Your Name]
+> Calculating 15% of a group of 1,340 people yields a total of 201 individuals. This figure represents the specific subset of the population that falls within this particular percentage threshold. In practical terms, if you were organizing an event or analyzing survey data for this group, exactly 201 people would constitute that 15% segment. Understanding this number helps in accurately allocating resources or interpreting demographic trends within the larger community.
 
 
 
-#### Chat-formatted, known answer: computed (pilot: 9 of 16 pass the answer check; 9 of those show working)
+#### Chat-formatted, known answer: computed (pilot: 15 of 16 pass the answer check; 4 of those show working)
 
-**situation: budgeting; correct answer: 2,079; working shown: True**
+**situation: running a small business; correct answer: 171; working shown: False; brevity request: 'Be concise please.'**
 
 Request:
 
-> I'm trying to get my budget spreadsheet sorted out for the craft fair stall and my little one keeps asking about stuff. Quick one: A shop had 6757 stickers and sold 4678. How many remain? Thanks!
+> Running my little bakery on the side and trying to get a handle on our numbers this month. What is 18% of 950 people? That's roughly how many of our mailing list opened the last newsletter, so I want to plan around it. Be concise please.
 
 Qwen's reply:
 
-> To find out how many stickers remain, you simply subtract the number sold from the original total:
+> 18% of 950 is **171**.
 >
-> $$6757 - 4678 = 2079$$
->
-> So, there are **2,079** stickers left. Good luck with your craft fair stall and keeping those little ones entertained!
+> So, approximately **171 people** from your mailing list opened the last newsletter.
 
 
-**situation: cooking for a crowd; correct answer: 400; working shown: True**
+**situation: a home renovation; correct answer: 1,767; working shown: True; brevity request: 'No need for a long explanation.'**
 
 Request:
 
-> I'm cooking for a big family reunion this weekend and trying to figure out how much stock I'll need. Quick maths question: A tank holds 9060 litres and 8660 litres are drained. How much is left? Thanks!
+> We're knocking out a wall in the kitchen this weekend and I'm already covered in drywall dust, so my brain is fried. My kid asked me a homework question while I was taking a break: A train travels at 57 km per hour for 31 hours. How far does it go? No need for a long explanation.
 
 Qwen's reply:
 
-> To find out how much stock is left, you simply need to subtract the amount drained from the total capacity of the tank.
+> The train travels **1,767 kilometers**.
 >
-> Starting with **9060 litres** and removing **8660 litres**:
-> $$9060 - 8660 = 400$$
+> (Calculation: $57 \text{ km/h} \times 31 \text{ h} = 1,767 \text{ km}$)
 >
-> You will have **400 litres** of stock left.
+> Hope the wall demolition goes smoothly! Stay safe with that dust.
 
 
-**situation: a sports club; correct answer: 5,236; working shown: True**
+**situation: budgeting; correct answer: 1,346; working shown: False; brevity request: "What's the figure? Skip the working."**
 
 Request:
 
-> Hey, I'm helping organize equipment for our sports club's weekend tournament and got a bit stuck. A warehouse has 28 boxes with 187 bolts in each. How many bolts are there? Thanks!
+> I'm trying to get my budget spreadsheet sorted out and this little brain teaser came up while I was double-checking my numbers. A shop had 2899 stickers and sold 1553. How many remain? What's the figure? Skip the working.
 
 Qwen's reply:
 
-> To find the total number of bolts, you simply need to multiply the number of boxes by the number of bolts in each box.
->
-> Here is the calculation:
-> $$28 \text{ boxes} \times 187 \text{ bolts/box}$$
->
-> Breaking it down:
-> *   $20 \times 187 = 3,740$
-> *   $8 \times 187 = 1,496$
-> *   $3,740 + 1,496 = 5,236$
->
-> There are **5,236** bolts in total. Good luck with your tournament setup!
+> 1346
 
 
-**situation: a farm; correct answer: 8,232; working shown: True**
+**situation: running a small business; correct answer: 2,690; working shown: False; brevity request: 'Just need the number, no need to show the steps.'**
 
 Request:
 
-> My brother runs a small farm and he asked me to help him with some numbers for the spring order. A warehouse has 49 boxes with 168 bolts in each. How many bolts are there? Thanks!
+> Hey, I'm trying to get my inventory numbers straight for my small business tonight. A shop had 8163 stickers and sold 5473. How many remain? Thanks, my brain is fried from doing this all day. Just need the number, no need to show the steps.
 
 Qwen's reply:
 
-> To find the total number of bolts, we need to multiply the number of boxes by the number of bolts in each box.
->
-> **Given:**
-> *   Number of boxes: $49$
-> *   Bolts per box: $168$
->
-> **Calculation:**
-> $$ \text{Total Bolts} = 49 \times 168 $$
->
-> We can break this down for easier calculation:
-> 1.  Multiply $168$ by $50$:
->     $$ 168 \times 50 = 8,400 $$
-> 2.  Since $49$ is one less than $50$, subtract one set of $168$ from the result:
->     $$ 8,400 - 168 = 8,232 $$
->
-> Alternatively, using standard multiplication:
-> $$ 168 \times 49 = 8,232 $$
->
-> **Answer:**
-> There are **8,232** bolts in total.
+> 2690
 
 
 **one that FAILED the answer check (left out)**
 
 Request:
 
-> Hey, I'm in the middle of a home renovation and my brain is fried from measuring everything. Quick random question to warm up: A train travels at 137 km per hour for 84 hours. How far does it go? Thanks, my tile guy is already texting me about the grout.
+> We're moving house this weekend and I'm trying to sort out the garden stuff before the movers arrive. 61 plants cost $153 each. What do they cost in total? Thanks! Just the answer, thanks.
 
 Qwen's reply:
 
-> No worries, take a deep breath! Renovation math is tough enough without adding train problems to the mix.
->
-> To find the distance, you just multiply the speed by the time:
-> $$137 \text{ km/h} \times 84 \text{ hours} = 11,508 \text{ km}$$
->
-> So, the train travels **11,508 kilometers**.
->
-> Good luck with the grout—hopefully, your tile guy's texts are good news!
+> 9453
 
 
 
@@ -1243,92 +1044,63 @@ Qwen's reply:
 
 
 
-#### Chat-formatted, known answer: given (pilot: 5 of 16 pass the answer check; 0 of those show working)
+#### Chat-formatted, known answer: given (pilot: 14 of 16 pass the answer check; 0 of those show working)
 
-**situation: budgeting; correct answer: 1,804; working shown: False**
-
-Request:
-
-> I'm trying to get my small business budget sorted this month and the numbers keep confusing me. The accountant added up the three invoices and got $1,804. What is the total?
-
-Qwen's reply:
-
-> Based on the information you provided, the accountant has already performed the calculation for you. Since they added up the three invoices and arrived at **$1,804**, that figure represents the total sum of those invoices.
->
-> Unless there are additional expenses or invoices not yet included in that specific count, the total is **$1,804**.
->
-> If you have the individual amounts for the three invoices and want to double-check the math yourself, feel free to share them, and I can verify the addition for you!
-
-
-**situation: shopping; correct answer: 1,075; working shown: False**
+**situation: a sports club; correct answer: 92; working shown: False; brevity request: 'Short version please.'**
 
 Request:
 
-> I'm trying to decide between two hiking backpacks online and need to compare how they handle long trips. Quick question while I'm at it: The hiker's watch shows 1,075 m of climbing over three stretches. How much did they climb altogether? Thanks, I'm kind of overwhelmed by all the product specs.
+> hey, I'm helping organise the end of season party for our local sports club and I'm trying to sort out the treats. The teacher worked out that each of the 12 children gets 92 sweets. How many does each get? Want to make sure the numbers are right before I tell the coach. Short version please.
 
 Qwen's reply:
 
-> It sounds like you're in the thick of researching gear, which can definitely get overwhelming with all the technical details!
+> Each child gets **92** sweets.
 >
-> To answer your specific question about the watch: If the display shows **1,075 meters** of climbing accumulated over three stretches, that number already represents the total sum. The watch aggregates the elevation gain from each section as you go.
->
-> So, the hiker climbed **1,075 meters** altogether. You don't need to add anything else unless you have separate readings for each stretch that haven't been summed up yet.
->
-> Good luck narrowing down those backpacks—focusing o […]
+> The teacher's calculation already states the amount per child, so no further math is needed!
 
 
-**situation: budgeting; correct answer: 1,201; working shown: False**
+**situation: shopping; correct answer: 3,266; working shown: False; brevity request: 'Just need the number, no need to show the steps.'**
 
 Request:
 
-> I'm trying to figure out my hiking budget for the trip and need to track the elevation side of things. The hiker's watch shows 1,201 m of climbing over three stretches. How much did they climb altogether?
+> I'm pricing out turf for my backyard at one of those garden centres and the sheet they gave me doesn't add up for me. The plan lists the 71 m by 46 m garden's area as 3,266 square metres. What is its area? Just need the number, no need to show the steps.
 
 Qwen's reply:
 
-> Based on the information you provided, the hiker's watch indicates a total of **1,201 meters** of climbing.
->
-> The phrase "over three stretches" describes how that elevation gain was distributed (i.e., accumulated across three separate sections of the hike), but it does not imply that you need to multiply the number by three. The watch reading of 1,201 m represents the cumulative sum of all those stretches combined.
->
-> **Total climbing: 1,201 meters**
+> 3266
 
 
-**situation: a school fundraiser; correct answer: 1,012; working shown: False**
+**situation: running a small business; correct answer: 3,552; working shown: False; brevity request: 'No need to walk me through it, just the answer.'**
 
 Request:
 
-> Hey, I'm helping organize our school fundraiser bake sale and we're trying to sort out the money side of things. The accountant added up the three invoices and got $1,012. What is the total? Just want to make sure the numbers line up before we send anything to the PTA.
+> Running a small freight business on the side and trying to sort out some numbers for a client. A train travelled for 48 hours and the log says it covered 3,552 km. How far did it go? No need to walk me through it, just the answer.
 
 Qwen's reply:
 
-> Based on the information you provided, the accountant has already summed up the three invoices to arrive at **$1,012**.
->
-> Since that figure represents the sum of all three items, the total amount is simply **$1,012**. You can confidently use this number for your PTA report!
+> 3,552 km
+
+
+**situation: budgeting; correct answer: 2,110; working shown: False; brevity request: "What's the figure? Skip the working."**
+
+Request:
+
+> I'm trying to figure out my hiking budget for the trip and the numbers are getting messy. The hiker's watch shows 2,110 m of climbing over three stretches. How much did they climb altogether? I want to compare it with what I paid for the guided tour last month. What's the figure? Skip the working.
+
+Qwen's reply:
+
+> 2,110 m
 
 
 **one that FAILED the answer check (left out)**
 
 Request:
 
-> We're finally moving house next month and I've been going through the paperwork. The plan lists the 99 m by 151 m garden's area as 14,949 square metres. What is its area?
+> I'm closing out the expense report for our team offsite and my manager wants per-item prices. The receipt says 30 chairs cost $1,260 in total. What did they cost? Only the final number please.
 
 Qwen's reply:
 
-> To determine the correct area of the garden, we simply need to calculate the product of its length and width, assuming it is a rectangular shape as implied by the dimensions provided.
->
-> ### Step-by-Step Calculation
->
-> 1.  **Identify the dimensions**:
->     *   Length ($L$) = $151$ meters
->     *   Width ($W$) = $99$ meters
->
-> 2.  **Apply the area formula for a rectangle**:
->     $$ \text{Area} = L \times W $$
->
-> 3.  **Perform the multiplication**:
->     $$ \text{Area} = 151 \times 99 $$
->
->     You can calculate this directly or use a shortcut by treating $99$ as $(100 - 1)$:
->     $$ 151 \times (100 - 1) = (151  […]
+> 42
 
 
 
@@ -1444,4 +1216,48 @@ Qwen's reply:
 >
 > **The Catalyst:**
 > In the weeks leading up to SummerSlam, Hulk Hogan returns to the main roster not as a wrestler, but as a special guest commentator or a "Hall of Famer's Representat […]
+
+
+
+##### WildChat with a brevity request added, answered again (pilot: 16; not yet labelled)
+
+**[cc2006a3] brevity request: 'Be concise please.'**
+
+Request:
+
+> Act like a Dramatic story theory expert and explain to me step by step how to find the Objective Story Domain and Issue. Be concise please.
+
+Qwen's reply:
+
+> Listen closely. In the architecture of a compelling narrative, the **Objective Story** is the battlefield where the characters' external conflicts collide with reality. It is not about internal feelings; it is about the tangible problem threatening the group's survival or success.
+>
+> Here is your step-by-step protocol to isolate the **Domain** and the **Issue**:
+>
+> ### Step 1: Isolate the "Big Problem"
+> Strip away character motivations and subplots. Ask: **"What is the single, external obstacle preventing the entire cast from achieving their goal?"**
+> *   *Example:* A plague is killing the city. A c […]
+
+
+**[64107e54] brevity request: 'Keep it short.'**
+
+Request:
+
+> How would Arya react to Gendry making arrows for her? Keep it short.
+
+Qwen's reply:
+
+> Arya would likely react with a mix of quiet gratitude and guarded surprise. While she values Gendry's craftsmanship, she might initially downplay the gesture to maintain her tough exterior, perhaps teasing him about making "kings" arrows instead of simple ones. However, beneath the sarcasm, she would deeply appreciate the gift as a tangible reminder that he still remembers her true self and cares for her safety, even if she refuses to admit it outright.
+
+
+**[4207fee2] brevity request: 'Be concise please.'**
+
+Request:
+
+> Write a setting description for the year 1970 in a fictional timeline where the First World War never ended. Be concise please.
+
+Qwen's reply:
+
+> By 1970, the world is a gray, static monument to a century of stalemate. The Western Front remains a scarred labyrinth of deep concrete bunkers and automated artillery emplacements, stretching from the Swiss Alps to the Belgian coast, where trench lines have become permanent cities powered by geothermal vents and coal.
+>
+> Technology has stagnated in a paradoxical loop: while internal combustion engines are obsolete due to fuel rationing, steam-powered exoskeletons and diesel-electric dreadnoughts dominate the skies and seas. Nations exist as fortified city-states behind massive steel palisades,  […]
 
