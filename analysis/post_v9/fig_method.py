@@ -20,6 +20,7 @@ DOTS, C = FIG.DOTS, FIG.EXAMPLE_COLOURS
 TEXT, MUTED = FIG.F.v6.TEXT, FIG.F.v6.MUTED
 BOX_FILL = "#f4f5f3"
 POSITIVE, NEGATIVE = "#2f6b4f", "#7a7f7c"
+POSITIVE_LABEL = "held-out positives"  # panel 3's reference dot: the median of panel 2's held-out positives
 
 # Two training replies from data/concepts/m26_ordering_train.jsonl (as shown on the methodology page): Qwen works out
 # the order (positive) vs the order is already given in the question (negative). Questions shortened.
@@ -113,7 +114,7 @@ def version_1() -> None:
     fig, axes = plt.subplots(1, 3, figsize=(20, 4.6), gridspec_kw={"width_ratios": [1.1, 1, 1.15], "wspace": 0.12})
     draw_loop(axes[0], fontsize=11.5)
     draw_calibration(axes[1])
-    FIG.draw_score(axes[2], fontsize=12, dot_size=220)
+    FIG.draw_score(axes[2], fontsize=12, dot_size=220, positive_label=POSITIVE_LABEL)
     for ax, title in zip(axes, ("1. The search", "2. Setting the threshold", "3. The score: 9.2 ÷ 20.0 = 0.46")):
         step_title(ax, title)
     save(fig, "method_v1.png")
@@ -125,7 +126,7 @@ def version_2() -> None:
     draw_loop(axes[0, 0])
     draw_snippets(axes[0, 1])
     draw_calibration(axes[1, 0])
-    FIG.draw_score(axes[1, 1], fontsize=12, dot_size=220)
+    FIG.draw_score(axes[1, 1], fontsize=12, dot_size=220, positive_label=POSITIVE_LABEL)
     titles = ("1. The search", "2. Training the probe (ordering)", "3. Setting the threshold", "4. The score: 9.2 ÷ 20.0 = 0.46")
     for ax, title in zip(axes.flat, titles):
         step_title(ax, title)
@@ -141,7 +142,7 @@ def version_3() -> None:
     score = fig.add_subplot(gs[1, 1], sharex=calibration)
     draw_loop(loop)
     draw_calibration(calibration, show_axis=False)
-    FIG.draw_score(score, fontsize=12, dot_size=220, line_label=False)
+    FIG.draw_score(score, fontsize=12, dot_size=220, line_label=False, positive_label=POSITIVE_LABEL)
     calibration.set_xlim(-13.5, FIG.example_medians()["plain"] + 4.5)
     step_title(loop, "1. The search")
     step_title(calibration, "2. Setting the threshold")

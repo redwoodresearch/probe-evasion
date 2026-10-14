@@ -112,14 +112,14 @@ def example_medians() -> dict[str, float]:
     return {"plain": med["plain correct answers"], "off": med["OFF replies"], "on": med["ON replies"], "line": DOTS.flag_line(cfg)}
 
 
-def draw_score(ax, fontsize: float = 13, dot_size: float = 300, line_label: bool = True) -> None:
+def draw_score(ax, fontsize: float = 13, dot_size: float = 300, line_label: bool = True, positive_label: str = "normal answer") -> None:
     """Three dots (normal answer, attack OFF, attack ON), the flag line and the two distances whose ratio is the score."""
     m, c = example_medians(), EXAMPLE_COLOURS
     plain, off, on, line = m["plain"], m["off"], m["on"], m["line"]
     ax.plot([line, line], [-0.75, 1.0], color=c["line"], lw=2.5)
     if line_label:
         ax.text(line, 1.1, "threshold", ha="center", fontsize=fontsize, color=c["line"])
-    for x, colour, label in ((plain, c["plain"], "normal answer"), (off, c["off"], "attack OFF"), (on, c["on"], "attack ON")):
+    for x, colour, label in ((plain, c["plain"], positive_label), (off, c["off"], "attack OFF"), (on, c["on"], "attack ON")):
         ax.scatter(x, 0.4, s=dot_size, color=colour, zorder=3)
         ax.text(x, 0.7, label, ha="center", fontsize=fontsize, color=colour)
     ax.annotate("", xy=(on + 0.3, 0.4), xytext=(off - 0.3, 0.4), arrowprops=dict(arrowstyle="->", color=c["on"], lw=2.5))
