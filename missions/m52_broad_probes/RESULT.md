@@ -65,3 +65,44 @@ Files:
 - `analysis/broad_probe/m52_analysis.py`, `m52_details.py` → `analysis/broad_probe/m52/results.json`, `details.json`;
 - `analysis/broad_probe/training_examples.md`, `wildchat_examples.md` (real rows);
 - raw rows on the Modal volume `probe-evasion_nabil-baugher_m52-state_kill-2026-11-30` and in `missions/m52_broad_probes/run/` (not in git).
+
+## Follow-up (14 Oct): is the broad probe partly a "chat" detector?
+
+**Why.** In the full broad probe, chat-format rows were 38% of positives but 68% of negatives (ordering; maths 33% /
+73%), so part of the direction could be "chat-shaped means no task".
+
+**Check 1: a balanced probe.** Same three sources, cut down so chat-format rows are half of each class:
+- ordering: 1,790 positives, 3,872 negatives;
+- maths: 1,666 positives, 3,664 negatives.
+
+It passes the same gate: 100% of held-out chat positives and 100% of normal test answers flagged at its WildChat
+threshold.
+
+| | Maths slope [95%] | Ordering slope [95%] | Ordering crossings | Chat look-alikes flagged (ordering / maths) |
+|---|---|---|---|---|
+| Old probe, original threshold | +0.062 [+0.031, +0.102] | +0.099 [+0.062, +0.140] | 0 | 79% / 46% |
+| Full broad probe | +0.057 [+0.023, +0.095] | +0.138 [+0.087, +0.194] | 588 | 6% / 5% |
+| **Balanced broad probe** | **+0.062 [+0.026, +0.101]** | **+0.118 [+0.071, +0.170]** | **498** | 4% / 1% |
+
+- Balanced thresholds: ordering -5.23, maths -5.64.
+- Maths: still 0 crossings.
+- Balanced ordering crossings by writer: Fable 5.1 333 / 1,185, Opus 5.5 114 / 1,197, GPT-6 Astra 31 / 1,290,
+  GPT-6 Sol, Opus 4.8, Sonnet 5.5 and GPT-6.1 Sol 5 each, the 7 lowest-capability writers none.
+
+**Check 2: m51's matched requests** (identical reply text; only the request differs). For both broad probes, on both
+tasks, the "work it out" version scores higher than the "answer given" version in 100% of identical-text pairs:
+- maths: medians +16 to +18 log-odds (old probe +14 to +15);
+- ordering: medians +14 to +17 (old probe +13 to +15).
+
+The wrong-answer version scores higher than the right-answer version in 90-100% of identical pairs (old probe 90-100%).
+
+**Reading.**
+- Some of the full probe's extra ordering movement came from the chat skew: the slope is +0.138 for the full probe
+  and +0.118 for the balanced one, and crossings are 588 and 498.
+- The findings stand with balanced data: the trend holds on both tasks, and the top writers' ordering attacks get
+  through (Fable 5.1 28%, Opus 5.5 10%).
+- The matched-request result shows the broad probes read whether Qwen worked the answer out, not the reply's style.
+- The balanced probe is the one to quote.
+
+Files: `analysis/broad_probe/m52/results.json` (balanced readout), `matched.json`; probes
+`missions/m52_broad_probes/probes/*_balanced_broad.json`.
