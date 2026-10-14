@@ -185,17 +185,43 @@ def draw_score_line(ax, fontsize: float = 16) -> None:
     ax.axis("off")
 
 
+# the attack prompt as a schematic: three blocks, top to bottom as Qwen reads it (label, fill, edge, height, filler lines)
+PROMPT_BLOCKS = [("Attack instructions", "#fbe7da", "#c2541b", 0.34, 3),
+                 ("Switch: ON / OFF", "#fff4c2", "#b38600", 0.13, 0),
+                 ("Task", "#e3ebf5", "#3d5a80", 0.27, 2)]
+
+
+def draw_prompt(ax, fontsize: float = 17) -> None:
+    """Schematic only: no quoted text, faint lines stand in for the words."""
+    y = 0.93
+    for label, fill, edge, h, lines in PROMPT_BLOCKS:
+        ax.add_patch(FancyBboxPatch((0.08, y - h), 0.84, h, boxstyle="round,pad=0.01,rounding_size=0.03",
+                                    fc=fill, ec=edge, lw=1.8, clip_on=False))
+        label_y = y - 0.075 if lines else y - h / 2
+        ax.text(0.5, label_y, label, ha="center", va="center", fontsize=fontsize, color=TEXT, fontweight="bold")
+        for i in range(lines):  # stand-in lines of text
+            ly = label_y - 0.075 - i * 0.06
+            ax.plot([0.16, 0.84 - 0.12 * (i == lines - 1)], [ly, ly], color=edge, lw=3, alpha=0.25, solid_capstyle="round")
+        y -= h + 0.06
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+
 def panel_label(ax, text: str) -> None:
     ax.text(0.5, 1.03, text, transform=ax.transAxes, fontsize=21, color=TEXT, fontweight="bold", ha="center", va="bottom")
 
 
 def search_and_score() -> None:
-    """Two panels only, large text: the search loop, and what the score measures (the threshold is explained in words)."""
-    fig, axes = plt.subplots(1, 2, figsize=(17.5, 6), gridspec_kw={"width_ratios": [1, 1.45], "wspace": 0.14})
+    """Three panels, large text: the search loop, the attack prompt's structure, and what the score measures (the
+    threshold is explained in words)."""
+    fig, axes = plt.subplots(1, 3, figsize=(22, 6.4), gridspec_kw={"width_ratios": [1, 0.7, 1.45], "wspace": 0.1})
     draw_loop(axes[0], fontsize=16)
-    draw_score_line(axes[1])
+    draw_prompt(axes[1])
+    draw_score_line(axes[2])
     panel_label(axes[0], "Search")
-    panel_label(axes[1], "Scoring")
+    panel_label(axes[1], "Prompt")
+    panel_label(axes[2], "Scoring")
     save(fig, "method_search_score.png")
 
 
