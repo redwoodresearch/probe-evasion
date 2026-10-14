@@ -34,14 +34,19 @@ SNIPPETS = [
 ]
 
 
-def box(ax, x: float, y: float, text: str, w: float = 0.34, h: float = 0.2, fontsize: float = 12) -> None:
+# the three actors in the search loop, each with a soft fill and a matching edge
+ACTOR_COLOURS = {"writer": ("#fbe7da", "#c2541b"), "qwen": ("#e3ebf5", "#3d5a80"), "probe": ("#f6dedc", "#b3261e")}
+
+
+def box(ax, x: float, y: float, text: str, w: float = 0.34, h: float = 0.2, fontsize: float = 12, actor: str | None = None) -> None:
+    fill, edge = ACTOR_COLOURS[actor] if actor else (BOX_FILL, TEXT)
     ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h, boxstyle="round,pad=0.012,rounding_size=0.03",
-                                fc=BOX_FILL, ec=TEXT, lw=1.3))
+                                fc=fill, ec=edge, lw=1.6))
     ax.text(x, y, text, ha="center", va="center", fontsize=fontsize, color=TEXT, linespacing=1.35)
 
 
 def arrow(ax, start: tuple, end: tuple, label: str = "", label_xy: tuple | None = None, fontsize: float = 10.5) -> None:
-    ax.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=16, color=TEXT, lw=1.4,
+    ax.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=20, color=MUTED, lw=2,
                                  connectionstyle="arc3,rad=-0.18"))
     if label:
         ax.text(*label_xy, label, ha="center", va="center", fontsize=fontsize, color=MUTED, style="italic")
@@ -49,13 +54,13 @@ def arrow(ax, start: tuple, end: tuple, label: str = "", label_xy: tuple | None 
 
 def draw_loop(ax, fontsize: float = 12) -> None:
     """The search loop. Box positions are in axes units (0-1)."""
-    writer, qwen, probe = (0.2, 0.5), (0.74, 0.8), (0.74, 0.2)
-    box(ax, *writer, "Writer model\n(14 models)\nwrites a prompt", w=0.3, fontsize=fontsize)
-    box(ax, *qwen, "Qwen3.5-27B solves tasks\nwith the prompt,\nswitch ON and OFF", w=0.46, fontsize=fontsize)
-    box(ax, *probe, "Probe reads Qwen's\nactivations", w=0.46, h=0.16, fontsize=fontsize)
+    writer, qwen, probe = (0.215, 0.5), (0.74, 0.8), (0.74, 0.2)
+    box(ax, *writer, "14 writer models\nwrite a prompt", w=0.38, h=0.2, fontsize=fontsize, actor="writer")
+    box(ax, *qwen, "Qwen3.5-27B answers\nwith the prompt\n(switch ON / OFF)", w=0.46, h=0.24, fontsize=fontsize, actor="qwen")
+    box(ax, *probe, "Probe scores\nQwen's activations", w=0.46, h=0.2, fontsize=fontsize, actor="probe")
     arrow(ax, (0.26, 0.62), (0.5, 0.83))
-    arrow(ax, (0.84, 0.69), (0.84, 0.29))
-    arrow(ax, (0.5, 0.16), (0.24, 0.39), "scores and example\nreplies, 16 rounds", (0.29, 0.13), fontsize=fontsize - 1.5)
+    arrow(ax, (0.84, 0.67), (0.84, 0.31))
+    arrow(ax, (0.5, 0.16), (0.24, 0.39), "scores fed back,\n16 rounds", (0.27, 0.15), fontsize=fontsize - 1.5)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis("off")
@@ -150,7 +155,18 @@ def version_3() -> None:
     save(fig, "method_v3.png")
 
 
+def search_and_score() -> None:
+    """Two panels only, large text: the search loop, and what the score measures (the threshold is explained in words)."""
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6), gridspec_kw={"width_ratios": [1, 1.15], "wspace": 0.12})
+    draw_loop(axes[0], fontsize=16)
+    FIG.draw_score(axes[1], fontsize=16, dot_size=480, positive_label="unattacked\nanswer")
+    step_title(axes[0], "1. The search", fontsize=18)
+    step_title(axes[1], "2. The score: 9.2 ÷ 20.0 = 0.46", fontsize=18)
+    save(fig, "method_search_score.png")
+
+
 if __name__ == "__main__":
     version_1()
     version_2()
     version_3()
+    search_and_score()
