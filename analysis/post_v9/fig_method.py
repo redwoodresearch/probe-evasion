@@ -41,7 +41,7 @@ ACTOR_COLOURS = {"writer": ("#fbe7da", "#c2541b"), "qwen": ("#e3ebf5", "#3d5a80"
 def box(ax, x: float, y: float, text: str, w: float = 0.34, h: float = 0.2, fontsize: float = 12, actor: str | None = None) -> None:
     fill, edge = ACTOR_COLOURS[actor] if actor else (BOX_FILL, TEXT)
     ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h, boxstyle="round,pad=0.012,rounding_size=0.03",
-                                fc=fill, ec=edge, lw=1.6))
+                                fc=fill, ec=edge, lw=1.6, clip_on=False))
     ax.text(x, y, text, ha="center", va="center", fontsize=fontsize, color=TEXT, linespacing=1.35)
 
 
@@ -54,10 +54,10 @@ def arrow(ax, start: tuple, end: tuple, label: str = "", label_xy: tuple | None 
 
 def draw_loop(ax, fontsize: float = 12) -> None:
     """The search loop. Box positions are in axes units (0-1)."""
-    writer, qwen, probe = (0.215, 0.5), (0.74, 0.8), (0.74, 0.2)
+    writer, qwen, probe = (0.215, 0.5), (0.72, 0.8), (0.72, 0.2)
     box(ax, *writer, "14 writer models\nwrite a prompt", w=0.38, h=0.2, fontsize=fontsize, actor="writer")
-    box(ax, *qwen, "Qwen3.5-27B answers\nwith the prompt\n(switch ON / OFF)", w=0.46, h=0.24, fontsize=fontsize, actor="qwen")
-    box(ax, *probe, "Probe scores\nQwen's activations", w=0.46, h=0.2, fontsize=fontsize, actor="probe")
+    box(ax, *qwen, "Qwen3.5-27B answers\nwith the prompt\n(switch ON / OFF)", w=0.5, h=0.24, fontsize=fontsize, actor="qwen")
+    box(ax, *probe, "Probe scores\nQwen's activations", w=0.5, h=0.2, fontsize=fontsize, actor="probe")
     arrow(ax, (0.26, 0.62), (0.5, 0.83))
     arrow(ax, (0.84, 0.67), (0.84, 0.31))
     arrow(ax, (0.5, 0.16), (0.24, 0.39), "scores fed back,\n16 rounds", (0.27, 0.15), fontsize=fontsize - 1.5)
