@@ -28,10 +28,13 @@ PANELS = {"maths": "Maths", "ordering": "Ordering", "false_belief": "Belief trac
 ROUNDS = {"B16": "after 16 rounds of feedback", "B0": "round 0, before any feedback"}
 FIT_XS = np.linspace(131, 168, 50)
 KEY_WRITERS = {"fable51": "Fable 5.1", "gpt6astra": "GPT-6 Astra", "gpt61sol": "GPT-6.1 Sol", "opus55": "Opus 5.5"}
-# low and mid capability writers: labelled in the empty band at the top of each panel, with a leader line down to the
-# round-16 dot (beside the dot they land on neighbouring dots and bars). Value: (name, which side of the line the text sits)
-OTHER_WRITERS = {"llama4maverick": ("Llama 4 Maverick", "left"), "gemini38flash": ("Gemini 3.8 Flash", "right")}
-TOP_LABEL_Y = 0.72
+# One low and one mid capability writer, labelled next to their round-16 dot rather than in the right-hand column.
+# Llama 4 Maverick (leftmost, nothing above it) is named just above its range bar, with no leader line: vertical leader
+# lines read as more range bars. Gemini 3.8 Flash sits 1.5 ECI from Opus 4.8, so its name goes up and to the left in
+# empty space, with a short diagonal leader to the dot.
+LLAMA, GEMINI = "llama4maverick", "gemini38flash"
+ABOVE_BAR = 0.025
+GEMINI_LABEL_OFFSET = (-3.5, 0.2)  # (ECI units, score units) from the dot to the text's bottom-right corner
 LABEL_X = 170.5        # labels sit in a column right of the data, with leader lines to their dots
 LABEL_GAP = 0.06       # minimum vertical gap between labels (score units)
 Y_LIMITS = (-0.15, 0.82)
@@ -71,15 +74,17 @@ def plot_round(ax, t: dict, meta: dict, hollow: bool, bars: bool, fit_style: str
     ax.plot(FIT_XS, k * FIT_XS + c0, fit_style, color=F.v6.TEXT, lw=1.8)
 
 
-def label_writers(ax, means: dict, meta: dict) -> None:
+def label_writers(ax, means: dict, chains: dict, meta: dict) -> None:
     keys = list(KEY_WRITERS)
     for w, y in zip(keys, spread([means[w] for w in keys])):
         ax.plot([xpos(w, meta) + 0.3, LABEL_X - 0.2], [means[w], y], color=F.v6.MUTED, lw=0.7, zorder=2)
         ax.text(LABEL_X, y, KEY_WRITERS[w], va="center", fontsize=11, color=F.v6.TEXT)
-    for w, (name, ha) in OTHER_WRITERS.items():
-        x = xpos(w, meta)
-        ax.plot([x, x], [means[w] + 0.03, TOP_LABEL_Y + 0.02], color=F.v6.MUTED, lw=0.7, zorder=2)
-        ax.text(x + (0.4 if ha == "left" else -0.4), TOP_LABEL_Y, name, ha=ha, va="bottom", fontsize=11, color=F.v6.TEXT)
+    ax.text(xpos(LLAMA, meta) + 0.6, max(chains[LLAMA]) + ABOVE_BAR, "Llama 4\nMaverick", ha="center", va="bottom",
+            fontsize=10.5, color=F.v6.TEXT, linespacing=1.1)
+    x, y = xpos(GEMINI, meta), means[GEMINI]
+    ax.annotate("Gemini 3.8\nFlash", (x, y), xytext=(x + GEMINI_LABEL_OFFSET[0], y + GEMINI_LABEL_OFFSET[1]), ha="right",
+                va="bottom", fontsize=10.5, color=F.v6.TEXT, linespacing=1.1,
+                arrowprops=dict(arrowstyle="-", color=F.v6.MUTED, lw=0.7, relpos=(1, 0), shrinkA=1, shrinkB=6))
 
 
 def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict) -> None:
@@ -91,7 +96,7 @@ def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict) -> Non
         ax.set_title(f"{title}\nafter 16 rounds {fmt(data['B16']['all14'])};  round 0 {fmt(data['B0']['all14'])}", fontsize=12)
     else:
         ax.set_title(f"{title}: {fmt(data[rounds[0]]['all14'])}", fontsize=13)
-    label_writers(ax, data[rounds[0]]["writer_means"], meta)
+    label_writers(ax, data[rounds[0]]["writer_means"], data[rounds[0]]["writer_chains"], meta)
     ax.axhline(0, color=F.v6.MUTED, lw=0.8)
     ax.grid(axis="y", color=F.v6.GRID)
     ax.set_xlim(130, 179)
