@@ -139,7 +139,7 @@ def how_to_read() -> None:
     plt.close(fig)
 
 
-def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str) -> None:
+def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None = None) -> None:
     fig, axes = plt.subplots(2, 2, figsize=(15, 11.5 if len(rounds) == 2 else 11), sharex=True, sharey=True,
                              gridspec_kw={"hspace": 0.3 if len(rounds) == 2 else 0.2, "wspace": 0.08})
     for ax, (task, title) in zip(axes.flat, PANELS.items()):
@@ -148,7 +148,8 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str) -> Non
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
     for ax in axes[:, 0]:
         ax.set_ylabel(Y_LABEL, fontsize=12)
-    fig.suptitle(suptitle, fontsize=15, x=0.02, ha="left")
+    if suptitle:
+        fig.suptitle(suptitle, fontsize=15, x=0.02, ha="left")
     handles = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
     if len(rounds) == 2:
         handles += [Line2D([], [], marker="o", color=F.v6.TEXT, ls="-", ms=8, label="after 16 rounds"),
@@ -159,7 +160,7 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str) -> Non
     bars = "bars = range over 3 searches (after 16 rounds)" if len(rounds) == 2 else "bars = range over 3 searches"
     fig.text(0.5, 0.06, f"Slopes per 10 ECI [95% interval, resampling writers then searches]; {bars}; strict 1% flag line",
              ha="center", fontsize=11, color=F.v6.MUTED)
-    fig.subplots_adjust(left=0.08, right=0.97, top=0.9, bottom=0.13)
+    fig.subplots_adjust(left=0.08, right=0.97, top=0.9 if suptitle else 0.95, bottom=0.13)
     fig.savefig(HERE / "figures" / name, bbox_inches="tight")
     plt.close(fig)
 
@@ -168,7 +169,7 @@ def main() -> None:
     meta = {r["writer"]: r for r in F.writer_rows(F.load_m45(), "maths")}  # ECI and lab per writer
     for b, when in ROUNDS.items():
         figure((b,), meta, f"trend_2x2_{b.lower()}.png", f"Qwen3.5-27B, 14 writers, {when}")
-    figure(("B16", "B0"), meta, "trend_2x2_combined.png", "Qwen3.5-27B, 14 writers: after 16 rounds of feedback vs round 0")
+    figure(("B16", "B0"), meta, "trend_2x2_combined.png")
     how_to_read()
 
 
