@@ -4,7 +4,7 @@ round 0 (before any feedback). Values and slopes from the independent recomputat
 
     .venv/bin/python analysis/post_v9/fig_2x2.py      # writes figures/trend_2x2_b16.png and figures/trend_2x2_b0.png
 
-The round-16 figure opens with a one-row worked example (Fable 5.1 on ordering) showing what the score measures.
+Also writes figures/how_to_read.png: one worked example (Fable 5.1 on ordering) showing what the score measures.
 """
 
 import importlib.util
@@ -31,7 +31,7 @@ KEY_WRITERS = {"fable51": "Fable 5.1", "gpt6astra": "GPT-6 Astra", "gpt61sol": "
 LABEL_X = 170.5        # labels sit in a column right of the data, with leader lines to their dots
 LABEL_GAP = 0.06       # minimum vertical gap between labels (score units)
 Y_LIMITS = (-0.15, 0.82)
-Y_LABEL = "probe-dodging score\n(0 = no change, 1 = reaches the flag line)"
+Y_LABEL = "probe-dodging score\n(0 = no move; 1 or more = past the flag line)"
 EXAMPLE_TASK = "ordering"  # the worked example: Fable 5.1 (make_dots' writer for ordering), medians over correct pairs
 EXAMPLE_COLOURS = {"plain": "#3b4440", "off": "#3d5a80", "on": "#c2541b", "line": "#b3261e"}
 
@@ -74,42 +74,45 @@ def panel(ax, task: str, title: str, b: str, meta: dict) -> None:
     ax.set_ylim(*Y_LIMITS)
 
 
-def example_strip(ax) -> None:
-    """One number line: a plain answer, the attack OFF and ON, and the flag line, with the score's two distances."""
+def how_to_read() -> None:
+    """A simple standalone picture of what the score measures, from one real example (Fable 5.1 on ordering)."""
     cfg = DOTS.TASKS[EXAMPLE_TASK]
     line = DOTS.flag_line(cfg)
     med = {label.split("\n")[0]: float(np.median(xs)) for label, xs, _ in DOTS.strips(cfg)}
     plain, off, on = med["plain correct answers"], med["OFF replies"], med["ON replies"]
+    moved, room = off - on, plain - line
     c = EXAMPLE_COLOURS
-    ax.axvspan(-14, line, color="#f6dcd6", zorder=0)
-    ax.axvline(line, color=c["line"], lw=2.5)
-    ax.text(line - 0.3, 0.55, "flag line", color=c["line"], ha="right", fontsize=11.5)
-    for x, colour, label in ((plain, c["plain"], "plain answer"), (off, c["off"], "attack OFF"), (on, c["on"], "attack ON")):
-        ax.scatter(x, 0, s=230, color=colour, zorder=3)
-        ax.text(x, 0.28, label, ha="center", fontsize=11.5, color=colour)
-    ax.annotate("", xy=(on, -0.05), xytext=(off, -0.05), arrowprops=dict(arrowstyle="->", color=c["on"], lw=2.5))
-    ax.text((on + off) / 2, -0.42, f"the attack moves it {off - on:.1f}", ha="center", fontsize=11.5, color=c["on"])
-    ax.annotate("", xy=(line, -0.78), xytext=(plain, -0.78), arrowprops=dict(arrowstyle="<->", color=c["plain"], lw=1.2))
-    ax.text((line + plain) / 2, -1.15, f"a plain answer is {plain - line:.1f} from the line", ha="center", fontsize=11.5,
+    fig, ax = plt.subplots(figsize=(12, 4.6))
+    ax.fill_between([-13, line], -0.5, 1.2, color="#eef3ee", zorder=0)
+    ax.text(line - 0.4, 1.05, "not flagged", ha="right", fontsize=13, color="#5c6762")
+    ax.text(line + 0.4, 1.05, "flagged", ha="left", fontsize=13, color=c["line"])
+    ax.plot([line, line], [-0.5, 1.2], color=c["line"], lw=3)
+    for x, colour, label in ((plain, c["plain"], "normal answer"), (off, c["off"], "attack OFF"), (on, c["on"], "attack ON")):
+        ax.scatter(x, 0.45, s=420, color=colour, zorder=3)
+        ax.text(x, 0.72, label, ha="center", fontsize=14, color=colour, fontweight="bold")
+    ax.annotate("", xy=(on + 0.35, 0.45), xytext=(off - 0.35, 0.45), arrowprops=dict(arrowstyle="->", color=c["on"], lw=3))
+    ax.text((on + off) / 2, 0.22, f"the attack moves it {moved:.1f}", ha="center", fontsize=13, color=c["on"])
+    ax.annotate("", xy=(line, -0.1), xytext=(plain, -0.1), arrowprops=dict(arrowstyle="<->", color=c["plain"], lw=1.5))
+    ax.text((line + plain) / 2, -0.34, f"a normal answer is {room:.1f} from the flag line", ha="center", fontsize=13,
             color=c["plain"])
-    ax.text(14.6, -0.3, f"probe-dodging score\n= {off - on:.1f} ÷ {plain - line:.1f} ≈ {(off - on) / (plain - line):.2f}",
-            fontsize=13, va="center", color=F.v6.TEXT)
-    ax.set_xlim(-12, 14)
-    ax.set_ylim(-1.35, 0.85)
-    ax.set_yticks([])
-    for side in ("top", "right", "left"):
-        ax.spines[side].set_visible(False)
-    ax.set_xlabel("probe score (log-odds; higher = the probe sees the task being done)", fontsize=11)
-    ax.set_title("How to read the score: Fable 5.1's ordering attack (median over correct answers)", loc="left", fontsize=13)
+    ax.text(-12.6, -0.82, f"Probe-dodging score = {moved:.1f} ÷ {room:.1f} ≈ {moved / room:.2f}", fontsize=15, color=F.v6.TEXT)
+    ax.text(-12.6, -1.12, "0 = the attack doesn't move the answer. 1 or more = the typical attacked answer is past the flag line, so the probe is fooled.", fontsize=13,
+            color=F.v6.MUTED)
+    ax.set_xlim(-13, 13.5)
+    ax.set_ylim(-1.3, 1.25)
+    ax.axis("off")
+    ax.set_title("What the score measures (Fable 5.1's attack on the ordering task; typical correct answer)", loc="left",
+                 fontsize=14)
+    fig.tight_layout()
+    fig.savefig(HERE / "figures" / "how_to_read.png", bbox_inches="tight")
+    plt.close(fig)
 
 
 def figure(b: str, meta: dict) -> None:
-    with_example = b == "B16"
+    with_example = False  # the worked example is its own figure (how_to_read.png)
     fig = plt.figure(figsize=(15, 15.5 if with_example else 11))
     gs = fig.add_gridspec(3 if with_example else 2, 2, height_ratios=[1.25, 4, 4] if with_example else [1, 1], hspace=0.38)
     rows = 1 if with_example else 0
-    if with_example:
-        example_strip(fig.add_subplot(gs[0, :]))
     axes = np.array([[fig.add_subplot(gs[rows + i, j]) for j in range(2)] for i in range(2)])
     for ax in axes.flat[1:]:
         ax.sharex(axes[0, 0]); ax.sharey(axes[0, 0])
@@ -122,14 +125,14 @@ def figure(b: str, meta: dict) -> None:
     for ax in axes[-1]:
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
     for ax in axes[:, 0]:
-        ax.set_ylabel(Y_LABEL)
+        ax.set_ylabel(Y_LABEL, fontsize=12)
     fig.suptitle(f"Qwen3.5-27B, 14 writers, {ROUNDS[b]}", fontsize=15, x=0.02, ha="left")
     handles = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
     handles.append(Line2D([], [], color=F.v6.TEXT, ls="-", label="least-squares fit"))
     fig.legend(handles=handles, loc="lower center", ncol=6, frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.01))
     fig.text(0.5, 0.045 if with_example else 0.06, "Slopes [95% interval, resampling writers then searches]; bars = range over 3 searches; strict 1% flag line",
              ha="center", fontsize=11, color=F.v6.MUTED)
-    fig.subplots_adjust(left=0.08, right=0.97, top=0.94 if with_example else 0.92, bottom=0.1 if with_example else 0.13)
+    fig.subplots_adjust(left=0.08, right=0.97, top=0.94 if with_example else 0.9, bottom=0.1 if with_example else 0.13)
     fig.savefig(HERE / "figures" / f"trend_2x2_{b.lower()}.png", bbox_inches="tight")
     plt.close(fig)
 
@@ -138,6 +141,7 @@ def main() -> None:
     meta = {r["writer"]: r for r in F.writer_rows(F.load_m45(), "maths")}  # ECI and lab per writer
     for b in ROUNDS:
         figure(b, meta)
+    how_to_read()
 
 
 if __name__ == "__main__":
