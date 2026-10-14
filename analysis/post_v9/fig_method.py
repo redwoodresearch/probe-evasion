@@ -186,7 +186,7 @@ def draw_score_line(ax, fontsize: float = 16) -> None:
 
 
 def panel_label(ax, text: str) -> None:
-    ax.text(0.0, 1.02, text.upper(), transform=ax.transAxes, fontsize=12.5, color=MUTED, fontweight="bold", va="bottom")
+    ax.text(0.5, 1.03, text, transform=ax.transAxes, fontsize=21, color=TEXT, fontweight="bold", ha="center", va="bottom")
 
 
 def search_and_score() -> None:
@@ -194,8 +194,8 @@ def search_and_score() -> None:
     fig, axes = plt.subplots(1, 2, figsize=(17.5, 6), gridspec_kw={"width_ratios": [1, 1.45], "wspace": 0.06})
     draw_loop(axes[0], fontsize=16)
     draw_score_line(axes[1])
-    panel_label(axes[0], "The search")
-    panel_label(axes[1], "The score")
+    panel_label(axes[0], "Search")
+    panel_label(axes[1], "Scoring")
     save(fig, "method_search_score.png")
 
 
