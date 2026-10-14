@@ -28,6 +28,10 @@ PANELS = {"maths": "Maths", "ordering": "Ordering", "false_belief": "Belief trac
 ROUNDS = {"B16": "after 16 rounds of feedback", "B0": "round 0, before any feedback"}
 FIT_XS = np.linspace(131, 168, 50)
 KEY_WRITERS = {"fable51": "Fable 5.1", "gpt6astra": "GPT-6 Astra", "gpt61sol": "GPT-6.1 Sol", "opus55": "Opus 5.5"}
+# low and mid capability writers: labelled in the empty band at the top of each panel, with a leader line down to the
+# round-16 dot (beside the dot they land on neighbouring dots and bars). Value: (name, which side of the line the text sits)
+OTHER_WRITERS = {"llama4maverick": ("Llama 4 Maverick", "left"), "gemini38flash": ("Gemini 3.8 Flash", "right")}
+TOP_LABEL_Y = 0.72
 LABEL_X = 170.5        # labels sit in a column right of the data, with leader lines to their dots
 LABEL_GAP = 0.06       # minimum vertical gap between labels (score units)
 Y_LIMITS = (-0.15, 0.82)
@@ -38,7 +42,7 @@ EXAMPLE_COLOURS = {"plain": "#3b4440", "off": "#3d5a80", "on": "#c2541b", "line"
 
 def fmt(fit: dict) -> str:
     lo, hi = fit["ci"]
-    return f"{fit['slope']:+.2f} [{lo:+.2f}, {hi:+.2f}] per 10 ECI"
+    return f"{fit['slope']:+.2f} [{lo:+.2f}, {hi:+.2f}]"
 
 
 def spread(ys: list[float]) -> list[float]:
@@ -52,22 +56,43 @@ def spread(ys: list[float]) -> list[float]:
     return list(out)
 
 
-def panel(ax, task: str, title: str, b: str, meta: dict) -> None:
-    t = NUMBERS[task][b]
+def xpos(w: str, meta: dict) -> float:
+    return meta[w]["eci"] + F.DISPLAY_SHIFT.get(w, 0.0)
+
+
+def plot_round(ax, t: dict, meta: dict, hollow: bool, bars: bool, fit_style: str) -> None:
     means, chains = t["writer_means"], t["writer_chains"]
     for w, m in means.items():
-        x, colour = meta[w]["eci"] + F.DISPLAY_SHIFT.get(w, 0.0), F.LAB_COLOUR[meta[w]["lab"]]
-        ax.vlines(x, min(chains[w]), max(chains[w]), color=colour, lw=1.8, alpha=0.5)
-        ax.plot(x, m, "o", ms=10, color=colour, zorder=3)
+        x, colour = xpos(w, meta), F.LAB_COLOUR[meta[w]["lab"]]
+        if bars:
+            ax.vlines(x, min(chains[w]), max(chains[w]), color=colour, lw=1.8, alpha=0.5)
+        ax.plot(x, m, "o", ms=9 if hollow else 10, mfc="white" if hollow else colour, mec=colour, mew=1.8, zorder=3)
     k, c0 = np.polyfit([meta[w]["eci"] for w in means], list(means.values()), 1)
-    ax.plot(FIT_XS, k * FIT_XS + c0, "-", color=F.v6.TEXT, lw=1.8)
+    ax.plot(FIT_XS, k * FIT_XS + c0, fit_style, color=F.v6.TEXT, lw=1.8)
+
+
+def label_writers(ax, means: dict, meta: dict) -> None:
     keys = list(KEY_WRITERS)
     for w, y in zip(keys, spread([means[w] for w in keys])):
-        x = meta[w]["eci"] + F.DISPLAY_SHIFT.get(w, 0.0)
-        ax.plot([x + 0.3, LABEL_X - 0.2], [means[w], y], color=F.v6.MUTED, lw=0.7, zorder=2)
+        ax.plot([xpos(w, meta) + 0.3, LABEL_X - 0.2], [means[w], y], color=F.v6.MUTED, lw=0.7, zorder=2)
         ax.text(LABEL_X, y, KEY_WRITERS[w], va="center", fontsize=11, color=F.v6.TEXT)
+    for w, (name, ha) in OTHER_WRITERS.items():
+        x = xpos(w, meta)
+        ax.plot([x, x], [means[w] + 0.03, TOP_LABEL_Y + 0.02], color=F.v6.MUTED, lw=0.7, zorder=2)
+        ax.text(x + (0.4 if ha == "left" else -0.4), TOP_LABEL_Y, name, ha=ha, va="bottom", fontsize=11, color=F.v6.TEXT)
+
+
+def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict) -> None:
+    """rounds[0] is drawn solid with range bars and labels; a second round, if given, as hollow dots with a dashed fit."""
+    data = NUMBERS[task]
+    plot_round(ax, data[rounds[0]], meta, hollow=False, bars=True, fit_style="-")
+    if len(rounds) == 2:
+        plot_round(ax, data[rounds[1]], meta, hollow=True, bars=False, fit_style="--")
+        ax.set_title(f"{title}\nafter 16 rounds {fmt(data['B16']['all14'])};  round 0 {fmt(data['B0']['all14'])}", fontsize=12)
+    else:
+        ax.set_title(f"{title}: {fmt(data[rounds[0]]['all14'])}", fontsize=13)
+    label_writers(ax, data[rounds[0]]["writer_means"], meta)
     ax.axhline(0, color=F.v6.MUTED, lw=0.8)
-    ax.set_title(f"{title}: {fmt(t['all14'])}", fontsize=13)
     ax.grid(axis="y", color=F.v6.GRID)
     ax.set_xlim(130, 179)
     ax.set_xticks(range(130, 171, 10))
@@ -109,39 +134,36 @@ def how_to_read() -> None:
     plt.close(fig)
 
 
-def figure(b: str, meta: dict) -> None:
-    with_example = False  # the worked example is its own figure (how_to_read.png)
-    fig = plt.figure(figsize=(15, 15.5 if with_example else 11))
-    gs = fig.add_gridspec(3 if with_example else 2, 2, height_ratios=[1.25, 4, 4] if with_example else [1, 1], hspace=0.38)
-    rows = 1 if with_example else 0
-    axes = np.array([[fig.add_subplot(gs[rows + i, j]) for j in range(2)] for i in range(2)])
-    for ax in axes.flat[1:]:
-        ax.sharex(axes[0, 0]); ax.sharey(axes[0, 0])
+def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str) -> None:
+    fig, axes = plt.subplots(2, 2, figsize=(15, 11.5 if len(rounds) == 2 else 11), sharex=True, sharey=True,
+                             gridspec_kw={"hspace": 0.3 if len(rounds) == 2 else 0.2, "wspace": 0.08})
     for ax, (task, title) in zip(axes.flat, PANELS.items()):
-        panel(ax, task, title, b, meta)
-    for ax in axes[0]:
-        ax.tick_params(labelbottom=False)
-    for ax in axes[:, 1]:
-        ax.tick_params(labelleft=False)
+        panel(ax, task, title, rounds, meta)
     for ax in axes[-1]:
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
     for ax in axes[:, 0]:
         ax.set_ylabel(Y_LABEL, fontsize=12)
-    fig.suptitle(f"Qwen3.5-27B, 14 writers, {ROUNDS[b]}", fontsize=15, x=0.02, ha="left")
+    fig.suptitle(suptitle, fontsize=15, x=0.02, ha="left")
     handles = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
-    handles.append(Line2D([], [], color=F.v6.TEXT, ls="-", label="least-squares fit"))
-    fig.legend(handles=handles, loc="lower center", ncol=6, frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.01))
-    fig.text(0.5, 0.045 if with_example else 0.06, "Slopes [95% interval, resampling writers then searches]; bars = range over 3 searches; strict 1% flag line",
+    if len(rounds) == 2:
+        handles += [Line2D([], [], marker="o", color=F.v6.TEXT, ls="-", ms=8, label="after 16 rounds"),
+                    Line2D([], [], marker="o", color=F.v6.TEXT, mfc="white", ls="--", ms=8, label="round 0")]
+    else:
+        handles.append(Line2D([], [], color=F.v6.TEXT, ls="-", label="least-squares fit"))
+    fig.legend(handles=handles, loc="lower center", ncol=len(handles), frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.01))
+    bars = "bars = range over 3 searches (after 16 rounds)" if len(rounds) == 2 else "bars = range over 3 searches"
+    fig.text(0.5, 0.06, f"Slopes per 10 ECI [95% interval, resampling writers then searches]; {bars}; strict 1% flag line",
              ha="center", fontsize=11, color=F.v6.MUTED)
-    fig.subplots_adjust(left=0.08, right=0.97, top=0.94 if with_example else 0.9, bottom=0.1 if with_example else 0.13)
-    fig.savefig(HERE / "figures" / f"trend_2x2_{b.lower()}.png", bbox_inches="tight")
+    fig.subplots_adjust(left=0.08, right=0.97, top=0.9, bottom=0.13)
+    fig.savefig(HERE / "figures" / name, bbox_inches="tight")
     plt.close(fig)
 
 
 def main() -> None:
     meta = {r["writer"]: r for r in F.writer_rows(F.load_m45(), "maths")}  # ECI and lab per writer
-    for b in ROUNDS:
-        figure(b, meta)
+    for b, when in ROUNDS.items():
+        figure((b,), meta, f"trend_2x2_{b.lower()}.png", f"Qwen3.5-27B, 14 writers, {when}")
+    figure(("B16", "B0"), meta, "trend_2x2_combined.png", "Qwen3.5-27B, 14 writers: after 16 rounds of feedback vs round 0")
     how_to_read()
 
 
