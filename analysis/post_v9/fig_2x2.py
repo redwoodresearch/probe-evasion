@@ -42,6 +42,11 @@ Y_LABEL = "probe-dodging score"
 Y_LABEL_NOTE = "(0 = no move; 1 or more = past the threshold)"  # smaller, beside the main label
 EXAMPLE_TASK = "ordering"  # the worked example: Fable 5.1 (make_dots' writer for ordering), medians over correct pairs
 EXAMPLE_COLOURS = {"plain": "#3b4440", "off": "#3d5a80", "on": "#c2541b", "line": "#b3261e"}
+# Uncertainty on the round-16 fit, two ways to show it: "slopes" writes each round's slope and interval in the panel,
+# "band" shades a 95% band around the round-16 fit. The band uses numbers/compute.py's two-stage bootstrap (writers,
+# then each writer's searches) so it agrees with the quoted intervals.
+N_BOOT = 10_000
+BAND_SEED = 20261013
 
 
 def fmt(fit: dict) -> str:
@@ -88,9 +93,34 @@ def label_writers(ax, means: dict, chains: dict, meta: dict) -> None:
                 arrowprops=dict(arrowstyle="-", color=F.v6.MUTED, lw=0.7, relpos=(1, 0), shrinkA=1, shrinkB=6))
 
 
-def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict) -> None:
+def fit_band(chains: dict[str, list[float]], meta: dict) -> tuple[np.ndarray, np.ndarray]:
+    rng = np.random.default_rng(BAND_SEED)
+    names = list(chains)
+    eci = np.array([meta[w]["eci"] for w in names])
+    lines = np.empty((N_BOOT, len(FIT_XS)))
+    for b in range(N_BOOT):
+        pick = rng.integers(0, len(names), len(names))
+        ys = [np.mean(rng.choice(chains[names[i]], len(chains[names[i]]))) for i in pick]
+        k, c0 = np.polyfit(eci[pick], ys, 1)
+        lines[b] = k * FIT_XS + c0
+    return np.quantile(lines, 0.025, axis=0), np.quantile(lines, 0.975, axis=0)
+
+
+def slope_text(ax, data: dict, rounds: tuple[str, ...]) -> None:
+    names = {"B16": "16 rounds", "B0": "round 0  "}
+    rows = [f"{names[b]}  {fmt(data[b]['all14'])}" for b in rounds]
+    ax.text(0.02, 0.97, "\n".join(rows), transform=ax.transAxes, va="top", ha="left",
+            fontsize=11.5, color=F.v6.TEXT, linespacing=1.4, family="DejaVu Sans Mono")
+
+
+def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict, uncertainty: str | None = None) -> None:
     """rounds[0] is drawn solid with range bars and labels; a second round, if given, as hollow dots with a dashed fit."""
     data = NUMBERS[task]
+    if uncertainty == "band":
+        lo, hi = fit_band(data[rounds[0]]["writer_chains"], meta)
+        ax.fill_between(FIT_XS, lo, hi, color=F.v6.TEXT, alpha=0.12, lw=0, zorder=1)
+    elif uncertainty == "slopes":
+        slope_text(ax, data, rounds)
     plot_round(ax, data[rounds[0]], meta, hollow=False, bars=True, fit_style="-")
     if len(rounds) == 2:
         plot_round(ax, data[rounds[1]], meta, hollow=True, bars=False, fit_style="--")
@@ -140,11 +170,11 @@ def how_to_read() -> None:
     plt.close(fig)
 
 
-def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None = None) -> None:
+def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None = None, uncertainty: str | None = None) -> None:
     fig, axes = plt.subplots(2, 2, figsize=(15, 11.5 if len(rounds) == 2 else 11), sharex=True, sharey=True,
                              gridspec_kw={"hspace": 0.2, "wspace": 0.08})
     for ax, (task, title) in zip(axes.flat, PANELS.items()):
-        panel(ax, task, title, rounds, meta)
+        panel(ax, task, title, rounds, meta, uncertainty)
     for ax in axes[-1]:
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
     for ax in axes[:, 0]:
@@ -161,7 +191,11 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
         handles.append(Line2D([], [], color=F.v6.TEXT, ls="-", label="least-squares fit"))
     fig.legend(handles=handles, loc="lower center", ncol=len(handles), frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.01))
     bars = "bars = range over 3 searches (after 16 rounds)" if len(rounds) == 2 else "bars = range over 3 searches"
-    slopes = "" if len(rounds) == 2 else "Slopes per 10 ECI [95% interval, resampling writers then searches]; "
+    slopes = "" if len(rounds) == 2 and uncertainty is None else "Slopes per 10 ECI [95% interval, resampling writers then searches]; "
+    if uncertainty == "slopes":
+        slopes = "Top left: fitted slope per 10 ECI [95% interval, resampling writers then searches]; "
+    if uncertainty == "band":
+        slopes = "Shaded: 95% band on the 16-round fit (resampling writers then searches); "
     fig.text(0.5, 0.06, f"{slopes}{bars}; threshold at a 1% false-positive rate on look-alike replies",
              ha="center", fontsize=11, color=F.v6.MUTED)
     fig.subplots_adjust(left=0.08, right=0.97, top=0.9 if suptitle else 0.95, bottom=0.13)
@@ -174,6 +208,8 @@ def main() -> None:
     for b, when in ROUNDS.items():
         figure((b,), meta, f"trend_2x2_{b.lower()}.png", f"Qwen3.5-27B, 14 writers, {when}")
     figure(("B16", "B0"), meta, "trend_2x2_combined.png")
+    for style in ("slopes", "band"):
+        figure(("B16", "B0"), meta, f"trend_2x2_combined_{style}.png", uncertainty=style)
     how_to_read()
 
 
