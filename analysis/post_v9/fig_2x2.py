@@ -134,7 +134,7 @@ def draw_score(ax, fontsize: float = 13, dot_size: float = 300, line_label: bool
 def how_to_read() -> None:
     """Figure 1: what the score measures. The words go in the post's caption, not the figure."""
     fig, ax = plt.subplots(figsize=(10, 2.8))
-    draw_score(ax)
+    draw_score(ax, positive_label="held-out positives")
     fig.tight_layout()
     fig.savefig(HERE / "figures" / "how_to_read.png", bbox_inches="tight")
     plt.close(fig)
