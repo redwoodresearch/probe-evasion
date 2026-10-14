@@ -28,6 +28,7 @@ import random
 import subprocess
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 
 import attrs
@@ -227,11 +228,11 @@ def chat_label_ok(row: dict) -> dict:
     return {"label_ok": bool(ok), "shows_working": bool(working)}
 
 
-def chat_rows(task: str, kind: str, n: int, seed: int) -> list[dict]:
-    rows = wrap_requests(chat_items(task, kind, n, seed))
+def chat_rows(items: list[dict]) -> list[dict]:
+    rows = wrap_requests(items)
     gens = m46.generate(Q27, [r["request"] for r in rows], GEN_SEED, MAX_TRAINING_TOKENS)
     rows = [r | g for r, g in zip(rows, gens)]
-    return [r | chat_label_ok(r) | {"label": CHAT_KINDS[kind]} for r in rows]
+    return [r | chat_label_ok(r) | {"label": CHAT_KINDS[r["kind"]]} for r in rows]
 
 
 def brief_wildchat(rows: list[dict]) -> list[dict]:
@@ -248,7 +249,7 @@ CHAT_PILOT_V2 = OUT / "chat_pilot_v2.jsonl"
 def chat_pilot(n: int = 16) -> None:
     """A small pilot of chat-formatted rows (with brevity requests) and brief WildChat replies, to read before the full
     build. Runs inside Modal (m52_remote) so the laptop can sleep."""
-    rows = [r for task in TASKS for kind in CHAT_KINDS for r in chat_rows(task, kind, n, seed=1999)]
+    rows = [r for task in TASKS for kind in CHAT_KINDS for r in chat_rows(chat_items(task, kind, n, seed=1999))]
     rows += [r | {"task": "wildchat", "kind": "brief"} for r in brief_wildchat(random.Random(1).sample(jl(REQUESTS), n))]
     write_jsonl(CHAT_PILOT_V2, rows)
     for task in TASKS:
@@ -294,28 +295,43 @@ def prepare() -> None:
 # ---------------------------------------------------------------- stages (run in /work on the volume)
 
 
+CHAT_N = {("ordering", "computed"): 1700, ("ordering", "given"): 1300, ("maths", "computed"): 1200, ("maths", "given"): 1200}
+CHAT_SEED = 0
+# chat rows in these situations are held out of training: the gate checks the probe on situations it never saw
+CHAT_HELDOUT = {"ordering": {"a wedding", "a game night", "a school project"}, "maths": {"a farm", "moving house", "a school fundraiser"}}
+LATIN_SHARE = 0.9  # WildChat's language tag lets some non-English requests through (a Chinese one in pilot v2)
+SMOKE_N = 12
+
+
 def out_dir(smoke: bool) -> Path:
     return OUT / ("smoke" if smoke else "run")
 
 
-def stage_generate(smoke: bool) -> list[dict]:
-    path = out_dir(smoke) / "wildchat_replies.jsonl"
+def cached(path: Path, make) -> list[dict]:
+    """A stage's rows: read if saved, else made, saved and committed to the volume (so a relaunch resumes)."""
     if path.exists():
         return jl(path)
-    reqs = jl(REQUESTS)[:40 if smoke else None]
-    gens = m46.generate(Q27, [r["request"] for r in reqs], GEN_SEED, MAX_TRAINING_TOKENS)
-    rows = [r | g for r, g in zip(reqs, gens)]
+    rows = make()
+    path.parent.mkdir(parents=True, exist_ok=True)
     write_jsonl(path, rows)
+    STATE.commit()
     return rows
 
 
-def stage_label(replies: list[dict], smoke: bool) -> list[dict]:
+def mostly_latin(text: str) -> bool:
+    letters = [c for c in text if c.isalpha()]
+    return not letters or sum(c.isascii() for c in letters) / len(letters) >= LATIN_SHARE
+
+
+def brief_half(r: dict) -> bool:
+    """Half of the WildChat conversations (independent of the train / line split) are also asked to be brief."""
+    return int(r["id"], 16) // 2 % 2 == 0
+
+
+def label_wildchat(rows: list[dict]) -> list[dict]:
     from probe_evasion import judge
 
-    path = out_dir(smoke) / "wildchat_labels.jsonl"
-    if path.exists():
-        return jl(path)
-    rows = [r for r in replies if r["reply"]]
+    rows = [r for r in rows if r["reply"]]
     out = []
     for task in TASKS:
         prompts = [label_prompt(task, r["request"], r["reply"]) for r in rows]
@@ -323,57 +339,113 @@ def stage_label(replies: list[dict], smoke: bool) -> list[dict]:
         out += [{"id": r["id"], "task": task, "category": v.get("category", "refused"), "evidence": v.get("evidence", ""),
                  "judge_refused": bool(v.get("judge_refused")), "judge_model": judge.CHEAP_JUDGE_MODEL, "judge_prompt": p}
                 for r, p, v in zip(rows, prompts, verdicts)]
-    write_jsonl(path, out)
     return out
 
 
-def broad_sets(task: str, replies: list[dict], labels: list[dict]) -> dict[str, list[dict]]:
+def stage_wildchat(smoke: bool) -> tuple[list[dict], list[dict]]:
+    """WildChat replies as asked, and again with a brevity request for half the conversations; both labelled."""
+    d = out_dir(smoke)
+    reqs = jl(REQUESTS)[:SMOKE_N if smoke else None]
+    natural = cached(d / "wildchat_replies.jsonl",
+                     lambda: [r | g for r, g in zip(reqs, m46.generate(Q27, [r["request"] for r in reqs], GEN_SEED, MAX_TRAINING_TOKENS))])
+    brief = cached(d / "wildchat_brief_replies.jsonl", lambda: brief_wildchat([r for r in reqs if brief_half(r)]))
+    labels = cached(d / "wildchat_labels.jsonl", lambda: label_wildchat(natural))
+    labels += cached(d / "wildchat_brief_labels.jsonl", lambda: label_wildchat(brief))
+    return [r for r in natural + brief if r["reply"] and mostly_latin(r["request"])], labels
+
+
+def wildchat_sets(task: str, rows: list[dict], labels: list[dict]) -> dict[str, list[dict]]:
     """Training negatives and the line's pool for one task. A refused label counts as possibly using the task."""
     cat = {l["id"]: l["category"] for l in labels if l["task"] == task}
-    rows = [r for r in replies if r["reply"] and r["id"] in cat]
+    rows = [r for r in rows if r["id"] in cat]
     train = [r for r in rows if r["split"] == "train" and cat[r["id"]] not in NOT_TRAINING_NEGATIVE[task] | {"refused"}]
     line = [r for r in rows if r["split"] == "line" and cat[r["id"]] not in NOT_IN_LINE_POOL[task] | {"refused"}]
     return {"train": train, "line": line}
 
 
+def test_keys(task: str) -> list[frozenset]:
+    """m45's frozen test problems (both batches), as clue-sentence sets (ordering) or number sets (maths)."""
+    from probe_evasion import gepa
+
+    texts = {r["task"]["task"] for batch in ("c", "d") for r in map(json.loads, gzip.open(M45_COMPACT[(task, batch)], "rt"))}
+    if task == "ordering":
+        return [frozenset(x.strip() for x in t.split(".") if " than " in x) for t in texts]
+    return [frozenset(gepa.numbers(t)) for t in texts]
+
+
+def clashes(task: str, item: dict, tests: list[frozenset]) -> bool:
+    """A chat item that repeats a test problem (same clues; or every number of a test problem) is dropped."""
+    from probe_evasion import gepa
+
+    if task == "ordering":
+        return frozenset(x.strip() for x in item["puzzle"]["clues"].split(".") if " than " in x) in tests
+    nums = frozenset(gepa.numbers(item["facts"]))
+    return any(t <= nums for t in tests)
+
+
+def stage_chat(task: str, smoke: bool) -> list[dict]:
+    def make() -> list[dict]:
+        tests = test_keys(task)
+        items = [it for kind in CHAT_KINDS for it in chat_items(task, kind, SMOKE_N if smoke else CHAT_N[(task, kind)], CHAT_SEED)]
+        kept = [it for it in items if not clashes(task, it, tests)]
+        print(f"[{task}] chat items: {len(kept)} of {len(items)} (the rest repeat a test problem)", flush=True)
+        return [r | {"split": "heldout" if r["scenario"] in CHAT_HELDOUT[task] else "train"} for r in chat_rows(kept)]
+
+    return cached(out_dir(smoke) / f"chat_{task}.jsonl", make)
+
+
 def probe_path(task: str, smoke: bool) -> Path:
-    return out_dir(smoke) / "probes" / f"{task}_broad.json"
+    return out_dir(smoke) / "probes" / f"{task}_full_broad.json"
 
 
 def probe_name(task: str, seed: int) -> str:
-    return f"q27{'m' if task == 'maths' else 'o'}br@L{LAYER}@s{seed}"
+    return f"q27{'m' if task == 'maths' else 'o'}fb@L{LAYER}@s{seed}"
 
 
-def stage_train(task: str, broad_train: list[dict], smoke: bool) -> dict:
+def training_rows(task: str, chat: list[dict], negatives: list[dict], smoke: bool) -> list[dict]:
+    """m46's rows (own replies + re-read copies), the chat rows of the training situations that pass the answer check,
+    and the WildChat negatives."""
+    own = m46.q27_sets(task)["train"]
+    own = own[:200] if smoke else own
+    pick = lambda r, source: {"prompt": r["prompt"], "response": r["response"], "label": int(r["label"]), "reasoning": None, "source": source}
+    rows = [pick(r, "puzzle") for r in own] + [pick(r, "puzzle re-read") for r in m46.reread(task, own)]
+    rows += [{"prompt": r["request"], "response": r["reply"], "label": r["label"], "reasoning": None, "source": f"chat {r['kind']}"}
+             for r in chat if r["split"] == "train" and r["label_ok"]]
+    rows += [{"prompt": r["request"], "response": r["reply"], "label": 0, "reasoning": None,
+              "source": "wildchat brief" if r["id"].endswith("+brief") else "wildchat"} for r in negatives]
+    random.Random(0).shuffle(rows)
+    return rows
+
+
+def stage_train(task: str, rows: list[dict], smoke: bool) -> dict:
     path = probe_path(task, smoke)
     if path.exists():
         return json.loads(path.read_text())
     from probe_evasion.missions.m1a_peak_probe import PeakProbeLabSeeds
 
-    own = m46.q27_sets(task)["train"]
-    own = own[:200] if smoke else own
-    rows = [{"prompt": r["prompt"], "response": r["response"], "label": int(r["label"]), "reasoning": None}
-            for r in own + m46.reread(task, own)]
-    rows += [{"prompt": r["request"], "response": r["reply"], "label": 0, "reasoning": None} for r in broad_train]
-    random.Random(0).shuffle(rows)
-    fitted = PeakProbeLabSeeds.with_options(max_containers=1)().train_peak_seeded.remote(rows, LAYER, SEEDS)
-    out = {probe_name(task, p["seed"]): p | {"n_rows": len(rows), "n_broad_negatives": len(broad_train), "recipe": "m46 re-read + WildChat negatives"}
+    counts = {f"{src} / label {lab}": n for (src, lab), n in sorted(Counter((r["source"], r["label"]) for r in rows).items())}
+    print(f"[{task}] training rows: {counts}", flush=True)
+    fitted = PeakProbeLabSeeds.with_options(max_containers=1)().train_peak_seeded.remote(
+        [{k: r[k] for k in ("prompt", "response", "label", "reasoning")} for r in rows], LAYER, SEEDS)
+    out = {probe_name(task, p["seed"]): p | {"n_rows": len(rows), "composition": counts,
+                                             "recipe": "m46 re-read + chat rows with known answers + WildChat negatives"}
            for p in fitted.values()}
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out))
+    STATE.commit()
     print(f"[{task}] probes:", {k: (round(v["val_loss"], 4), round(v["val_auroc"], 4), v["epoch"]) for k, v in out.items()}, flush=True)
     return out
 
 
-def score_sets(task: str, replies: list[dict], smoke: bool) -> dict[str, list[dict]]:
-    """Every set to score: {name: [{id, prompt, response, ...metadata}]}."""
+def score_sets(task: str, wild: list[dict], chat: list[dict], smoke: bool) -> dict[str, list[dict]]:
+    """Every set to score, gate sets first: {name: [{prompt, response, ...metadata}]}."""
     sets = m46.q27_sets(task)
-    out = {"heldout": [r | {"prompt": r["prompt"], "response": r["response"]} for r in sets["heldout"]],
-           "lookalikes": [r | {"prompt": r["prompt"], "response": r["response"]} for r in sets["calibration"]],
-           "wildchat": [{"id": r["id"], "split": r["split"], "prompt": r["request"], "response": r["reply"]} for r in replies if r["reply"]],
+    out = {"chat": [{k: v for k, v in r.items() if k not in ("wrap_prompt",)} | {"prompt": r["request"], "response": r["reply"]} for r in chat],
+           "wildchat": [{"id": r["id"], "split": r["split"], "brief": r["id"].endswith("+brief"), "prompt": r["request"], "response": r["reply"]}
+                        for r in wild],
+           "lookalikes": sets["calibration"], "heldout": sets["heldout"], "heldout_reread": m46.reread(task, sets["heldout"]),
            "everyday_m27": [{"id": r["id"], "prompt": r["request"], "response": r["reply"]}
                             for r in map(json.loads, EVERYDAY.open()) if r["context"] == "none"]}
-    out["heldout_reread"] = m46.reread(task, sets["heldout"])
     for batch in ("c", "d"):  # m45's frozen test: round 16 ON / OFF, plain and neutral, each read with its own prompt in view
         rows = [json.loads(l) for l in gzip.open(M45_COMPACT[(task, batch)], "rt")]
         out[f"m45_{batch}"] = [r | {"response": r["reply"]} for r in rows
@@ -383,9 +455,9 @@ def score_sets(task: str, replies: list[dict], smoke: bool) -> dict[str, list[di
     return out
 
 
-def stage_score(task: str, probes: dict, replies: list[dict], smoke: bool) -> None:
+def stage_score(task: str, probes: dict, sets: dict[str, list[dict]], smoke: bool) -> None:
     probes = probes | {OLD_PROBE[task]: _old_probe(task)}
-    for name, rows in score_sets(task, replies, smoke).items():
+    for name, rows in sets.items():
         path = out_dir(smoke) / "scored" / f"{task}_{name}.jsonl.gz"
         if path.exists():
             continue
@@ -408,16 +480,12 @@ def _old_probe(task: str) -> dict:
 
 
 def run(smoke: bool = False) -> None:
-    replies = stage_generate(smoke)
-    STATE.commit()
-    labels = stage_label(replies, smoke)
-    STATE.commit()
-    for task in TASKS:
-        sets = broad_sets(task, replies, labels)
-        write_jsonl(out_dir(smoke) / f"{task}_broad_sets.jsonl", [{"id": r["id"], "set": k} for k, rs in sets.items() for r in rs])
-        probes = stage_train(task, sets["train"], smoke)
-        STATE.commit()
-        stage_score(task, probes, replies, smoke)
+    wild, labels = stage_wildchat(smoke)
+    for task in ("ordering", "maths"):
+        chat = stage_chat(task, smoke)
+        negatives = wildchat_sets(task, wild, labels)["train"]
+        probes = stage_train(task, training_rows(task, chat, negatives, smoke), smoke)
+        stage_score(task, probes, score_sets(task, wild, chat, smoke), smoke)
 
 
 @app.function(image=remote_search.driver_image, volumes={str(WORK): STATE}, secrets=[remote_search.anthropic_key], timeout=14 * 60 * 60)

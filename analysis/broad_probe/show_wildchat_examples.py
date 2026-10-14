@@ -38,7 +38,7 @@ def main() -> None:
              "so long replies are cut). Split by conversation: half for training, half for setting the line.\n"]
     for task in m52.TASKS:
         lab = {l["id"]: l for l in labels if l["task"] == task}
-        sets = m52.broad_sets(task, list(replies.values()), labels)
+        sets = m52.wildchat_sets(task, list(replies.values()), labels)
         counts = Counter(l["category"] for l in lab.values())
         lines += [f"\n## {task.capitalize()}\n",
                   "Haiku's labels over all replies: " + ", ".join(f"{c} {n:,}" for c, n in counts.most_common()) + ".\n",
