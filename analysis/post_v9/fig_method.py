@@ -113,7 +113,7 @@ def version_1() -> None:
     draw_loop(axes[0], fontsize=11.5)
     draw_calibration(axes[1])
     FIG.draw_score(axes[2], fontsize=12, dot_size=220)
-    for ax, title in zip(axes, ("1. The search", "2. Setting the flag line", "3. The score: 9.2 ÷ 20.0 = 0.46")):
+    for ax, title in zip(axes, ("1. The search", "2. Setting the threshold", "3. The score: 9.2 ÷ 20.0 = 0.46")):
         step_title(ax, title)
     save(fig, "method_v1.png")
 
@@ -125,7 +125,7 @@ def version_2() -> None:
     draw_snippets(axes[0, 1])
     draw_calibration(axes[1, 0])
     FIG.draw_score(axes[1, 1], fontsize=12, dot_size=220)
-    titles = ("1. The search", "2. Training the probe (ordering)", "3. Setting the flag line", "4. The score: 9.2 ÷ 20.0 = 0.46")
+    titles = ("1. The search", "2. Training the probe (ordering)", "3. Setting the threshold", "4. The score: 9.2 ÷ 20.0 = 0.46")
     for ax, title in zip(axes.flat, titles):
         step_title(ax, title)
     save(fig, "method_v2.png")
@@ -143,7 +143,7 @@ def version_3() -> None:
     FIG.draw_score(score, fontsize=12, dot_size=220, line_label=False)
     calibration.set_xlim(-13.5, FIG.example_medians()["plain"] + 4.5)
     step_title(loop, "1. The search")
-    step_title(calibration, "2. Setting the flag line")
+    step_title(calibration, "2. Setting the threshold")
     step_title(score, "3. The score: 9.2 ÷ 20.0 = 0.46")
     save(fig, "method_v3.png")
 

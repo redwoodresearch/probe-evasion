@@ -39,7 +39,7 @@ LABEL_X = 170.5        # labels sit in a column right of the data, with leader l
 LABEL_GAP = 0.06       # minimum vertical gap between labels (score units)
 Y_LIMITS = (-0.15, 0.82)
 Y_LABEL = "probe-dodging score"
-Y_LABEL_NOTE = "(0 = no move; 1 or more = past the flag line)"  # smaller, beside the main label
+Y_LABEL_NOTE = "(0 = no move; 1 or more = past the threshold)"  # smaller, beside the main label
 EXAMPLE_TASK = "ordering"  # the worked example: Fable 5.1 (make_dots' writer for ordering), medians over correct pairs
 EXAMPLE_COLOURS = {"plain": "#3b4440", "off": "#3d5a80", "on": "#c2541b", "line": "#b3261e"}
 
@@ -118,7 +118,7 @@ def draw_score(ax, fontsize: float = 13, dot_size: float = 300, line_label: bool
     plain, off, on, line = m["plain"], m["off"], m["on"], m["line"]
     ax.plot([line, line], [-0.75, 1.0], color=c["line"], lw=2.5)
     if line_label:
-        ax.text(line, 1.1, "flag line", ha="center", fontsize=fontsize, color=c["line"])
+        ax.text(line, 1.1, "threshold", ha="center", fontsize=fontsize, color=c["line"])
     for x, colour, label in ((plain, c["plain"], "normal answer"), (off, c["off"], "attack OFF"), (on, c["on"], "attack ON")):
         ax.scatter(x, 0.4, s=dot_size, color=colour, zorder=3)
         ax.text(x, 0.7, label, ha="center", fontsize=fontsize, color=colour)
@@ -162,7 +162,7 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
     fig.legend(handles=handles, loc="lower center", ncol=len(handles), frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.01))
     bars = "bars = range over 3 searches (after 16 rounds)" if len(rounds) == 2 else "bars = range over 3 searches"
     slopes = "" if len(rounds) == 2 else "Slopes per 10 ECI [95% interval, resampling writers then searches]; "
-    fig.text(0.5, 0.06, f"{slopes}{bars}; strict 1% flag line",
+    fig.text(0.5, 0.06, f"{slopes}{bars}; threshold at a 1% false-positive rate on look-alike replies",
              ha="center", fontsize=11, color=F.v6.MUTED)
     fig.subplots_adjust(left=0.08, right=0.97, top=0.9 if suptitle else 0.95, bottom=0.13)
     fig.savefig(HERE / "figures" / name, bbox_inches="tight")

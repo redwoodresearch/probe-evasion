@@ -65,11 +65,11 @@ def fig_gate() -> None:
                 ax.plot([np.median(xs)] * 2, [y - 0.38, y + 0.38], color=SET_COLOURS[name], lw=2.5)
             line = RESULTS[task][key]["line"]
             ax.axvline(line, color=LINE_RED, lw=2)
-            ax.text(line, len(sets) - 0.35, " 1% line on WildChat", color=LINE_RED, fontsize=10, va="bottom")
+            ax.text(line, len(sets) - 0.35, " threshold: 1% false positives on WildChat", color=LINE_RED, fontsize=10, va="bottom")
             if row == 0:
                 strict = A.STRICT_LINE[task]
                 ax.axvline(strict, color=LINE_RED, lw=1.2, ls="--")
-                ax.text(strict, -0.75, "original strict line ", color=LINE_RED, fontsize=10, ha="right", va="bottom")
+                ax.text(strict, -0.75, " original threshold (1% on look-alikes)", color=LINE_RED, fontsize=10, ha="left", va="bottom", bbox={"facecolor": "white", "edgecolor": "none", "pad": 1}, zorder=5)
             ax.set_yticks(range(len(sets)), list(reversed(sets)) if col == 0 else [])
             ax.set_ylim(-0.8, len(sets) - 0.2)
             ax.set_title(f"{TITLES[task]}: {label}", loc="left", fontsize=12, fontweight="bold")
@@ -90,7 +90,7 @@ def fig_trend() -> None:
             ax.scatter(x, old["writer_means"][w], s=55, facecolor="white", edgecolor=MUTED, lw=1.5, zorder=2)
             ax.scatter(x, new["writer_means"][w], s=70, color=LAB_COLOUR[A.NUM.LAB[w]], zorder=3)
         xs = np.linspace(131, 168, 20)
-        for r, style, colour, label in ((old, "--", MUTED, "old probe, strict line"), (new, "-", INK, "new broad probe, WildChat line")):
+        for r, style, colour, label in ((old, "--", MUTED, "old probe, original threshold"), (new, "-", INK, "new broad probe, WildChat threshold")):
             x = np.array([A.NUM.ECI[w] for w in r["writer_means"]])
             y = np.array(list(r["writer_means"].values()))
             k, c = np.polyfit(x, y, 1)
@@ -102,7 +102,7 @@ def fig_trend() -> None:
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
         ax.grid(axis="y", color=GRID)
         ax.legend(frameon=False, fontsize=10, loc="upper left")
-    axes[0].set_ylabel("probe-dodging score\n(0 = no move; 1 or more = past the flag line)")
+    axes[0].set_ylabel("probe-dodging score\n(0 = no move; 1 or more = past the threshold)")
     fig.tight_layout()
     save(fig, "fig_trend.png")
 
