@@ -21,7 +21,7 @@ matches m45, m49, m38 and m50 everywhere it overlaps.
 
 | # | Claim | Number | Source | Checked? | Main way it could be wrong |
 |---|---|---|---|---|---|
-| R1 | The probe reads more than words | Identical replies after "compute" vs "answer given" requests: probe drops 14–15 log-odds in 100% of pairs; word classifiers move 0.4–3.3 | m51 RESULT.md | Single run, not independently checked | Probe may read "answer already in context" rather than "computing" |
+| R1 | The probe reads more than words | Identical replies after "compute" vs "answer given": probe drops 14–15 log-odds in 100% of pairs; word classifiers move 0.4–3.3. Identical correct replies after a right vs a wrong inserted answer: probe scores the wrong-answer version higher in 90–100% of pairs (+3 to +12 log-odds) on maths, ordering, belief tracking and contradiction; word classifiers move ≤ 0.2. Acrostic not shown | m51 RESULT.md (parts 1–2) | Single run, not independently checked | Could read "answer disagrees with context" rather than "computing" (belief tracking fits computing best) |
 | R2 | Held-out accuracy alone doesn't show that | A prompt-only word classifier gets held-out AUROC 1.000 on all five | analysis/tfidf_baseline | Single run | TF-IDF settings swing results (ties at 1.000) |
 | R3 | Attacks partly transfer to a word classifier | Maths: yes (more than the probe); ordering: mostly no; belief tracking: similar | analysis/tfidf_baseline | Single run | Sensitive to TF-IDF settings; transfer, not adaptive |
 
@@ -39,7 +39,7 @@ matches m45, m49, m38 and m50 everywhere it overlaps.
 |---|---|---|---|---|---|
 | V1 | Told about the probe, Qwen doesn't dodge with reasoning off | S −0.011 to +0.031; 0 crossings in 8,000 told attempts (12,000 with controls) | m38; numbers §6 | Yes | Older design (instruction removed) |
 | V2 | With reasoning on, the answer-only reading moves but the thinking still shows the work | 27B answer 0.40 / 0.47 / 0.42 vs 0.25 control; whole output ~0.10 | m38; numbers §6 | Yes (27B recomputed from raw rows) | Older probes; two model sizes |
-| V3 | Self-revision with scores helps (122B, reasoning on) | 0.58 vs 0.32 on a fresh problem, 91% correct | m38; numbers §6 | Yes | One model; reasoning on |
+| V3 | Self-revision with scores helps (122B, reasoning on) | 0.58 vs 0.32 on a fresh problem, 91% correct | m38; numbers §6 | Partly (read from m38's analysis.json, not recomputed from raw rows) | One model; reasoning on |
 
 ## Design facts the post states
 
@@ -58,4 +58,4 @@ matches m45, m49, m38 and m50 everywhere it overlaps.
 - Gap closed is a share of a different log-odds gap per probe (about 17–20 for maths/ordering, 8–11 for the new tasks).
 - Crossing rates on belief tracking and contradiction are not comparable with maths and ordering.
 - m50's crossing-share trend is 11 writers if quoted.
-- Still unchecked: R1–R3 (single runs).
+- Still unchecked: R1–R3 (single runs); V3 only partly.
