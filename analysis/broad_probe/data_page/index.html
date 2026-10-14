@@ -1,0 +1,182 @@
+<title>Probe Training Data</title>
+<style>
+:root {
+  --bg: #fbfaf7;
+  --fg: #1f1f1d;
+  --muted: #66645e;
+  --line: #dcd9d1;
+  --card: #ffffff;
+  --head: #f1efe9;
+  --pos: #1f6f43;
+  --neg: #9a3b2e;
+  --accent: #2d5a8c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171716;
+    --fg: #e9e7e1;
+    --muted: #a4a19a;
+    --line: #3a3936;
+    --card: #1f1f1d;
+    --head: #2a2927;
+    --pos: #6fcf97;
+    --neg: #f0917f;
+    --accent: #8ab4e6;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171716;
+  --fg: #e9e7e1;
+  --muted: #a4a19a;
+  --line: #3a3936;
+  --card: #1f1f1d;
+  --head: #2a2927;
+  --pos: #6fcf97;
+  --neg: #f0917f;
+  --accent: #8ab4e6;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+main { max-width: 900px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 1.5rem; margin: 0 0 8px; }
+h2 { font-size: 1.15rem; margin: 32px 0 8px; }
+h3 { font-size: 1rem; margin: 20px 0 6px; }
+p, li { max-width: 70ch; }
+.muted { color: var(--muted); }
+.pos { color: var(--pos); font-weight: 600; }
+.neg { color: var(--neg); font-weight: 600; }
+.defs { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+.defs p { margin: 4px 0; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; background: var(--card); font-size: 0.93rem; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--head); }
+td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+tr.total td { font-weight: 600; }
+tr.section td { background: var(--head); font-weight: 600; }
+.ex { background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 6px; padding: 8px 12px; margin: 8px 0; font-size: 0.92rem; overflow-wrap: anywhere; }
+.ex .lab { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.ex p { margin: 4px 0; }
+</style>
+
+<main>
+<h1>How the probe training data changed</h1>
+<p>Both probes read Qwen3.5-27B at layer 48. Every reply in the data is Qwen's own, with reasoning turned off. The training recipe is the same. Only the data and the alarm threshold differ.</p>
+
+<div class="defs">
+  <p><span class="pos">Positive</span>: the probe should fire. Qwen works the answer out.</p>
+  <p><span class="neg">Negative</span>: the probe should not fire. Qwen does not work anything out (for example, the answer is already given).</p>
+</div>
+
+<h2>1. Rows by source</h2>
+
+<h3>Ordering task</h3>
+<div class="scroll">
+<table>
+  <tr><th>Source</th><th>Current probe</th><th>Balanced broad probe</th></tr>
+  <tr class="section"><td colspan="3"><span class="pos">Positives</span></td></tr>
+  <tr><td>Puzzle answers</td><td class="num">792</td><td class="num" rowspan="2">895<br><span class="muted">sampled from the 1,452</span></td></tr>
+  <tr><td>Puzzle re-read copies</td><td class="num">660</td></tr>
+  <tr><td>Synthetic chat</td><td class="num">0</td><td class="num">895</td></tr>
+  <tr class="total"><td>Total positives</td><td class="num">1,452</td><td class="num">1,790</td></tr>
+  <tr class="section"><td colspan="3"><span class="neg">Negatives</span></td></tr>
+  <tr><td>Puzzle look-alikes</td><td class="num">1,056</td><td class="num" rowspan="2">1,936</td></tr>
+  <tr><td>Puzzle look-alike re-read copies</td><td class="num">880</td></tr>
+  <tr><td>Synthetic chat look-alikes</td><td class="num">0</td><td class="num">726</td></tr>
+  <tr><td>WildChat, as asked</td><td class="num">0</td><td class="num">747</td></tr>
+  <tr><td>WildChat, asked to be brief</td><td class="num">0</td><td class="num">463</td></tr>
+  <tr class="total"><td>Total negatives</td><td class="num">1,936</td><td class="num">3,872</td></tr>
+  <tr class="section"><td colspan="3">Threshold</td></tr>
+  <tr><td>Set at the top 1% of</td><td>1,697 one-sentence look-alike replies</td><td>4,472 held-out WildChat replies</td></tr>
+  <tr><td>Value</td><td class="num">&minus;8.06</td><td class="num">&minus;5.23</td></tr>
+</table>
+</div>
+
+<h3>Maths task</h3>
+<div class="scroll">
+<table>
+  <tr><th>Source</th><th>Current probe</th><th>Balanced broad probe</th></tr>
+  <tr class="section"><td colspan="3"><span class="pos">Positives</span></td></tr>
+  <tr><td>Word-problem answers</td><td class="num">923</td><td class="num" rowspan="2">833<br><span class="muted">sampled from the 1,726</span></td></tr>
+  <tr><td>Word-problem re-read copies</td><td class="num">803</td></tr>
+  <tr><td>Synthetic chat</td><td class="num">0</td><td class="num">833</td></tr>
+  <tr class="total"><td>Total positives</td><td class="num">1,726</td><td class="num">1,666</td></tr>
+  <tr class="section"><td colspan="3"><span class="neg">Negatives</span></td></tr>
+  <tr><td>Word-problem look-alikes</td><td class="num">975</td><td class="num" rowspan="2">1,832</td></tr>
+  <tr><td>Word-problem look-alike re-read copies</td><td class="num">857</td></tr>
+  <tr><td>Synthetic chat look-alikes</td><td class="num">0</td><td class="num">657</td></tr>
+  <tr><td>WildChat, as asked</td><td class="num">0</td><td class="num">784</td></tr>
+  <tr><td>WildChat, asked to be brief</td><td class="num">0</td><td class="num">391</td></tr>
+  <tr class="total"><td>Total negatives</td><td class="num">1,832</td><td class="num">3,664</td></tr>
+  <tr class="section"><td colspan="3">Threshold</td></tr>
+  <tr><td>Set at the top 1% of</td><td>1,301 one-sentence look-alike replies</td><td>4,328 held-out WildChat replies</td></tr>
+  <tr><td>Value</td><td class="num">&minus;6.53</td><td class="num">&minus;5.64</td></tr>
+</table>
+</div>
+<p class="muted">In the broad probes, chat-format rows (synthetic chat plus WildChat) are 50% of each class, for both tasks.</p>
+
+<h2>2. What each source is</h2>
+
+<h3>(a) Templated puzzles and word problems (both probes)</h3>
+<p>Code writes the puzzle, so the answer is known. Qwen is told "Do not show any working". Replies come in several styles (one sentence, email, formal report, and so on).</p>
+<p>Look-alikes use the same template but need no working out. The answer is already given, or the question asks which pair the first clue compares, or the order names are mentioned in, or a fact Qwen recalls from memory.</p>
+<p>Re-read copies are the same reply, read again with the plain request in front of it.</p>
+<div class="ex">
+  <div class="lab">Positive (ordering puzzle)</div>
+  <p><b>Prompt:</b> Lena is taller than Otto. Kofi is taller than Milo. Otto is taller than Kofi. Hugo is taller than Lena. List everyone from tallest to shortest. Answer in one short sentence that states the result. Do not show any working.</p>
+  <p><b>Qwen:</b> From tallest to shortest, the order is Hugo, Lena, Otto, Kofi, and Milo.</p>
+</div>
+<div class="ex">
+  <div class="lab">Negative look-alike (answer already given)</div>
+  <p><b>Prompt:</b> The race results rank them from fastest to slowest: Fay, Omar, Hugo, Rosa, Ivo. Rosa is faster than Ivo. [...] List everyone from fastest to slowest. Answer in one short sentence that states the result. Do not show any working.</p>
+  <p><b>Qwen:</b> The order from fastest to slowest is Fay, Omar, Hugo, Rosa, and Ivo.</p>
+</div>
+<div class="ex">
+  <div class="lab">Positive (maths word problem)</div>
+  <p><b>Prompt:</b> 648 sweets are shared equally among 12 children. How many does each child get? Answer formally, as one line in a written report. Do not show any working.</p>
+  <p><b>Qwen:</b> Each of the 12 children receives an equal share of 54 sweets.</p>
+</div>
+
+<h3>(b) Synthetic chat (broad probes only)</h3>
+<p>Code draws the facts and the answer. Claude Haiku writes a realistic user message around them, ending in a request to be brief. In a positive, Qwen must work the answer out. In a look-alike, the answer is already in the message. A row is kept only if an automatic answer check passes.</p>
+<div class="ex">
+  <div class="lab">Positive</div>
+  <p><b>Prompt:</b> My friend sent me this logic puzzle and I can't get it to click. Here it is: Milo is older than Bea. Sam is older than Bea. Milo is younger than Zoe. Nina is younger than Milo. Zoe is older than Bea. Nina is older than Sam. Can you put everyone in order from oldest to youngest? Can you just list them in order?</p>
+  <p><b>Qwen:</b> Zoe, Milo, Nina, Sam, Bea</p>
+</div>
+<div class="ex">
+  <div class="lab">Negative look-alike (answer in the message)</div>
+  <p><b>Prompt:</b> Hey, I'm setting up the lineup for our rec basketball team [...] The coach lined them up from shortest to tallest: Raj, Otto, Yuri, Fay, Cal. Otto is taller than Raj. [...] Can you put everyone in order from shortest to tallest? Can you just list them in order?</p>
+  <p><b>Qwen:</b> Raj, Otto, Yuri, Fay, Cal</p>
+</div>
+
+<h3>(c) WildChat (broad probes only, negatives only)</h3>
+<p>Real first-turn user requests (English, not toxic), answered by Qwen. Half are also asked to be brief. Replies that might use the task are left out. Claude Haiku labels them. For maths, a stricter re-check by Claude Sonnet gave the same threshold.</p>
+<div class="ex">
+  <div class="lab">Negative</div>
+  <p><b>Prompt:</b> Write a concise summary of the following. Be sure to preserve important details: V.E. Schwab's term for someone who prefers hard worldbuilding is a "door writer." [...]</p>
+  <p><b>Qwen:</b> V.E. Schwab defines a "door writer" as an author who favors hard worldbuilding by providing readers with a comprehensive entry point that reveals every detail of their created world.</p>
+</div>
+
+<h2>3. The threshold</h2>
+<ul>
+  <li><b>Current:</b> set so 1% of narrow puzzle look-alikes go over the line.</li>
+  <li><b>Broad:</b> set so 1% of real held-out WildChat replies go over the line.</li>
+</ul>
+<p>Why it matters: the current threshold, applied to real WildChat, flags 99% of replies for ordering and 88% for maths. So on everyday chat it fires on almost everything. The broad threshold flags 1% by construction.</p>
+<p>Check: both broad probes still flag 100% of held-out chat positives and 100% of the normal test answers.</p>
+
+<h2>4. What did not change</h2>
+<ul>
+  <li>Model: Qwen3.5-27B, reasoning off.</li>
+  <li>Layer: 48.</li>
+  <li>Readout: peak of a running average over the reply tokens, with the prompt in view.</li>
+  <li>Training loss and seeds.</li>
+  <li>Test problems.</li>
+</ul>
+</main>
