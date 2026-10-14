@@ -74,28 +74,36 @@ def panel(ax, task: str, title: str, b: str, meta: dict) -> None:
     ax.set_ylim(*Y_LIMITS)
 
 
-def how_to_read() -> None:
-    """A bare picture of what the score measures, from one real example (Fable 5.1 on ordering, median correct
-    answers): score = how far the attack moves the answer ÷ a normal answer's distance from the flag line. The words
-    go in the post's caption, not the figure."""
+def example_medians() -> dict[str, float]:
+    """The worked example (Fable 5.1 on ordering, correct answers): medians of plain, OFF and ON, and the flag line."""
     cfg = DOTS.TASKS[EXAMPLE_TASK]
-    line = DOTS.flag_line(cfg)
     med = {label.split("\n")[0]: float(np.median(xs)) for label, xs, _ in DOTS.strips(cfg)}
-    plain, off, on = med["plain correct answers"], med["OFF replies"], med["ON replies"]
-    c = EXAMPLE_COLOURS
-    fig, ax = plt.subplots(figsize=(10, 2.8))
+    return {"plain": med["plain correct answers"], "off": med["OFF replies"], "on": med["ON replies"], "line": DOTS.flag_line(cfg)}
+
+
+def draw_score(ax, fontsize: float = 13, dot_size: float = 300, line_label: bool = True) -> None:
+    """Three dots (normal answer, attack OFF, attack ON), the flag line and the two distances whose ratio is the score."""
+    m, c = example_medians(), EXAMPLE_COLOURS
+    plain, off, on, line = m["plain"], m["off"], m["on"], m["line"]
     ax.plot([line, line], [-0.75, 1.0], color=c["line"], lw=2.5)
-    ax.text(line, 1.1, "flag line", ha="center", fontsize=13, color=c["line"])
+    if line_label:
+        ax.text(line, 1.1, "flag line", ha="center", fontsize=fontsize, color=c["line"])
     for x, colour, label in ((plain, c["plain"], "normal answer"), (off, c["off"], "attack OFF"), (on, c["on"], "attack ON")):
-        ax.scatter(x, 0.4, s=300, color=colour, zorder=3)
-        ax.text(x, 0.7, label, ha="center", fontsize=13, color=colour)
+        ax.scatter(x, 0.4, s=dot_size, color=colour, zorder=3)
+        ax.text(x, 0.7, label, ha="center", fontsize=fontsize, color=colour)
     ax.annotate("", xy=(on + 0.3, 0.4), xytext=(off - 0.3, 0.4), arrowprops=dict(arrowstyle="->", color=c["on"], lw=2.5))
-    ax.text((on + off) / 2, 0.12, f"{off - on:.1f}", ha="center", fontsize=13, color=c["on"])
+    ax.text((on + off) / 2, 0.12, f"{off - on:.1f}", ha="center", fontsize=fontsize, color=c["on"])
     ax.annotate("", xy=(line, -0.35), xytext=(plain, -0.35), arrowprops=dict(arrowstyle="<->", color=c["plain"], lw=1.2))
-    ax.text((line + plain) / 2, -0.65, f"{plain - line:.1f}", ha="center", fontsize=13, color=c["plain"])
+    ax.text((line + plain) / 2, -0.65, f"{plain - line:.1f}", ha="center", fontsize=fontsize, color=c["plain"])
     ax.set_xlim(line - 1.5, plain + 1.5)
     ax.set_ylim(-0.8, 1.3)
     ax.axis("off")
+
+
+def how_to_read() -> None:
+    """Figure 1: what the score measures. The words go in the post's caption, not the figure."""
+    fig, ax = plt.subplots(figsize=(10, 2.8))
+    draw_score(ax)
     fig.tight_layout()
     fig.savefig(HERE / "figures" / "how_to_read.png", bbox_inches="tight")
     plt.close(fig)
