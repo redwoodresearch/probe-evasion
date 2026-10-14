@@ -46,6 +46,14 @@ EXAMPLE_COLOURS = {"plain": "#3b4440", "off": "#3d5a80", "on": "#c2541b", "line"
 # "band" shades a 95% band around the round-16 fit. The band uses numbers/compute.py's two-stage bootstrap (writers,
 # then each writer's searches) so it agrees with the quoted intervals.
 N_BOOT = 10_000
+# Band variants: (fit line colour, band colour, band alpha) per round. Gold is the one hue no lab uses.
+GOLD_LINE, GOLD_BAND = "#a8790f", "#e3b23c"
+BAND_STYLES = {
+    "band": {"B16": (None, None, 0.12)},
+    "bands": {"B16": (None, None, 0.12), "B0": (None, None, 0.06)},
+    "bands_gold0": {"B16": (None, None, 0.13), "B0": (GOLD_LINE, GOLD_BAND, 0.22)},
+    "bands_gold16": {"B16": (GOLD_LINE, GOLD_BAND, 0.22), "B0": (None, None, 0.10)},
+}
 BAND_SEED = 20261013
 
 
@@ -69,7 +77,7 @@ def xpos(w: str, meta: dict) -> float:
     return meta[w]["eci"] + F.DISPLAY_SHIFT.get(w, 0.0)
 
 
-def plot_round(ax, t: dict, meta: dict, hollow: bool, bars: bool, fit_style: str) -> None:
+def plot_round(ax, t: dict, meta: dict, hollow: bool, bars: bool, fit_style: str, fit_colour: str | None = None) -> None:
     means, chains = t["writer_means"], t["writer_chains"]
     for w, m in means.items():
         x, colour = xpos(w, meta), F.LAB_COLOUR[meta[w]["lab"]]
@@ -77,7 +85,7 @@ def plot_round(ax, t: dict, meta: dict, hollow: bool, bars: bool, fit_style: str
             ax.vlines(x, min(chains[w]), max(chains[w]), color=colour, lw=1.8, alpha=0.5)
         ax.plot(x, m, "o", ms=9 if hollow else 10, mfc="white" if hollow else colour, mec=colour, mew=1.8, zorder=3)
     k, c0 = np.polyfit([meta[w]["eci"] for w in means], list(means.values()), 1)
-    ax.plot(FIT_XS, k * FIT_XS + c0, fit_style, color=F.v6.TEXT, lw=1.8)
+    ax.plot(FIT_XS, k * FIT_XS + c0, fit_style, color=fit_colour or F.v6.TEXT, lw=2.2 if fit_colour else 1.8)
 
 
 def label_writers(ax, means: dict, chains: dict, meta: dict) -> None:
@@ -116,19 +124,21 @@ def slope_text(ax, data: dict, rounds: tuple[str, ...]) -> None:
 def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict, uncertainty: str | None = None) -> None:
     """rounds[0] is drawn solid with range bars and labels; a second round, if given, as hollow dots with a dashed fit."""
     data = NUMBERS[task]
-    if uncertainty in ("band", "bands"):
-        lo, hi = fit_band(data[rounds[0]]["writer_chains"], meta)
-        ax.fill_between(FIT_XS, lo, hi, color=F.v6.TEXT, alpha=0.12, lw=0, zorder=1)
-    if uncertainty == "bands" and len(rounds) == 2:  # round 0: lighter fill with dashed edges, to match its dashed fit
-        lo, hi = fit_band(data[rounds[1]]["writer_chains"], meta)
-        ax.fill_between(FIT_XS, lo, hi, color=F.v6.TEXT, alpha=0.06, lw=0, zorder=1)
-        for edge in (lo, hi):
-            ax.plot(FIT_XS, edge, ":", color=F.v6.MUTED, lw=0.9, zorder=1)
-    elif uncertainty == "slopes":
+    styles = BAND_STYLES.get(uncertainty, {})
+    for b in rounds:
+        if b not in styles:
+            continue
+        _, band_colour, alpha = styles[b]
+        lo, hi = fit_band(data[b]["writer_chains"], meta)
+        ax.fill_between(FIT_XS, lo, hi, color=band_colour or F.v6.TEXT, alpha=alpha, lw=0, zorder=1)
+        if uncertainty == "bands" and b == "B0":  # both grey: dotted edges tell round 0's band apart
+            for edge in (lo, hi):
+                ax.plot(FIT_XS, edge, ":", color=F.v6.MUTED, lw=0.9, zorder=1)
+    if uncertainty == "slopes":
         slope_text(ax, data, rounds)
-    plot_round(ax, data[rounds[0]], meta, hollow=False, bars=True, fit_style="-")
+    plot_round(ax, data[rounds[0]], meta, hollow=False, bars=True, fit_style="-", fit_colour=styles.get(rounds[0], (None,))[0])
     if len(rounds) == 2:
-        plot_round(ax, data[rounds[1]], meta, hollow=True, bars=False, fit_style="--")
+        plot_round(ax, data[rounds[1]], meta, hollow=True, bars=False, fit_style="--", fit_colour=styles.get(rounds[1], (None,))[0])
         ax.set_title(title, fontsize=16)  # slopes go in the caption
     else:
         ax.set_title(f"{title}: {fmt(data[rounds[0]]['all14'])}", fontsize=13)
@@ -190,8 +200,10 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
         fig.suptitle(suptitle, fontsize=15, x=0.02, ha="left")
     handles = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
     if len(rounds) == 2:
-        handles += [Line2D([], [], marker="o", color=F.v6.TEXT, ls="-", ms=8, label="after 16 rounds"),
-                    Line2D([], [], marker="o", color=F.v6.TEXT, mfc="white", ls="--", ms=8, label="round 0")]
+        styles = BAND_STYLES.get(uncertainty, {})
+        c16, c0 = (styles.get(b, (None,))[0] or F.v6.TEXT for b in ("B16", "B0"))
+        handles += [Line2D([], [], marker="o", color=c16, mfc=F.v6.TEXT, mec=F.v6.TEXT, ls="-", ms=8, label="after 16 rounds"),
+                    Line2D([], [], marker="o", color=c0, mfc="white", mec=F.v6.TEXT, ls="--", ms=8, label="round 0")]
     else:
         handles.append(Line2D([], [], color=F.v6.TEXT, ls="-", label="least-squares fit"))
     fig.legend(handles=handles, loc="lower center", ncol=len(handles), frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.01))
@@ -203,6 +215,8 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
         slopes = "Shaded: 95% band on the 16-round fit (resampling writers then searches); "
     if uncertainty == "bands":
         slopes = "Shaded: 95% bands on each fit (dotted edges = round 0; resampling writers then searches); "
+    if uncertainty in ("bands_gold0", "bands_gold16"):
+        slopes = "Shaded: 95% band on each fit (resampling writers then searches); "
     fig.text(0.5, 0.06, f"{slopes}{bars}; threshold at a 1% false-positive rate on look-alike replies",
              ha="center", fontsize=11, color=F.v6.MUTED)
     fig.subplots_adjust(left=0.08, right=0.97, top=0.9 if suptitle else 0.95, bottom=0.13)
@@ -215,7 +229,7 @@ def main() -> None:
     for b, when in ROUNDS.items():
         figure((b,), meta, f"trend_2x2_{b.lower()}.png", f"Qwen3.5-27B, 14 writers, {when}")
     figure(("B16", "B0"), meta, "trend_2x2_combined.png")
-    for style in ("slopes", "band", "bands"):
+    for style in ("slopes", *BAND_STYLES):
         figure(("B16", "B0"), meta, f"trend_2x2_combined_{style}.png", uncertainty=style)
     how_to_read()
 
