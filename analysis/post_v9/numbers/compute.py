@@ -25,7 +25,7 @@ from scipy.stats import spearmanr
 
 from probe_evasion.missions import m28_baselines_and_writer_knowledge as m28
 
-SCRATCH = Path(sys.argv[1])
+SCRATCH = Path(sys.argv[1]) if __name__ == "__main__" else None  # importable for its fits
 OUT = Path("analysis/post_v9/numbers")
 M45 = Path("missions/m45_toggle_sweep")
 M49 = Path("missions/m49_new_task_toggle")
