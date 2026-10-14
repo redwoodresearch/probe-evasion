@@ -81,12 +81,13 @@ def draw_calibration(ax, fontsize: float = 12, show_axis: bool = True) -> None:
     rng = np.random.default_rng(0)
     for xs, y, colour in ((negatives, 0.0, DOTS.COLORS["neg"]), (plain, 1.0, C["plain"])):
         ax.scatter(xs, y + rng.uniform(-0.25, 0.25, len(xs)), s=5, color=colour, alpha=0.35, linewidths=0)
-    ax.text(float(np.median(plain)), 1.36, "normal answers", ha="center", va="bottom", fontsize=fontsize, color=C["plain"])
+    ax.text(float(np.median(plain)), 1.36, "held-out positives\n(unattacked test answers)", ha="center", va="bottom",
+            fontsize=fontsize, color=C["plain"], linespacing=1.2)
     # the look-alike cloud sits just left of the line, so both its labels go to the right of the line
-    ax.text(line + 0.4, -0.3, "look-alike replies", va="top", fontsize=fontsize, color=MUTED)
+    ax.text(line + 0.4, -0.3, "held-out negatives\n(look-alike replies)", va="top", fontsize=fontsize, color=MUTED, linespacing=1.2)
     ax.text(line + 0.4, 0.3, "1% of them are above", va="bottom", fontsize=fontsize - 1.5, color=C["line"])
     ax.plot([line, line], [-0.75, 1.6], color=C["line"], lw=2.5)
-    ax.set_ylim(-0.8, 1.7)
+    ax.set_ylim(-1.05, 1.95)
     ax.set_yticks([])
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
