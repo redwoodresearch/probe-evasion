@@ -38,7 +38,8 @@ GEMINI_LABEL_OFFSET = (-3.5, 0.2)  # (ECI units, score units) from the dot to th
 LABEL_X = 170.5        # labels sit in a column right of the data, with leader lines to their dots
 LABEL_GAP = 0.06       # minimum vertical gap between labels (score units)
 Y_LIMITS = (-0.15, 0.82)
-Y_LABEL = "probe-dodging score\n(0 = no move; 1 or more = past the flag line)"
+Y_LABEL = "probe-dodging score"
+Y_LABEL_NOTE = "(0 = no move; 1 or more = past the flag line)"  # smaller, beside the main label
 EXAMPLE_TASK = "ordering"  # the worked example: Fable 5.1 (make_dots' writer for ordering), medians over correct pairs
 EXAMPLE_COLOURS = {"plain": "#3b4440", "off": "#3d5a80", "on": "#c2541b", "line": "#b3261e"}
 
@@ -93,7 +94,7 @@ def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict) -> Non
     plot_round(ax, data[rounds[0]], meta, hollow=False, bars=True, fit_style="-")
     if len(rounds) == 2:
         plot_round(ax, data[rounds[1]], meta, hollow=True, bars=False, fit_style="--")
-        ax.set_title(f"{title}\nafter 16 rounds {fmt(data['B16']['all14'])};  round 0 {fmt(data['B0']['all14'])}", fontsize=12)
+        ax.set_title(title, fontsize=16)  # slopes go in the caption
     else:
         ax.set_title(f"{title}: {fmt(data[rounds[0]]['all14'])}", fontsize=13)
     label_writers(ax, data[rounds[0]]["writer_means"], data[rounds[0]]["writer_chains"], meta)
@@ -141,13 +142,15 @@ def how_to_read() -> None:
 
 def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None = None) -> None:
     fig, axes = plt.subplots(2, 2, figsize=(15, 11.5 if len(rounds) == 2 else 11), sharex=True, sharey=True,
-                             gridspec_kw={"hspace": 0.3 if len(rounds) == 2 else 0.2, "wspace": 0.08})
+                             gridspec_kw={"hspace": 0.2, "wspace": 0.08})
     for ax, (task, title) in zip(axes.flat, PANELS.items()):
         panel(ax, task, title, rounds, meta)
     for ax in axes[-1]:
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
     for ax in axes[:, 0]:
-        ax.set_ylabel(Y_LABEL, fontsize=12)
+        ax.set_ylabel(Y_LABEL, fontsize=15, labelpad=26)
+        ax.text(-0.085, 0.5, Y_LABEL_NOTE, transform=ax.transAxes, rotation=90, ha="center", va="center", fontsize=11,
+                color=F.v6.MUTED)
     if suptitle:
         fig.suptitle(suptitle, fontsize=15, x=0.02, ha="left")
     handles = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
@@ -158,7 +161,8 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
         handles.append(Line2D([], [], color=F.v6.TEXT, ls="-", label="least-squares fit"))
     fig.legend(handles=handles, loc="lower center", ncol=len(handles), frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.01))
     bars = "bars = range over 3 searches (after 16 rounds)" if len(rounds) == 2 else "bars = range over 3 searches"
-    fig.text(0.5, 0.06, f"Slopes per 10 ECI [95% interval, resampling writers then searches]; {bars}; strict 1% flag line",
+    slopes = "" if len(rounds) == 2 else "Slopes per 10 ECI [95% interval, resampling writers then searches]; "
+    fig.text(0.5, 0.06, f"{slopes}{bars}; strict 1% flag line",
              ha="center", fontsize=11, color=F.v6.MUTED)
     fig.subplots_adjust(left=0.08, right=0.97, top=0.9 if suptitle else 0.95, bottom=0.13)
     fig.savefig(HERE / "figures" / name, bbox_inches="tight")
