@@ -58,9 +58,10 @@ def draw_loop(ax, fontsize: float = 12) -> None:
     box(ax, *writer, "14 writer models\nwrite a prompt", w=0.38, h=0.2, fontsize=fontsize, actor="writer")
     box(ax, *qwen, "Qwen3.5-27B answers\nwith the prompt\n(switch ON / OFF)", w=0.5, h=0.24, fontsize=fontsize, actor="qwen")
     box(ax, *probe, "Probe scores\nQwen's activations", w=0.5, h=0.2, fontsize=fontsize, actor="probe")
-    arrow(ax, (0.26, 0.62), (0.5, 0.83))
-    arrow(ax, (0.84, 0.67), (0.84, 0.31))
-    arrow(ax, (0.5, 0.16), (0.24, 0.39), "scores fed back,\n16 rounds", (0.27, 0.15), fontsize=fontsize - 1.5)
+    # edge to edge: writer top -> Qwen left; Qwen bottom -> probe top; probe left -> writer bottom
+    arrow(ax, (0.24, 0.615), (0.455, 0.80))
+    arrow(ax, (0.80, 0.665), (0.80, 0.315))
+    arrow(ax, (0.455, 0.20), (0.24, 0.385), "scores fed back,\n16 rounds", (0.2, 0.17), fontsize=fontsize - 1.5)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis("off")
