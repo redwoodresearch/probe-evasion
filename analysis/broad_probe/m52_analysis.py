@@ -38,15 +38,15 @@ GATE = {"chat_positives_flagged": 0.80, "plain_flagged": 0.90}
 B = 16
 
 
-def scored(task: str, name: str) -> list[dict]:
-    return [json.loads(l) for l in gzip.open(RUN / "scored" / f"{task}_{name}.jsonl.gz", "rt")]
+def scored(task: str, name: str, variant: str = "full") -> list[dict]:
+    return [json.loads(l) for l in gzip.open(RUN / m52.VARIANTS[variant][2] / f"{task}_{name}.jsonl.gz", "rt")]
 
 
-def line_pool(task: str) -> list[dict]:
+def line_pool(task: str, variant: str = "full") -> list[dict]:
     labels = jl(RUN / "wildchat_labels.jsonl") + jl(RUN / "wildchat_brief_labels.jsonl")
     cat = {l["id"]: l["category"] for l in labels if l["task"] == task}
     skip = m52.NOT_IN_LINE_POOL[task] | {"refused"}
-    return [r for r in scored(task, "wildchat") if r["split"] == "line" and cat.get(r["id"], "refused") not in skip]
+    return [r for r in scored(task, "wildchat", variant) if r["split"] == "line" and cat.get(r["id"], "refused") not in skip]
 
 
 def flagged(xs, line: float) -> float:
@@ -90,7 +90,7 @@ def crossings(rows: list[dict], probe: str, line: float) -> dict:
     return {"pairs_both_valid": n, "forward": fwd, "reverse": rev}
 
 
-def readout(task: str, probe: str, line: float, sets: dict) -> dict:
+def readout(task: str, probe: str, line: float, sets: dict, variant: str = "full") -> dict:
     """Everything for one probe read against one line."""
     plain = [r["peaks"][probe] for r in sets["m45_c"] if r["key"].startswith("plain") and is_valid(r)]
     plain_med = float(np.median(plain))
@@ -102,7 +102,7 @@ def readout(task: str, probe: str, line: float, sets: dict) -> dict:
     return {"line": line, "plain_median": plain_med, "gap": plain_med - line,
             "plain_flagged": flagged(plain, line), "chat_positives_flagged": flagged(held(1), line),
             "chat_lookalikes_flagged": flagged(held(0), line), "lookalikes_flagged": flagged([r["peaks"][probe] for r in sets["lookalikes"]], line),
-            "wildchat_line_pool_flagged": flagged([r["peaks"][probe] for r in line_pool(task)], line),
+            "wildchat_line_pool_flagged": flagged([r["peaks"][probe] for r in line_pool(task, variant)], line),
             "writer_means": {w: float(np.mean(v)) for w, v in by_writer.items()}, "writer_chains": by_writer,
             "slope": NUM.two_stage(by_writer, rng), "crossings": crossings(rows, probe, line)}
 
@@ -124,6 +124,13 @@ def main() -> None:
                "line pool size": len(pool)}
         g = res["new probe, WildChat line"]
         res["gate"] = {k: {"value": g[k], "needs": v, "passes": g[k] >= v} for k, v in GATE.items()}
+        if (RUN / m52.VARIANTS["balanced"][2] / f"{task}_m45_d.jsonl.gz").exists():
+            bsets = {name: scored(task, name, "balanced") for name in ("chat", "lookalikes", "m45_c", "m45_d")}
+            bprobe = m52.probe_name(task, 0, "balanced")
+            bline = float(np.quantile([r["peaks"][bprobe] for r in line_pool(task, "balanced")], 1 - FALSE_ALARM))
+            res["balanced probe, WildChat line"] = readout(task, bprobe, bline, bsets, "balanced")
+            b = res["balanced probe, WildChat line"]
+            res["gate_balanced"] = {k: {"value": b[k], "needs": v, "passes": b[k] >= v} for k, v in GATE.items()}
         results[task] = res
         print(f"\n[{task}] line pool {len(pool)}; gate:", {k: (round(v["value"], 3), v["passes"]) for k, v in res["gate"].items()})
         for name, r in res.items():
