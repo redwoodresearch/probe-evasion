@@ -155,13 +155,47 @@ def version_3() -> None:
     save(fig, "method_v3.png")
 
 
+def draw_score_line(ax, fontsize: float = 16) -> None:
+    """The score as a number line: the three answers on a faint axis, the attack's move as an arc above, the distance from
+    an unattacked answer to the threshold as a bracket below, and the score as a fraction of the two."""
+    m, c = FIG.example_medians(), FIG.EXAMPLE_COLOURS
+    plain, off, on, line = m["plain"], m["off"], m["on"], m["line"]
+    left, right = line - 1.0, plain + 1.0
+    ax.plot([left, right], [0, 0], color="#d5dad8", lw=2, zorder=1)
+    ax.plot([line, line], [-1.15, 1.25], color=c["line"], lw=3, zorder=2)
+    ax.text(line, 1.38, "threshold", ha="center", va="bottom", fontsize=fontsize, color=c["line"])
+    for x, colour, label in ((on, c["on"], "attack ON"), (off, c["off"], "attack OFF"), (plain, c["plain"], "unattacked\nanswer")):
+        ax.scatter(x, 0, s=520, color=colour, zorder=3, edgecolors="white", linewidths=2)
+        ax.text(x, -0.32, label, ha="center", va="top", fontsize=fontsize - 1, color=colour, linespacing=1.15)
+    ax.add_patch(FancyArrowPatch((off, 0.22), (on, 0.22), arrowstyle="-|>", mutation_scale=22, color=c["on"], lw=2.6,
+                                 connectionstyle="arc3,rad=0.45", zorder=2))
+    ax.text((on + off) / 2, 1.0, f"{off - on:.1f}", ha="center", va="bottom", fontsize=fontsize + 2, color=c["on"], fontweight="bold")
+    ax.annotate("", xy=(line, -1.0), xytext=(plain, -1.0), arrowprops=dict(arrowstyle="|-|", color=c["plain"], lw=1.6,
+                                                                           shrinkA=0, shrinkB=0, mutation_scale=8))
+    ax.text((line + plain) / 2, -1.12, f"{plain - line:.1f}", ha="center", va="top", fontsize=fontsize + 2, color=c["plain"], fontweight="bold")
+    # the score as a fraction, to the right of the line
+    fx = right + 4.6
+    ax.text(fx, 0.38, f"{off - on:.1f}", ha="center", va="center", fontsize=fontsize + 6, color=c["on"], fontweight="bold")
+    ax.plot([fx - 1.5, fx + 1.5], [0, 0], color=TEXT, lw=2)
+    ax.text(fx, -0.38, f"{plain - line:.1f}", ha="center", va="center", fontsize=fontsize + 6, color=c["plain"], fontweight="bold")
+    ax.text(fx + 2.0, 0, f"= {(off - on) / (plain - line):.2f}", ha="left", va="center", fontsize=fontsize + 6, color=TEXT, fontweight="bold")
+    ax.text(fx + 2.5, -0.95, "probe-dodging\nscore", ha="center", va="top", fontsize=fontsize - 3, color=MUTED, linespacing=1.15)
+    ax.set_xlim(left - 0.3, fx + 6.3)
+    ax.set_ylim(-1.9, 1.9)
+    ax.axis("off")
+
+
+def panel_label(ax, text: str) -> None:
+    ax.text(0.0, 1.02, text.upper(), transform=ax.transAxes, fontsize=12.5, color=MUTED, fontweight="bold", va="bottom")
+
+
 def search_and_score() -> None:
     """Two panels only, large text: the search loop, and what the score measures (the threshold is explained in words)."""
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6), gridspec_kw={"width_ratios": [1, 1.15], "wspace": 0.12})
+    fig, axes = plt.subplots(1, 2, figsize=(17.5, 6), gridspec_kw={"width_ratios": [1, 1.45], "wspace": 0.06})
     draw_loop(axes[0], fontsize=16)
-    FIG.draw_score(axes[1], fontsize=16, dot_size=480, positive_label="unattacked\nanswer")
-    step_title(axes[0], "1. The search", fontsize=18)
-    step_title(axes[1], "2. The score: 9.2 ÷ 20.0 = 0.46", fontsize=18)
+    draw_score_line(axes[1])
+    panel_label(axes[0], "The search")
+    panel_label(axes[1], "The score")
     save(fig, "method_search_score.png")
 
 
