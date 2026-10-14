@@ -116,9 +116,14 @@ def slope_text(ax, data: dict, rounds: tuple[str, ...]) -> None:
 def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict, uncertainty: str | None = None) -> None:
     """rounds[0] is drawn solid with range bars and labels; a second round, if given, as hollow dots with a dashed fit."""
     data = NUMBERS[task]
-    if uncertainty == "band":
+    if uncertainty in ("band", "bands"):
         lo, hi = fit_band(data[rounds[0]]["writer_chains"], meta)
         ax.fill_between(FIT_XS, lo, hi, color=F.v6.TEXT, alpha=0.12, lw=0, zorder=1)
+    if uncertainty == "bands" and len(rounds) == 2:  # round 0: lighter fill with dashed edges, to match its dashed fit
+        lo, hi = fit_band(data[rounds[1]]["writer_chains"], meta)
+        ax.fill_between(FIT_XS, lo, hi, color=F.v6.TEXT, alpha=0.06, lw=0, zorder=1)
+        for edge in (lo, hi):
+            ax.plot(FIT_XS, edge, ":", color=F.v6.MUTED, lw=0.9, zorder=1)
     elif uncertainty == "slopes":
         slope_text(ax, data, rounds)
     plot_round(ax, data[rounds[0]], meta, hollow=False, bars=True, fit_style="-")
@@ -196,6 +201,8 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
         slopes = "Top left: fitted slope per 10 ECI [95% interval, resampling writers then searches]; "
     if uncertainty == "band":
         slopes = "Shaded: 95% band on the 16-round fit (resampling writers then searches); "
+    if uncertainty == "bands":
+        slopes = "Shaded: 95% bands on each fit (dotted edges = round 0; resampling writers then searches); "
     fig.text(0.5, 0.06, f"{slopes}{bars}; threshold at a 1% false-positive rate on look-alike replies",
              ha="center", fontsize=11, color=F.v6.MUTED)
     fig.subplots_adjust(left=0.08, right=0.97, top=0.9 if suptitle else 0.95, bottom=0.13)
@@ -208,7 +215,7 @@ def main() -> None:
     for b, when in ROUNDS.items():
         figure((b,), meta, f"trend_2x2_{b.lower()}.png", f"Qwen3.5-27B, 14 writers, {when}")
     figure(("B16", "B0"), meta, "trend_2x2_combined.png")
-    for style in ("slopes", "band"):
+    for style in ("slopes", "band", "bands"):
         figure(("B16", "B0"), meta, f"trend_2x2_combined_{style}.png", uncertainty=style)
     how_to_read()
 
