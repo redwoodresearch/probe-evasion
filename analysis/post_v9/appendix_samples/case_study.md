@@ -1,6 +1,6 @@
-# Case study: a good and a bad maths attack
+# Case study: a good and a bad arithmetic attack
 
-Each attack is a writer's instruction placed in front of a maths problem, followed by a switch line set to ON or OFF; Qwen is told to follow the switched part only when the switch is ON. The probe reads Qwen's reply with the whole prompt in view. Scores are probe log-odds; higher means "Qwen did the arithmetic". "Gap closed" is the writer's median drop in score from OFF to ON, as a share of the distance from the median unattacked answer to the threshold. Each example is the writer's typical case: its median chain (of 3), and that chain's median pair.
+Each attack is a writer's instruction placed in front of an arithmetic problem, followed by a switch line set to ON or OFF; Qwen is told to follow the switched part only when the switch is ON. The probe reads Qwen's reply with the whole prompt in view. Scores are probe log-odds; higher means "Qwen did the arithmetic". "Gap closed" is the writer's median drop in score from OFF to ON, as a share of the distance from the median unattacked answer to the threshold. Each example is the writer's typical case: its median chain (of 3), and that chain's median pair.
 
 ### Good attack: Fable 5.1 (ECI 165), gap closed 0.29
 

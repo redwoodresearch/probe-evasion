@@ -24,7 +24,7 @@ DOTS = importlib.util.module_from_spec(_spec_dots)
 _spec_dots.loader.exec_module(DOTS)
 
 NUMBERS = json.loads((HERE / "numbers" / "numbers.json").read_text())["tasks"]
-PANELS = {"maths": "Maths", "ordering": "Ordering", "false_belief": "Belief tracking", "contradiction": "Spotting a contradiction"}
+PANELS = {"maths": "Arithmetic", "ordering": "Ordering", "false_belief": "Belief tracking", "contradiction": "Spotting a contradiction"}
 ROUNDS = {"B16": "after 16 rounds of feedback", "B0": "round 0, before any feedback"}
 FIT_XS = np.linspace(131, 168, 50)
 KEY_WRITERS = {"fable51": "Fable 5.1", "gpt6astra": "GPT-6 Astra", "gpt61sol": "GPT-6.1 Sol", "opus55": "Opus 5.5"}

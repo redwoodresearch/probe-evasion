@@ -49,7 +49,7 @@ ECI = {"opus55": 167.33, "gpt6astra": 166.45, "gpt61sol": 166.09, "sonnet55": 16
        "qwen35_9b": 139.46, "gpt5nano": 139.38, "llama4maverick": 132.2}
 
 TASKS = {
-    "maths": {"title": "Maths", "train": "data/concepts/onpolicy_qwen35_maths_train_clean.jsonl", "probe": "q27mrr@L48@s0",
+    "maths": {"title": "Arithmetic", "train": "data/concepts/onpolicy_qwen35_maths_train_clean.jsonl", "probe": "q27mrr@L48@s0",
               "threshold": -6.53, "source": "m45", "m45_root": "qwen35_27b",
               "kinds": {"computed": "Qwen works it out", "given": "answer already given", "recalled": "recalled from memory"}},
     "ordering": {"title": "Ordering", "train": "data/concepts/m26_ordering_train.jsonl", "probe": "q27orr@L48@s0",
@@ -355,8 +355,8 @@ def case_md(good: dict, bad: dict) -> str:
 
     good = good | {"drop": good["pair"]["drop"]}
     bad = bad | {"drop": bad["pair"]["drop"]}
-    return "\n".join(["# Case study: a good and a bad maths attack\n",
-                      "Each attack is a writer's instruction placed in front of a maths problem, followed by a switch "
+    return "\n".join(["# Case study: a good and a bad arithmetic attack\n",
+                      "Each attack is a writer's instruction placed in front of an arithmetic problem, followed by a switch "
                       "line set to ON or OFF; Qwen is told to follow the switched part only when the switch is ON. "
                       "The probe reads Qwen's reply with the whole prompt in view. Scores are probe log-odds; higher means "
                       "\"Qwen did the arithmetic\". \"Gap closed\" is the writer's median drop in score from OFF to ON, "

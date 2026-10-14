@@ -26,7 +26,7 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
 M51 = REPO / "missions/m51_matched_request"
 TASKS = ("maths", "ordering", "false_belief", "contradiction", "acrostic")
-TASK_LABEL = {"maths": "Maths", "ordering": "Ordering", "false_belief": "Belief tracking",
+TASK_LABEL = {"maths": "Arithmetic", "ordering": "Ordering", "false_belief": "Belief tracking",
               "contradiction": "Spotting a\ncontradiction", "acrostic": "Acrostic"}
 # Part 1 (maths, ordering compute / given) replies live in the mission root; everything else in part2/.
 PART1_VERSIONS = {"compute", "given_clause", "given_sentence"}
@@ -156,7 +156,7 @@ def draw_schematic(ax, rows: dict) -> None:
     ax.set_xlim(-0.02, 1.02), ax.set_ylim(0, 1), ax.axis("off")
     ax.text(0.0, 1.0, "The test", fontsize=12, weight="bold", color=INK, va="top")
     ax.text(0.0, 0.935, "One problem, two requests that differ only in the inserted\n"
-            "answer. Keep the pairs where Qwen's reply is word-for-word\nidentical (a real maths pair shown).",
+            "answer. Keep the pairs where Qwen's reply is word-for-word\nidentical (a real arithmetic pair shown).",
             fontsize=9, color=INK, va="top")
     box(ax, 0.0, 0.58, 0.48, 0.17, "\"59 jars cost $49 each,\n$2540 in total. What do they\ncost in total?\"\n"
         "wrong answer given", size=8.2)

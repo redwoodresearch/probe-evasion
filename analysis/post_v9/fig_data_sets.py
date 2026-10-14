@@ -57,7 +57,7 @@ def main() -> None:
     ax.text(x + COL_W + 0.05, y_top + 0.05, "re-read\ncopies\n(+1,540)", fontsize=8.5, color=INK, va="center")
     ax.text(X0, -0.45, "Columns never share a problem. Rows are how the question is asked: the plain question is one of the "
             "training styles, which is why\nthe calibration pool and the unattacked test answers sit in that row. Counts are "
-            "ordering's; maths and the other tasks are built the same way.", fontsize=9.5, color=MUTED, va="top")
+            "ordering's; arithmetic and the other tasks are built the same way.", fontsize=9.5, color=MUTED, va="top")
     ax.set_xlim(0, X0 + len(COLUMNS) * COL_W + 0.9)
     ax.set_ylim(-1.3, len(ROWS) * ROW_H + 1.0)
     ax.axis("off")

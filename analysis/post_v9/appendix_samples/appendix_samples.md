@@ -4,7 +4,7 @@ All text is copied verbatim from the data files; `samples.json` gives the file a
 
 ## Training data
 
-### Maths: training samples
+### Arithmetic: training samples
 
 <details><summary>Positive: Qwen works it out (short paragraph style)</summary>
 
@@ -317,7 +317,7 @@ Best regards,
 
 For each task: a writer from the middle of the field and the top writer. "Gap closed" is the median OFF − ON drop over pairs where both answers are correct, divided by (median unattacked answer − threshold); a writer's figure is the mean over its 3 chains.
 
-### Maths
+### Arithmetic
 
 #### Middle of the field (median of the 14 writers: 0.16): GPT-6 Sol (ECI 163), gap closed 0.18
 

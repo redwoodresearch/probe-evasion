@@ -21,7 +21,7 @@ _spec.loader.exec_module(FIG)
 F, NUMBERS = FIG.F, FIG.NUMBERS
 LABELLED = {**FIG.KEY_WRITERS, "llama4maverick": "Llama 4 Maverick"}
 X_LIMITS = (-0.12, 0.7)
-Y_LIMITS = {"maths": (-8, 48), "ordering": (-8, 48), "false_belief": (-12, 22), "contradiction": (-12, 22)}  # per row: room for labels
+Y_LIMITS = (-12, 48)  # one scale for all four panels, so tasks compare directly
 
 
 def panel(ax, task: str, title: str, meta: dict) -> None:
@@ -45,8 +45,8 @@ def panel(ax, task: str, title: str, meta: dict) -> None:
     ax.set_title(title, fontsize=15)
     ax.grid(color=F.v6.GRID)
     ax.set_xlim(*X_LIMITS)
-    ax.set_ylim(*Y_LIMITS[task])
-    top = Y_LIMITS[task][1]
+    ax.set_ylim(*Y_LIMITS)
+    top = Y_LIMITS[1]
     for w, cost in t["accuracy_cost"].items():  # a search bar that runs off the top: say where it ends
         hi = max(cost["cost_points_chains"])
         if hi > top:
@@ -55,7 +55,7 @@ def panel(ax, task: str, title: str, meta: dict) -> None:
 
 def main() -> None:
     meta = {r["writer"]: r for r in F.writer_rows(F.load_m45(), "maths")}
-    fig, axes = plt.subplots(2, 2, figsize=(14, 11), sharex=True, sharey="row", gridspec_kw={"hspace": 0.18, "wspace": 0.08})
+    fig, axes = plt.subplots(2, 2, figsize=(14, 11), sharex=True, sharey=True, gridspec_kw={"hspace": 0.18, "wspace": 0.08})
     for ax, (task, title) in zip(axes.flat, FIG.PANELS.items()):
         panel(ax, task, title, meta)
     for ax in axes[-1]:
@@ -64,8 +64,8 @@ def main() -> None:
         ax.set_ylabel("accuracy cost (points)\nOFF correct − ON correct", fontsize=12)
     handles = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
     fig.legend(handles=handles, loc="lower center", ncol=5, frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.005))
-    fig.text(0.5, 0.045, "One dot per writer (mean of 3 searches); bars = range over the 3 searches. The two rows have different y-scales. "
-             "Maths correctness by m45's re-judge; other tasks by their validity check.", ha="center", fontsize=10.5, color=F.v6.MUTED)
+    fig.text(0.5, 0.045, "One dot per writer (mean of 3 searches); bars = range over the 3 searches. "
+             "Arithmetic correctness by m45's re-judge; other tasks by their validity check.", ha="center", fontsize=10.5, color=F.v6.MUTED)
     fig.subplots_adjust(left=0.08, right=0.97, top=0.95, bottom=0.11)
     fig.savefig(HERE / "figures" / "cost_2x2.png", bbox_inches="tight")
     plt.close(fig)

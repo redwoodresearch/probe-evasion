@@ -41,7 +41,7 @@ DETECTOR_LABEL = {"probe": "Probe (reads Qwen's activations)", "tfidf_B": "B: wo
 SHORT_LABEL = {"probe": "Probe", "tfidf_B": "B"}
 DETECTOR_COLOUR = {"probe": PROBE_COLOUR, "tfidf_B": TEXT_COLOUR}
 ATTACK_TASKS = ("maths", "ordering")
-ATTACK_TITLE = {"maths": "Maths: the attacks carried over to B", "ordering": "Ordering: they mostly did not"}
+ATTACK_TITLE = {"maths": "Arithmetic: the attacks carried over to B", "ordering": "Ordering: they mostly did not"}
 # A real held-out pair (row indices into the maths held-out file): a computed reply and a "given" look-alike
 EXAMPLE_POSITIVE, EXAMPLE_NEGATIVE = 346, 3
 STYLE_SUFFIX = " Answer as a short exchange"  # the shared answer-format instruction, cut from the displayed requests
@@ -141,7 +141,7 @@ def draw_schematic(ax, pair: list[dict]) -> None:
     ax.text(0.5, 0.575, "scored on held-out data (chart, right)", ha="center", va="top", fontsize=8.5, color=MUTED,
             style="italic")
 
-    ax.text(0.0, 0.46, "A real held-out pair (maths). The two kinds of\nrequest are worded differently (\"sold\" vs \"shows\")",
+    ax.text(0.0, 0.46, "A real held-out pair (arithmetic). The two kinds of\nrequest are worded differently (\"sold\" vs \"shows\")",
             fontsize=9, weight="bold", color=INK, va="top")
     for y, row, tag in ((0.20, pair[0], "+ worked it out"), (0.01, pair[1], "- answer given (look-alike)")):
         request = "\n".join(textwrap.wrap(f"Request: \"{row['request']}\"", 52))
@@ -226,7 +226,7 @@ def draw_attack_header_and_caveat(fig, numbers: dict) -> None:
              "Caveat: the attacks were tuned against the probe, not against B, so this shows how far they carry over, not "
              "how hard B would be to evade if attacked directly.\nB's numbers also depend on its settings: across the B "
              "settings that tie on held-out AUROC, B's slope ranges "
-             f"{maths['slope_range'][0]:+.2f} to {maths['slope_range'][1]:+.2f} in maths and "
+             f"{maths['slope_range'][0]:+.2f} to {maths['slope_range'][1]:+.2f} in arithmetic and "
              f"{ordering['slope_range'][0]:+.2f} to {ordering['slope_range'][1]:+.2f} in ordering (chosen setting shown).",
              fontsize=8, color=TEXT_COLOUR, va="bottom", style="italic")
 
