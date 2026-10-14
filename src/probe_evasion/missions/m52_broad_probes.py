@@ -149,6 +149,19 @@ Call the record_message tool with the message."""
 WRAP_TOOL = {"name": "record_message", "description": "Record the user message.",
              "input_schema": {"type": "object", "properties": {"message": {"type": "string"}}, "required": ["message"]}}
 CHAT_KINDS = {"computed": 1, "given": 0}  # kind -> label
+# Brevity requests appended to user messages, as real users write them. Synthetic rows (positives and look-alikes alike)
+# draw from the task's phrasings and the generic ones; half of the WildChat negatives get a generic one, so "asked to be
+# brief, answered briefly" occurs on both sides and cannot stand in for the task.
+BREVITY_GENERIC = ["Keep it short.", "Be concise please.", "Brief answer is fine.", "No need for a long explanation.",
+                   "Short version please.", "Just the answer, thanks."]
+BREVITY_TASK = {"ordering": ["Just need the final order, no need to explain.", "Only the order please, skip the reasoning.",
+                             "Can you just list them in order?", "No need to walk me through it, just the order."],
+                "maths": ["Just need the number, no need to show the steps.", "What's the figure? Skip the working.",
+                          "Only the final number please.", "No need to walk me through it, just the answer."]}
+
+
+def brevity(rng: random.Random, task: str | None) -> str:
+    return rng.choice(BREVITY_GENERIC + (BREVITY_TASK[task] if task else []))
 
 
 def chat_items(task: str, kind: str, n: int, seed: int) -> list[dict]:
@@ -187,7 +200,9 @@ def wrap_requests(items: list[dict]) -> list[dict]:
     for it, p, c in zip(items, prompts, calls):
         msg = c.get("message", "")
         if msg and all(x in msg for x in it["must_contain"]):
-            out.append(it | {"request": msg, "wrap_prompt": p, "wrap_model": judge.CHEAP_JUDGE_MODEL})
+            phrase = brevity(random.Random(it["id"]), it["task"])
+            out.append(it | {"request": f"{msg.rstrip()} {phrase}", "brevity": phrase, "message_without_brevity": msg,
+                             "wrap_prompt": p, "wrap_model": judge.CHEAP_JUDGE_MODEL})
     return out
 
 
@@ -219,18 +234,27 @@ def chat_rows(task: str, kind: str, n: int, seed: int) -> list[dict]:
     return [r | chat_label_ok(r) | {"label": CHAT_KINDS[kind]} for r in rows]
 
 
-@app.local_entrypoint()
-def m52_chat_pilot(n: int = 16):
-    """A small pilot of chat-formatted rows to read before building the full set (local driver, short)."""
-    from dotenv import load_dotenv
+def brief_wildchat(rows: list[dict]) -> list[dict]:
+    """WildChat requests with a generic brevity request appended, answered again by Qwen."""
+    reqs = [r | {"id": f"{r['id']}+brief", "brevity": brevity(random.Random(r["id"]), None)} for r in rows]
+    reqs = [r | {"request": f"{r['request'].rstrip()} {r['brevity']}"} for r in reqs]
+    gens = m46.generate(Q27, [r["request"] for r in reqs], GEN_SEED, MAX_TRAINING_TOKENS)
+    return [r | g for r, g in zip(reqs, gens)]
 
-    load_dotenv(".env")
-    rows = [r for task in TASKS for kind in CHAT_KINDS for r in chat_rows(task, kind, n, seed=999)]
-    write_jsonl(OUT / "chat_pilot.jsonl", rows)
+
+CHAT_PILOT_V2 = OUT / "chat_pilot_v2.jsonl"
+
+
+def chat_pilot(n: int = 16) -> None:
+    """A small pilot of chat-formatted rows (with brevity requests) and brief WildChat replies, to read before the full
+    build. Runs inside Modal (m52_remote) so the laptop can sleep."""
+    rows = [r for task in TASKS for kind in CHAT_KINDS for r in chat_rows(task, kind, n, seed=1999)]
+    rows += [r | {"task": "wildchat", "kind": "brief"} for r in brief_wildchat(random.Random(1).sample(jl(REQUESTS), n))]
+    write_jsonl(CHAT_PILOT_V2, rows)
     for task in TASKS:
         for kind in CHAT_KINDS:
             rs = [r for r in rows if r["task"] == task and r["kind"] == kind]
-            print(task, kind, f"{len(rs)} wrapped of {n}; label ok {sum(r['label_ok'] for r in rs)}; working shown {sum(r['shows_working'] for r in rs)}")
+            print(task, kind, f"{len(rs)} wrapped of {n}; label ok {sum(r['label_ok'] for r in rs)}; working shown {sum(r['shows_working'] for r in rs)}", flush=True)
 
 
 # ---------------------------------------------------------------- local preparation
@@ -397,7 +421,7 @@ def run(smoke: bool = False) -> None:
 
 
 @app.function(image=remote_search.driver_image, volumes={str(WORK): STATE}, secrets=[remote_search.anthropic_key], timeout=14 * 60 * 60)
-def m52_remote(smoke: bool = False) -> str:
+def m52_remote(smoke: bool = False, pilot: bool = False) -> str:
     assert os.environ["ANTHROPIC_API_KEY"], "no Anthropic key reached the container"
     os.chdir(WORK)
     marker = OUT / "VOLUME"
@@ -407,14 +431,14 @@ def m52_remote(smoke: bool = False) -> str:
 
     judge.CACHE_DIR = WORK / "cache" / "judge_m52"
     judge.USAGE_LOG = WORK / "cache" / "anthropic_usage.jsonl"
-    run(smoke)
+    chat_pilot() if pilot else run(smoke)
     STATE.commit()
     return "done"
 
 
 @app.local_entrypoint()
-def m52_launch(smoke: bool = False):
-    print(m52_remote.remote(smoke))
+def m52_launch(smoke: bool = False, pilot: bool = False):
+    print(m52_remote.remote(smoke, pilot))
 
 
 if __name__ == "__main__":
