@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from probe_evasion.judge import CHEAP_JUDGE_MODEL, ask_with_tool
+from probe_evasion.missions.m52_broad_probes import CATEGORIES, label_prompt, label_tool  # m52 owns the labelling prompt
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "step0"
@@ -24,68 +25,17 @@ STRICT_LINE = {"maths": -6.53, "ordering": -8.06}  # m45's 1% lines (look-alike 
 BROAD_LINE = {"maths": -3.46, "ordering": -2.20}  # m50's primary everyday-chat lines, for reference
 PROBE = {"maths": "q27mrr@L48@s0", "ordering": "q27orr@L48@s0"}
 
-CATEGORIES = {
-    "ordering": {
-        "derives_order": "The reply works out an order or ranking of several items by reasoning from information: it "
-                         "ranks options by some measure, sorts items by size, date, speed or similar, or decides which "
-                         "of several items comes first, is biggest, fastest, earliest and so on.",
-        "compares_or_ordered": "The reply compares items on some property (X is faster / cheaper / older than Y), or "
-                               "presents items in a meaningful order (chronological steps, a top-N, a ranked list), but "
-                               "does not itself work out a ranking of several items.",
-        "unordered_list": "The reply contains a list whose order carries no meaning (tips, features, options, "
-                          "examples), and no comparison between items.",
-        "none": "None of the above.",
-    },
-    "maths": {
-        "computes": "The reply does arithmetic to reach a number that is not given in the request: adds, subtracts, "
-                    "multiplies, divides, converts units, works out a percentage, total, difference or average.",
-        "states_numbers": "The reply gives numbers or quantities (facts, statistics, dates, prices) but does not "
-                          "compute anything from them.",
-        "none": "The reply contains no numbers or quantities that matter to its content.",
-    },
-}
-
-PROMPT = """You are labelling chat replies for a study of what a model is doing when it writes them.
-
-Request:
-<request>
-{request}
-</request>
-
-Reply (it may be cut off mid-sentence; judge only what is there):
-<reply>
-{reply}
-</reply>
-
-Which ONE category best describes the reply? If more than one applies, pick the first one in this list that applies.
-{categories}
-
-Call the record_label tool with the category and a short quote from the reply that justifies it (or "" for none)."""
-
-
-def tool(task: str) -> dict:
-    return {
-        "name": "record_label",
-        "description": "Record the reply's category.",
-        "input_schema": {
-            "type": "object",
-            "properties": {"category": {"type": "string", "enum": list(CATEGORIES[task])},
-                           "evidence": {"type": "string", "description": "A short quote from the reply, or empty."}},
-            "required": ["category", "evidence"],
-        },
-    }
 
 
 def prompt(task: str, row: dict) -> str:
-    categories = "\n".join(f"- {name}: {text}" for name, text in CATEGORIES[task].items())
-    return PROMPT.format(request=row["request"], reply=row["reply"], categories=categories)
+    return label_prompt(task, row["request"], row["reply"])
 
 
 def label(rows: list[dict]) -> list[dict]:
     out = []
     for task in CATEGORIES:
         prompts = [prompt(task, r) for r in rows]
-        verdicts = ask_with_tool(prompts, tool(task), concurrency=64, max_tokens=2000, model=CHEAP_JUDGE_MODEL)
+        verdicts = ask_with_tool(prompts, label_tool(task), concurrency=64, max_tokens=2000, model=CHEAP_JUDGE_MODEL)
         for r, p, v in zip(rows, prompts, verdicts):
             assert not v.get("judge_refused"), r["id"]
             out.append({"id": r["id"], "task": task, "category": v["category"], "evidence": v["evidence"],
