@@ -191,7 +191,7 @@ def panel_label(ax, text: str) -> None:
 
 def search_and_score() -> None:
     """Two panels only, large text: the search loop, and what the score measures (the threshold is explained in words)."""
-    fig, axes = plt.subplots(1, 2, figsize=(17.5, 6), gridspec_kw={"width_ratios": [1, 1.45], "wspace": 0.06})
+    fig, axes = plt.subplots(1, 2, figsize=(17.5, 6), gridspec_kw={"width_ratios": [1, 1.45], "wspace": 0.14})
     draw_loop(axes[0], fontsize=16)
     draw_score_line(axes[1])
     panel_label(axes[0], "Search")
