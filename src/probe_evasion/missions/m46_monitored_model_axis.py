@@ -95,6 +95,10 @@ class Monitored:
 MODELS = {m.key: m for m in [
     Monitored("q27", "Qwen3.5-27B", "Qwen/Qwen3.5-27B", "qwen35", 64, (48, 16), 27.0, 27.0, None, None, "modal",
               note="baseline (m45); Epoch has no ECI for this model"),
+    # m52 (14 Oct): the same model, sampler and scorer as q27, monitored by m52's balanced broad probe (WildChat negatives,
+    # chat-format rows balanced across classes) with its 1% line on held-out WildChat; files exported by m52.export_q27bb
+    Monitored("q27bb", "Qwen3.5-27B (balanced broad probe)", "Qwen/Qwen3.5-27B", "qwen35", 64, (48, 16), 27.0, 27.0, None, None, "modal",
+              note="m52's balanced broad probe on the baseline model"),
     Monitored("q38", "Qwen3.8-27B", "Qwen/Qwen3.8-27B", "qwen35", 64, (48, 16), 27.8, 27.8, 149.38, (147.3, 151.13), "modal",
               note="same size, newer and more capable; same architecture class as Qwen3.5-27B"),
     Monitored("q397", "Qwen3.5-397B-A17B", "Qwen/Qwen3.5-397B-A17B-FP8", "qwen35", 60, (45, 15), 397.0, 17.0, 146.65, (144.86, 148.26),
@@ -127,6 +131,8 @@ MODELS = {m.key: m for m in [
               (153.48, 157.45), "openrouter", "deepseek/deepseek-v4-pro-0813", "coreweave/fp8", "CoreWeave", DEEPSEEK_CHAT, "B200:8", 1,
               note="gate screen; checkpoint FP8 + FP4 experts (transformers deepseek_v4); active parameters not stated on the card"),
 ]}
+
+Q27_SAME_MODEL = ("q27", "q27bb")  # Qwen3.5-27B through m45's own sampler and scorer (ProbeLab qwen35)
 
 # m23's SizeLab asserts the layer count of the model it loads; registered here so containers of QwenLab46 (defined in
 # this module, so they import it) know the new checkpoints. m23's own sizes are untouched.
@@ -319,7 +325,7 @@ def lab(m: Monitored, containers: int | None = None):
     key = (m.key, containers)
     if key not in _labs:
         n = containers or m.lab_containers
-        if m.key == "q27":  # the baseline's own scorer (as m45 / m22 / m26)
+        if m.key in Q27_SAME_MODEL:  # the baseline's own scorer (as m45 / m22 / m26)
             _labs[key] = concept_probes.ProbeLab.with_options(scaledown_window=WARM, max_containers=n)(model_key="qwen35")
         elif m.family == "deepseek":
             _labs[key] = DSLab46.with_options(gpu=m.lab_gpu, max_containers=n)()
@@ -328,7 +334,7 @@ def lab(m: Monitored, containers: int | None = None):
     return _labs[key]
 
 
-SCORE_CHUNK = {"q27": 32, "q38": 96, "q397": 96, "ds4": 32}
+SCORE_CHUNK = {"q27": 32, "q27bb": 32, "q38": 96, "q397": 96, "ds4": 32}
 
 
 def score(m: Monitored, items: list[tuple[str, str]], probes: dict) -> list[dict]:
@@ -738,7 +744,7 @@ def base_monitor(key: str, task: str, containers: int = 4, batch: str = ""):
             log = RUNS / (batch or key) / name / f"openrouter_calls{m36.SPEND_TAG['tag']}.jsonl"
             log.parent.mkdir(parents=True, exist_ok=True)
             return OpenRouterSampler(m, log)
-    elif key == "q27":
+    elif key in Q27_SAME_MODEL:
         sampler_fn = lambda: Sampler.with_options(scaledown_window=WARM, max_containers=containers)()
     else:
         sampler_fn = lambda: Sampler.with_options(scaledown_window=WARM, max_containers=containers)(model_id=m.hf_id)
@@ -802,7 +808,7 @@ def prepare_root(key: str, task: str) -> dict:
            "plain_test": {"valid": sum(r["valid"] for r in test), "n": len(test), "median": float(np.median([r["peaks"][probe] for r in test if r["valid"]])),
                           "caught": float(np.mean([r["peaks"][probe] > line for r in test if r["valid"]]))}}
     out["in_view_line"] = in_view_line(key, task)["line_in_view_1pct"]
-    if key != "q27":  # the scorer's checkpoint predicts this generation path's replies (lead: same or closest checkpoint)
+    if key not in Q27_SAME_MODEL:  # the scorer's checkpoint predicts this generation path's replies (lead: same or closest checkpoint)
         items = [{"prompt": r["task"]["task"], "response": r["reply"], "reasoning": None} for r in test[:24] if r["reply"]]
         out["lm_check"] = lab(m).lm_check.remote(items)
     (ctx.root / "prepare.json").write_text(json.dumps(out, indent=1))
@@ -823,13 +829,15 @@ SPEED_GROUPS = {"fast": ("opus55,sonnet55,gpt6sol,gemini38flash,gpt54mini,qwen35
 TEST_GROUPS = ("opus55,sonnet55,gpt6sol,opus48,neutral,plain", "fable51,gpt6astra,gpt61sol,gemini38flash",
                "gpt54mini,qwen35_397b,haiku45,qwen35_9b,gpt5nano,llama4maverick")
 EFFORT_POINTS = (0, 4, 8, 16)  # m45
+EFFORT_POINTS_BY_MODEL = {"q27bb": (0, 16)}  # Nabil (14 Oct): the post uses rounds 0 and 16 only
 TEST_CONTAINERS = {"ds4": 10}  # lead (10-13): DeepSeek's one-pass-per-reply test scoring on more B200s at the same total cost
 SWEEP_MODELS = ("q38", "ds4")
 CLAUDE_CAP = 3600.0  # lead (10-13 03:00): $3,700 by the ledger, guard $3,600
 OPENROUTER_CAP = 410.0  # lead (10-13 01:10): $420, minus ~$10 spent outside the sweep roots
 CAPS_FILE = OUT / "caps.json"  # read at every spend check, so the lead's cap changes reach running drivers (on the volume too)
 ROOT_SHARE = {("q38", "maths"): 0.33, ("q38", "ordering"): 0.15, ("q38sw", "ordering"): 0.15, ("ds4", "maths"): 0.33, ("ds4", "ordering"): 0.15,
-              **{(f"{k}smoke", t): 0.006 for k in SWEEP_MODELS for t in TASKS}, ("q38swsmoke", "ordering"): 0.006}
+              **{(f"{k}smoke", t): 0.006 for k in SWEEP_MODELS for t in TASKS}, ("q38swsmoke", "ordering"): 0.006,
+              ("q27bb", "maths"): 0.30, ("q27bb", "ordering"): 0.15, ("q27bbsmoke", "maths"): 0.006, ("q27bbsmoke", "ordering"): 0.006}
 _USING: dict = {}
 INHERITED_DESIGN = {"kind": "switch", "placement": "switch_after"}  # m45's default since 10-12 ~11:55 (v1)
 
@@ -913,7 +921,8 @@ def use_model(batch: str):
     for mod in (m45, m36):
         mod.OUT, mod.RUNS, mod.FIGURES = out, RUNS, out / "figures"
         mod.STATE, mod.STATE_VOLUME = STATE, STATE_VOLUME
-        mod.CLAUDE_CAP, mod.OPENROUTER_CAP, mod.ROOT_SHARE, mod.EFFORT_POINTS = CLAUDE_CAP, OPENROUTER_CAP, ROOT_SHARE, EFFORT_POINTS
+        mod.CLAUDE_CAP, mod.OPENROUTER_CAP, mod.ROOT_SHARE = CLAUDE_CAP, OPENROUTER_CAP, ROOT_SHARE
+        mod.EFFORT_POINTS = EFFORT_POINTS_BY_MODEL.get(key, EFFORT_POINTS)
         mod.monitor = monitor
     m45.compliance_arms = compliance_arms
 
@@ -1182,7 +1191,7 @@ def step_search(model: str, task: str, writers: str = ",".join(WRITERS), chains:
 
 
 def step_freeze(model: str, task: str, rounds: int = 17, points: str = "") -> None:
-    use_model(model).freeze(task, model, rounds, points or ",".join(map(str, EFFORT_POINTS)))
+    use_model(model).freeze(task, model, rounds, points or ",".join(map(str, EFFORT_POINTS_BY_MODEL.get(model_of(model), EFFORT_POINTS))))
 
 
 def step_test(model: str, task: str, writers: str, rounds: int = 17, n_test: int = 0, containers: int = 0) -> None:
@@ -1344,7 +1353,8 @@ def volume_inputs(batch: str) -> list[str]:
 
     m = MODELS[model_of(batch)]
     out = list(m36.VOLUME_INPUTS) + [str(probe_file(m, t)) for t in TASKS]
-    out += [str(build_dir(m, t) / f) for t in TASKS for f in ("probe_report.json", "scored_calibration.jsonl") if (build_dir(m, t) / f).exists()]
+    out += [str(build_dir(m, t) / f) for t in TASKS for f in ("probe_report.json", "scored_calibration.jsonl", "in_view_line.json")
+            if (build_dir(m, t) / f).exists()]
     out += [str(RUNS / m.key / f"m46_{m.key}_{t}" / f) for t in TASKS for f in ("calibration_scores.jsonl", "plain_eval.jsonl", "lines.json")
             if (RUNS / m.key / f"m46_{m.key}_{t}" / f).exists()]
     out += [str(f) for f in (RUNS / m.key).glob("slot_fallback_*.json")]
@@ -2198,7 +2208,7 @@ def m46_smoke(model: str = "q38", n: int = 24):
           f"gen {replies[0]['gen']}", flush=True)
     items = [{"prompt": t["task"], "response": r["reply"], "reasoning": None} for t, r in zip(tasks, replies) if r["reply"]]
     rng = np.random.default_rng(0)
-    width = {"q27": 5120, "q38": 5120, "q397": 4096, "ds4": 4096}[m.key]
+    width = {"q27": 5120, "q27bb": 5120, "q38": 5120, "q397": 4096, "ds4": 4096}[m.key]
     probes = {f"rand@L{l}": {"layer": l, "weight": (rng.standard_normal(width) / 50).tolist(), "bias": 0.0} for l in m.layers}
     h = lab(m, 1)
     out = {"model": model, "n": len(items), "gen_example": replies[0]}

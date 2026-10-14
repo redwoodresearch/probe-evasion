@@ -43,10 +43,7 @@ def scored(task: str, name: str, variant: str = "full") -> list[dict]:
 
 
 def line_pool(task: str, variant: str = "full") -> list[dict]:
-    labels = jl(RUN / "wildchat_labels.jsonl") + jl(RUN / "wildchat_brief_labels.jsonl")
-    cat = {l["id"]: l["category"] for l in labels if l["task"] == task}
-    skip = m52.NOT_IN_LINE_POOL[task] | {"refused"}
-    return [r for r in scored(task, "wildchat", variant) if r["split"] == "line" and cat.get(r["id"], "refused") not in skip]
+    return m52.line_pool(task, variant)
 
 
 def flagged(xs, line: float) -> float:

@@ -494,6 +494,42 @@ def stage_score(task: str, probes: dict, sets: dict[str, list[dict]], smoke: boo
         print(f"[{task} {variant}] scored {name}: {len(rows)} in {(time.time() - t0) / 60:.1f} min", flush=True)
 
 
+def line_pool(task: str, variant: str = "full", smoke: bool = False) -> list[dict]:
+    """The scored WildChat replies that set a probe's 1% line: the line half of the conversations (natural and brief),
+    minus replies whose label (Haiku's) says they clearly do the task (or was refused)."""
+    d = out_dir(smoke)
+    cat = {l["id"]: l["category"] for l in jl(d / "wildchat_labels.jsonl") + jl(d / "wildchat_brief_labels.jsonl") if l["task"] == task}
+    skip = NOT_IN_LINE_POOL[task] | {"refused"}
+    rows = map(json.loads, gzip.open(d / VARIANTS[variant][2] / f"{task}_wildchat.jsonl.gz", "rt"))
+    return [r for r in rows if r["split"] == "line" and cat.get(r["id"], "refused") not in skip]
+
+
+def export_q27bb() -> None:
+    """m46's files for monitored model q27bb (Qwen3.5-27B under the balanced broad probe): its probe file (the balanced
+    probes renamed to m46's scheme), its calibration pool (the WildChat line pool, so m46's re-scored 1% line is the
+    WildChat line) and a probe report holding that line (prepare_root asserts the re-scored line matches it)."""
+    import numpy as np
+
+    m = m46.MODELS["q27bb"]
+    for task in TASKS:
+        probes = json.loads(probe_path(task, False, "balanced").read_text())
+        renamed = {m.probe(task, LAYER, p["seed"]): p for name, p in probes.items()}
+        assert len(renamed) == len(SEEDS) and all(p["layer"] == LAYER for p in renamed.values())
+        m46.PROBE_DIR.mkdir(parents=True, exist_ok=True)
+        m46.probe_file(m, task).write_text(json.dumps(renamed))
+        pool = line_pool(task, "balanced")
+        src, target = probe_name(task, 0, "balanced"), m.probe(task)
+        d = m46.build_dir(m, task)
+        d.mkdir(parents=True, exist_ok=True)
+        write_jsonl(d / "scored_calibration.jsonl",
+                    [{"id": r["id"], "kind": "wildchat brief" if r["brief"] else "wildchat", "prompt": r["prompt"], "response": r["response"],
+                      "peaks": {target: r["peaks"][src]}} for r in pool])
+        line = float(np.quantile([r["peaks"][src] for r in pool], 0.99))
+        (d / "probe_report.json").write_text(json.dumps({"probes": {target: {"lines": {"0.01": line}}}, "source": "m52 balanced broad probe",
+                                                         "pool": "WildChat line half minus clear task-doers", "n_pool": len(pool)}, indent=1))
+        print(f"{task}: q27bb probe {target} <- {src}; pool {len(pool)}; 1% line {line:+.3f}", flush=True)
+
+
 def _old_probe(task: str) -> dict:
     probes = json.loads(m46.probe_file(m46.MODELS["q27"], task).read_text())
     return probes[OLD_PROBE[task]]
