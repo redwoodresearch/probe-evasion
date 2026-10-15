@@ -52,7 +52,7 @@ def schematic(ax, pair: dict, style: str) -> None:
     card(ax, 0.75, 0.86, 0.46, 0.2, "… $2891 in total.\nWhat do they cost?", right_fill)
     ax.text(0.25, 1.0, "wrong answer given", ha="center", fontsize=12, color=INK, style="italic")
     ax.text(0.75, 1.0, "right answer given", ha="center", fontsize=12, color=INK, style="italic")
-    card(ax, 0.5, 0.52, 0.8, 0.13, f"Same reply: “{wrong['reply']}”", reply_fill)
+    card(ax, 0.5, 0.52, 0.96, 0.13, f"Same reply: “{wrong['reply']}”", reply_fill, size=12.5)
     arrow(ax, (0.25, 0.75), (0.4, 0.59)), arrow(ax, (0.75, 0.75), (0.6, 0.59))
     card(ax, 0.25, 0.17, 0.46, 0.2, f"Probe\n{wrong['probe']:+.1f}  vs  {right['probe']:+.1f}", "white", size=15,
          edge=probe_c, weight="bold", colour=probe_c)
