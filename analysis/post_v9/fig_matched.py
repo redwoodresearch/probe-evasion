@@ -4,7 +4,7 @@ the answer out. The probe scores those replies higher; a word classifier (TF-IDF
 them. Numbers from analysis/tfidf_baseline/for_james/numbers.json (written by its make_figure.py, which checks them
 against m51's analysis); the example pair is a real arithmetic pair.
 
-    .venv/bin/python analysis/post_v9/fig_matched.py   # writes figures/matched_test.png and figures/matched_test_sketch.png
+    .venv/bin/python analysis/post_v9/fig_matched.py   # writes figures/matched_test.png
 """
 
 import importlib.util
@@ -20,18 +20,13 @@ REPO = HERE.parents[1]
 _spec = importlib.util.spec_from_file_location("matched_source", REPO / "analysis/tfidf_baseline/for_james/make_figure.py")
 SOURCE = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(SOURCE)
-_spec = importlib.util.spec_from_file_location("sketch", HERE / "sketch.py")
-SKETCH = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(SKETCH)
 
 NUMBERS = REPO / "analysis/tfidf_baseline/for_james/numbers.json"
 TASKS = {"maths": "Arithmetic", "ordering": "Ordering", "false_belief": "Belief tracking", "contradiction": "Spotting a\ncontradiction"}
 WORDS = "tfidf_B"  # the word classifier that reads request + reply, the one that matters here
 INK = "#1f2a2e"
-STYLES = {  # (probe colour, words colour, wrong-request fill, right-request fill, reply fill)
-    "clean": ("#c2541b", "#8a9396", "#fbe7da", "#e3f0e6", "#f4f5f3"),
-    "sketch": ("#e8590c", "#868e96", SKETCH.FILLS["red"], SKETCH.FILLS["green"], SKETCH.FILLS["yellow"]),
-}
+PROBE_C, WORDS_C = "#c2541b", "#8a9396"
+WRONG_FILL, RIGHT_FILL, REPLY_FILL = "#fbe7da", "#e3f0e6", "#f4f5f3"
 
 
 def card(ax, x, y, w, h, text, fill, size=13, edge=INK, weight="normal", colour=INK):
@@ -44,8 +39,8 @@ def arrow(ax, start, end):
     ax.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=18, color=INK, lw=1.5))
 
 
-def schematic(ax, pair: dict, style: str) -> None:
-    probe_c, words_c, wrong_fill, right_fill, reply_fill = STYLES[style]
+def schematic(ax, pair: dict) -> None:
+    probe_c, words_c, wrong_fill, right_fill, reply_fill = PROBE_C, WORDS_C, WRONG_FILL, RIGHT_FILL, REPLY_FILL
     wrong, right = pair["wrong"], pair["given"]
     ax.set_xlim(0, 1), ax.set_ylim(0, 1), ax.axis("off")
     card(ax, 0.25, 0.86, 0.46, 0.2, "… $2540 in total.\nWhat do they cost?", wrong_fill)
@@ -61,8 +56,8 @@ def schematic(ax, pair: dict, style: str) -> None:
     arrow(ax, (0.4, 0.455), (0.25, 0.28)), arrow(ax, (0.6, 0.455), (0.75, 0.28))
 
 
-def results(ax, numbers: dict, style: str) -> None:
-    probe_c, words_c = STYLES[style][:2]
+def results(ax, numbers: dict) -> None:
+    probe_c, words_c = PROBE_C, WORDS_C
     y = np.arange(len(TASKS))[::-1].astype(float)
     h = 0.32
     for yi, task in zip(y, TASKS):
@@ -86,22 +81,16 @@ def results(ax, numbers: dict, style: str) -> None:
     ax.text(0.98, 0.02, "word classifier", transform=ax.transAxes, ha="right", fontsize=14, color=words_c, weight="bold")
 
 
-def figure(style: str, name: str) -> None:
+def main() -> None:
     numbers = json.loads(NUMBERS.read_text())
     rows = SOURCE.load_rows()
     pair = {k: rows[v] for k, v in SOURCE.EXAMPLE_PAIR.items()}
     assert pair["wrong"]["reply"] == pair["given"]["reply"] and pair["wrong"]["correct"] and pair["given"]["correct"]
     fig, axes = plt.subplots(1, 2, figsize=(15, 5.6), gridspec_kw={"width_ratios": [1, 1.35], "wspace": 0.3})
-    schematic(axes[0], pair, style)
-    results(axes[1], numbers, style)
-    fig.savefig(HERE / "figures" / name, dpi=160, bbox_inches="tight", facecolor="white")
+    schematic(axes[0], pair)
+    results(axes[1], numbers)
+    fig.savefig(HERE / "figures" / "matched_test.png", dpi=160, bbox_inches="tight", facecolor="white")
     plt.close(fig)
-
-
-def main() -> None:
-    figure("clean", "matched_test.png")
-    with SKETCH.sketch():
-        figure("sketch", "matched_test_sketch.png")
 
 
 if __name__ == "__main__":

@@ -218,7 +218,7 @@ def panel_label(ax, text: str) -> None:
     ax.text(0.5, 1.03, text, transform=ax.transAxes, fontsize=21, color=TEXT, fontweight="bold", ha="center", va="bottom")
 
 
-def search_and_score(name: str = "method_search_score.png") -> None:
+def search_and_score() -> None:
     """Three panels, large text: the search loop, the attack prompt's structure, and what the score measures (the
     threshold is explained in words)."""
     fig, axes = plt.subplots(1, 3, figsize=(22, 6.4), gridspec_kw={"width_ratios": [1, 0.7, 1.45], "wspace": 0.1})
@@ -228,7 +228,7 @@ def search_and_score(name: str = "method_search_score.png") -> None:
     panel_label(axes[0], "Search")
     panel_label(axes[1], "Prompt")
     panel_label(axes[2], "Scoring")
-    save(fig, name)
+    save(fig, "method_search_score.png")
 
 
 if __name__ == "__main__":

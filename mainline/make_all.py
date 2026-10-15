@@ -20,10 +20,12 @@ POST = REPO / "analysis" / "post_v9"
 PY = str(REPO / ".venv" / "bin" / "python")
 RAW_INPUTS = [REPO / "missions/m45_toggle_sweep/runs", REPO / "missions/m49_new_task_toggle/runs",
               REPO / "missions/m45_toggle_sweep/analysis.json", REPO / "missions/m45_toggle_sweep/analysis_d.json"]
-FIGURE_SCRIPTS = ["fig_method.py", "fig_2x2.py", "fig_dots.py", "fig_cost.py", "fig_cost_checks.py", "fig_data_sets.py"]
-TFIDF_SCRIPTS = ["analysis/tfidf_baseline/for_james/make_figure.py", "analysis/tfidf_baseline/for_james/make_original_figure.py"]
+FIGURE_SCRIPTS = ["fig_method.py", "fig_2x2.py", "fig_dots.py", "fig_cost.py", "fig_cost_checks.py", "fig_data_sets.py", "fig_matched.py", "fig_concepts.py"]
+TFIDF_SCRIPTS = ["analysis/tfidf_baseline/for_james/make_figure.py", "analysis/tfidf_baseline/for_james/make_original_figure.py"]  # numbers for fig_matched.py; run first
 # published name -> source, in the order they appear in the post
 FIGURES = {
+    "concept_transcript_space.png": POST / "figures/transcript_space.png",
+    "concept_ladder.png": POST / "figures/ladder.png",
     "1_method.png": POST / "figures/method_search_score.png",
     "2_main_result.png": POST / "figures/trend_2x2_combined_bands_gold0_key_top.png",
     "3_crossings.png": POST / "figures/dots_2x2.png",
@@ -32,7 +34,7 @@ FIGURES = {
     "appendix_passes_vs_cost.png": POST / "figures/pass_vs_cost.png",
     "appendix_cost_by_search.png": POST / "figures/cost_by_search.png",
     "appendix_word_classifier_test.png": REPO / "analysis/tfidf_baseline/for_james/original_test.png",
-    "appendix_matched_test.png": REPO / "analysis/tfidf_baseline/for_james/matched_test.png",
+    "appendix_matched_test.png": POST / "figures/matched_test.png",
 }
 
 
@@ -51,10 +53,10 @@ def numbers() -> None:
 
 
 def figures() -> None:
-    for script in FIGURE_SCRIPTS:
-        run([PY, f"analysis/post_v9/{script}"])
     for script in TFIDF_SCRIPTS:
         run([PY, script])
+    for script in FIGURE_SCRIPTS:
+        run([PY, f"analysis/post_v9/{script}"])
     run([PY, "analysis/post_v9/appendix_samples/make_samples.py"], pythonpath_src=True)
     out = REPO / "mainline" / "figures"
     out.mkdir(exist_ok=True)
