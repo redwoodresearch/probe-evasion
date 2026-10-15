@@ -32,7 +32,6 @@ def main() -> None:
         v = N["tasks"][t]
         L.append(f"| {TASK_LABEL[t]} | {v['line']['stored_line']:.2f} | {v['plain_median']:.2f} | {s(v['B16']['all14'])} | {s(v['B0']['all14'])} |")
     m = N["tasks"]["maths"]
-    L.append(f"| maths, correctness-only validity | | | {s(m['B16']['correct_only']['all14'])} | {s(m['B0']['correct_only']['all14'])} |")
     for b in ("B16", "B0"):
         L.append(f"\n### Per writer, gap closed at {b.replace('B', 'B = ')} (mean of 3 chains)\n")
         L.append("| writer (ECI) | " + " | ".join(TASK_LABEL[t] for t in TASKS) + " |\n|---|" + "---|" * len(TASKS))
@@ -66,7 +65,7 @@ def main() -> None:
             if c["net"] > 0.05 or c["net"] < -0.03:
                 L.append(f"| {TASK_LABEL[t]} | {LABEL[w]} | {100 * c['net']:+.1f}% [{100 * c['ci'][0]:+.1f}, {100 * c['ci'][1]:+.1f}] | {c['fwd']} | {c['rev']} | {100 * c['rev_rate']:.1f}% |")
     L.append("\n## Item 5: accuracy cost at B = 16 (OFF correct share - ON correct share, percentage points; mean over chains with a template)\n")
-    L.append("Maths: m45's correctness-only re-judge. Other tasks: the task's valid flag.\n")
+    L.append("Correct = the task's code check and a Sonnet 5.5 reader not told the answer both accept it (arithmetic: arithmetic_grading.py).\n")
     L.append("| writer (ECI) | " + " | ".join(TASK_LABEL[t] for t in TASKS) + " |\n|---|" + "---|" * len(TASKS))
     for w in WRITERS:
         cells = []

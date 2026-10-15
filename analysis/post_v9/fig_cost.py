@@ -1,6 +1,6 @@
 """Accuracy cost vs attack strength after 16 rounds, one panel per probe (post v9's four tasks). Per writer: attack
 strength = gap closed (mean of 3 chains), cost = OFF correct share minus ON correct share in points (mean of chains with a
-template; arithmetic by a correctness-only re-check, the others by their validity flag). Bars: range over the 3 chains.
+template; every task by its validity flag: a code check and a Sonnet 5.5 reader both accept the answer). Bars: range over the 3 chains.
 Values from the independent recomputation (numbers/numbers.json).
 
     .venv/bin/python analysis/post_v9/fig_cost.py      # writes analysis/post_v9/figures/cost_2x2.png

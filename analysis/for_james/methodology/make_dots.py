@@ -5,11 +5,15 @@ test at B = 16 (maths / ordering: m45; belief tracking / acrostic / contradictio
 """
 
 import json
+import sys
 from pathlib import Path
 
 import attrs
 import matplotlib.pyplot as plt
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "analysis/post_v9/numbers"))
+import arithmetic_grading  # noqa: E402
 
 M45 = Path("missions/m45_toggle_sweep/runs")
 M49 = Path("missions/m49_new_task_toggle/runs/main")
@@ -54,7 +58,8 @@ TASKS = {
 
 
 def read(path: Path) -> list[dict]:
-    return [json.loads(line) for line in path.open()]
+    """Rows of a jsonl file; arithmetic test rows carry the post's consistent grade (analysis/post_v9/numbers)."""
+    return arithmetic_grading.apply([json.loads(line) for line in path.open()], path)
 
 
 def flag_line(cfg: TaskConfig) -> float:

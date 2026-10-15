@@ -21,11 +21,15 @@ Selection rules
 import gzip
 import json
 import random
+import sys
 from pathlib import Path
 
 import numpy as np
 
 from probe_evasion.missions import m28_baselines_and_writer_knowledge as m28
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "numbers"))
+import arithmetic_grading  # noqa: E402
 
 OUT = Path("analysis/post_v9/appendix_samples")
 NUMBERS = Path("analysis/post_v9/numbers/numbers.json")
@@ -92,6 +96,13 @@ def read_jsonl(path: Path) -> list[tuple[int, dict]]:
         return [(i, json.loads(line)) for i, line in enumerate(fh, 1)]
 
 
+def graded(rows: list[tuple[int, dict]], task: str, batch: str) -> list[tuple[int, dict]]:
+    """m45 rows (read from m50's cache copies) with arithmetic's consistent grade from their own run root."""
+    if TASKS[task]["source"] == "m45":
+        arithmetic_grading.apply([r for _, r in rows], M45_RUNS / batch / TASKS[task]["m45_root"] / "test_checked" / "rows.jsonl")
+    return rows
+
+
 # ---------- training samples ----------
 
 def training_samples(task: str) -> list[dict]:
@@ -144,6 +155,7 @@ def writer_rows(task: str, writer: str) -> tuple[str, list[tuple[int, dict]], Pa
         frozen = root / "frozen.json"
     rows = [(i, r) for i, r in read_jsonl(path) if r["key"].startswith(f"{writer}/") and f"@B{B}#" in r["key"]]
     assert len(rows) == 3000, (task, writer, len(rows))
+    rows = graded(rows, task, m45_batch(writer))
     return str(path), rows, frozen
 
 
@@ -152,7 +164,7 @@ def plain_rows(task: str) -> tuple[str, list[tuple[int, dict]]]:
         path = M45_CACHE / f"m45_c_{task}.jsonl.gz"
     else:
         path = M49_RUNS / "main" / f"m49_{task}" / "test" / "plain.jsonl"
-    rows = [(i, r) for i, r in read_jsonl(path) if r["key"] == "plain"]
+    rows = graded([(i, r) for i, r in read_jsonl(path) if r["key"] == "plain"], task, "c")
     assert len(rows) == 500, (task, len(rows))
     return str(path), rows
 
@@ -258,13 +270,21 @@ def attack_sample(task: str, writer: str, numbers: dict, role: str) -> dict:
     }
 
 
+def top_writer_overall(numbers: dict) -> str:
+    """The writer with the highest mean score across the four tasks (one writer shown as "top" everywhere, so a
+    near-tie on one task, e.g. arithmetic's Opus 4.8 0.296 vs Fable 5.1 0.294, doesn't switch the example)."""
+    tasks = [t for t in TASKS]
+    writers = numbers["tasks"][tasks[0]][f"B{B}"]["writer_means"]
+    return max(writers, key=lambda w: np.mean([numbers["tasks"][t][f"B{B}"]["writer_means"][w] for t in tasks]))
+
+
 def pick_writers(task: str, numbers: dict) -> dict[str, str]:
     means = numbers["tasks"][task][f"B{B}"]["writer_means"]
     assert len(means) == 14
     ranked = sorted(means, key=means.get)
     # 14 writers: the median lies halfway between the 7th and 8th; take the 8th (upper middle) on every task
     mediocre = ranked[len(ranked) // 2]
-    return {"good": ranked[-1], "mediocre": mediocre, "median_of_writer_means": float(np.median(list(means.values()))),
+    return {"good": top_writer_overall(numbers), "mediocre": mediocre, "median_of_writer_means": float(np.median(list(means.values()))),
             "middle_two": ranked[len(ranked) // 2 - 1: len(ranked) // 2 + 1]}
 
 
@@ -329,7 +349,7 @@ def appendix_md(training: dict, attacks: dict, picks: dict) -> str:
         p = picks[t]
         out.append(f"### {TASKS[t]['title']}\n")
         out.append(attack_md(attacks[t]["mediocre"], f"Middle of the field (median of the 14 writers: {p['median_of_writer_means']:.2f})"))
-        out.append(attack_md(attacks[t]["good"], "Top writer"))
+        out.append(attack_md(attacks[t]["good"], "Top writer (highest mean over the four tasks)"))
     return "\n".join(out)
 
 

@@ -35,6 +35,12 @@ PYTHONPATH=src .venv/bin/python analysis/post_v9/numbers/compute.py $SCRATCH   #
 .venv/bin/python analysis/post_v9/numbers/make_tables.py                # -> tables.md
 ```
 
+> **15 Oct update.** Arithmetic is now graded by the same rule as the other tasks, for both the score and the accuracy
+> cost: a code check and a Sonnet 5.5 reader not told the answer must both accept the answer
+> (`arithmetic_grading.py`). `numbers.json` and `tables.md` are current. Prose below that mentions maths'
+> "correctness-only" re-judge or the strict rule predates this; the changes are small (maths slope +0.063 → +0.062
+> [+0.030, +0.102]; maths accuracy costs within 2 points; still 0 crossings).
+
 ## 1. Gap closed, slope per 10 ECI, 14 writers
 
 | task | line | plain median | B = 16 | B = 0 |

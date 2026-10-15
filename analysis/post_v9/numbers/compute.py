@@ -25,6 +25,9 @@ from scipy.stats import spearmanr
 
 from probe_evasion.missions import m28_baselines_and_writer_knowledge as m28
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import arithmetic_grading  # noqa: E402
+
 SCRATCH = Path(sys.argv[1]) if __name__ == "__main__" else None  # importable for its fits
 OUT = Path("analysis/post_v9/numbers")
 M45 = Path("missions/m45_toggle_sweep")
@@ -236,9 +239,9 @@ def task_arms(task: str) -> dict:
     tasks_list = list(data["test_tasks"].values())
     leak_rule = m28.base_monitor(task).task.leaked if task in M45_ROOT else None
     correct = {}
-    if task == "maths":
+    if task == "maths":  # the consistent grade (arithmetic_grading.py), the same flag extract.py put in "valid"
         for b in ("c", "d"):
-            correct |= json.loads((M45 / "runs" / b / M45_ROOT[task] / "correctness_only.json").read_text())
+            correct |= arithmetic_grading.load(M45 / "runs" / b / M45_ROOT[task])
     arms = {}
     for batch, rows in data["rows"].items():
         by_key = defaultdict(list)

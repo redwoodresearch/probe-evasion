@@ -11,6 +11,9 @@ import sys
 import zlib
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import arithmetic_grading  # noqa: E402
+
 M45 = Path("missions/m45_toggle_sweep/runs")
 M49 = Path("missions/m49_new_task_toggle/runs")
 
@@ -41,17 +44,15 @@ def main() -> None:
             for f in sorted((root / "test_checked").glob("*.jsonl")):
                 if f.stem in ("plain", "neutral"):
                     continue
-                with f.open() as fh:
-                    for line in fh:
-                        r = json.loads(line)
-                        rows.append(compact(r, probe))
-                        data["test_tasks"].setdefault(r["task"]["id"], r["task"])
+                for r in arithmetic_grading.apply([json.loads(line) for line in f.open()], f):
+                    rows.append(compact(r, probe))
+                    data["test_tasks"].setdefault(r["task"]["id"], r["task"])
             data["rows"][batch] = rows
             # plain rows: m45 keeps them in test_checked, m49 in test/
             plain_file = root / "test_checked" / "plain.jsonl"
             if not plain_file.exists():
                 plain_file = root / "test" / "plain.jsonl"
-            data["plain"][batch] = [compact(json.loads(x), probe) for x in plain_file.open()]
+            data["plain"][batch] = [compact(r, probe) for r in arithmetic_grading.apply([json.loads(x) for x in plain_file.open()], plain_file)]
             data["frozen"][batch] = json.loads((root / "frozen.json").read_text())
             print(task, batch, len(rows), "plain", len(data["plain"][batch]), flush=True)
         with (out_dir / f"{task}.pkl").open("wb") as fh:
