@@ -34,8 +34,11 @@ SNIPPETS = [
 ]
 
 
-# the three actors in the search loop, each with a soft fill and a matching edge
-ACTOR_COLOURS = {"writer": ("#fbe7da", "#c2541b"), "qwen": ("#e3ebf5", "#3d5a80"), "probe": ("#f6dedc", "#b3261e")}
+# the three actors in the search loop, each with a soft fill and a matching edge; hues no other panel uses, so the search
+# panel's colours don't suggest a link to the prompt blocks or the scoring dots
+ACTOR_COLOURS = {"writer": ("#eee8f6", "#6b4c9a"), "qwen": ("#dcefee", "#23787a"), "probe": ("#f7eed5", "#9a7412")}
+# soft fills for the scoring colours (FIG.EXAMPLE_COLOURS), so each prompt block matches the scoring dot it produces
+SCORE_FILLS = {"plain": "#e6e9e8", "off": "#e3ebf5", "on": "#fbe7da"}
 
 
 def box(ax, x: float, y: float, text: str, w: float = 0.34, h: float = 0.2, fontsize: float = 12, actor: str | None = None) -> None:
@@ -186,10 +189,12 @@ def draw_score_line(ax, fontsize: float = 16) -> None:
     ax.axis("off")
 
 
-# the attack prompt as a schematic: three blocks, top to bottom as Qwen reads it (label, fill, edge, height, filler lines)
-PROMPT_BLOCKS = [("Attack instructions", "#fbe7da", "#c2541b", 0.34, 3),
-                 ("Switch: ON / OFF", "#fff4c2", "#b38600", 0.13, 0),
-                 ("Task", "#e3ebf5", "#3d5a80", 0.27, 2)]
+# the attack prompt as a schematic: three blocks, top to bottom as Qwen reads it (label, fill, edge, height, filler lines).
+# Colours tie each block to a scoring dot: task alone = the unattacked answer; attack instructions in view (switch OFF) =
+# attack OFF; the switch turned ON = attack ON.
+PROMPT_BLOCKS = [("Attack instructions", SCORE_FILLS["off"], C["off"], 0.34, 3),
+                 ("Switch: ON / OFF", SCORE_FILLS["on"], C["on"], 0.13, 0),
+                 ("Task", SCORE_FILLS["plain"], C["plain"], 0.27, 2)]
 
 
 def draw_prompt(ax, fontsize: float = 17) -> None:
