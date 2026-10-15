@@ -34,20 +34,23 @@ Every number in the post is in `analysis/post_v9/numbers/numbers.json`, explaine
 
 ## The pipeline
 
+Each mission has its code in `src/probe_evasion/missions/<mission>.py` and its outputs, `STATUS.md` (run log) and
+`RESULT.md` in `missions/<mission>/`.
+
 | Stage | What it does | Main code | Runs on |
 |---|---|---|---|
-| 1. Probe data | Template-generated questions; Qwen's own replies in several styles; positives need the reasoning, negatives don't (answer given, different question, recalled fact) | `src/probe_evasion/onpolicy_probes.py` + `concept_data.py` (arithmetic), `missions/m26_ordering.py` (ordering), `missions/m48_tasks.py` + `m48_probes.py` (belief tracking, contradiction) | Modal (Qwen on vLLM) + Claude audits |
-| 2. Probe training | Logistic probe trained on the peak of a running average (EMA, α = 0.5) of per-token scores; early stopping on validation loss; threshold = 1% false positives on hard negatives | `missions/m1a_peak_probe.py` (`PeakProbeLabSeeds`), `missions/m46_monitored_model_axis.py` (arithmetic, ordering), `missions/m48_probes.py` (newer tasks) | Modal (H200) |
-| 3. Writer search | 14 writers × 3 searches × 17 rounds (0–16); each round: writer proposes, Qwen answers 40 practice problems × 2 seeds with the switch ON and OFF, probe scores and validity fed back | `missions/m45_toggle_sweep.py` (arithmetic, ordering), `missions/m49_new_task_toggle.py` (newer tasks, reusing m45) | Modal + Anthropic / OpenRouter APIs |
+| 1. Probe data | Template-generated questions; Qwen's own replies in several styles; positives need the reasoning, negatives don't (answer given, different question, recalled fact) | `src/probe_evasion/onpolicy_probes.py` + `concept_data.py` (arithmetic), `src/probe_evasion/missions/m26_ordering.py` (ordering), `src/probe_evasion/missions/m48_tasks.py` + `m48_probes.py` (belief tracking, contradiction) | Modal (Qwen on vLLM) + Claude audits |
+| 2. Probe training | Logistic probe trained on the peak of a running average (EMA, α = 0.5) of per-token scores; early stopping on validation loss; threshold = 1% false positives on hard negatives | `src/probe_evasion/missions/m1a_peak_probe.py` (`PeakProbeLabSeeds`), `src/probe_evasion/missions/m46_monitored_model_axis.py` (arithmetic, ordering), `src/probe_evasion/missions/m48_probes.py` (newer tasks) | Modal (H200) |
+| 3. Writer search | 14 writers × 3 searches × 17 rounds (0–16); each round: writer proposes, Qwen answers 40 practice problems × 2 seeds with the switch ON and OFF, probe scores and validity fed back | `src/probe_evasion/missions/m45_toggle_sweep.py` (arithmetic, ordering), `src/probe_evasion/missions/m49_new_task_toggle.py` (newer tasks, reusing m45) | Modal + Anthropic / OpenRouter APIs |
 | 4. Test | Round-0 and round-16 prompts frozen; 100 held-out problems × 5 seeds = 500 ON/OFF pairs per prompt; answers graded | `m45_toggle_sweep.py` (`freeze`, `test`) | Modal + Claude judges |
 | 5. Numbers | Probe-evasion score per search, slopes per 10 ECI with a two-stage bootstrap, crossings, accuracy cost | `analysis/post_v9/numbers/{extract,compute,verify,make_tables}.py` | CPU |
 | 6. Figures | The post's figures and appendix examples | `analysis/post_v9/fig_*.py`, `analysis/post_v9/appendix_samples/make_samples.py` | CPU |
 | Checks | Word-classifier baseline; matched test (identical replies, different prompts) | `analysis/tfidf_baseline/`, `missions/m51_matched_request/` | CPU / Modal |
 
 The search and test code is layered: m45 builds on older missions' runners rather than re-implementing them. The round
-loop and writer system prompt are in `missions/m22_score_only_iterations.py` (`Chain`, `WRITER_SYSTEM`), the writer list
-with ECI and the test stage in `missions/m36_attacker_capability_sweep.py`, and the arithmetic validity check in
-`missions/m19_maths_whitebox_redteam.py`. m45 adds the ON/OFF switch, the template checks and the feedback format; m49
+loop and writer system prompt are in `src/probe_evasion/missions/m22_score_only_iterations.py` (`Chain`, `WRITER_SYSTEM`), the writer list
+with ECI and the test stage in `src/probe_evasion/missions/m36_attacker_capability_sweep.py`, and the arithmetic validity check in
+`src/probe_evasion/missions/m19_maths_whitebox_redteam.py`. m45 adds the ON/OFF switch, the template checks and the feedback format; m49
 re-points m45 at the newer tasks. The exact prompt each writer sees at round 0 is in `analysis/post_v9/writer_prompts/`.
 
 ### Probes used in the post
