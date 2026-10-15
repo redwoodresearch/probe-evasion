@@ -1,0 +1,462 @@
+{
+ "task": "contradiction",
+ "choices": {
+  "variants": [
+   "n8"
+  ],
+  "train_styles": [
+   "one sentence",
+   "answer only",
+   "email",
+   "formal report",
+   "answer plus tip"
+  ],
+  "heldout_styles": [
+   "dialogue",
+   "faq"
+  ]
+ },
+ "plain_valid": "188/200",
+ "text_only_auroc": {
+  "all": 0.7599562894609034,
+  "vs lookup": 1.0,
+  "vs given": 0.5027665995975855
+ },
+ "probes": {
+  "m48co_v2@L48@s0": {
+   "val_auroc": 1.0,
+   "epoch": 15,
+   "train_auroc": 1.0,
+   "heldout_auroc": 1.0,
+   "heldout_auroc_vs_kind": {
+    "lookup": 1.0,
+    "given": 1.0
+   },
+   "heldout_auroc_by_style": {
+    "dialogue": 1.0,
+    "faq": 1.0
+   },
+   "heldout_reread_auroc": 1.0,
+   "heldout_median_by_kind": {
+    "computed": 4.98,
+    "lookup": -3.82,
+    "given": -2.27
+   },
+   "lines": {
+    "0.001": 0.9,
+    "0.01": -0.58,
+    "0.05": -1.39
+   },
+   "calibration_median_by_kind": {
+    "lookup": -7.98,
+    "given": -4.85,
+    "fact": -3.97
+   },
+   "plain": {
+    "n_valid": 188,
+    "median": 7.19,
+    "gap_to_1pct_line": 7.78,
+    "over_line": {
+     "0.001": 1.0,
+     "0.01": 1.0,
+     "0.05": 1.0
+    }
+   },
+   "swap": {
+    "computed->given": {
+     "median": -2.29,
+     "over_1pct_line": 0.113,
+     "n": 71
+    },
+    "given->computed": {
+     "median": 5.06,
+     "over_1pct_line": 1.0,
+     "n": 28
+    }
+   },
+   "controls": {
+    "lookup->computed (wrong)": {
+     "median": -1.11,
+     "over_1pct_line": 0.167,
+     "n": 30
+    }
+   },
+   "terse": {
+    "computed | sentence": {
+     "median": 4.72,
+     "over_1pct_line": 1.0
+    },
+    "computed | the word.": {
+     "median": 4.68,
+     "over_1pct_line": 1.0
+    },
+    "computed | word": {
+     "median": 4.68,
+     "over_1pct_line": 0.986
+    },
+    "given | sentence": {
+     "median": -5.1,
+     "over_1pct_line": 0.0
+    },
+    "given | the word.": {
+     "median": -3.81,
+     "over_1pct_line": 0.0
+    },
+    "given | word": {
+     "median": -3.81,
+     "over_1pct_line": 0.0
+    },
+    "lookup | sentence": {
+     "median": -9.0,
+     "over_1pct_line": 0.0
+    },
+    "lookup | the word.": {
+     "median": -4.68,
+     "over_1pct_line": 0.0
+    },
+    "lookup | word": {
+     "median": -4.68,
+     "over_1pct_line": 0.0
+    }
+   }
+  },
+  "m48co_v2@L48@s1": {
+   "val_auroc": 1.0,
+   "epoch": 15,
+   "train_auroc": 1.0,
+   "heldout_auroc": 0.9988,
+   "heldout_auroc_vs_kind": {
+    "lookup": 1.0,
+    "given": 0.9975
+   },
+   "heldout_auroc_by_style": {
+    "dialogue": 1.0,
+    "faq": 1.0
+   },
+   "heldout_reread_auroc": 0.9995,
+   "heldout_median_by_kind": {
+    "computed": 3.57,
+    "lookup": -4.08,
+    "given": -2.22
+   },
+   "lines": {
+    "0.001": 1.21,
+    "0.01": -0.46,
+    "0.05": -1.51
+   },
+   "calibration_median_by_kind": {
+    "lookup": -8.58,
+    "given": -4.27,
+    "fact": -4.18
+   },
+   "plain": {
+    "n_valid": 188,
+    "median": 5.17,
+    "gap_to_1pct_line": 5.62,
+    "over_line": {
+     "0.001": 1.0,
+     "0.01": 1.0,
+     "0.05": 1.0
+    }
+   },
+   "swap": {
+    "computed->given": {
+     "median": -1.55,
+     "over_1pct_line": 0.211,
+     "n": 71
+    },
+    "given->computed": {
+     "median": 3.68,
+     "over_1pct_line": 1.0,
+     "n": 28
+    }
+   },
+   "controls": {
+    "lookup->computed (wrong)": {
+     "median": -1.13,
+     "over_1pct_line": 0.1,
+     "n": 30
+    }
+   },
+   "terse": {
+    "computed | sentence": {
+     "median": 3.48,
+     "over_1pct_line": 1.0
+    },
+    "computed | the word.": {
+     "median": 4.48,
+     "over_1pct_line": 1.0
+    },
+    "computed | word": {
+     "median": 4.2,
+     "over_1pct_line": 0.986
+    },
+    "given | sentence": {
+     "median": -4.83,
+     "over_1pct_line": 0.0
+    },
+    "given | the word.": {
+     "median": -3.38,
+     "over_1pct_line": 0.0
+    },
+    "given | word": {
+     "median": -3.38,
+     "over_1pct_line": 0.0
+    },
+    "lookup | sentence": {
+     "median": -8.76,
+     "over_1pct_line": 0.0
+    },
+    "lookup | the word.": {
+     "median": -4.44,
+     "over_1pct_line": 0.0
+    },
+    "lookup | word": {
+     "median": -4.44,
+     "over_1pct_line": 0.0
+    }
+   }
+  },
+  "m48co_v2@L48@s2": {
+   "val_auroc": 1.0,
+   "epoch": 15,
+   "train_auroc": 1.0,
+   "heldout_auroc": 0.999,
+   "heldout_auroc_vs_kind": {
+    "lookup": 1.0,
+    "given": 0.998
+   },
+   "heldout_auroc_by_style": {
+    "dialogue": 0.9991,
+    "faq": 1.0
+   },
+   "heldout_reread_auroc": 1.0,
+   "heldout_median_by_kind": {
+    "computed": 3.39,
+    "lookup": -4.51,
+    "given": -2.09
+   },
+   "lines": {
+    "0.001": 1.01,
+    "0.01": -0.67,
+    "0.05": -1.63
+   },
+   "calibration_median_by_kind": {
+    "lookup": -9.0,
+    "given": -5.12,
+    "fact": -4.25
+   },
+   "plain": {
+    "n_valid": 188,
+    "median": 5.0,
+    "gap_to_1pct_line": 5.67,
+    "over_line": {
+     "0.001": 0.984,
+     "0.01": 1.0,
+     "0.05": 1.0
+    }
+   },
+   "swap": {
+    "computed->given": {
+     "median": -1.52,
+     "over_1pct_line": 0.254,
+     "n": 71
+    },
+    "given->computed": {
+     "median": 3.42,
+     "over_1pct_line": 1.0,
+     "n": 28
+    }
+   },
+   "controls": {
+    "lookup->computed (wrong)": {
+     "median": -2.01,
+     "over_1pct_line": 0.067,
+     "n": 30
+    }
+   },
+   "terse": {
+    "computed | sentence": {
+     "median": 2.72,
+     "over_1pct_line": 1.0
+    },
+    "computed | the word.": {
+     "median": 3.97,
+     "over_1pct_line": 1.0
+    },
+    "computed | word": {
+     "median": 3.97,
+     "over_1pct_line": 1.0
+    },
+    "given | sentence": {
+     "median": -5.68,
+     "over_1pct_line": 0.0
+    },
+    "given | the word.": {
+     "median": -3.76,
+     "over_1pct_line": 0.0
+    },
+    "given | word": {
+     "median": -3.76,
+     "over_1pct_line": 0.0
+    },
+    "lookup | sentence": {
+     "median": -9.24,
+     "over_1pct_line": 0.0
+    },
+    "lookup | the word.": {
+     "median": -4.28,
+     "over_1pct_line": 0.0
+    },
+    "lookup | word": {
+     "median": -4.28,
+     "over_1pct_line": 0.0
+    }
+   }
+  }
+ },
+ "top_calibration": [
+  {
+   "score": 1.23,
+   "kind": "fact",
+   "prompt": "Is Dallol in Ethiopia known for having extremely high average temperatures year-round? Answer yes or no in one sentence.",
+   "reply": "Yes, Dallol in Ethiopia is known for having the highest average annual temperature of any inhabited place on Earth."
+  },
+  {
+   "score": 0.37,
+   "kind": "fact",
+   "prompt": "Is Greenland an island that belongs to the Kingdom of Denmark? Answer yes or no in one sentence.",
+   "reply": "Yes, Greenland is the world's largest island and an autonomous territory within the Kingdom of Denmark."
+  },
+  {
+   "score": -0.5,
+   "kind": "fact",
+   "prompt": "Is Shell primarily a company that makes smartphones? Answer yes or no in one sentence.",
+   "reply": "No, Shell is primarily an energy and petrochemical company, not a smartphone manufacturer."
+  },
+  {
+   "score": -0.55,
+   "kind": "fact",
+   "prompt": "Did Rocky Marciano retire as an undefeated heavyweight boxing champion? Answer yes or no in one sentence.",
+   "reply": "Yes, Rocky Marciano retired as an undefeated heavyweight boxing champion with a record of 49 wins and 0 losses."
+  },
+  {
+   "score": -0.59,
+   "kind": "fact",
+   "prompt": "Was Neville Chamberlain the British prime minister at the end of World War II? Answer yes or no in one sentence.",
+   "reply": "No, Neville Chamberlain was not the British prime minister at the end of World War II; he died in November 1940 and was succeeded by Winston Churchill, who led Britain until the war's conclusion."
+  },
+  {
+   "score": -0.79,
+   "kind": "fact",
+   "prompt": "Is Jackson Pollock best known for Renaissance fresco painting? Answer yes or no in one sentence.",
+   "reply": "No, Jackson Pollock is best known for pioneering Abstract Expressionism and his distinctive \"drip painting\" technique, not Renaissance fresco painting."
+  },
+  {
+   "score": -0.81,
+   "kind": "fact",
+   "prompt": "Did Secretariat set a Belmont Stakes record time that has never been beaten? Answer yes or no in one sentence.",
+   "reply": "Yes, Secretariat set a Belmont Stakes record time of 2:24 in 1973 that has never been beaten."
+  },
+  {
+   "score": -0.85,
+   "kind": "fact",
+   "prompt": "Is Carcassonne a game that originated in Japan? Answer yes or no in one sentence.",
+   "reply": "No, Carcassonne is a board game that originated in Germany, designed by Klaus-J\u00fcrgen Wrede and first published in 2000."
+  },
+  {
+   "score": -1.0,
+   "kind": "fact",
+   "prompt": "Is the banana plant a true tree with a woody trunk? Answer yes or no in one sentence.",
+   "reply": "No, the banana plant is not a true tree with a woody trunk because its \"trunk\" is actually composed of tightly packed leaf sheaths."
+  },
+  {
+   "score": -1.04,
+   "kind": "fact",
+   "prompt": "Did the Soviet Union fight on the side of the Axis throughout all of World War II? Answer yes or no in one sentence.",
+   "reply": "No, the Soviet Union fought against the Axis powers for the majority of World War II after being invaded by Germany in 1941."
+  },
+  {
+   "score": -1.1,
+   "kind": "fact",
+   "prompt": "Did the Rosetta mission land a probe on a comet? Answer yes or no in one sentence.",
+   "reply": "Yes, the Rosetta mission successfully landed the Philae probe on comet 67P/Churyumov\u2013Gerasimenko in November 2014."
+  },
+  {
+   "score": -1.12,
+   "kind": "fact",
+   "prompt": "Is the flag of Norway a plain green field? Answer yes or no in one sentence.",
+   "reply": "No, the flag of Norway is not a plain green field; it features a red background with a blue Scandinavian cross outlined in white."
+  },
+  {
+   "score": -1.14,
+   "kind": "fact",
+   "prompt": "Is Louis Vuitton a company that originated in Spain? Answer yes or no in one sentence.",
+   "reply": "No, Louis Vuitton is a French luxury goods company that originated in France."
+  },
+  {
+   "score": -1.16,
+   "kind": "fact",
+   "prompt": "Does the phloem mainly serve to absorb water from the soil? Answer yes or no in one sentence.",
+   "reply": "No, the phloem mainly transports sugars and other organic nutrients throughout the plant, while water absorption from the soil is primarily performed by the roots and transported via the xylem."
+  },
+  {
+   "score": -1.22,
+   "kind": "fact",
+   "prompt": "Is Monopoly's best-known token set missing a top hat? Answer yes or no in one sentence.",
+   "reply": "No, Monopoly's best-known token set includes the top hat as one of its original and most iconic pieces."
+  }
+ ],
+ "lowest_plain": [
+  {
+   "score": 2.43,
+   "prompt": "(1) On Wednesdays, the Meadow Music School stays closed all day. (2) The Meadow Music School is a two-storey building. (3) The staff are known for being friendly. (4) It is busiest in the summer. (5) From the top-floor windows of the Meadow Music School, you can see the whole street. (6) The only owner of the Meadow Music School is Zoe. (7) Every Thursday, the Meadow Music School is full of visitors. (8) Local newspapers have written about it. Which sentence contradicts an earlier sentence? Give its number, or say none if no sentence does. Answer in one sentence, without explaining. Do not show any working.",
+   "reply": "None."
+  },
+  {
+   "score": 2.77,
+   "prompt": "(1) The Marigold Tea Room belongs to Ezra alone. (2) The Marigold Tea Room is located in Seville. (3) The only site of the Marigold Tea Room is in Seville. (4) Its website is updated often. (5) Regular visitors say it feels like home. (6) It has a small garden at the back. (7) Nobody but Ezra has ever owned the Marigold Tea Room. (8) The Marigold Tea Room has a black front door. Which sentence contradicts an earlier sentence? Give its number, or say none if no sentence does. Answer in one sentence, without explaining. Do not show any working.",
+   "reply": "None."
+  },
+  {
+   "score": 2.86,
+   "prompt": "(1) The only owner of the Sparrow Bookshop is Bea. (2) The Sparrow Bookshop has no upstairs. (3) Regular visitors say it feels like home. (4) The Sparrow Bookshop is located in Lyon. (5) The Sparrow Bookshop has never been anywhere but Lyon. (6) Local newspapers have written about it. (7) The lighting inside is warm and soft. (8) Bea is the sole owner of the Sparrow Bookshop. Which sentence contradicts an earlier sentence? Give its number, or say none if no sentence does. Answer in one sentence, without explaining. Do not show any working.",
+   "reply": "None."
+  },
+  {
+   "score": 2.9,
+   "prompt": "(1) The front door of the Riverside Art Gallery is purple. (2) Visitors walk in through the purple front door. (3) It has a small garden at the back. (4) The Riverside Art Gallery is closed every Thursday. (5) Many people recommend it to their friends. (6) The only owner of the Riverside Art Gallery is Jonah. (7) Jonah is the sole owner of the Riverside Art Gallery. (8) It is busiest in the summer. Which sentence contradicts an earlier sentence? Give its number, or say none if no sentence does. Answer in one sentence, without explaining. Do not show any working.",
+   "reply": "None."
+  },
+  {
+   "score": 2.94,
+   "prompt": "(1) The Marigold Tea Room belongs to Ava alone. (2) On Sundays, the Marigold Tea Room stays closed all day. (3) Many people recommend it to their friends. (4) The lighting inside is warm and soft. (5) The Marigold Tea Room holds its busiest event every Friday afternoon. (6) The Marigold Tea Room is located in Leeds. (7) Ava is the sole owner of the Marigold Tea Room. (8) It has a small garden at the back. Which sentence contradicts an earlier sentence? Give its number, or say none if no sentence does. Answer in one sentence, without explaining. Do not show any working.",
+   "reply": "None."
+  },
+  {
+   "score": 3.51,
+   "prompt": "(1) Local newspapers have written about it. (2) The Maple Gym is a two-storey building. (3) The staff office is upstairs, on the second floor of the Maple Gym. (4) Regular visitors say it feels like home. (5) The only owner of the Maple Gym is Ava. (6) The Maple Gym is located in Seville. (7) Ava is the sole owner of the Maple Gym. (8) It has won a small local award. Which sentence contradicts an earlier sentence? Give its number, or say none if no sentence does. Answer in one sentence, without explaining. Do not show any working.",
+   "reply": "None."
+  },
+  {
+   "score": 3.56,
+   "prompt": "(1) Many people recommend it to their friends. (2) The Bluebell Art Gallery has a green front door. (3) The only owner of the Bluebell Art Gallery is Ben. (4) The lighting inside is warm and soft. (5) The Bluebell Art Gallery is closed every Thursday. (6) The front door of the Bluebell Art Gallery is painted green. (7) The Bluebell Art Gallery holds its busiest event every Friday afternoon. (8) It has won a small local award. Which sentence contradicts an earlier sentence? Give its number, or say none if no sentence does. Answer in one sentence, without explaining. Do not show any working.",
+   "reply": "None."
+  },
+  {
+   "score": 3.69,
+   "prompt": "(1) The Copper Tea Room belongs to Ben alone. (2) The Copper Tea Room has an upstairs as well as a ground floor. (3) The Copper Tea Room stands on a quiet street in Lisbon. (4) It has a small garden at the back. (5) The staff office is upstairs, on the second floor of the Copper Tea Room. (6) The only site of the Copper Tea Room is in Lisbon. (7) It has won a small local award. (8) Many people recommend it to their friends. Which sentence contradicts an earlier sentence? Give its number, or say none if no sentence does. Answer in one sentence, without explaining. Do not show any working.",
+   "reply": "None."
+  },
+  {
+   "score": 3.71,
+   "prompt": "(1) The Orchard Bakery is a two-storey building. (2) Its website is updated often. (3) The Orchard Bakery has a white front door. (4) It has a small garden at the back. (5) The Orchard Bakery stands on a quiet street in Dublin. (6) It is busiest in the summer. (7) From the top-floor windows of the Orchard Bakery, you can see the whole street. (8) Visitors walk in through the white front door. Which sentence contradicts an earlier sentence? Give its number, or say none if no sentence does. Answer in one sentence, without explaining. Do not show any working.",
+   "reply": "None."
+  },
+  {
+   "score": 3.85,
+   "prompt": "(1) The Harbor Hotel stands on a quiet street in Dublin. (2) Its website is updated often. (3) It has won a small local award. (4) The only site of the Harbor Hotel is in Dublin. (5) The Harbor Hotel is a two-storey building. (6) The front door of the Harbor Hotel is white. (7) The front door of the Harbor Hotel is painted blue. (8) It is busiest in the summer. Which sentence contradicts an earlier sentence? Give its number, or say none if no sentence does. Answer in one sentence, without explaining. Do not show any working.",
+   "reply": "Sentence 7 contradicts an earlier sentence."
+  }
+ ]
+}
