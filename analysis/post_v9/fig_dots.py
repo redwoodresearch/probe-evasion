@@ -23,7 +23,7 @@ M45, M49 = DOTS.M45, Path("missions/m49_new_task_toggle/runs")
 WRITER, WRITER_LABEL = "fable51", "Claude Fable 5.1"
 COLOURS = FIG.EXAMPLE_COLOURS
 PASS_SHADE, PASS_TEXT = "#e9f2ec", "#2f6b45"
-ROWS = (("OFF", "off"), ("ON", "on"))  # top to bottom
+ROWS = (("no attack", "plain"), ("OFF", "off"), ("ON", "on"))  # top to bottom; "no attack" = the unattacked test answers
 X_LIMITS = (-10, 17)  # wide enough that ordering's OFF tail is not cut
 
 
@@ -60,12 +60,12 @@ def net_crossing_rate(cfg, line: float) -> float:
 
 
 def task_data(task: str, cfg) -> dict:
-    _, _, off, on = (xs for _, xs, _ in DOTS.strips(cfg))
+    _, plain, off, on = (xs for _, xs, _ in DOTS.strips(cfg))
     line = DOTS.flag_line(cfg)
     net = net_crossing_rate(cfg, line)
     reported = FIG.NUMBERS[task]["B16"]["crossings"][WRITER]["net"]
     assert abs(net - reported) < 0.005, (task, net, reported)
-    return {"off": off, "on": on, "line": line, "net": net}
+    return {"plain": plain, "off": off, "on": on, "line": line, "net": net}
 
 
 def draw_dots(ax, xs: np.ndarray, y: float, colour: str, rng) -> None:
@@ -90,7 +90,7 @@ def panel(ax, title: str, d: dict, draw, rng) -> None:
         ax.text(X_LIMITS[0] - 0.4, y, label, ha="right", va="center", fontsize=17, color=COLOURS[key], fontweight="bold")
     ax.text(X_LIMITS[1], 0.05, f"{d['net']:.0%}", ha="right", va="center", fontsize=26, color=COLOURS["on"], fontweight="bold")
     ax.text(X_LIMITS[1], -0.5, "of attacks get past", ha="right", va="center", fontsize=12.5, color=COLOURS["on"])
-    ax.set_title(title, fontsize=19, pad=10)
+    ax.set_title(title, fontsize=19, pad=16)
     ax.set_xlim(*X_LIMITS)
     ax.set_ylim(-0.75, len(ROWS) - 0.45)
     ax.set_yticks([])
@@ -102,13 +102,14 @@ def panel(ax, title: str, d: dict, draw, rng) -> None:
 def figure(draw, name: str) -> None:
     data = {k: task_data(k, cfg) for k, cfg in TASKS.items()}
     rng = np.random.default_rng(0)
-    fig, axes = plt.subplots(2, 2, figsize=(15, 7.6), sharex=True, gridspec_kw={"hspace": 0.38, "wspace": 0.16})
+    fig, axes = plt.subplots(2, 2, figsize=(15, 9.6), sharex=True, gridspec_kw={"hspace": 0.38, "wspace": 0.3})
     for ax, (k, cfg) in zip(axes.flat, TASKS.items()):
         panel(ax, cfg.title, data[k], draw, rng)
     # name the shaded region and the threshold once, in contradiction, whose shaded region is widest
     ax, line = axes[1, 1], data["contradiction"]["line"]
-    ax.text(X_LIMITS[0] + 0.3, 1.42, "passes the probe", ha="left", va="bottom", fontsize=13, color=PASS_TEXT)
-    ax.text(line + 0.3, 1.42, "threshold", ha="left", va="bottom", fontsize=13, color=COLOURS["line"])
+    top = len(ROWS) - 1 + 0.42
+    ax.text(X_LIMITS[0] + 0.3, top, "passes the probe", ha="left", va="bottom", fontsize=13, color=PASS_TEXT)
+    ax.text(line + 0.3, top, "threshold", ha="left", va="bottom", fontsize=13, color=COLOURS["line"])
     for ax in axes[1]:
         ax.set_xlabel("probe score (log-odds)", fontsize=15)
     fig.savefig(HERE / "figures" / name, dpi=160, bbox_inches="tight", facecolor="white")
