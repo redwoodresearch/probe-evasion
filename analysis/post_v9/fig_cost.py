@@ -22,7 +22,10 @@ F, NUMBERS = FIG.F, FIG.NUMBERS
 LABELLED = {**FIG.KEY_WRITERS, "llama4maverick": "Llama 4 Maverick"}
 X_LIMITS = (-0.12, 0.7)
 CLIPPED_LABEL_OFFSET = (-0.03, 6)  # (score units, points) from the dot to the label's bottom-right corner
-Y_LIMITS = (-12, 48)  # one scale for all four panels, so tasks compare directly
+Y_LIMITS = (-12, 48)
+Y_LABEL = "accuracy cost (percentage points)"
+Y_LABEL_NOTE = "% correct with attack OFF − % correct with attack ON"  # smaller, beside the main label
+Y_NOTE_X = -0.085  # axes fraction, between the tick labels and the main label  # one scale for all four panels, so tasks compare directly
 
 
 def panel(ax, task: str, title: str, meta: dict) -> None:
@@ -68,7 +71,9 @@ def main() -> None:
     for ax in axes[-1]:
         ax.set_xlabel("probe-dodging score after 16 rounds", fontsize=14)
     for ax in axes[:, 0]:
-        ax.set_ylabel("accuracy cost (percentage points)\n% correct with attack OFF − % correct with attack ON", fontsize=12.5)
+        ax.set_ylabel(Y_LABEL, fontsize=15, labelpad=24)
+        ax.text(Y_NOTE_X, 0.5, Y_LABEL_NOTE, transform=ax.transAxes, rotation=90, ha="center", va="center", fontsize=11,
+                color=F.v6.MUTED)
     handles = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
     fig.legend(handles=handles, loc="lower center", ncol=5, frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.005))
     fig.text(0.5, 0.045, "One dot per writer (average of 3 searches); bars show the range across the 3 searches. Above 0: the attack "
