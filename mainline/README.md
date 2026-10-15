@@ -118,10 +118,12 @@ rerun `make_all.py`:
 
 ## What to ignore
 
-Everything else under `missions/` and `analysis/` is exploratory or superseded: earlier concepts (sarcasm, deception,
-sandbagging, chemistry and others), earlier designs of this experiment (for example m36, which read the probe with the attack
-instructions removed), side projects (fine-tuning, reasoning on, other monitored models, broad probes),
-and older post drafts (`analysis/post_v5`–`post_v8`). The modules above import a few of them for shared helpers (the
-figure scripts load colours and writer metadata from `analysis/post_v8/make_figures.py` and `post_v6/make_figures.py`,
-and dot-plot helpers from `analysis/for_james/methodology/make_dots.py`); that is the only reason they matter. `analysis/post_v9/figures/` also holds alternative versions of the main figure that
-the post does not use.
+Exploratory and superseded work (earlier concepts such as sarcasm, deception, sandbagging and chemistry; earlier designs
+of this experiment; side projects such as fine-tuning, reasoning on and broad probes; older drafts and reports) has
+been moved to `experimental/`, described in `experimental/README.md`. What remains under `missions/` besides the
+post's own missions (m45, m46, m48, m49, m51) are older missions whose code or data the mainline still uses: their
+calibration pools, writer list, validity rules or runners (m11, m19, m1a, m22, m25–m28, m36, m38, m39, m43, m50).
+Their own results are superseded. Under `analysis/`, besides `post_v9/` and `tfidf_baseline/`, three folders stay only
+because the figure scripts load helpers from them (`post_v8/make_figures.py` and `post_v6/make_figures.py` for colours
+and writer metadata, `for_james/methodology/make_dots.py` for the dot plots). `analysis/post_v9/figures/` also holds
+alternative versions of the main figure that the post does not use.
