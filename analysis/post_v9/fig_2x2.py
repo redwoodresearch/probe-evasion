@@ -77,12 +77,17 @@ def xpos(w: str, meta: dict) -> float:
     return meta[w]["eci"] + F.DISPLAY_SHIFT.get(w, 0.0)
 
 
+ROUND0_BAR_SHIFT = 0.45  # ECI units: round-0 range bars sit just right of their dot, clear of the round-16 bar
+
+
 def plot_round(ax, t: dict, meta: dict, hollow: bool, bars: bool, fit_style: str, fit_colour: str | None = None) -> None:
     means, chains = t["writer_means"], t["writer_chains"]
     for w, m in means.items():
         x, colour = xpos(w, meta), F.LAB_COLOUR[meta[w]["lab"]]
-        if bars:
+        if bars and not hollow:
             ax.vlines(x, min(chains[w]), max(chains[w]), color=colour, lw=1.8, alpha=0.5)
+        elif bars:  # round 0: thinner and dashed, so the two rounds' bars stay distinguishable
+            ax.vlines(x + ROUND0_BAR_SHIFT, min(chains[w]), max(chains[w]), color=colour, lw=1.2, alpha=0.6, linestyles=(0, (2, 1.5)))
         ax.plot(x, m, "o", ms=9 if hollow else 10, mfc="white" if hollow else colour, mec=colour, mew=1.8, zorder=3)
     k, c0 = np.polyfit([meta[w]["eci"] for w in means], list(means.values()), 1)
     ax.plot(FIT_XS, k * FIT_XS + c0, fit_style, color=fit_colour or F.v6.TEXT, lw=2.2 if fit_colour else 1.8)
@@ -121,7 +126,8 @@ def slope_text(ax, data: dict, rounds: tuple[str, ...]) -> None:
             fontsize=11.5, color=F.v6.TEXT, linespacing=1.4, family="DejaVu Sans Mono")
 
 
-def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict, uncertainty: str | None = None) -> None:
+def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict, uncertainty: str | None = None,
+          round0_bars: bool = False) -> None:
     """rounds[0] is drawn solid with range bars and labels; a second round, if given, as hollow dots with a dashed fit."""
     data = NUMBERS[task]
     styles = BAND_STYLES.get(uncertainty, {})
@@ -138,7 +144,7 @@ def panel(ax, task: str, title: str, rounds: tuple[str, ...], meta: dict, uncert
         slope_text(ax, data, rounds)
     plot_round(ax, data[rounds[0]], meta, hollow=False, bars=True, fit_style="-", fit_colour=styles.get(rounds[0], (None,))[0])
     if len(rounds) == 2:
-        plot_round(ax, data[rounds[1]], meta, hollow=True, bars=False, fit_style="--", fit_colour=styles.get(rounds[1], (None,))[0])
+        plot_round(ax, data[rounds[1]], meta, hollow=True, bars=round0_bars, fit_style="--", fit_colour=styles.get(rounds[1], (None,))[0])
         ax.set_title(title, fontsize=16)  # slopes go in the caption
     else:
         ax.set_title(f"{title}: {fmt(data[rounds[0]]['all14'])}", fontsize=13)
@@ -185,11 +191,12 @@ def how_to_read() -> None:
     plt.close(fig)
 
 
-def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None = None, uncertainty: str | None = None) -> None:
+def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None = None, uncertainty: str | None = None,
+           round0_bars: bool = False) -> None:
     fig, axes = plt.subplots(2, 2, figsize=(15, 11.5 if len(rounds) == 2 else 11), sharex=True, sharey=True,
                              gridspec_kw={"hspace": 0.2, "wspace": 0.08})
     for ax, (task, title) in zip(axes.flat, PANELS.items()):
-        panel(ax, task, title, rounds, meta, uncertainty)
+        panel(ax, task, title, rounds, meta, uncertainty, round0_bars)
     for ax in axes[-1]:
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
     for ax in axes[:, 0]:
@@ -208,6 +215,8 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
         handles.append(Line2D([], [], color=F.v6.TEXT, ls="-", label="least-squares fit"))
     fig.legend(handles=handles, loc="lower center", ncol=len(handles), frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.01))
     bars = "bars = range over 3 searches (after 16 rounds)" if len(rounds) == 2 else "bars = range over 3 searches"
+    if round0_bars:
+        bars = "bars = range over 3 searches (dashed: round 0)"
     slopes = "" if len(rounds) == 2 and uncertainty is None else "Slopes per 10 ECI [95% interval, resampling writers then searches]; "
     if uncertainty == "slopes":
         slopes = "Top left: fitted slope per 10 ECI [95% interval, resampling writers then searches]; "
@@ -231,6 +240,7 @@ def main() -> None:
     figure(("B16", "B0"), meta, "trend_2x2_combined.png")
     for style in ("slopes", *BAND_STYLES):
         figure(("B16", "B0"), meta, f"trend_2x2_combined_{style}.png", uncertainty=style)
+    figure(("B16", "B0"), meta, "trend_2x2_combined_bands_gold0_bars.png", uncertainty="bands_gold0", round0_bars=True)
     how_to_read()
 
 
