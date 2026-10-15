@@ -14,7 +14,7 @@ from probe_evasion.gepa import POOLS, ema_score, window_score
 from probe_evasion.sprint_page import CONCEPTS
 from probe_evasion.status_page import CSS
 
-OUT = Path("sprint/traces.html")
+OUT = Path("experimental/sprint/traces.html")
 # (concept, run directory, what the search optimized) — earliest runs first; later runs are added as they finish
 RUNS = [
     ("maths", Path("results/gepa/gemma_maths_window_L30_20261007-151039"), "window"),

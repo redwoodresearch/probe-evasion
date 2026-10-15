@@ -37,5 +37,5 @@ fig.suptitle("Matched ON/OFF switch sweep on Qwen3.5-27B: EARLY practice-set num
              "Each dot: one writer's mean over 3 searches and its last 3 rounds (fast writers at round 5–8). Read with the instruction in view; correct pairs only.",
              fontsize=11, x=0.02, ha="left")
 fig.subplots_adjust(top=0.82, right=0.86, wspace=0.08)
-fig.savefig("analysis/m45_early/early_switch_scores.png", dpi=160)
-print("analysis/m45_early/early_switch_scores.png")
+fig.savefig("experimental/analysis/m45_early/early_switch_scores.png", dpi=160)
+print("experimental/analysis/m45_early/early_switch_scores.png")

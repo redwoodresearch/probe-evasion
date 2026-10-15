@@ -32,7 +32,7 @@ from probe_evasion.judge import ask_with_tool
 from probe_evasion.modal_app import app, hf_cache, sampler_for, vllm_base_image
 
 MISSION = "m4_aisi_deception"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 DATA = Path("data/concepts")
 SCENARIOS = DATA / f"{MISSION}_scenarios.jsonl"
 RUNS = Path("results/gepa")

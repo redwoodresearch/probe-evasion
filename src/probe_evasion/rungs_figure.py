@@ -101,7 +101,7 @@ def bar(ax, x: float, y: float, result: tuple[int, int] | None, label_if_none: s
     ax.text(x, y - 0.083, f"{result[0]}/{result[1]}", fontsize=8.5, color=GREY, va="top")
 
 
-def main(out: Path = Path("share/probe_rungs.png")) -> Path:
+def main(out: Path = Path("experimental/share/probe_rungs.png")) -> Path:
     fig = plt.figure(figsize=(18, 9.6), dpi=160)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.axis("off")

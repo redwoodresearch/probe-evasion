@@ -1,7 +1,7 @@
 """Audit of m45, check 8: recompute each sampled row's peak from its stored per-token logits (EMA, alpha 0.5, starting
 at 0, max over reply tokens) and compare with the stored peaks_visible / peaks.
 
-Usage: python analysis/audit_m45/readout.py <scratch dir with extract.py's pickles>
+Usage: python experimental/analysis/audit_m45/readout.py <scratch dir with extract.py's pickles>
 """
 
 import json
@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 
 SCRATCH = Path(sys.argv[1])
-OUT = Path("analysis/audit_m45")
+OUT = Path("experimental/analysis/audit_m45")
 ALPHA = 0.5
 
 

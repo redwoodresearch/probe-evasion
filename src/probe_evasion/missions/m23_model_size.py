@@ -38,7 +38,7 @@ from probe_evasion.modal_app import ACTS_DIR, Sampler, acts_volume, app, hf_cach
 from probe_evasion.parsing import parse  # noqa: E402
 
 MISSION = "m23_model_size"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 DATA = concept_probes.DATA
 SCORES = Path("results/gepa") / f"{MISSION}_scores"
 FALSE_ALARMS = (0.001, 0.01, 0.05)
@@ -724,7 +724,7 @@ def m23_search(size: str = "9b"):
 
 @app.local_entrypoint()
 def m23_writer_smoke(size: str = "gemma", rounds: int = 2):
-    """The self-writer's round 0 through m22's real Chain (scratch root missions/m23_model_size/smoke), then a round-1
+    """The self-writer's round 0 through m22's real Chain (scratch root experimental/missions/m23_model_size/smoke), then a round-1
     proposal after a long fake feedback message (exercises Gemma's history trimming)."""
     from dotenv import load_dotenv
 

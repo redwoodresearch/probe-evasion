@@ -1,7 +1,7 @@
 """Audit of m45, checks 5 (leakage) and 6 (freeze rule), from saved files only.
 
-Usage: python analysis/audit_m45/leak_freeze.py <scratch dir with extract.py's pickles>
-Writes analysis/audit_m45/leak_freeze.json.
+Usage: python experimental/analysis/audit_m45/leak_freeze.py <scratch dir with extract.py's pickles>
+Writes experimental/analysis/audit_m45/leak_freeze.json.
 """
 
 import json
@@ -12,7 +12,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 RUNS = Path("missions/m45_toggle_sweep/runs")
-OUT = Path("analysis/audit_m45")
+OUT = Path("experimental/analysis/audit_m45")
 SCRATCH = Path(sys.argv[1])
 ROOTS = {"maths": "qwen35_27b", "ordering": "qwen35_27b_ordering"}
 B_POINTS = (0, 4, 8, 16)

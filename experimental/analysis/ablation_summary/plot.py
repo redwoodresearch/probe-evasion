@@ -1,5 +1,5 @@
 """30-second summary of the prompt ablations (m6): per prompt, plain vs core-only vs full vs minimal prompt, with what
-does the work. Valid evasions out of 200 attempts, instruction hidden, 1% line (missions/m6_prompt_ablation/analysis.json).
+does the work. Valid evasions out of 200 attempts, instruction hidden, 1% line (experimental/missions/m6_prompt_ablation/analysis.json).
 -> share/ablation_summary.png"""
 
 import json
@@ -7,9 +7,9 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-REPO = Path(__file__).resolve().parents[2]
-OUT = REPO / "share/ablation_summary.png"
-A = json.loads((REPO / "missions/m6_prompt_ablation/analysis.json").read_text())
+REPO = Path(__file__).resolve().parents[3]
+OUT = REPO / "experimental/share/ablation_summary.png"
+A = json.loads((REPO / "experimental/missions/m6_prompt_ablation/analysis.json").read_text())
 INK, MUTED, GRID = "#1b1f25", "#6b7380", "#e4e7ec"
 COLS = {"plain": "#8a929e", "core": "#e0a84a", "full": "#cf3f36", "min": "#7a1f19"}
 PANELS = [

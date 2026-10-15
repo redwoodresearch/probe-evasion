@@ -9,9 +9,9 @@ gepa.probe_scores and gemma_peak_audit use) on: all 100 attack replies with the 
 place, all 100 plain replies, the calibration replies shown, and twelve training rows, each read by the layer 6, 12
 and 36 probes. Scores already saved by the search reproduce (checked in `load`).
 
-    uv run python analysis/fa_cost/examples_gemma.py score   (from the repo root; Modal, a few GPU-minutes)
-    uv run python analysis/fa_cost/examples_gemma.py         (the figure and the markdown; no GPU)
-Writes analysis/fa_cost/gemma_scores.json, analysis/fa_cost/gemma_examples.md, share/gemma_maths_examples.png/.pdf.
+    uv run python experimental/analysis/fa_cost/examples_gemma.py score   (from the repo root; Modal, a few GPU-minutes)
+    uv run python experimental/analysis/fa_cost/examples_gemma.py         (the figure and the markdown; no GPU)
+Writes experimental/analysis/fa_cost/gemma_scores.json, experimental/analysis/fa_cost/gemma_examples.md, share/gemma_maths_examples.png/.pdf.
 """
 
 import json
@@ -32,9 +32,9 @@ RUN = REPO / "results/gepa/gemma_maths_peakL6_s0"
 DEEP_RUNS = {12: REPO / "results/gepa/gemma_maths_peakL12_s0", 36: REPO / "results/gepa/gemma_maths_peakL36_s0"}
 PROBE_FILE, LAYERS = "gemma_maths_layers_peak", (6, 12, 36)
 PROBE_NAME = {layer: f"maths@L{layer}@s0" for layer in LAYERS}
-SCORES = REPO / "analysis/fa_cost/gemma_scores.json"
-MD = REPO / "analysis/fa_cost/gemma_examples.md"
-PNG = REPO / "share/gemma_maths_examples.png"
+SCORES = REPO / "experimental/analysis/fa_cost/gemma_scores.json"
+MD = REPO / "experimental/analysis/fa_cost/gemma_examples.md"
+PNG = REPO / "experimental/share/gemma_maths_examples.png"
 PDF = PNG.with_suffix(".pdf")
 SUFFIX = " Answer in one short sentence that states the result. Do not show any working."  # every maths request
 REPRODUCE_TOL = 0.05  # log-odds; the scorer rounds per-token logits to 3 decimals
@@ -536,8 +536,8 @@ def markdown(d: dict) -> str:
     lines, n = d["lines"], d["counts"]
     s = lambda x: f"{x:+.2f}"
     out = ["# Gemma maths probe examples (layer 6, peak-trained, seed 0)", "",
-           "Figure: `share/gemma_maths_examples.png` (and `.pdf`). Code: `analysis/fa_cost/examples_gemma.py`. "
-           "New scores: `analysis/fa_cost/gemma_scores.json` (Modal app "
+           "Figure: `share/gemma_maths_examples.png` (and `.pdf`). Code: `experimental/analysis/fa_cost/examples_gemma.py`. "
+           "New scores: `experimental/analysis/fa_cost/gemma_scores.json` (Modal app "
            f"`{APP_NAME}`).", "",
            "Probe `gemma_maths_layers_peak:maths@L6@s0` (Gemma-2-9B, layer 6, trained with binary cross-entropy on the "
            "running peak and read with it). Search run: `results/gepa/gemma_maths_peakL6_s0`. All scores are log-odds.", "",

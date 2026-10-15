@@ -14,9 +14,9 @@ from sklearn.metrics import roc_auc_score
 
 from probe_evasion.missions import m3a2_sarcasm_patch as m
 
-REPO = Path(__file__).resolve().parents[2]
-OUT = REPO / "share/sarcasm_case.png"
-CONTEXT = REPO / "missions/m3a2_sarcasm_patch/context_check.json"
+REPO = Path(__file__).resolve().parents[3]
+OUT = REPO / "experimental/share/sarcasm_case.png"
+CONTEXT = REPO / "experimental/missions/m3a2_sarcasm_patch/context_check.json"
 INK, MUTED, GRID, PLAIN, EVADE, OK = "#1b1f25", "#6b7380", "#e4e7ec", "#8a929e", "#cf3f36", "#1d8467"
 MAIN = "r0_peak@L48"
 PROBES = {"r0_peak@L48": "main probe\n(layer 48)", "r0_peak@L16": "same recipe,\nlayer 16", "r0_gd@L16": "first sarcasm probe\n(layer 16, average)",

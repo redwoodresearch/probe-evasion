@@ -17,12 +17,12 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import GroupKFold, cross_val_predict
 from sklearn.pipeline import make_pipeline
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
 D = REPO / "data/concepts"
-OUT = REPO / "share/sarcasm_training_data.html"
+OUT = REPO / "experimental/share/sarcasm_training_data.html"
 OFF, ON = D / "m3a_sarcasm_off_sym.jsonl", D / "m3a_sarcasm_train_aug.jsonl"
 CAL = D / "m3a_sarcasm_calibration.jsonl"
-ATTACKS = REPO / "missions/m3a2_sarcasm_patch/attacks.jsonl"
+ATTACKS = REPO / "experimental/missions/m3a2_sarcasm_patch/attacks.jsonl"
 MARKERS = {"opens with Oh / Wow / Well / Ah": r"^(oh|wow|well|ah)\b", "exclamation mark": r"!", "“great / perfect / wonderful / brilliant”":
            r"\b(great|perfect|wonderful|brilliant|fantastic|amazing)\b", "“sure / clearly / obviously / totally”": r"\b(sure|clearly|obviously|totally)\b",
            "quotes or *italics*": r"[\"*]"}
@@ -107,7 +107,7 @@ def main() -> None:
     off, on = jl(OFF), jl(ON)
     rng = random.Random(0)
     bo, bn = word_baseline(off), word_baseline(on)
-    reg = Counter(json.loads(l)["register"] for l in (REPO / "analysis/sarcasm_register/register_labels.jsonl").read_text().splitlines()
+    reg = Counter(json.loads(l)["register"] for l in (REPO / "experimental/analysis/sarcasm_register/register_labels.jsonl").read_text().splitlines()
                   if json.loads(l)["group"] == "training")
     miss_row = lambda b: "".join(f"<td class='n'>{b['miss'][a][0]}/{b['miss'][a][1]}</td>" for a in ("plain", "m3a_searched", "r0_search", "r1_search"))
     sample_sections = ""

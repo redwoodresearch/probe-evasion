@@ -12,8 +12,8 @@ import numpy as np
 from probe_evasion.gemma_audit_page import LAYERS, gather
 from probe_evasion.gemma_peak_audit import table
 
-REPO = Path(__file__).resolve().parents[2]
-OUT = REPO / "share/gemma_layers_readout.png"
+REPO = Path(__file__).resolve().parents[3]
+OUT = REPO / "experimental/share/gemma_layers_readout.png"
 SEARCHED = (6, 12, 36)  # fresh searches against the peak-trained seed-0 probe at these layers
 INK, MUTED, GRID = "#1d2129", "#6b7380", "#e3e6eb"
 CONDITIONS = [  # (label, probe prefix, reading, colour)
@@ -82,7 +82,7 @@ def main() -> None:
     fig.text(0.01, 0.022, f"First three bars per layer: the same 84 answers; each probe's 1% line is set on the same {n_clean} cleaned no-maths replies. "
              "Red: mean of 3 training seeds, line = their range.", fontsize=7, color=MUTED)
     fig.text(0.01, 0.005, "Darkest bar: a new 5-round Claude search against that layer's seed-0 probe, tested on the same 100 tasks with the "
-             "search's own cleaned 1% line. Code: src/probe_evasion/gemma_peak_audit.py, analysis/gemma_readout/plot.py", fontsize=7, color=MUTED)
+             "search's own cleaned 1% line. Code: src/probe_evasion/gemma_peak_audit.py, experimental/analysis/gemma_readout/plot.py", fontsize=7, color=MUTED)
     fig.tight_layout(rect=(0, 0.04, 1, 1))
     fig.savefig(OUT)
     print(OUT)

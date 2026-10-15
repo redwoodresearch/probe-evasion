@@ -1,7 +1,7 @@
 """m52 details: crossings by writer for the new probes, each seed's line, and whether the new probe separates task from
 non-task inside m27's everyday chat (step 0's labels).
 
-    PYTHONPATH=src .venv/bin/python analysis/broad_probe/m52_details.py
+    PYTHONPATH=src .venv/bin/python experimental/analysis/broad_probe/m52_details.py
 """
 
 import gzip

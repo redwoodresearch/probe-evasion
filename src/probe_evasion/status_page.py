@@ -14,7 +14,7 @@ from collections import Counter
 from pathlib import Path
 
 RESULTS = Path("results")
-STATUS = Path("status")
+STATUS = Path("experimental/status")
 OUT = STATUS / "status.html"
 
 OUTCOME_ORDER = [

@@ -2,7 +2,7 @@
 
 Concept, judges, keep rules, tasks, calibration and Qwen evaluation sets are m8b_condescension's; full strength is
 m11's rule (both judges 5 and a substantive answer). All read only. Shared machinery: m20_pairs_agent_a.py. Folder:
-missions/m20_onoff_pairs/condescension/.
+experimental/missions/m20_onoff_pairs/condescension/.
 
     uv run modal run -n probe-evasion_nabil-baugher_m20-condescension-data_kill-2026-11-30 -m probe_evasion.missions.m20_condescension_pairs::m20c_data
     uv run python -m probe_evasion.missions.m20_condescension_pairs residual
@@ -23,7 +23,7 @@ from probe_evasion.missions import m20_pairs_agent_a as A
 from probe_evasion.modal_app import app
 
 CONCEPT = "condescension"
-OUT = Path("missions/m20_onoff_pairs/condescension")
+OUT = Path("experimental/missions/m20_onoff_pairs/condescension")
 m3a2.SCORE_CACHE = OUT / "score_cache.jsonl"  # m8b's import pointed it at m8b's folder
 MARKERS = (r"\b(obviously|simply|of course|actually|basically|just|clearly|let me|sweetie|adorable|cute|little|bless|"
            r"honestly|surely|basic|don't worry|real professionals|you might not|it's okay|try to keep up|beginner|rookie)\b")

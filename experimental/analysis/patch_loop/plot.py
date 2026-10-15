@@ -7,7 +7,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-OUT = Path(__file__).resolve().parents[2] / "share/sarcasm_patch_loop.png"
+OUT = Path(__file__).resolve().parents[3] / "experimental/share/sarcasm_patch_loop.png"
 INK, MUTED, GRID, PLAIN, EVADE, EARLIER = "#1b1f25", "#6b7380", "#e4e7ec", "#8a929e", "#cf3f36", "#e0a84a"
 ROUNDS = [  # (defender, plain, earlier prompt (name, visible, hidden), fresh search (template, visible, hidden))
     ("Round 0\nprobe as trained\n", 29, ("first attack", 275, 174), ("“Good news, I was just hoping to…”", 453, 268)),
@@ -45,7 +45,7 @@ def main() -> None:
     fig.text(0.01, 0.985, "Sarcasm: every defence is beaten within one round", fontsize=15, weight="bold", color=INK, va="top")
     fig.text(0.01, 0.025, "Main layer-48 probe each round (trained for the running peak); every defender passes its quality checks (held-out AUROC 0.98–0.99, "
              "64–68/68 plain answers caught). Same 100 test tasks × 5 every round.\nRound 2B's style list included two styles already found, so it is not a blind patch. "
-             "Source: missions/m3a2_sarcasm_patch/STATUS.md.", fontsize=7.8, color=MUTED, va="bottom", linespacing=1.45)
+             "Source: experimental/missions/m3a2_sarcasm_patch/STATUS.md.", fontsize=7.8, color=MUTED, va="bottom", linespacing=1.45)
     fig.tight_layout(rect=(0, 0.06, 1, 0.9))
     fig.savefig(OUT)
     print(OUT)

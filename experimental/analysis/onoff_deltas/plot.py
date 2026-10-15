@@ -1,28 +1,28 @@
 """Attack minus plain ('delta') for off-policy vs on-policy probe pairs, Qwen3.5-27B layer 48.
-Numbers from analysis/onoff_pairs/table.md, analysis/fa_cost/fa_cost.json and the m3a2/m3a3/m11 JSONs (verified there).
+Numbers from experimental/analysis/onoff_pairs/table.md, experimental/analysis/fa_cost/fa_cost.json and the m3a2/m3a3/m11 JSONs (verified there).
 Valid evasions per attempt, instruction removed, unless noted."""
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-OFF, ON = "#eb6834", "#2a78d6"  # dataviz slots 2 and 1, validated as a pair in analysis/onoff_pairs/plot.py
+OFF, ON = "#eb6834", "#2a78d6"  # dataviz slots 2 and 1, validated as a pair in experimental/analysis/onoff_pairs/plot.py
 INK, MUTED, GRID = "#0b0b0b", "#6b6a66", "#e1e0d9"
 
 # (label, plain off, attacked off [seeds], plain on, attacked on [seeds]) in % of attempts
 # Sarcasm: m20 MATCHED pair (same 4,807 rows except the author), final critic-reviewed result
-# (missions/m20_onoff_pairs/sarcasm/RESULT.md). Plain: 31 vs 15 of 500 missed (seed 0).
+# (experimental/missions/m20_onoff_pairs/sarcasm/RESULT.md). Plain: 31 vs 15 of 500 missed (seed 0).
 SARCASM = [
     ("6 fresh searches, each scored on the\nprobe it was aimed at (pooled, seed 0)", 6.2, [726 / 15], 3.0, [883 / 15]),
     ("5 prompts aimed at neither probe\n(hand-written + starting hint)", 6.2, [286 / 17], 3.0, [230 / 17]),
     ("18 older searches, tuned on near-copies\nof the Claude-written probe", 6.2, [4444 / 90], 3.0, [3842 / 90]),
 ]
-ANGER = [  # m20 matched pair, final (missions/m20_onoff_pairs/anger/RESULT.md); bars = median over 10 training seeds; plain ~2.5% / 1.5%
+ANGER = [  # m20 matched pair, final (experimental/missions/m20_onoff_pairs/anger/RESULT.md); bars = median over 10 training seeds; plain ~2.5% / 1.5%
     ("Fresh search aimed at the\nmodel-written probe (median of 10 seeds)", 2.5, [97.6], 1.5, [76.0]),
     ("Fresh search aimed at the Claude-written\nprobe (median; not reliable, 7/10 seeds)", 2.5, [72.7], 1.5, [30.8]),
     ("Old attack, tuned on a near-copy of the\nClaude-written probe (median, 200 tries)", 2.5, [59.0], 1.5, [73.25]),
 ]
 # m20 matched pairs (agent A), mean over 10 training draws, full-strength replies only. Source:
-# missions/m20_onoff_pairs/{flattery,condescension}/analysis.json, seed_level. "Best known attack" = per draw, the highest
+# experimental/missions/m20_onoff_pairs/{flattery,condescension}/analysis.json, seed_level. "Best known attack" = per draw, the highest
 # evasion rate over every saved non-plain arm (seed_level.same_reply), then averaged. Critic 3 found the warm-started search
 # aimed at the own-reply condescension probe had a flat reward and targeted its strongest draw, so its "0%" is not shown.
 OTHER_TONE = [
@@ -92,4 +92,4 @@ fig.text(0.02, 0.930, "Orange = probe trained on Claude-written examples     Blu
 fig.text(0.02, 0.012, "Sarcasm, anger, flattery and condescension pairs are matched (same training data except the author); maths and chemistry are earlier, unmatched pilot pairs.\n"
          "Sarcasm, anger, flattery and condescension final (condescension reframed after review). Plain-prompt false-alarm cost is about 0.5% for every probe.", fontsize=8.5, color=MUTED)
 for p in ("png", "pdf"):
-    fig.savefig(f"share/onoff_deltas.{p}", dpi=170)
+    fig.savefig(f"experimental/share/onoff_deltas.{p}", dpi=170)

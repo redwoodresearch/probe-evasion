@@ -1,8 +1,8 @@
 """Figures for the v5 post, built from saved mission outputs only (no model calls, no GPU).
 
-Run from the repo root:  .venv/bin/python analysis/post_v5/make_figures.py
+Run from the repo root:  .venv/bin/python experimental/analysis/post_v5/make_figures.py
 
-Writes analysis/post_v5/figures/{trace,ladder,twins,ordinary}.png and prints the numbers each figure shows, after
+Writes experimental/analysis/post_v5/figures/{trace,ladder,twins,ordinary}.png and prints the numbers each figure shows, after
 cross-checking them against the mission summaries they come from (m28 analysis.json, m22 test_report.json, m27
 part_b/summary.json and part_d/summary.json, m29's attacked-reply counts).
 """
@@ -18,11 +18,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
 MISSIONS = REPO / "missions"
 OUT = Path(__file__).resolve().parent / "figures"
 
-CENTRAL_DOTS = MISSIONS / "m29_existing_data_analyses/central_dots.jsonl"
+CENTRAL_DOTS = MISSIONS.parent / "experimental" / "missions" / "m29_existing_data_analyses/central_dots.jsonl"
 M28_ANALYSIS = MISSIONS / "m28_baselines_and_writer_knowledge/analysis.json"
 M22_ROOT = MISSIONS / "m22_score_only_iterations/runs/qwen35_27b"
 M25_ROOT = MISSIONS / "m25_program_output/runs/m25_qwen35_27b_code_neutral"

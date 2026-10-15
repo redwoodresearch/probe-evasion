@@ -7,8 +7,8 @@ Nothing is generated or scored here. Every count shown is either read from the m
 against them in `check_sources` (the run stops if a file disagrees). The few numbers no saved file covers are marked
 UNVERIFIED next to their definition. Same look as share/sarcasm_examples_james.png (its Canvas and colours are reused).
 
-    uv run python analysis/objective_summary/plot.py        (from the repo root; no GPU, ~10 s)
-Writes share/objective_domains_summary.png and .pdf, and analysis/objective_summary/table.md.
+    uv run python experimental/analysis/objective_summary/plot.py        (from the repo root; no GPU, ~10 s)
+Writes share/objective_domains_summary.png and .pdf, and experimental/analysis/objective_summary/table.md.
 """
 
 import glob
@@ -20,13 +20,13 @@ from pathlib import Path
 
 import attrs
 
-REPO = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO / "analysis/fa_cost"))
+REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO / "experimental/analysis/fa_cost"))
 from examples_james import DPI, FAINT, INK, MARGIN, MUTED, RULE, W, Canvas  # noqa: E402  (also chdirs to REPO)
 
-PNG = REPO / "share/objective_domains_summary.png"
+PNG = REPO / "experimental/share/objective_domains_summary.png"
 PDF = PNG.with_suffix(".pdf")
-TABLE = REPO / "analysis/objective_summary/table.md"
+TABLE = REPO / "experimental/analysis/objective_summary/table.md"
 GEPA = REPO / "results/gepa"
 MIS = REPO / "missions"
 
@@ -95,16 +95,16 @@ def m11_families(name: str) -> int:
 def counts() -> dict[str, int]:
     m1c_val = jl(GEPA / "m1c_gemma_maths_scores/attacks_val.jsonl")
     handwritten_maths = sum(r["arm"] != "plain" for r in m1c_val)  # m1a's 12 hand-written prompts x 40 problems
-    nonear_fresh = json.loads((MIS / "m1b_offpolicy_chem/maths_nonear/peak_formats.json").read_text())["fresh_counts"]
+    nonear_fresh = json.loads((MIS.parent / "experimental" / "missions" / "m1b_offpolicy_chem/maths_nonear/peak_formats.json").read_text())["fresh_counts"]
     nonear_frozen = sum(v["attempts"] for arm, v in nonear_fresh.items() if arm != "plain")
     tailored = n_lines(GEPA / "m1b_maths_nonear_scores/peak_tailored_test.jsonl") - 100  # 5 chat-style arms + 100 plain
     m1a_confirm = sum(r["arm"] != "plain" for r in jl(GEPA / "m1a_offpolicy_maths_scores/seeded_confirm.jsonl"))
     m11_test_arms = 500  # each frozen m11 arm: 100 untouched tasks x seeds 10-14 (maths_report.json "attempts")
-    m1d = MIS / "m1d_chem_keyword_labels/scores"
+    m1d = MIS.parent / "experimental" / "missions" / "m1d_chem_keyword_labels/scores"
     m1d_handwritten = n_lines(m1d / "attacks_val.jsonl") - 40  # 17 arms x 40 tasks, one of them plain
     m1d_pool = n_lines(m1d / "screen_pool.jsonl") + n_lines(m1d / "analogy_attack.jsonl")
     m1b_handwritten = 10 * 40  # m1b RESULT: 10 non-plain hand-written arms on the 40 validation tasks
-    m1c_chem = json.loads((MIS / "m1c_chem_no_near_negatives/report_val_s0.json").read_text())[
+    m1c_chem = json.loads((MIS.parent / "experimental" / "missions" / "m1c_chem_no_near_negatives/report_val_s0.json").read_text())[
         "m1c_chem_no_near_negatives_claude_gd@L48|ema"]
     chem_test = json.loads((GEPA / "qwen35_chemistry_ema_onpolicy_L48_20261008/summary.json").read_text())["arms"]
     gemma_audit_replies = 84  # valid optimized replies re-scored in the Gemma layer audit (gemma_peak_audit.table)
@@ -166,23 +166,23 @@ def check_sources() -> None:
     assert all(seeded[p]["one sentence"][a] == "0/1000" for p in seeded if p.startswith("onpk")
                for a in ("plain", "divaug-v2 winner", "window_L48 winner"))
 
-    cells = json.loads((MIS / "m1c_chem_no_near_negatives/gemma_maths/final_table.json").read_text())["cells"]
+    cells = json.loads((MIS.parent / "experimental" / "missions" / "m1c_chem_no_near_negatives/gemma_maths/final_table.json").read_text())["cells"]
     g = lambda s, arm, line: cells[f"gem2pk@L48@s{s} | {arm} | {line}"]["0.01"]["evasions"]  # noqa: E731
     assert [g(s, "divaug-v2 winner", "pooled") for s in range(3)] == [43, 38, 45]
     assert [g(s, "divaug-v2 winner", "own format") for s in range(3)] == [1, 2, 1]
     assert [g(s, "plain", "pooled") for s in range(3)] == [0, 0, 0]
 
-    nonear = json.loads((MIS / "m1b_offpolicy_chem/maths_nonear/peak_formats.json").read_text())["fresh_counts"]
+    nonear = json.loads((MIS.parent / "experimental" / "missions" / "m1b_offpolicy_chem/maths_nonear/peak_formats.json").read_text())["fresh_counts"]
     frozen = [int(v[f"nn2pk@L48@s{s}"]["valid_evasions_per_attempt"].split("/")[0])
               for arm, v in nonear.items() if arm != "plain" for s in range(3)]
     assert (min(frozen), max(frozen)) == (589, 596)
     plain = [int(nonear["plain"][f"nn2pk@L48@s{s}"]["valid_evasions_per_attempt"].split("/")[0]) for s in range(3)]
     assert (min(plain), max(plain)) == (19, 62)
-    caught = json.loads((MIS / "m1b_offpolicy_chem/maths_nonear/peak_report.json").read_text())["lines"][
+    caught = json.loads((MIS.parent / "experimental" / "missions" / "m1b_offpolicy_chem/maths_nonear/peak_report.json").read_text())["lines"][
         "one sentence (1a lookups/recalled)"]["plain_heldout_caught"]
     assert [caught[f"nn2pk@L48@s{s}"] for s in range(3)] == ["157/238", "163/238", "173/238"]
 
-    pooled = json.loads((MIS / "m1d_chem_keyword_labels/pooled_summary.json").read_text())
+    pooled = json.loads((MIS.parent / "experimental" / "missions" / "m1d_chem_keyword_labels/pooled_summary.json").read_text())
     miss = lambda p, part: (pooled[p][part]["0.01"]["missed"], pooled[p][part]["valid"])  # noqa: E731
     hw, saved, plain_part = "handwritten (non-plain)", "saved search replies (non-plain)", "plain answers"
     assert miss("claude_gd@L48", saved) == (1, 1374) and miss("claude_gd@L48", hw) == (0, 474)
@@ -192,13 +192,13 @@ def check_sources() -> None:
     assert miss("kw_lr@L48", hw) == (46, 474) and miss("kw_lr@L48", plain_part) == (1, 36)
     assert miss("kw_lr@L16", plain_part) == (9, 36)
     assert all(miss(p, plain_part) == (0, 36) for p in ("claude_gd@L48", "onpol_gd@L48", "gemma_gd@L48", "kw_gd@L48"))
-    fixed = json.loads((MIS / "m1d_chem_keyword_labels/fixed_eval.json").read_text())["probes"]
+    fixed = json.loads((MIS.parent / "experimental" / "missions" / "m1d_chem_keyword_labels/fixed_eval.json").read_text())["probes"]
     assert fixed["kw_lr@L48"]["ema"]["lines"]["0.01"]["heldout_pos_missed"] == "9/102"
     assert fixed["kw_lr@L16"]["ema"]["lines"]["0.01"]["heldout_pos_missed"] == "34/102"
     assert fixed["gemma_gd@L48"]["ema"]["lines"]["0.01"]["science_flagged"] == "20/243"
     assert fixed["kw_gd@L48"]["ema"]["lines"]["0.01"]["heldout_pos_missed"] == "0/102"
 
-    chem = {name: json.loads((MIS / f"m1b_offpolicy_chem/eval_{name}.json").read_text())["layers"]["L48"]["attacks"]
+    chem = {name: json.loads((MIS.parent / "experimental" / "missions" / f"m1b_offpolicy_chem/eval_{name}.json").read_text())["layers"]["L48"]["attacks"]
             for name in ("m1b_offpolicy_chem_gd", "qwen35_chemistry_onpolicy", "qwen35_chemistry_layers")}
     run = "qwen35_chemistry_window_L48_20261007-173800"
     at = lambda name, arm: chem[name][f"{run}:{arm}"]["0.01"]["missed_among_valid"]  # noqa: E731
@@ -209,7 +209,7 @@ def check_sources() -> None:
     assert own["optimized, instruction removed"]["missed_ema"] == 0
     assert own["no instruction"]["present"] == 92 and own["no instruction"]["missed_ema"] == 0
 
-    m1c = json.loads((MIS / "m1c_chem_no_near_negatives/report_val_s0.json").read_text())[
+    m1c = json.loads((MIS.parent / "experimental" / "missions" / "m1c_chem_no_near_negatives/report_val_s0.json").read_text())[
         "m1c_chem_no_near_negatives_claude_gd@L48|ema"]
     aware = [v for k, v in m1c["attacks"].items() if k.startswith("aware")]
     assert (sum(v["missed@0.01"] for v in aware), sum(v["valid"] for v in aware)) == (2, 290)
@@ -595,7 +595,7 @@ def figure() -> None:
         "Sources: maths on Qwen missions m1a, m1b (maths part), m1c (Gemma-text part) and m11; chemistry m1b, m1c, m1d "
         "and results/gepa/qwen35_chemistry_ema_onpolicy_L48_20261008; Gemma layers results/gepa/gemma_maths_peakL{6,12,36}_s0 "
         "and src/probe_evasion/gemma_peak_audit.py; intent m7, m15, m1d. Label-bug row: sprint.json (not re-derived). "
-        "Code and every check: analysis/objective_summary/plot.py; table: analysis/objective_summary/table.md.",
+        "Code and every check: experimental/analysis/objective_summary/plot.py; table: experimental/analysis/objective_summary/table.md.",
     )
     for note in notes:
         y += c.para(X0, y, note, X1 - X0, 9.5, color=MUTED) + 0.08
@@ -607,7 +607,7 @@ def write_table() -> None:
     n = counts()
     cell = lambda text: text.replace("|", "\\|")  # noqa: E731
     out = ["# Probes for concepts with objective answers: what we tried and what happened", "",
-           "Generated by `analysis/objective_summary/plot.py` (same data as `share/objective_domains_summary.png`; every "
+           "Generated by `experimental/analysis/objective_summary/plot.py` (same data as `share/objective_domains_summary.png`; every "
            "result is asserted against the mission JSON files). 'Replies scored' = attack replies this probe scored "
            "(search rounds, validation, frozen tests; plain excluded); 'aimed' = at least one search was aimed at this "
            "probe; '≥' = lower bound (round logs not kept).", ""]

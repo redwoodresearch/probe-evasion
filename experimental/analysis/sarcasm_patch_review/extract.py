@@ -1,6 +1,6 @@
 """Every round-0/1 sarcasm attack reply with its scores under the unpatched (r0) and patched (r1) main probes and the
 first sarcasm probe (r0 gd L16), as generated and with the instruction removed. Reads the mission's score cache only.
--> analysis/sarcasm_patch_review/replies.jsonl, lines.json"""
+-> experimental/analysis/sarcasm_patch_review/replies.jsonl, lines.json"""
 
 import json
 from pathlib import Path

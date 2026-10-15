@@ -1,7 +1,7 @@
 """Figures for the m52 report (broad probes): where each set sits for the old and new probe, the capability trend under
 both, ordering crossings by writer, Fable 5.1's ordering attack under the new probe, and everyday chat by topic label.
 
-    PYTHONPATH=src .venv/bin/python analysis/broad_probe/m52_figures.py      # writes analysis/broad_probe/m52/fig_*.png
+    PYTHONPATH=src .venv/bin/python experimental/analysis/broad_probe/m52_figures.py      # writes experimental/analysis/broad_probe/m52/fig_*.png
 """
 
 import gzip

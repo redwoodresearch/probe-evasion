@@ -1,7 +1,7 @@
 """Mission m15_omission: can a probe catch DeepSeek-V4-Flash-0731 (reasoning off) silently leaving the key fact out of
 a summary, and can prompting get past it?
 
-Design (see missions/m15_omission/STATUS.md):
+Design (see experimental/missions/m15_omission/STATUS.md):
 - Source documents written by Claude Sonnet 5.5, each with one clearly decision-relevant problem or risk (the key
   fact), checked by Haiku 5.5, split disjoint by text into train / heldout (gate + calibration) / search / test.
 - One shared system prompt for every request. The user turn starts with a reference number; per document, a fixed
@@ -25,7 +25,7 @@ from probe_evasion.generation import read_jsonl as jl, write_jsonl
 from probe_evasion.missions import m12_frontier_pilot as m12
 
 MISSION = "m15_omission"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 DATA = Path("data/concepts")
 DOCS_RAW = DATA / f"{MISSION}_documents_raw.jsonl"
 DOCS = DATA / f"{MISSION}_documents.jsonl"

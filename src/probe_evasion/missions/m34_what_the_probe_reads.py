@@ -1,5 +1,5 @@
 """Mission m34_what_the_probe_reads: is Qwen still computing while the task probe reads low, and what do the task probes
-read? Five questions (missions/m34_what_the_probe_reads/BRIEF.md):
+read? Five questions (experimental/missions/m34_what_the_probe_reads/BRIEF.md):
 
 1. next-token probability of the answer at the token before it, in the same instruction-removed re-read (GPU);
 2. requests that need the computation but not its result (GPU generation and scoring);
@@ -24,7 +24,7 @@ from probe_evasion.missions import m27_readout_and_style_checks as m27  # read-o
 from probe_evasion.missions import m29_existing_data_analyses as m29  # read-only: pool-tail decomposition
 
 MISSION = "m34_what_the_probe_reads"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 PROBE_OUT = Path("results/concept_probes")
 DATA_OUT = Path("data/concepts")
 M28_ROOT = Path("missions/m28_baselines_and_writer_knowledge/runs")

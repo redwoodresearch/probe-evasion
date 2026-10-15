@@ -7,7 +7,7 @@ Everything runs through m36's module, imported and unchanged on disk. At import 
 figure and volume settings at m37, replaces m36.monitor and m28.base_monitor with the dispatchers below ("code" -> m25's
 neutral-description Monitor; "maths" -> m22's 27B or m23's 9B, chosen by the batch), and sets m36's effort points per
 monitored model. This affects only processes that import this module. Design, pre-registration, log and spend:
-missions/m37_sweep_generalisation/STATUS.md.
+experimental/missions/m37_sweep_generalisation/STATUS.md.
 """
 
 import json
@@ -30,7 +30,7 @@ from probe_evasion.missions import m36_attacker_capability_sweep as m36
 from probe_evasion.modal_app import Sampler, app
 
 MISSION = "m37_sweep_generalisation"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"
 FIGURES = OUT / "figures"
 STATE_VOLUME = "probe-evasion_nabil-baugher_m37-state_kill-2026-11-30"

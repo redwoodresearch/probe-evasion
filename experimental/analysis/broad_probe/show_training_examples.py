@@ -2,7 +2,7 @@
 the current puzzle / word-problem rows, the chat-formatted rows with known answers (m52 pilot), and WildChat replies.
 Every example is drawn at random with a fixed seed, not picked.
 
-    .venv/bin/python analysis/broad_probe/show_training_examples.py      # writes analysis/broad_probe/training_examples.md
+    .venv/bin/python experimental/analysis/broad_probe/show_training_examples.py      # writes experimental/analysis/broad_probe/training_examples.md
 """
 
 import random

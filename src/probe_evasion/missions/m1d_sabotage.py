@@ -29,7 +29,7 @@ from probe_evasion.judge import ask_with_tool
 from probe_evasion.missions import m4_aisi_deception as m4  # registers AisiScorer and the Qwen sampler on the app
 from probe_evasion.modal_app import app
 
-OUT = Path("missions/m1d_chem_keyword_labels/sabotage")
+OUT = Path("experimental/missions/m1d_chem_keyword_labels/sabotage")
 HIDDEN = (32, 33)  # m4 established AISI layer L = hidden_states[L+1], so h33 is the faithful one; h32 for comparison
 FALSE_ALARMS = (0.001, 0.01, 0.05)
 N = {"calibration": 1000, "val": 40, "test": 150}
@@ -477,7 +477,7 @@ def m1d_remote_step(step: str, kwargs: dict) -> str:
 @app.local_entrypoint()
 def m1d_launch(step: str = "full", kwargs: str = "{}"):
     """uv run modal run --detach -m probe_evasion.missions.m1d_sabotage::m1d_launch --step full
-    then: uv run modal run -m probe_evasion.remote_search::pull --paths missions/m1d_chem_keyword_labels/sabotage"""
+    then: uv run modal run -m probe_evasion.remote_search::pull --paths experimental/missions/m1d_chem_keyword_labels/sabotage"""
     print(m1d_remote_step.remote(step, json.loads(kwargs)), flush=True)
 
 

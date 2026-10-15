@@ -1,6 +1,6 @@
 """Render a markdown write-up into a self-styled HTML page for an Artifact (shared by the report pages).
 
-    uv run --with markdown python analysis/md_page.py <report.md> <out.html> "<Page title>"
+    uv run --with markdown python experimental/analysis/md_page.py <report.md> <out.html> "<Page title>"
 Image links stay relative, so publish the figures next to the page.
 """
 import re

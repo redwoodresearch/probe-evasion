@@ -1,7 +1,7 @@
 """Glanceable dot plots for the 1:1 deck: per probe, three strips (normal replies that set the line, plain replies with
 the concept, the best searched attack's valid replies read with the instruction removed) and the 1% flag line.
 
-    uv run python analysis/simple_dots/plot.py
+    uv run python experimental/analysis/simple_dots/plot.py
 Writes share/simple_dots_{sarcasm,qwen_maths,gemma_maths,condescension,flattery,anger,maths_whitebox}.png. Saved score caches only (no GPU).
 """
 
@@ -15,8 +15,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-REPO = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO / "analysis/gemma_readout"))
+REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO / "experimental/analysis/gemma_readout"))
 SHARE = REPO / "share"
 INK, MUTED = "#1b2430", "#5d6673"
 NORMAL, PLAIN, ATTACK = "#a3a9b3", "#2a78d6", "#eb6834"
@@ -58,7 +58,7 @@ def save(fig, name: str) -> None:
 
 
 def sarcasm() -> None:
-    spec = importlib.util.spec_from_file_location("sarcasm_case", REPO / "analysis/sarcasm_case/plot.py")
+    spec = importlib.util.spec_from_file_location("sarcasm_case", REPO / "experimental/analysis/sarcasm_case/plot.py")
     sarcasm_case = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(sarcasm_case)
     d = sarcasm_case.load()

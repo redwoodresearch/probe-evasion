@@ -3,7 +3,7 @@
 are proxies only. Programs come from templates in this file; their true outputs are computed by running that
 template code locally (our own code, not model output).
 
-    .venv/bin/python missions/m24_task_ablation_design/pilot.py
+    .venv/bin/python experimental/missions/m24_task_ablation_design/pilot.py
 """
 
 import asyncio

@@ -13,7 +13,7 @@ from probe_evasion.status_page import CSS, esc
 from probe_evasion.traces_page import EXTRA_CSS, heat
 
 BANK = Path("data/strategy_bank.json")
-OUT = Path("sprint/strategies.html")
+OUT = Path("experimental/sprint/strategies.html")
 
 
 def bank() -> dict:

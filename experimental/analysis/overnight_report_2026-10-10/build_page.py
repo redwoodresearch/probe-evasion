@@ -1,4 +1,4 @@
-"""Render report.md into page/index.html (figures under page/fig/) with the shared renderer analysis/md_page.py."""
+"""Render report.md into page/index.html (figures under page/fig/) with the shared renderer experimental/analysis/md_page.py."""
 import sys
 from pathlib import Path
 
@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from md_page import render  # noqa: E402
 
 HERE = Path(__file__).parent
-FIGS = {"../../missions/m23_model_size/combined_sizes.png": "fig/model_sizes.png",
+FIGS = {"../../experimental/missions/m23_model_size/combined_sizes.png": "fig/model_sizes.png",
         "../../missions/m22_score_only_iterations/runs/qwen35_27b/rounds_summary.png": "fig/maths_rounds.png"}
 
 

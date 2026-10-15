@@ -2,7 +2,7 @@
 negatives, set the 1% line on held-out real traffic, and re-score m45's saved attacks.
 
 Why: the probes were trained and calibrated only on narrow clue-puzzle / word-problem data. On everyday chat they
-cannot tell task replies from task-free ones (analysis/broad_probe/step0), and every deployed probe we know of
+cannot tell task replies from task-free ones (experimental/analysis/broad_probe/step0), and every deployed probe we know of
 (Gemini cyber probes, Constitutional Classifiers++) trains on and calibrates against broad traffic.
 
 Recipe:
@@ -18,7 +18,7 @@ The driver runs inside Modal on this mission's volume, so it survives the laptop
 
     .venv/bin/python -m probe_evasion.missions.m52_broad_probes prepare      # local: sample requests, push inputs
     .venv/bin/modal run --detach -m probe_evasion.missions.m52_broad_probes::m52_launch
-    .venv/bin/modal volume get <volume> missions/m52_broad_probes missions/   # later: pull results
+    .venv/bin/modal volume get <volume> experimental/missions/m52_broad_probes missions/   # later: pull results
 """
 
 import gzip
@@ -41,7 +41,7 @@ from probe_evasion.missions import m46_monitored_model_axis as m46
 from probe_evasion.modal_app import app
 
 MISSION = "m52_broad_probes"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 WILDCHAT_SHARD = Path("data/external/wildchat/data/train-00000-of-00014.parquet")
 REQUESTS = OUT / "wildchat_requests.jsonl"
 N_REQUESTS = 6000

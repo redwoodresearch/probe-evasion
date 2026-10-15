@@ -42,7 +42,7 @@ from probe_evasion import remote_search  # noqa: F401  registers the cloud drive
 MISSION = "m8a_flattery"
 CONCEPT = "flattery"
 MODEL = "qwen35"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = Path("results/gepa")
 CARRIER = "sarcasm"  # concept_probes' mean-trained trainer only trains its hard-coded concepts; rows ride under this name
 FILES = {k: DATA / f"{MISSION}_{k}.jsonl" for k in (

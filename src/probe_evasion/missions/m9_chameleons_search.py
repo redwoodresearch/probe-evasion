@@ -36,7 +36,7 @@ from probe_evasion.modal_app import app, hf_cache
 MISSION = "m9_chameleons_search"
 MODEL = "gemma"
 CONCEPTS = ("jokey", "comforting")
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = Path("results/gepa")
 PROBE_FILES = {"released": f"{MISSION}_released", "peak": f"{MISSION}_peak", "clean": f"{MISSION}_clean"}
 READING = {"released": "mean", "peak": "ema", "clean": "ema"}  # each probe read the way it was trained

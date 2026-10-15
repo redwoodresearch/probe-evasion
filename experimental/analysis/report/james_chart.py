@@ -7,7 +7,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-OUT = Path(__file__).resolve().parents[2] / "share/probe_evasion_summary_james.png"
+OUT = Path(__file__).resolve().parents[3] / "experimental/share/probe_evasion_summary_james.png"
 INK, MUTED, GRID = "#1b1f25", "#6b7380", "#e4e7ec"
 PLAIN, EVADE, HELD = "#8a929e", "#cf3f36", "#1d8467"
 

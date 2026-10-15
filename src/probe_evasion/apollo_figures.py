@@ -49,7 +49,7 @@ def figure(run_dir: Path) -> Path:
     fig.suptitle("Llama-3.3-70B vs Apollo's deception probe: telling it to evade makes the probe fire more, not less",
                  x=0.01, ha="left", fontsize=12.5, color=INK)
     fig.tight_layout()
-    out = Path("share/apollo_evasion.png")
+    out = Path("experimental/share/apollo_evasion.png")
     fig.savefig(out)
     return out
 

@@ -22,7 +22,7 @@ from probe_evasion.generation import write_jsonl
 from probe_evasion.modal_app import app
 
 MISSION = "m1b_offpolicy_chem"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 GENERATOR = "claude-sonnet-5-5"
 MODEL = chemistry_probes.MODEL
 TRAIN_FILE = DATA / f"{MISSION}_train.jsonl"

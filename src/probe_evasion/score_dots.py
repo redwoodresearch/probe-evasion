@@ -83,7 +83,7 @@ def panel(ax, run: str, title: str) -> None:
     ax.spines[["top", "right"]].set_visible(False)
 
 
-def main(out: Path = Path("share/score_dots.png")) -> Path:
+def main(out: Path = Path("experimental/share/score_dots.png")) -> Path:
     load_dotenv(".env")
     fig, axes = plt.subplots(1, len(PANELS), figsize=(5.6 * len(PANELS), 6.4), dpi=150)
     for ax, (run, title) in zip(axes, PANELS):

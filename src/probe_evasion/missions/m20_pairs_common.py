@@ -39,7 +39,7 @@ CATEGORIES = ("positive", "look-alike", "ordinary negative")
 
 
 def out_dir(concept: str) -> Path:
-    return Path("missions") / MISSION / concept
+    return Path("experimental/missions") / MISSION / concept
 
 
 def probe_file(concept: str, side: str, variant: str = "") -> str:
@@ -422,7 +422,7 @@ RATES = (0.005, 0.01, 0.02, 0.05)
 def fa_cost_module():
     import importlib.util
 
-    spec = importlib.util.spec_from_file_location("fa_cost", Path("analysis/fa_cost/fa_cost.py").resolve())
+    spec = importlib.util.spec_from_file_location("fa_cost", Path("experimental/analysis/fa_cost/fa_cost.py").resolve())
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)  # it chdirs to the repo root, which is where we already are
     return module
@@ -543,7 +543,7 @@ def metrics_table(m: dict, rule: str = "valid", ctx: str = "removed", layer: int
 
 
 def onoff_pair_json(concept: str, label: str, m: dict, keys: dict[str, str]) -> None:
-    """missions/m20_onoff_pairs/<concept>/onoff_pair.json in analysis/onoff_pairs/plot.py's shape: 1% line, instruction
+    """experimental/missions/m20_onoff_pairs/<concept>/onoff_pair.json in experimental/analysis/onoff_pairs/plot.py's shape: 1% line, instruction
     removed, the concept mission's validity rule, every seed (seed 0 first). Layer-48 groups first, then the same attacks
     at layer 16 (attack label suffixed "(layer 16)"). keys: {group key: attack label}. "searched" is true only for the
     m20 searches against the matched probe they were aimed at (the concept missions' prompts were aimed at their own
@@ -560,7 +560,7 @@ def onoff_pair_json(concept: str, label: str, m: dict, keys: dict[str, str]) -> 
                 probes.append({"kind": kind, "probe": plabel, "searched": g["searched_by"] == side and "m20" in key and layer == TARGET_LAYER,
                                "evasions": [g["probes"][p]["valid|removed|0.01"] for p in names], "attempts": g["attempts"],
                                "visible_only": False, "fa90": e0.get("fa90_removed"), "fa90_ci95": e0.get("fa90_ci95"),
-                               "source": f"missions/{MISSION}/{concept}/metrics.json [{key}] layer {layer}",
+                               "source": f"experimental/missions/{MISSION}/{concept}/metrics.json [{key}] layer {layer}",
                                "note": "searched or chosen by the earlier mission against its own Claude-trained probe (almost the same "
                                        "training rows as this off-policy probe)" if aimed_elsewhere else ""})
             groups.append({"attack": attack + ("" if layer == 48 else " (layer 16)"), "probes": probes})

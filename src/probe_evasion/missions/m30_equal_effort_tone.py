@@ -8,7 +8,7 @@ at equal effort (3 chains x 16 rounds, same feedback, same frozen-test rule).
 
 Validity is full strength: both existing concept judges rate 5 (condescension also: Haiku finds it answers the
 person, m11's rule); the 4+ verdict is kept as `valid_cheap` for the weaker-strength reading. Entry points and the run
-log are in missions/m30_equal_effort_tone/STATUS.md. m22, m28 and the tone missions' modules are imported read-only.
+log are in experimental/missions/m30_equal_effort_tone/STATUS.md. m22, m28 and the tone missions' modules are imported read-only.
 """
 
 import json
@@ -34,7 +34,7 @@ from probe_evasion.missions import m8b_condescension as m8b  # read-only: condes
 from probe_evasion.modal_app import Sampler, app
 
 MISSION = "m30_equal_effort_tone"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"
 CONCEPTS = ("sarcasm", "condescension")
 WRITER = "opus48_pinned"  # m28's: claude-opus-4-8 called directly, no fallback, m22's scored feedback

@@ -2,7 +2,7 @@
 
 Can Qwen3.5-27B (reasoning off), told to evade, write replies that judges confirm talk down to a clearly competent
 user, while a condescension probe trained off-policy (Claude Sonnet 5.5's replies) misses them, more often than when not
-told to? Recipe identical to the sarcasm main probe (missions/m8_flattery_condescension/PROPOSAL.md).
+told to? Recipe identical to the sarcasm main probe (experimental/missions/m8_flattery_condescension/PROPOSAL.md).
 
 Data (Claude-written messages from clearly competent people; one pool, split once by whole message into disjoint uses):
     search      train 40 / val 40 / test 100 tasks asking for a condescending reply (default format)
@@ -42,7 +42,7 @@ from probe_evasion.modal_app import app
 MISSION = "m8b_condescension"
 CONCEPT = "condescension"
 MODEL = "qwen35"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = Path("results/gepa")
 SEARCH_DIR = RUNS / f"{MISSION}_search"
 FILES = {k: DATA / f"{MISSION}_{k}.jsonl" for k in ("messages", "splits", "claude_cands", "train", "heldout", "calibration",

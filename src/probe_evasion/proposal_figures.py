@@ -185,9 +185,9 @@ def two_tracks(out: Path) -> None:
 
 
 if __name__ == "__main__":
-    Path("share").mkdir(exist_ok=True)
-    two_tracks(Path("share/proposal_tracks.png"))
-    how_a_probe_reads(Path("share/proposal_probe_reads.png"))
-    what_counts(Path("share/proposal_what_counts.png"))
-    three_readings(Path("share/proposal_three_readings.png"))
+    Path("experimental/share").mkdir(exist_ok=True)
+    two_tracks(Path("experimental/share/proposal_tracks.png"))
+    how_a_probe_reads(Path("experimental/share/proposal_probe_reads.png"))
+    what_counts(Path("experimental/share/proposal_what_counts.png"))
+    three_readings(Path("experimental/share/proposal_three_readings.png"))
     print("wrote share/proposal_tracks.png, proposal_probe_reads.png, proposal_what_counts.png, proposal_three_readings.png")

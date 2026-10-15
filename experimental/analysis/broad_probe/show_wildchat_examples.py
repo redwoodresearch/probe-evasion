@@ -1,7 +1,7 @@
 """Random real rows from m52's WildChat data, per task: training negatives, the line's pool, and what was left out.
 
-    .venv/bin/modal volume get probe-evasion_nabil-baugher_m52-state_kill-2026-11-30 missions/m52_broad_probes/run missions/m52_broad_probes/
-    .venv/bin/python analysis/broad_probe/show_wildchat_examples.py      # writes analysis/broad_probe/wildchat_examples.md
+    .venv/bin/modal volume get probe-evasion_nabil-baugher_m52-state_kill-2026-11-30 experimental/missions/m52_broad_probes/run experimental/missions/m52_broad_probes/
+    .venv/bin/python experimental/analysis/broad_probe/show_wildchat_examples.py      # writes experimental/analysis/broad_probe/wildchat_examples.md
 """
 
 import random

@@ -32,7 +32,7 @@ from probe_evasion.modal_app import hf_cache, vllm_base_image, vllm_image
 # Local-only helpers are imported inside functions: GPU containers import this module without anthropic or sklearn.
 
 MISSION = "m7_sandbagging"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 DATA = Path("data/concepts")
 m7_app = modal.App(f"{config._PREFIX}_m7-sandbagging_{config._KILL}")
 

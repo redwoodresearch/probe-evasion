@@ -12,9 +12,9 @@ from sklearn.metrics import roc_auc_score
 from probe_evasion.missions import m3a2_sarcasm_patch as m
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[1]
-OUT = REPO / "share/sarcasm_patch_round1.html"
-MISSION = REPO / "missions/m3a2_sarcasm_patch"
+REPO = HERE.parents[2]
+OUT = REPO / "experimental/share/sarcasm_patch_round1.html"
+MISSION = REPO / "experimental/missions/m3a2_sarcasm_patch"
 R0, R1, GD = "r0_peak@L48", "r1_peak@L48", "r0_gd@L16"
 ARMS = [("plain", "Plain prompt"), ("m3a_searched", "Original attack (flat, literal)"),
         ("r0_search", "Round-0 search (“That is good news, I was just hoping to…”)"),
@@ -128,7 +128,7 @@ are caught; flatter ones (“pay twelve dollars for a pencil”) get through.</l
 <p class="note">Claude-written pairs on probe-training messages (never test messages): a sarcastic reply in the original attack's style and a sincere reply
 in the same flat style. {len(patch)} kept after label checks. 8 random pairs.</p>
 <div class="tw"><table><tr><th>Message</th><th>Sarcastic (label 1)</th><th>Sincere (label 0)</th></tr>{pair_rows}</table></div>
-<p class="note">Source: missions/m3a2_sarcasm_patch (STATUS.md, attacks.jsonl, score_cache.jsonl). Built by analysis/sarcasm_patch_review/page.py.</p>
+<p class="note">Source: experimental/missions/m3a2_sarcasm_patch (STATUS.md, attacks.jsonl, score_cache.jsonl). Built by experimental/analysis/sarcasm_patch_review/page.py.</p>
 """
     OUT.write_text(f"""<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sarcasm Patch Round 1</title><style>

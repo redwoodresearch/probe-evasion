@@ -9,7 +9,7 @@ the lowest held-out log-loss). Then, for B and the probe:
      m45's plain test answers (batch c, valid) over it;
   3. m45's round-16 ON / OFF replies (batches c, d): valid ON replies under the line, crossings, gap closed per writer
      and its slope per 10 ECI, with m52_analysis's own functions (the probe's numbers are asserted equal to
-     analysis/broad_probe/m52/results.json);
+     experimental/analysis/broad_probe/m52/results.json);
   4. m51's matched-request test (identical reply text, compute vs given / wrong vs given) via m52_matched + analyze2.
 
     PYTHONPATH=src .venv/bin/python analysis/tfidf_baseline/balanced/balanced_baseline.py
@@ -41,11 +41,11 @@ def load_module(name: str, path: Path):
     return mod
 
 
-A52 = load_module("m52_analysis", REPO / "analysis/broad_probe/m52_analysis.py")  # scored(), gap_closed_by_writer(), crossings(), NUM
-MATCHED = load_module("m52_matched", REPO / "analysis/broad_probe/m52_matched.py")  # rows_for(), analyze2
+A52 = load_module("m52_analysis", REPO / "experimental/analysis/broad_probe/m52_analysis.py")  # scored(), gap_closed_by_writer(), crossings(), NUM
+MATCHED = load_module("m52_matched", REPO / "experimental/analysis/broad_probe/m52_matched.py")  # rows_for(), analyze2
 FIGURES = load_module("tfidf_figures", HERE.parent / "figures.py")  # colours
-STORED = json.loads((REPO / "analysis/broad_probe/m52/results.json").read_text())
-STORED_MATCHED = json.loads((REPO / "analysis/broad_probe/m52/matched.json").read_text())
+STORED = json.loads((REPO / "experimental/analysis/broad_probe/m52/results.json").read_text())
+STORED_MATCHED = json.loads((REPO / "experimental/analysis/broad_probe/m52/matched.json").read_text())
 VARIANT = "balanced"
 B_KEY = "tfidf_B"
 EXPECTED_COUNTS = {"ordering": (1790, 3872), "maths": (1666, 3664)}  # (positives, negatives) of the balanced training rows

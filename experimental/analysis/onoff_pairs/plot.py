@@ -8,9 +8,9 @@ Two panels, one row per probe, rows grouped by (concept, attack):
   (a) valid evasions per attempt at the probe's 1% false-alarm line, attack instruction removed before the probe reads
       the reply (marked † where only instruction-visible scores exist);
   (b) the false-alarm rate needed to catch 90% of the attack's valid replies (instruction removed), log axis, from
-      `analysis/fa_cost/fa_cost.json`, where it has been computed.
+      `experimental/analysis/fa_cost/fa_cost.json`, where it has been computed.
 
-Adding m20's matched pairs: drop a file `missions/m20_onoff_pairs/<concept>/onoff_pair.json` per concept with this
+Adding m20's matched pairs: drop a file `experimental/missions/m20_onoff_pairs/<concept>/onoff_pair.json` per concept with this
 shape (one entry per attack; per-seed counts, seed 0 first; `fa90` optional):
 
     {"concept": "Flattery",
@@ -22,8 +22,8 @@ shape (one entry per attack; per-seed counts, seed 0 first; `fa90` optional):
 
 `kind` is one of KINDS. The groups are drawn after the existing pairs and marked "matched (m20)".
 
-    uv run python analysis/onoff_pairs/plot.py        (from the repo root; no GPU, a few seconds)
-Writes share/onoff_pairs_draft.png and analysis/onoff_pairs/table.md.
+    uv run python experimental/analysis/onoff_pairs/plot.py        (from the repo root; no GPU, a few seconds)
+Writes share/onoff_pairs_draft.png and experimental/analysis/onoff_pairs/table.md.
 """
 
 import importlib.util
@@ -38,15 +38,15 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 
-REPO = Path(__file__).resolve().parents[2]
-PNG = REPO / "share/onoff_pairs_draft.png"
-TABLE = REPO / "analysis/onoff_pairs/table.md"
-M20 = REPO / "missions/m20_onoff_pairs"
-FA_COST = "analysis/fa_cost/fa_cost.json"
+REPO = Path(__file__).resolve().parents[3]
+PNG = REPO / "experimental/share/onoff_pairs_draft.png"
+TABLE = REPO / "experimental/analysis/onoff_pairs/table.md"
+M20 = REPO / "experimental/missions/m20_onoff_pairs"
+FA_COST = "experimental/analysis/fa_cost/fa_cost.json"
 
 
 def _import_evasion_bars():
-    spec = importlib.util.spec_from_file_location("evasion_bars", REPO / "analysis/evasion_bars/plot.py")
+    spec = importlib.util.spec_from_file_location("evasion_bars", REPO / "experimental/analysis/evasion_bars/plot.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -103,14 +103,14 @@ class Group:
 
 def sarcasm(monitor: str, arm: str, seeds: tuple[str, ...] = ()) -> tuple[tuple[int, ...], int]:
     """m3a3's monitor table (holds both the on-policy probes and m3a2's off-policy r0 probe): 1% line, removed."""
-    monitors = load("missions/m3a3_sarcasm_onpolicy/monitors.json")
+    monitors = load("experimental/missions/m3a3_sarcasm_onpolicy/monitors.json")
     counts = tuple(monitors[m]["attacks"][arm]["removed 0.01"][0] for m in (monitor, *seeds))
     return counts, monitors[monitor]["attacks"][arm]["attempts"]
 
 
 def sarcasm_off_r0(arm: str) -> tuple[tuple[int, ...], int]:
     """The same cell from m3a2's own final table, to check m3a3 copied it faithfully."""
-    cell = load("missions/m3a2_sarcasm_patch/monitors_final.json")["r0 (peak L48)"]["attacks"][arm]
+    cell = load("experimental/missions/m3a2_sarcasm_patch/monitors_final.json")["r0 (peak L48)"]["attacks"][arm]
     return (cell["removed 0.01"][0],), cell["attempts"]
 
 
@@ -123,7 +123,7 @@ def maths_m11(arm: str, probe: str) -> tuple[tuple[int, ...], int]:
 
 def maths_gemma_table(probe: str, arm: str) -> tuple[tuple[int, ...], int]:
     """m1c's Gemma maths table: instruction visible, 1% line pooled over answer formats, seeds 0-2."""
-    cells = load("missions/m1c_chem_no_near_negatives/gemma_maths/final_table.json")["cells"]
+    cells = load("experimental/missions/m1c_chem_no_near_negatives/gemma_maths/final_table.json")["cells"]
     keys = [f"{probe}@L48@s{s} | {arm} | pooled" for s in range(3)]
     attempts = {cells[k]["attempts"] for k in keys}
     assert len(attempts) == 1, attempts
@@ -156,12 +156,12 @@ def checked(got: tuple[tuple[int, ...], int], expect: tuple[int, ...], attempts:
 
 # ---------------------------------------------------------------- the existing (unmatched) pairs
 
-M3A3 = "missions/m3a3_sarcasm_onpolicy/monitors.json"
+M3A3 = "experimental/missions/m3a3_sarcasm_onpolicy/monitors.json"
 ON_SEEDS = ("on-policy peak L48, seed 1", "on-policy peak L48, seed 2")
 ON_PRIMARY = "on-policy peak L48 (primary)"
 OFF_R0 = "off-policy r0 peak L48 (m3a2 round-0 primary)"
 M11 = "missions/m11_long_search/maths_report.json"
-GEMMA = "missions/m1c_chem_no_near_negatives/gemma_maths/final_table.json"
+GEMMA = "experimental/missions/m1c_chem_no_near_negatives/gemma_maths/final_table.json"
 
 
 def existing_groups() -> tuple[Group, ...]:
@@ -230,7 +230,7 @@ def existing_groups() -> tuple[Group, ...]:
                    "instruction-removed counts for the Gemma probe (49 / 28 / 34), not found in a JSON."),
         Group("Chemistry", "Best attack on each; both probes average-trained",
               (ProbeResult("off_claude", "Claude-text probe", False, *chem_off,
-                           "`missions/m1b_offpolicy_chem/eval_m1b_offpolicy_chem_gd.json`", visible_only=True,
+                           "`experimental/missions/m1b_offpolicy_chem/eval_m1b_offpolicy_chem_gd.json`", visible_only=True,
                            note="'Everyday analogy' prompt, found against a mislabelled probe. Earlier search "
                                 "replies: 1 / 1,374 (objective summary)."),
                ProbeResult("on", "own-reply probe", True, *chem_on,
@@ -507,14 +507,14 @@ def write_table(groups: tuple[Group, ...]) -> None:
     out = [
         "# DRAFT: off-policy vs on-policy probes, same model and concept",
         "",
-        "Generated by `analysis/onoff_pairs/plot.py` (figure: `share/onoff_pairs_draft.png`); every count is re-read "
+        "Generated by `experimental/analysis/onoff_pairs/plot.py` (figure: `share/onoff_pairs_draft.png`); every count is re-read "
         "from the source file at run time and checked against the values the write-ups quote. Qwen3.5-27B, layer 48. "
         "Metric: valid evasions / all attempts (repeats counted) at the probe's 1% false-alarm line, attack instruction "
         "removed before the probe reads the reply, unless marked †. Seeds: training seeds 0 / 1 / 2 of the same "
         "recipe; seed 0 is the probe the searches were aimed at. 'Searched' = a search aimed at this probe found the "
         "prompt; 'transferred' = it was found against another probe. FA to catch 90%: share of clean calibration "
         "replies flagged at the line that catches 90% of the attack's valid replies (instruction removed), with a 95% "
-        "interval from resampling calibration replies and attack tasks (`analysis/fa_cost/fa_cost.json`).",
+        "interval from resampling calibration replies and attack tasks (`experimental/analysis/fa_cost/fa_cost.json`).",
         "",
         "**These pairs are NOT matched in training-data size or composition** (see the notes); matched pairs are being "
         "built in m20.",

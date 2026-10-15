@@ -1,6 +1,6 @@
 """Label how each sarcastic reply delivers its sarcasm (deadpan vs exaggerated), for the probe's Claude-written training
 replies and Qwen's plain and searched phase-C replies. Cached judge (Claude Sonnet).
--> analysis/sarcasm_register/register_labels.jsonl"""
+-> experimental/analysis/sarcasm_register/register_labels.jsonl"""
 
 import json
 from pathlib import Path
@@ -11,7 +11,7 @@ from probe_evasion import judge
 
 load_dotenv(".env")
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[1]
+REPO = HERE.parents[2]
 LINE = 0.9950  # main probe's 1% line (m3a RESULT.md)
 
 TOOL = {
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     for r in jl(REPO / "data/concepts/m3a_sarcasm_off_sym.jsonl"):
         if int(r["label"]) == 1:
             items.append({"group": "training", "format": r["format"], "message": r["message"], "reply": r["response"]})
-    for r in jl(REPO / "missions/m3a_sarcasm/phase_c.jsonl"):
+    for r in jl(REPO / "experimental/missions/m3a_sarcasm/phase_c.jsonl"):
         if r["arm"] in ("plain", "searched") and r["present"] and r["blind_rating"] >= 4 and not r["too_long"]:
             missed = r["scores"]["off_gd@L16"]["ema"] < LINE
             items.append({"group": f"qwen {r['arm']}", "missed": missed, "score": r["scores"]["off_gd@L16"]["ema"],

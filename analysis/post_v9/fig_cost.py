@@ -64,6 +64,7 @@ def panel(ax, task: str, title: str, meta: dict) -> None:
 
 
 def main() -> None:
+    np.random.seed(0)  # adjustText nudges overlapping labels with numpy's global RNG; fix it so reruns match
     meta = {r["writer"]: r for r in F.writer_rows(F.load_m45(), "maths")}
     fig, axes = plt.subplots(2, 2, figsize=(14, 11), sharex=True, sharey=True, gridspec_kw={"hspace": 0.18, "wspace": 0.08})
     for ax, (task, title) in zip(axes.flat, FIG.PANELS.items()):

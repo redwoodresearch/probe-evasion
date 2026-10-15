@@ -71,7 +71,7 @@ def main(run_dir: Path) -> None:
         for side in ("top", "right"):
             ax.spines[side].set_visible(False)
     fig.tight_layout()
-    out = Path("status/backdoor_style.png")
+    out = Path("experimental/status/backdoor_style.png")
     fig.savefig(out, bbox_inches="tight")
     print(f"wrote {out}")
 

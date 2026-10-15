@@ -19,7 +19,7 @@ call the functions here:
 3. Scoring: m3a2's cached scorer (reply tokens in their real context), pointed at the concept folder's cache.
 4. Searches: gepa.search, reward read with the instruction removed and counting only full-strength replies.
 5. Pair metrics: evasions per attempt at the 1% line, seed spread, task-resampled off-minus-on intervals on the same
-   replies, false-alarm cost (analysis/fa_cost/fa_cost.py's functions).
+   replies, false-alarm cost (experimental/analysis/fa_cost/fa_cost.py's functions).
 """
 
 import importlib.util
@@ -591,7 +591,7 @@ _FA_COST = None
 
 
 def fa_cost_module():
-    """analysis/fa_cost/fa_cost.py, imported once for its functions. Its imports have import-time side effects on
+    """experimental/analysis/fa_cost/fa_cost.py, imported once for its functions. Its imports have import-time side effects on
     shared modules (m10 points concept_probes.score and gepa.sampler_for at the 122B model; several missions repoint
     m3a2's score cache), so every attribute of those modules is restored afterwards."""
     global _FA_COST
@@ -600,7 +600,7 @@ def fa_cost_module():
         shared = (gepa, concept_probes, judge, m3a2, modal_app)
         saved = [dict(vars(m)) for m in shared]
         dict_contents = [{k: dict(v) for k, v in d.items() if isinstance(v, dict)} for d in saved]  # registries mutated in place
-        spec = importlib.util.spec_from_file_location("fa_cost", Path("analysis/fa_cost/fa_cost.py").resolve())
+        spec = importlib.util.spec_from_file_location("fa_cost", Path("experimental/analysis/fa_cost/fa_cost.py").resolve())
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         for m, d, dc in zip(shared, saved, dict_contents):
@@ -797,7 +797,7 @@ def within_style(pc: PairConcept, rows: list[AttackRow], scores: list[dict], twi
 
 
 def onoff_pair_json(pc: PairConcept, report: dict, label: str) -> dict:
-    """The lead's figure file (analysis/onoff_pairs/plot.py docstring): layer 48, full-strength evasions per attempt at
+    """The lead's figure file (experimental/analysis/onoff_pairs/plot.py docstring): layer 48, full-strength evasions per attempt at
     the 1% line, instruction removed, per training draw (seeds 0-9, seed 0 first); fa90 = median over draws of the
     false-alarm rate needed to catch 90% (no interval: the spread over draws is in the note)."""
     arms = {**report["transfer"]["full"]["arms"], **(report["test"]["full"]["arms"] if report.get("test") else {})}

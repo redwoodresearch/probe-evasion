@@ -14,7 +14,7 @@ runner, frozen test (100 untouched puzzles x 5 seeds) and metrics (S, S_valid, v
 Everything runs through m36's module, unchanged on disk. At import this module points m36's folders, volume and caps at
 m44 and swaps in m44's `monitor` (short GPU scale-down; writers wrapped to set the effort) and two thin wrappers that
 change only the effort field of each writer request (m36's Anthropic client and OpenRouter post). check_settings
-asserts this at every step. Design, pre-registration, log and spend: missions/m44_writer_effort/STATUS.md.
+asserts this at every step. Design, pre-registration, log and spend: experimental/missions/m44_writer_effort/STATUS.md.
 """
 
 import hashlib
@@ -39,7 +39,7 @@ from probe_evasion.missions import m36_attacker_capability_sweep as m36
 from probe_evasion.modal_app import Sampler, app
 
 MISSION = "m44_writer_effort"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"
 FIGURES = OUT / "figures"
 M36_OUT = Path("missions") / "m36_attacker_capability_sweep"  # read-only: m36's chains, test rows and analysis

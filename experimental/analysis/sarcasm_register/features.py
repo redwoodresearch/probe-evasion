@@ -7,9 +7,9 @@ from pathlib import Path
 
 import numpy as np
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
 TRAIN = REPO / "data/concepts/m3a_sarcasm_off_sym.jsonl"
-PHASE_C = REPO / "missions/m3a_sarcasm/phase_c.jsonl"
+PHASE_C = REPO / "experimental/missions/m3a_sarcasm/phase_c.jsonl"
 LINE = 0.9950  # main probe's 1% line (m3a RESULT.md)
 
 MARKERS = r"\b(oh|ah|wow|well|great|perfect|truly|so|totally|clearly|obviously|surely|amazing|fantastic|brilliant|wonderful|thrilled|genius|love|best|nothing says|what a|just what|how (?:lovely|nice|wonderful)|sure)\b"

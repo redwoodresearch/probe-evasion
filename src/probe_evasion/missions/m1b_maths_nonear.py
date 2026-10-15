@@ -28,7 +28,7 @@ from probe_evasion.missions.m1a_peak_probe import PeakProbeLabSeeds  # imported 
 from probe_evasion.modal_app import app
 
 NAME = "m1b_maths_nonear"
-OUT = Path("missions/m1b_offpolicy_chem/maths_nonear")
+OUT = Path("experimental/missions/m1b_offpolicy_chem/maths_nonear")
 SCORES = Path("results/gepa") / f"{NAME}_scores"
 TRAIN = DATA / f"{NAME}_train.jsonl"
 CHAT_REPLIES = DATA / f"{NAME}_claude_chat_replies.jsonl"  # every Claude chat reply with its check, kept or not

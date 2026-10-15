@@ -1304,7 +1304,7 @@ def m50_score_long(containers: int = 10):
 
 # ---------------------------------------------------------------- follow-up 2: m47's 100-round templates against the primary line
 
-M47_RUNS = Path("missions/m47_long_toggle_search/runs/long_c")
+M47_RUNS = Path("experimental/missions/m47_long_toggle_search/runs/long_c")
 M47_CHECKS = RUNS / "m47_maths_checks.jsonl"
 
 

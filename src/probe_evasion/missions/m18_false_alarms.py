@@ -38,11 +38,11 @@ from probe_evasion.modal_app import app
 from probe_evasion.onpolicy_probes import NO_WORKING
 
 MISSION = "m18_false_alarms"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 DATA = Path("data/concepts")
 SCORE_CACHE = OUT / "score_cache.jsonl"
 m3a2.SCORE_CACHE = SCORE_CACHE  # m3a2.score appends new scores here; earlier missions' caches are only read
-READ_ONLY_CACHES = (m3a2.OUT / "score_cache.jsonl", Path("missions/m3a3_sarcasm_onpolicy/score_cache.jsonl"))
+READ_ONLY_CACHES = (m3a2.OUT / "score_cache.jsonl", Path("experimental/missions/m3a3_sarcasm_onpolicy/score_cache.jsonl"))
 M1A_SCORES = Path("results/gepa/m1a_offpolicy_maths_scores")
 FALSE_ALARMS = (0.001, 0.01, 0.05)
 READING = "ema"
@@ -177,7 +177,7 @@ NEW_MESSAGE_TOPICS = ["camping", "moving house", "job interviews", "group chats"
 def used_texts() -> str:
     """Every prompt / task / message text in the repo's data and results, for whole-text disjointness checks."""
     texts = []
-    files = list(DATA.glob("*.jsonl")) + list(Path("results/gepa").glob("*/*.jsonl")) + list(Path("missions").glob("*/*.jsonl"))
+    files = list(DATA.glob("*.jsonl")) + list(Path("results/gepa").glob("*/*.jsonl")) + list(Path("missions").glob("*/*.jsonl")) + list(Path("experimental/missions").glob("*/*.jsonl"))
     for f in files:
         if MISSION in str(f) or f.stat().st_size > 400_000_000:
             continue

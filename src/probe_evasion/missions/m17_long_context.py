@@ -24,7 +24,7 @@ from probe_evasion.concept_probes import probe_image
 from probe_evasion.modal_app import hf_cache, vllm_image
 
 MISSION = "m17_long_context"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 DATA = Path("data/concepts")
 RUNS = Path("results/gepa") / f"{MISSION}_runs"
 m17_app = modal.App(f"{config._PREFIX}_m17-long-context_{config._KILL}")

@@ -245,6 +245,6 @@ pre.ending {{ max-height: 220px; }}
 if __name__ == "__main__":
     run = Path(sys.argv[1])
     confirm = Path(sys.argv[2]) if len(sys.argv) > 2 else None
-    out = Path("status/examples.html")
+    out = Path("experimental/status/examples.html")
     out.write_text(render(run, confirm))
     print(f"wrote {out} ({out.stat().st_size // 1024} KB)")

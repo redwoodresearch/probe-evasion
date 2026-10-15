@@ -30,7 +30,7 @@ from probe_evasion.missions.m1a_peak_probe import PeakProbeLabSeeds  # EMA-peak 
 MISSION = "m3c_anger"
 CONCEPT = "anger"
 MODEL = "qwen35"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = Path("results/gepa")
 CARRIER = "sarcasm"  # concept_probes.train only trains its hard-coded concepts; anger rows ride under this name
 

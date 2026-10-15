@@ -27,7 +27,7 @@ from probe_evasion.missions import m22_score_only_iterations as m22  # read-only
 from probe_evasion.missions import m28_baselines_and_writer_knowledge as m28  # read-only: the pinned writer, analysis helpers
 
 MISSION = "m31_more_chains"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"  # pinned Opus 4.8 chains (the brief)
 RUNS55 = OUT / "runs_opus55"  # pinned Opus 5.5 chains (coordinator's amendment); own root so the two drivers never share files
 FIGURES = OUT / "figures"

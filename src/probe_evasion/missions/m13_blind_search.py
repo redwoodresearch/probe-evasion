@@ -16,7 +16,7 @@ saved reply is scored afterwards (m13_background), for our analysis only.
     ... ::m13_background --concept sarcasm          # after the search has picked its final prompt
     uv run python -m probe_evasion.missions.m13_blind_search freeze sarcasm
     ... ::m13_test --concept sarcasm                # frozen prompt on the concept's frozen-test tasks x 5 seeds, scored
-    ... ::m13_twins --concept sarcasm               # within-style check (needs missions/m13_blind_search/twin_<concept>.txt)
+    ... ::m13_twins --concept sarcasm               # within-style check (needs experimental/missions/m13_blind_search/twin_<concept>.txt)
     uv run python -m probe_evasion.missions.m13_blind_search analyze sarcasm
 """
 
@@ -42,7 +42,7 @@ from probe_evasion.missions import m8a_flattery as m8a  # registers flattery in 
 from probe_evasion.modal_app import app
 
 MISSION = "m13_blind_search"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = Path("results/gepa")
 MODEL = "qwen35"
 SCORE_CACHE = OUT / "score_cache.jsonl"
@@ -59,7 +59,7 @@ CONCEPTS = {
         "probe_file": m3a2.peak_file(0), "probe_name": "r0_peak@L{layer}", "probe_key": "sarcasm@L{layer}",
         "test_split": "test", "test_seeds": m3a2.TEST_SEEDS,
         "earlier_rows": m3a2.ATTACKS, "earlier_arms": {"plain": "plain", "r0_search": SCORE_SEEING},
-        "earlier_cache": Path("missions/m3a2_sarcasm_patch/score_cache.jsonl"),
+        "earlier_cache": Path("experimental/missions/m3a2_sarcasm_patch/score_cache.jsonl"),
         "labels": {1: "sarcastic", 0: "not sarcastic"},
     },
     "flattery": {

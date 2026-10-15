@@ -30,7 +30,7 @@ from probe_evasion.modal_app import app, hf_cache
 MISSION = "m3b_criticism"
 CONCEPT = "criticism"
 MODEL = "qwen35"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 STYLE = "Answer in at most 80 words."
 
 # ---------------------------------------------------------------- concept registration (import time)

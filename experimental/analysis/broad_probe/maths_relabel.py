@@ -5,7 +5,7 @@ Which replies: every one Haiku labelled "computes" (both halves), and every repl
 probe scores above SCORE_FLOOR (the tail that sets the line). The line is the 99th percentile of the line half minus
 the replies Sonnet says compute.
 
-    PYTHONPATH=src .venv/bin/python analysis/broad_probe/maths_relabel.py
+    PYTHONPATH=src .venv/bin/python experimental/analysis/broad_probe/maths_relabel.py
 """
 
 import importlib.util

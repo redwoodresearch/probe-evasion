@@ -33,7 +33,7 @@ from probe_evasion.modal_app import app
 
 MODEL = "qwen35"
 MISSION = "m3a_sarcasm"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 FILES = {k: DATA / f"{MISSION}_{k}.jsonl" for k in ("messages", "train", "train_aug", "heldout", "calibration", "positives", "off", "off_sym")}
 TRAIN_FORMATS = {
     "default": "Reply to them with a short{comma} {kind} remark (one or two sentences).",  # the search tasks' wording

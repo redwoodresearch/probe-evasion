@@ -15,7 +15,7 @@ minibatches as Claude's run did.
         -m probe_evasion.missions.m14_qwen_attacker::m14_search --arm q122_think
     uv run python -m probe_evasion.missions.m14_qwen_attacker freeze q122_think
     ... ::m14_test --arms q122_think       # frozen prompt on the 100 test tasks x seeds 10-14, scored
-    ... ::m14_twins --arm q122_think       # within-style check (needs missions/m14_qwen_attacker/twin_<arm>.txt)
+    ... ::m14_twins --arm q122_think       # within-style check (needs experimental/missions/m14_qwen_attacker/twin_<arm>.txt)
     uv run python -m probe_evasion.missions.m14_qwen_attacker analyze q122_think
 """
 
@@ -41,7 +41,7 @@ from probe_evasion.modal_app import app
 from probe_evasion.openrouter_gen import _post
 
 MISSION = "m14_qwen_attacker"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = Path("results/gepa")
 CONCEPT = "sarcasm"
 MODEL = "qwen35"

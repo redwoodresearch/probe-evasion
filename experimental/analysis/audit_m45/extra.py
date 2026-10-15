@@ -2,7 +2,7 @@
 selection effect of keeping only pairs with both replies valid, the line choice (in-view lines), crossings and the
 under-line counts quoted in RESULT.md, and score reproducibility between batches (plain / neutral arms).
 
-Usage: python analysis/audit_m45/extra.py <scratch dir with extract.py's pickles>
+Usage: python experimental/analysis/audit_m45/extra.py <scratch dir with extract.py's pickles>
 """
 
 import json
@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from recompute import ECI, KEY_RE, ROOTS, RUNS, line_of, two_stage  # noqa: E402  (the audit's own helpers)
 
 SCRATCH = Path(sys.argv[1])
-OUT = Path("analysis/audit_m45")
+OUT = Path("experimental/analysis/audit_m45")
 M46 = Path("missions/m46_monitored_model_axis/probe_build")
 
 

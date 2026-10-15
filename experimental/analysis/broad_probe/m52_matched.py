@@ -5,7 +5,7 @@ reads the reply's style cannot separate identical texts; one that reads the comp
 Uses m51 part 2's own summary (missions/m51_matched_request/analyze2.py) with the probe column swapped in, and each
 probe's own 1% line (the old probe: m45's look-alike line; the broad probes: their WildChat line).
 
-    PYTHONPATH=src .venv/bin/python analysis/broad_probe/m52_matched.py
+    PYTHONPATH=src .venv/bin/python experimental/analysis/broad_probe/m52_matched.py
 """
 
 import importlib.util

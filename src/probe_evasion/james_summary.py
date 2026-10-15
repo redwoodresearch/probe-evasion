@@ -13,7 +13,7 @@ from probe_evasion.gepa import window_score
 from probe_evasion.sprint_page import corrected_misses
 from probe_evasion.status_page import CSS, esc
 
-OUT = Path("sprint/summary.html")
+OUT = Path("experimental/sprint/summary.html")
 G = Path("results/gepa")
 CHEM_MEAN = G / "gemma_chemistry_20261007-142658"
 SARC_EMA = G / "gemma_sarcasm_ema_20261007-145004"
@@ -232,7 +232,7 @@ if __name__ == "__main__":
     print(f"wrote {OUT}")
 
 
-def simple_figure(out: Path = Path("share/simple_progress.png")) -> Path:
+def simple_figure(out: Path = Path("experimental/share/simple_progress.png")) -> Path:
     """One clean chart for a message: maths probe misses, plain prompt vs Claude-optimized prompt, weak to strong probe."""
     import matplotlib.pyplot as plt
 
@@ -263,7 +263,7 @@ def simple_figure(out: Path = Path("share/simple_progress.png")) -> Path:
     return out
 
 
-def layer_figure(out: Path = Path("share/simple_layers.png")) -> Path:
+def layer_figure(out: Path = Path("experimental/share/simple_layers.png")) -> Path:
     """Simple by-layer chart: share of correct maths answers the probe misses, normal prompt vs the best
     Claude-optimized prompt (the scenic prompt found against layer 12, or a fresh search against that layer)."""
     import matplotlib.pyplot as plt

@@ -38,7 +38,7 @@ from probe_evasion.modal_app import app
 
 MISSION = "m3a3_sarcasm_onpolicy"
 MODEL = m3a.MODEL
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 SCORE_CACHE = OUT / "score_cache.jsonl"
 M3A2_OUT, M3A2_SCORE_CACHE = m3a2.OUT, m3a2.SCORE_CACHE
 LAYERS = (16, 48)

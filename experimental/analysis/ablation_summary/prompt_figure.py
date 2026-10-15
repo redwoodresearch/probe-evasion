@@ -1,6 +1,6 @@
 """The two sarcasm attack prompts, sentence by sentence: kept in the minimal prompt (coloured by role) vs cut (grey),
 plus a ladder of how much each piece adds. Valid evasions out of 200, instruction hidden, 1% line.
-Source: missions/m6_prompt_ablation (units_*.json, analysis.json).  -> share/ablation_prompts.png"""
+Source: experimental/missions/m6_prompt_ablation (units_*.json, analysis.json).  -> share/ablation_prompts.png"""
 
 import json
 import textwrap
@@ -9,9 +9,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
-REPO = Path(__file__).resolve().parents[2]
-M = REPO / "missions/m6_prompt_ablation"
-OUT = REPO / "share/ablation_prompts.png"
+REPO = Path(__file__).resolve().parents[3]
+M = REPO / "experimental/missions/m6_prompt_ablation"
+OUT = REPO / "experimental/share/ablation_prompts.png"
 A = json.loads((M / "analysis.json").read_text())
 INK, MUTED, CUT = "#1b1f25", "#6b7380", "#b9bec7"
 ROLE = {"template": ("template / technique", "#cf3f36"), "examples": ("examples", "#e0a84a"), "bans": ("bans", "#7b5cc4"),

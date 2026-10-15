@@ -81,4 +81,4 @@ if __name__ == "__main__":
         for c, counts in per.items():
             n = sum(counts.values())
             print(f"  {c:14s} n={n:4d} " + " ".join(f"{k}={100 * counts[k] / n:4.1f}%" for k, _, _ in CATEGORIES))
-    plot(runs, Path("status") / "lie_outcomes.png")
+    plot(runs, Path("experimental/status") / "lie_outcomes.png")

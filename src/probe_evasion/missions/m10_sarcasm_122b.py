@@ -37,7 +37,7 @@ from probe_evasion.modal_app import ACTS_DIR, acts_volume, app, hf_cache, sample
 
 MISSION = "m10_sarcasm_122b"
 MODEL = "qwen122"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 DATA = m3a.DATA
 FILES = {k: DATA / f"{MISSION}_{k}.jsonl" for k in ("calibration", "heldout", "positives")}
 ATTACKS = OUT / "attacks.jsonl"  # plain (seeds 10-14) and the four transfer prompts (seeds 10-12), judged
@@ -355,7 +355,7 @@ def build_positives() -> None:
 def write_frozen_prompts() -> None:
     """The four earlier frozen prompts, copied from m3a2 / m3a3 (read only), with their sincere twins."""
     m3a2_frozen = json.loads(m3a2.FROZEN.read_text())
-    m3a3_dir = Path("missions/m3a3_sarcasm_onpolicy")
+    m3a3_dir = Path("experimental/missions/m3a3_sarcasm_onpolicy")
     frozen = {a: m3a2_frozen[a] for a in TRANSFER_ARMS if a != "on_search"} | json.loads((m3a3_dir / "frozen_prompt.json").read_text())
     twins = {"m3a_searched": m3a.SINCERE_STYLES["one_sentence"], "on_search": (m3a3_dir / "sincere_twin_on_search.txt").read_text().strip()}
     twins |= {a: (m3a2.OUT / f"sincere_twin_{a}.txt").read_text().strip() for a in ("r0_search", "r1_search")}
@@ -809,7 +809,7 @@ def dot_plot(probe: str) -> Path:
 
 # ---- the 27B side, from m3a2 / m3a3's saved replies and score caches (read only; no GPU)
 
-M3A3_OUT = Path("missions/m3a3_sarcasm_onpolicy")
+M3A3_OUT = Path("experimental/missions/m3a3_sarcasm_onpolicy")
 R0_27B = "r0_peak@L48"  # m3a2's round-0 primary: off-policy, peak-trained, layer 48 of 64
 
 

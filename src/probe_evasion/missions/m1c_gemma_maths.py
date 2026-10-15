@@ -28,7 +28,7 @@ from probe_evasion.missions.m1a_peak_probe import PeakProbeLabSeeds  # registers
 from probe_evasion.modal_app import app
 
 TAG = "m1c_gemma_maths"
-OUT = Path("missions/m1c_chem_no_near_negatives/gemma_maths")
+OUT = Path("experimental/missions/m1c_chem_no_near_negatives/gemma_maths")
 SCORES = Path("results/gepa") / f"{TAG}_scores"
 GEMMA_RAW = {"train": DATA / "onpolicy_gemma_maths_train.jsonl", "heldout": DATA / "onpolicy_gemma_maths_heldout.jsonl"}
 TRAIN_FILE = DATA / f"{TAG}_train_clean.jsonl"

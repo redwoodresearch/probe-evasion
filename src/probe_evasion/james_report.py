@@ -14,7 +14,7 @@ from matplotlib.patches import Patch
 
 from probe_evasion.proposal_figures import GREY, INK, ORANGE
 
-SARCASM, ANGER = Path("missions/m3a_sarcasm"), Path("missions/m3c_anger")
+SARCASM, ANGER = Path("experimental/missions/m3a_sarcasm"), Path("experimental/missions/m3c_anger")
 FALSE_ALARM = 0.01
 LEFT, RIGHT = 0.36, 0.98
 HEADER_X = (0.012 - LEFT) / (RIGHT - LEFT)  # group headings start at the figure's left edge (axes units)
@@ -64,7 +64,7 @@ ROWS = [
 ]
 
 
-def main(out: Path = Path("share/james_evasion_bars.png")) -> Path:
+def main(out: Path = Path("experimental/share/james_evasion_bars.png")) -> Path:
     items = []
     for group, rows in ROWS:
         items.append(("group", group, None))

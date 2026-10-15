@@ -30,9 +30,9 @@ M27_PART_B = MISSIONS / "m27_readout_and_style_checks/part_b"
 M27_PART_D = MISSIONS / "m27_readout_and_style_checks/part_d/summary.json"
 M19_STAGE2 = MISSIONS / "m19_maths_whitebox_redteam/stage2"
 M28_RUNS = MISSIONS / "m28_baselines_and_writer_knowledge/runs"
-M31 = MISSIONS / "m31_more_chains"
-M33 = MISSIONS / "m33_self_writer_rungs"
-M35_RUNS = MISSIONS / "m35_context_distillation/runs"
+M31 = MISSIONS.parent / "experimental" / "missions" / "m31_more_chains"
+M33 = MISSIONS.parent / "experimental" / "missions" / "m33_self_writer_rungs"
+M35_RUNS = MISSIONS.parent / "experimental" / "missions" / "m35_context_distillation/runs"
 
 # Reference categorical palette (dataviz skill). Writer identity: blue / orange / aqua; no writer grey.
 OPUS48 = "#2a78d6"

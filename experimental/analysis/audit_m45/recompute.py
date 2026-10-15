@@ -1,8 +1,8 @@
 """Audit of m45, checks 1, 3, 4 and part of 5/9: recompute S_offref from the compact raw rows (extract.py) with
 independent code, check pairing and the switch, and compare with analysis.json / analysis_d.json.
 
-Usage: python analysis/audit_m45/recompute.py <scratch dir with extract.py's pickles>
-Writes analysis/audit_m45/recompute.json.
+Usage: python experimental/analysis/audit_m45/recompute.py <scratch dir with extract.py's pickles>
+Writes experimental/analysis/audit_m45/recompute.json.
 """
 
 import json
@@ -16,7 +16,7 @@ import numpy as np
 
 MISSION = Path("missions/m45_toggle_sweep")
 RUNS = MISSION / "runs"
-OUT = Path("analysis/audit_m45")
+OUT = Path("experimental/analysis/audit_m45")
 SCRATCH = Path(sys.argv[1])
 ROOTS = {"maths": "qwen35_27b", "ordering": "qwen35_27b_ordering"}
 TARGET = {"maths": "q27mrr@L48@s0", "ordering": "q27orr@L48@s0"}

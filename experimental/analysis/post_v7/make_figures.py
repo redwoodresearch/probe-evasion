@@ -1,8 +1,8 @@
 """Figures for the v7 post, built from saved mission outputs only (no model calls, no GPU).
 
-Run from the repo root:  .venv/bin/python analysis/post_v7/make_figures.py
+Run from the repo root:  .venv/bin/python experimental/analysis/post_v7/make_figures.py
 
-Writes analysis/post_v7/figures/{trend,effort}.png from m36 (the writer capability sweep) and re-renders v6's
+Writes experimental/analysis/post_v7/figures/{trend,effort}.png from m36 (the writer capability sweep) and re-renders v6's
 {trace,habit,ladder,ordinary,twins}.png with v6's own code (analysis/post_v6/make_figures.py, imported, not copied).
 
 Every m36 number plotted is recomputed from the per-reply test rows and asserted equal to m36's analysis.json; the
@@ -25,7 +25,7 @@ from matplotlib.lines import Line2D
 from scipy import stats
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[1]
+REPO = HERE.parents[2]
 OUT = HERE / "figures"
 M36 = REPO / "missions/m36_attacker_capability_sweep"
 

@@ -16,7 +16,7 @@ from sklearn.metrics import roc_auc_score
 from probe_evasion import gepa
 from probe_evasion.gemma_layer_audit import HELDOUT, PROBES, RUN
 
-OUT = Path("share/gemma_early_layer_audit.html")
+OUT = Path("experimental/share/gemma_early_layer_audit.html")
 P = Path("results/concept_probes")
 LAYERS = (6, 12, 18, 24, 30, 36)
 OTHER_RUNS = {"Search against layer 30": "gemma_maths_window_L30_20261007-151039",

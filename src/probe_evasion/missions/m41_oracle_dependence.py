@@ -12,7 +12,7 @@ All arms of a task run as writers "<arm>-<m36 writer>" in one lockstep driver pe
 Everything runs through m36's module, unchanged on disk. At import this module points m36's output, volume and caps
 at m41, replaces m36.monitor with the dispatcher below (per-arm writer prompt, short GPU scale-down) and m22.feedback
 with a dispatcher by arm (lead-approved runtime swaps, as m37: process start only, asserted by check_settings).
-Design, pre-registration, log and spend: missions/m41_oracle_dependence/STATUS.md.
+Design, pre-registration, log and spend: experimental/missions/m41_oracle_dependence/STATUS.md.
 """
 
 import json
@@ -38,7 +38,7 @@ from probe_evasion.missions import m36_attacker_capability_sweep as m36
 from probe_evasion.modal_app import Sampler, app
 
 MISSION = "m41_oracle_dependence"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"
 FIGURES = OUT / "figures"
 M36_OUT = Path("missions") / "m36_attacker_capability_sweep"  # read-only: m36's runs and analysis (the full-feedback arm)

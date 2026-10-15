@@ -44,7 +44,7 @@ from probe_evasion.modal_app import app
 
 MISSION = "m20_sarcasm_pairs"
 MODEL = m3a.MODEL
-OUT = Path("missions/m20_onoff_pairs/sarcasm")
+OUT = Path("experimental/missions/m20_onoff_pairs/sarcasm")
 DATA = m3a.DATA
 AUTHORS = ("claude", "qwen")
 CANDIDATES = {a: DATA / f"{MISSION}_candidates_{a}.jsonl" for a in AUTHORS}  # every judged reply, kept or not
@@ -435,14 +435,14 @@ def score(items: list[tuple[str, str]], probes: dict) -> list[dict]:
 M = Path("missions")
 # arm -> (file, arm name in the file). All on the search's 100 test tasks; seeds 10-14 (500 attempts) except m3a's
 # hand-written prompts (seeds 0-2, 300 attempts).
-TRANSFER_ARMS = {a: (M / "m3a2_sarcasm_patch/attacks.jsonl", a) for a in (
+TRANSFER_ARMS = {a: (M.parent / "experimental" / "missions" / "m3a2_sarcasm_patch/attacks.jsonl", a) for a in (
     "plain", "m3a_searched", "r0_search", "r1_search", "m3a_deadpan", "m3a_understatement", "m3a_neutral_mock_praise",
     "m3a_absurd_suggestion")} | {
-    a: (M / f"m3a2_sarcasm_patch/attacks_{a}.jsonl", a) for a in ("r2b_search", "r2c_search", "r2cpk_search")} | {
-    "m3a3_on_search": (M / "m3a3_sarcasm_onpolicy/fresh_on_search.jsonl", "on_search"),
-    "m3a4_s4_search": (M / "m3a4_sarcasm_styleaug/attacks_s4_search.jsonl", "s4_search")} | {
-    f"m13_{a}": (M / f"m13_blind_search/test_sarcasm_{a}.jsonl", a) for a in ("blind", "blind_allval", "score_seeing_hidden", "seed_hint")} | {
-    f"m14_{a}": (M / f"m14_qwen_attacker/test_{a}.jsonl", a) for a in (
+    a: (M.parent / "experimental" / "missions" / f"m3a2_sarcasm_patch/attacks_{a}.jsonl", a) for a in ("r2b_search", "r2c_search", "r2cpk_search")} | {
+    "m3a3_on_search": (M.parent / "experimental" / "missions" / "m3a3_sarcasm_onpolicy/fresh_on_search.jsonl", "on_search"),
+    "m3a4_s4_search": (M.parent / "experimental" / "missions" / "m3a4_sarcasm_styleaug/attacks_s4_search.jsonl", "s4_search")} | {
+    f"m13_{a}": (M.parent / "experimental" / "missions" / f"m13_blind_search/test_sarcasm_{a}.jsonl", a) for a in ("blind", "blind_allval", "score_seeing_hidden", "seed_hint")} | {
+    f"m14_{a}": (M.parent / "experimental" / "missions" / f"m14_qwen_attacker/test_{a}.jsonl", a) for a in (
         "claude_r2", "claude_r3", "q122_nothink", "q122_think", "q122_think_r2", "q122_think_r3", "q122_think_rec", "q27_think")}
 # the search's prompt-writer (q122: lead's control); *_r2: replicate searches (only the writer's samples differ; added
 # 16:35 after the first four, for search-to-search variance); *fd*: critic 2's fix, scores shown to the writer as
@@ -696,11 +696,11 @@ def task_clustered(per_task: np.ndarray, rng: np.random.Generator) -> list[float
 
 
 def fa_cost_module():
-    """analysis/fa_cost/fa_cost.py's line_for / fa_at / bootstrap. Imported late: importing it redirects m3a2's globals
+    """experimental/analysis/fa_cost/fa_cost.py's line_for / fa_at / bootstrap. Imported late: importing it redirects m3a2's globals
     (through m3a3), so it must come after this process has built its evaluation sets."""
     import importlib.util
 
-    spec = importlib.util.spec_from_file_location("fa_cost", Path("analysis/fa_cost/fa_cost.py").resolve())
+    spec = importlib.util.spec_from_file_location("fa_cost", Path("experimental/analysis/fa_cost/fa_cost.py").resolve())
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -1001,7 +1001,7 @@ def dot_plot(pair: tuple[str, str]) -> Path:
 def _load_analysis_module(name: str):
     import importlib.util
 
-    spec = importlib.util.spec_from_file_location(name, Path(f"analysis/sarcasm_register/{name}.py").resolve())
+    spec = importlib.util.spec_from_file_location(name, Path(f"experimental/analysis/sarcasm_register/{name}.py").resolve())
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -1135,7 +1135,7 @@ def hostility(rows: dict[str, list[dict]]) -> dict:
     return out
 
 
-PAIR_FIGURE_ARMS = {  # arm -> label in analysis/onoff_pairs/plot.py's figure (log-odds-display searches: the pre-registered set)
+PAIR_FIGURE_ARMS = {  # arm -> label in experimental/analysis/onoff_pairs/plot.py's figure (log-odds-display searches: the pre-registered set)
     "m20_fd_search_claude": "matched search 1 aimed at the Claude-text probe (Claude Opus writer)",
     "m20_fd_search_claude_r2": "matched search 2 aimed at the Claude-text probe (Claude Opus writer)",
     "m20_fd_q122_claude": "matched search aimed at the Claude-text probe (Qwen3.5-122B writer)",
@@ -1150,7 +1150,7 @@ PAIR_FIGURE_ARMS = {  # arm -> label in analysis/onoff_pairs/plot.py's figure (l
 
 
 def onoff_pair_json(report: dict) -> dict:
-    """The lead's shape (analysis/onoff_pairs/plot.py docstring): layer 48, instruction removed, 1% line, per-seed counts
+    """The lead's shape (experimental/analysis/onoff_pairs/plot.py docstring): layer 48, instruction removed, 1% line, per-seed counts
     with seed 0 first, fa90 from seed 0."""
     groups = []
     for arm, label in PAIR_FIGURE_ARMS.items():

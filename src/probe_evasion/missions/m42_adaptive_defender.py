@@ -10,7 +10,7 @@ styles (no sweep styles), hard-positive and capability-split variants, a dose cu
 max-pooled probes trained on the original rows.
 
 Imports m36 (arms, measures, trend), m22 (generation, scoring, validity), m26 / m27 / m28 (puzzles, twin cleaning,
-styles) and m1a's trainer; edits none of them. Entry points and the run log: missions/m42_adaptive_defender/STATUS.md.
+styles) and m1a's trainer; edits none of them. Entry points and the run log: experimental/missions/m42_adaptive_defender/STATUS.md.
 """
 
 import hashlib
@@ -39,7 +39,7 @@ from probe_evasion.missions import m36_attacker_capability_sweep as m36  # read-
 from probe_evasion.modal_app import Sampler, app, hf_cache
 
 MISSION = "m42_adaptive_defender"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"
 DATA = Path("data/concepts")
 TASKS = ("maths", "ordering")
@@ -632,7 +632,7 @@ def items_path(task: str, part: str = "") -> Path:
 
 
 def scoring_probes(part: str = "") -> None:
-    """Local, after `get missions/m42_adaptive_defender/probes`: OUT/scoring/probes_<task>.json = the task's new probes
+    """Local, after `get experimental/missions/m42_adaptive_defender/probes`: OUT/scoring/probes_<task>.json = the task's new probes
     (every seed) plus the original target probe (re-read in the same pass, amendment 6)."""
     for task in TASKS:
         new = json.loads((OUT / "probes" / f"{task}{part}.json").read_text())

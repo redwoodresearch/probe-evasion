@@ -10,7 +10,7 @@ from pathlib import Path
 
 from probe_evasion.status_page import CSS, esc, running_list, section_spend
 
-SPRINT = Path("sprint")
+SPRINT = Path("experimental/sprint")
 OUT = SPRINT / "page.html"
 G = Path("results/gepa")
 CONCEPTS = {"maths": "Maths in the head", "sarcasm": "Sarcasm", "chemistry": "Chemistry"}
@@ -145,20 +145,20 @@ def evasion_table() -> str:
 
 # (published path, local source, heading, caption). Published next to the page via the Artifact tool's `files`.
 FIGURES = [
-    ("figs/summary.png", "share/probe_evasion_summary_james.png", "What gets past the probes",
+    ("figs/summary.png", "experimental/share/probe_evasion_summary_james.png", "What gets past the probes",
      "Every concept, probes trained for the running-peak reading. Each attack is shown with its instruction visible to the probe "
      "(stand-in for the model's own evasion reasoning in context) and hidden (the reply alone)."),
-    ("figs/sarcasm_evidence.png", "share/sarcasm_james_1_evidence.png", "Sarcasm: the evidence",
+    ("figs/sarcasm_evidence.png", "experimental/share/sarcasm_james_1_evidence.png", "Sarcasm: the evidence",
      "Every reply's score from the main probe, by group, with the 1% line; and the same attack against five sarcasm probes."),
-    ("figs/sarcasm_patch_loop.png", "share/sarcasm_patch_loop.png", "Sarcasm: patching the probe doesn't hold",
+    ("figs/sarcasm_patch_loop.png", "experimental/share/sarcasm_patch_loop.png", "Sarcasm: patching the probe doesn't hold",
      "Each defender round, the strongest earlier prompt, and a fresh 5-round search aimed at it."),
-    ("figs/sarcasm_examples.png", "share/sarcasm_james_2_examples.png", "Sarcasm: what the replies look like",
+    ("figs/sarcasm_examples.png", "experimental/share/sarcasm_james_2_examples.png", "Sarcasm: what the replies look like",
      "Real prompts and replies from each category, with scores."),
-    ("figs/concept_strength.png", "share/concept_strength_vs_probe.png", "Hidden or just weakened? Sarcasm vs anger vs criticism",
+    ("figs/concept_strength.png", "experimental/share/concept_strength_vs_probe.png", "Hidden or just weakened? Sarcasm vs anger vs criticism",
      "The grader's concept-strength rating against the probe's score for every valid reply."),
-    ("figs/gemma_layers.png", "share/gemma_layers_readout.png", "Gemma maths: one probe per layer",
+    ("figs/gemma_layers.png", "experimental/share/gemma_layers_readout.png", "Gemma maths: one probe per layer",
      "Same answers under three training/reading pairings, plus a search aimed at each peak-trained probe."),
-    ("figs/ablation.png", "missions/m6_prompt_ablation/ablation.png", "Which parts of the prompts matter",
+    ("figs/ablation.png", "experimental/missions/m6_prompt_ablation/ablation.png", "Which parts of the prompts matter",
      "Change in valid evasions when each piece of a frozen prompt is removed (instruction hidden, 1% line)."),
 ]
 

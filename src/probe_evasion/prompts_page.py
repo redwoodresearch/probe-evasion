@@ -14,7 +14,7 @@ from probe_evasion.sprint_page import corrected_misses
 from probe_evasion.status_page import CSS, esc
 from probe_evasion.traces_page import EXTRA_CSS, heat
 
-OUT = Path("sprint/prompts.html")
+OUT = Path("experimental/sprint/prompts.html")
 G = Path("results/gepa")
 RUNS = [  # (title, what it shows, run directory)
     ("Layer-12 probe", "early/middle layer: fooled", G / "gemma_maths_ema_20261007-145004"),

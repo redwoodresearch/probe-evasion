@@ -33,7 +33,7 @@ from pathlib import Path
 from probe_evasion.missions.m7_sandbagging import FORMAT, make_problems, stated_answer
 
 MISSION = "m12_frontier_pilot"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 HF_MODEL = "deepseek-ai/DeepSeek-V4-Flash-0731"
 OR_MODEL = "deepseek/deepseek-v4-flash-0731"
 OR_PROVIDER = "deepinfra/fp8"  # the native FP8(+FP4 experts) checkpoint; pinned, no fallback

@@ -1,7 +1,7 @@
 """Audit of m45, check 7: a fixed random sample of test rows (mostly top writers, B = 16) for reading by hand.
 
-Usage: python analysis/audit_m45/validity_sample.py <scratch dir with extract.py's pickles>
-Writes analysis/audit_m45/validity_sample.json (the rows shown) and prints them.
+Usage: python experimental/analysis/audit_m45/validity_sample.py <scratch dir with extract.py's pickles>
+Writes experimental/analysis/audit_m45/validity_sample.json (the rows shown) and prints them.
 """
 
 import json
@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 RUNS = Path("missions/m45_toggle_sweep/runs")
-OUT = Path("analysis/audit_m45")
+OUT = Path("experimental/analysis/audit_m45")
 SCRATCH = Path(sys.argv[1])
 TOP = ("opus55", "fable51", "sonnet55", "opus48", "gpt6astra", "gpt61sol")
 PLAN = {"maths": {("on", True): 6, ("on", False): 7, ("off", True): 4, ("off", False): 5},

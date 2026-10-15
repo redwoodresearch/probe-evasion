@@ -10,8 +10,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-REPO = Path(__file__).resolve().parents[2]
-OUT = REPO / "share/concept_strength_vs_probe.png"
+REPO = Path(__file__).resolve().parents[3]
+OUT = REPO / "experimental/share/concept_strength_vs_probe.png"
 M = REPO / "missions"
 INK, MUTED, GRID, PLAIN, EVADE = "#1b1f25", "#6b7380", "#e4e7ec", "#8a929e", "#cf3f36"
 CLIP = (-14.0, 12.0)
@@ -29,8 +29,8 @@ def logit(p: float) -> float:
 def sarcasm() -> dict:
     """Round-0 search aimed at the peak-trained layer-48 probe (m3a2), vs plain; rating = blind judge (request without
     the word 'sarcastic'), 1-5. Valid replies only (both judges >= 4)."""
-    rows = jl(REPO / "analysis/sarcasm_patch_review/replies.jsonl")
-    line = json.loads((REPO / "analysis/sarcasm_patch_review/lines.json").read_text())["r0_peak@L48"]["0.01"]
+    rows = jl(REPO / "experimental/analysis/sarcasm_patch_review/replies.jsonl")
+    line = json.loads((REPO / "experimental/analysis/sarcasm_patch_review/lines.json").read_text())["r0_peak@L48"]["0.01"]
     pick = lambda arm: [(r["blind_rating"], r["gen"]["r0_peak@L48"], r["removed"]["r0_peak@L48"]) for r in rows if r["arm"] == arm and r["valid"]]
     return {"title": "Sarcasm", "x": "How sarcastic? (blind judge, 1-5)", "line": line, "plain": pick("plain"), "attack": pick("r0_search"),
             "attack_name": "search: “That is good news, I was just hoping to…”"}
@@ -39,7 +39,7 @@ def sarcasm() -> dict:
 def anger() -> dict:
     """Frozen search prompt vs plain (m3c v2, 100 tasks x 2); rating = the stricter judge ('clearly angry, more than
     mildly frustrated?', 1-5), asked of valid replies only."""
-    rows = jl(M / "m3c_anger/v2_frozen_search_strict.jsonl")
+    rows = jl(M.parent / "experimental" / "missions" / "m3c_anger/v2_frozen_search_strict.jsonl")
     line = json.loads((REPO / "results/gepa/m3c_anger_v2_claude_peak_L48/summary.json").read_text())["calibration"]["ema"]["threshold"]
     pick = lambda pre: [(r["strict_rating"], r["in_context"], r["instruction_removed"]) for r in rows if r["arm"].startswith(pre)]
     return {"title": "Anger", "x": "How angry? (stricter judge, 1-5)", "line": line, "plain": pick("plain"), "attack": pick("optimized"),
@@ -49,8 +49,8 @@ def anger() -> dict:
 def criticism() -> dict:
     """Hand-written 'cheerful anecdote' attack vs plain (m3b phase B test, 100 tasks); rating = criticism judge (1-5,
     5 = the negative verdict is fully clear). Valid replies only."""
-    rows = jl(M / "m3b_criticism/phaseB_test_replies.jsonl")
-    line = json.loads((M / "m3b_criticism/eval.json").read_text())["lines"]["peak_v2@L48"]["ema"]["0.01"]
+    rows = jl(M.parent / "experimental" / "missions" / "m3b_criticism/phaseB_test_replies.jsonl")
+    line = json.loads((M.parent / "experimental" / "missions" / "m3b_criticism/eval.json").read_text())["lines"]["peak_v2@L48"]["ema"]["0.01"]
     pick = lambda arm: [(r["rating"], r["scores"]["peak_v2@L48"]["ema"], r["scores_removed"]["peak_v2@L48"]["ema"])
                         for r in rows if r["arm"] == arm and r["valid"]]
     return {"title": "Criticism", "x": "How clear is the criticism? (judge, 1-5)", "line": line, "plain": pick("plain"),

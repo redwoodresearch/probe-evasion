@@ -12,7 +12,7 @@ import numpy as np
 
 from probe_evasion.proposal_figures import BLUE, GREY, INK, ORANGE
 
-SHARE = Path("share")
+SHARE = Path("experimental/share")
 
 
 def repro(run_dir: Path) -> Path:

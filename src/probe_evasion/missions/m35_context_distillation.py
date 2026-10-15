@@ -22,7 +22,7 @@ from probe_evasion.concept_probes import encode
 from probe_evasion.modal_app import app, hf_cache, vllm_base_image, vllm_image
 
 MISSION = "m35_context_distillation"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"
 WEIGHTS = "/weights"
 weights_volume = modal.Volume.from_name("probe-evasion_nabil-baugher_m35-weights_kill-2026-11-30", create_if_missing=True)

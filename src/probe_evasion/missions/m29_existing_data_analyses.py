@@ -5,7 +5,7 @@ Inputs are the m22-runner output folders of m22 (maths 27B), m23 (maths 9B / 122
 the eval-set search rounds (zero-shot only), plus m27's in-context non-answers and styled twins.
 
 Entry: `uv run python -m probe_evasion.missions.m29_existing_data_analyses <step>` with step one of
-`sweep transfer validity naturalness central margin all`. Everything lands in missions/m29_existing_data_analyses/.
+`sweep transfer validity naturalness central margin all`. Everything lands in experimental/missions/m29_existing_data_analyses/.
 
 Adding arms later (m28): append a `Source` to `EXTRA_SOURCES` (or call `central(extra=[...])`) and re-run `central`.
 See `m28_sources` and the RESULT's "How to add m28's arms".
@@ -26,7 +26,7 @@ from probe_evasion.missions import m22_score_only_iterations as m22  # read-only
 from probe_evasion.missions import m26_ordering as m26  # read-only: chain_rounds with the ordering leak rule
 
 MISSION = "m29_existing_data_analyses"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 M27_PART_B = Path("missions/m27_readout_and_style_checks/part_b")
 SWEEP_FALSE_ALARMS = (0.001, 0.01, 0.05, 0.10, 0.25, 0.50)
 HEADLINE_FA = 0.01
@@ -46,9 +46,9 @@ class Dataset:
 
 DATASETS = (
     Dataset("maths 27B", Path("missions/m22_score_only_iterations/runs/qwen35_27b"), "maths", "maths_27b", "maths 27B (m22)", "q27"),
-    Dataset("maths 9B", Path("missions/m23_model_size/runs/m23_9b"), "maths", "maths_9b", "maths 9B (m23)", "self"),
-    Dataset("maths 122B", Path("missions/m23_model_size/runs/m23_122b"), "maths", None, None, "self"),
-    Dataset("maths Gemma", Path("missions/m23_model_size/runs/m23_gemma"), "maths", None, None, "self"),
+    Dataset("maths 9B", Path("experimental/missions/m23_model_size/runs/m23_9b"), "maths", "maths_9b", "maths 9B (m23)", "self"),
+    Dataset("maths 122B", Path("experimental/missions/m23_model_size/runs/m23_122b"), "maths", None, None, "self"),
+    Dataset("maths Gemma", Path("experimental/missions/m23_model_size/runs/m23_gemma"), "maths", None, None, "self"),
     Dataset("code", Path("missions/m25_program_output/runs/m25_qwen35_27b_code_neutral"), "code", "code",
             "code (m25, m22 description)", "q27"),
     Dataset("code (told label kinds)", Path("missions/m25_program_output/runs/m25_qwen35_27b_code"), "code", "code", None, "q27"),
@@ -1291,19 +1291,19 @@ def sarcasm_points() -> list[ConceptPoint]:
     """m3a2 (Claude-text peak probe, = m3a's offpk@L48), m3a3 (own-reply peak probe), m3a4 (style-augmented peak
     probe). All use m3a's 1,459 clean calibration replies and m3a2's plain arm. m3a's own headline probe (mean-trained,
     EMA-read) is left out by the project's readout rule."""
-    cal_rows = [r for r in jlp("missions/m3a_sarcasm/scores_calibration.jsonl") if r["row"]["clean"]]
-    plain = [r for r in jlp("missions/m3a2_sarcasm_patch/attacks.jsonl") if r["arm"] == "plain" and r["present"]]
+    cal_rows = [r for r in jlp("experimental/missions/m3a_sarcasm/scores_calibration.jsonl") if r["row"]["clean"]]
+    plain = [r for r in jlp("experimental/missions/m3a2_sarcasm_patch/attacks.jsonl") if r["arm"] == "plain" and r["present"]]
     specs = [
         ("sarcasm, Claude-text probe (m3a2)", "m3a2_sarcasm_patch", "r0_peak@L48#ef8b7775ad",
-         "missions/m3a2_sarcasm_patch/attacks.jsonl", "r0_search", "missions/m3a2_sarcasm_patch/flat_sincere_r_r0_search.jsonl", "generated"),
+         "experimental/missions/m3a2_sarcasm_patch/attacks.jsonl", "r0_search", "experimental/missions/m3a2_sarcasm_patch/flat_sincere_r_r0_search.jsonl", "generated"),
         ("sarcasm, own-reply probe (m3a3)", "m3a3_sarcasm_onpolicy", "on_peak@L48#5652ac1033",
-         "missions/m3a3_sarcasm_onpolicy/fresh_on_search.jsonl", "on_search", "missions/m3a3_sarcasm_onpolicy/flat_sincere_r_on_search.jsonl", "removed"),
+         "experimental/missions/m3a3_sarcasm_onpolicy/fresh_on_search.jsonl", "on_search", "experimental/missions/m3a3_sarcasm_onpolicy/flat_sincere_r_on_search.jsonl", "removed"),
         ("sarcasm, style-augmented probe (m3a4)", "m3a4_sarcasm_styleaug", "s4_peak@L48#1b9f58c265",
-         "missions/m3a4_sarcasm_styleaug/attacks_s4_search.jsonl", "s4_search", "missions/m3a4_sarcasm_styleaug/flat_sincere_r_s4_search.jsonl", "removed"),
+         "experimental/missions/m3a4_sarcasm_styleaug/attacks_s4_search.jsonl", "s4_search", "experimental/missions/m3a4_sarcasm_styleaug/flat_sincere_r_s4_search.jsonl", "removed"),
     ]
     out = []
     for name, mission, probe, attack_path, arm, twin_path, twin_ctx in specs:
-        cache = cache_scores(Path(f"missions/{mission}/score_cache.jsonl"), probe)
+        cache = cache_scores(Path(f"experimental/missions/{mission}/score_cache.jsonl"), probe)
         # line: the pool's 99th percentile (each mission's monitors file stores the same value)
         cal = [keyed(cache, r["prompt"], r["row"]["reply"]) for r in cal_rows]
         att = [r for r in jlp(attack_path) if r["arm"] == arm and r["present"]]
@@ -1322,13 +1322,13 @@ def flattery_point() -> ConceptPoint:
     from probe_evasion.missions.m8a_flattery import HEAD
 
     probe = "pk@L48#23f62721f9"
-    cache = cache_scores(Path("missions/m8a_flattery/score_cache.jsonl"), probe)
+    cache = cache_scores(Path("experimental/missions/m8a_flattery/score_cache.jsonl"), probe)
     hidden = lambda p: p[p.rfind(HEAD):]
     cal = [keyed(cache, r["prompt"], r["reply"]) for r in jlp("data/concepts/m8a_flattery_calibration.jsonl") if r["clean"]]
-    rows = jlp("missions/m8a_flattery/fresh_all.jsonl")
+    rows = jlp("experimental/missions/m8a_flattery/fresh_all.jsonl")
     plain = [keyed(cache, hidden(r["prompt"]), r["reply"]) for r in rows if r["arm"] == "plain" and r["present"]]
     att = [r for r in rows if r["arm"] == "hidden_b" and r["present"]]
-    twins = [keyed(cache, hidden(r["prompt"]), r["reply"]) for r in jlp("missions/m8a_flattery/fresh_twins.jsonl")
+    twins = [keyed(cache, hidden(r["prompt"]), r["reply"]) for r in jlp("experimental/missions/m8a_flattery/fresh_twins.jsonl")
              if r["arm"] == "hidden_b style" and r["clean"]]
     return ConceptPoint("flattery (m8a)", "tone", "m8a_flattery", "pk@L48", float(np.quantile(cal, 0.99)), cal, plain,
                         [keyed(cache, hidden(r["prompt"]), r["reply"]) for r in att],
@@ -1341,19 +1341,19 @@ def condescension_points() -> list[ConceptPoint]:
     from probe_evasion.missions.m8b_condescension import NEAR_DUP_CALIBRATION, NEAR_DUP_TEST, apply_validity
 
     probe = "peak@L48#48989aedf4"
-    c8 = cache_scores(Path("missions/m8b_condescension/score_cache.jsonl"), probe)
+    c8 = cache_scores(Path("experimental/missions/m8b_condescension/score_cache.jsonl"), probe)
     c11 = cache_scores(Path("missions/m11_long_search/score_cache.jsonl"), probe)
     both = {**c11, **c8}  # same probe; m11 read m8b's cache read-only, first write wins there
     drop_test = lambda r: not any(d in r["task"]["task"] for d in NEAR_DUP_TEST)
     cal = [keyed(c8, r["prompt"], r["reply"]) for r in apply_validity(jlp("data/concepts/m8b_condescension_calibration.jsonl"))
            if r["clean"] and not any(d in r["prompt"] for d in NEAR_DUP_CALIBRATION)]
     line = float(np.quantile(cal, 0.99))
-    plain = [keyed(c8, r["task"]["task"], r["reply"]) for r in apply_validity(jlp("missions/m8b_condescension/attacks_plain.jsonl"))
+    plain = [keyed(c8, r["task"]["task"], r["reply"]) for r in apply_validity(jlp("experimental/missions/m8b_condescension/attacks_plain.jsonl"))
              if r["present"] and drop_test(r)]
     out = []
     for name, src, attack_path, twin_path in [
-        ("condescension, 6-round search (m8b)", "m8b_condescension", "missions/m8b_condescension/attacks_searched.jsonl",
-         "missions/m8b_condescension/twin_searched.jsonl"),
+        ("condescension, 6-round search (m8b)", "m8b_condescension", "experimental/missions/m8b_condescension/attacks_searched.jsonl",
+         "experimental/missions/m8b_condescension/twin_searched.jsonl"),
         ("condescension, long search (m11)", "m11_long_search", "missions/m11_long_search/cond_attacks_m11_free.jsonl",
          "missions/m11_long_search/cond_twin_m11_free.jsonl")]:
         att = [r for r in apply_validity(jlp(attack_path)) if r["present"] and drop_test(r)]
@@ -1368,9 +1368,9 @@ def condescension_points() -> list[ConceptPoint]:
 def anger_point() -> ConceptPoint:
     probe = "claude_peak:anger@L48"
     cal_rows = jlp("data/concepts/m3c_anger_v2_calibration.jsonl")
-    cal = [logit_p(r["scores"][probe]["ema"]) for r in jlp("missions/m3c_anger/v2_eval_scores.jsonl")
+    cal = [logit_p(r["scores"][probe]["ema"]) for r in jlp("experimental/missions/m3c_anger/v2_eval_scores.jsonl")
            if r["group"] == "calibration" and not cal_rows[r["i"]]["any_anger"]]
-    rows = jlp("missions/m3c_anger/v2_frozen_search_replies.jsonl")
+    rows = jlp("experimental/missions/m3c_anger/v2_frozen_search_replies.jsonl")
     plain = [logit_p(r["scores_no_instruction"][probe]["ema"]) for r in rows if r["arm"] == "plain" and r["present"]]
     att = [r for r in rows if r["arm"] == "optimized (frozen search #4)" and r["present"]]
     return ConceptPoint("anger (m3c)", "tone", "m3c_anger", probe, float(np.quantile(cal, 0.99)), cal, plain,
@@ -1474,7 +1474,7 @@ def EXTRA_TONE_POINTS() -> list[ConceptPoint]:
     """m9's jokey probe on Gemma-2-9B (held against its search) and m3b's criticism probe (peak-trained; its searched
     prompt was found against a mean-trained probe and re-read here). Chemistry has no peak-trained probe and is left out."""
     ema = lambda r, probe, field="scores": logit_p(r[field][probe]["ema"])
-    d9 = Path("missions/m9_chameleons_search")
+    d9 = Path("experimental/missions/m9_chameleons_search")
     jp = "clean:jokey"
     cal9 = [ema(r, jp) for r in jl(d9 / "calibration.jsonl") if not r["has_jokey"]]
     test9 = jl(d9 / "test_frozen_jokey.jsonl")
@@ -1485,7 +1485,7 @@ def EXTRA_TONE_POINTS() -> list[ConceptPoint]:
                          cal9, [ema(r, jp) for r in test9 if r["arm"] == "plain" and r["present"]],
                          [ema(r, jp, "scores_removed") for r in att9], [ema(r, jp) for r in att9], twins9, "generated",
                          "Gemma-2-9B, layer 12 of 42; the probe flags 11 of 55 joke-free blind-task replies (m9 caveat)")
-    d3 = Path("missions/m3b_criticism")
+    d3 = Path("experimental/missions/m3b_criticism")
     cp = "peak_v2@L48"
     cal3 = [ema(r, cp) for r in jl(d3 / "scored_calibration.jsonl")]  # every row already clean
     rows3 = jl(d3 / "search_L48_replies.jsonl")

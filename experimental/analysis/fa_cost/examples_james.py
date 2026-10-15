@@ -7,9 +7,9 @@ as examples.py). The training rows were never scored, so `score-train` runs one 
 (concept_probes.score, the same per-token readout and context form the probe was trained with: training request + reply)
 and saves the readings; it also re-scores the eight cached ordinary-use examples shown, as a reproduction check.
 
-    uv run python analysis/fa_cost/examples_james.py score-train   (from the repo root; Modal, ~10 GPU-minutes)
-    uv run python analysis/fa_cost/examples_james.py               (the figure; no GPU)
-Writes analysis/fa_cost/sarcasm_train_scores.json, share/sarcasm_examples_james.png and share/sarcasm_examples_james.pdf.
+    uv run python experimental/analysis/fa_cost/examples_james.py score-train   (from the repo root; Modal, ~10 GPU-minutes)
+    uv run python experimental/analysis/fa_cost/examples_james.py               (the figure; no GPU)
+Writes experimental/analysis/fa_cost/sarcasm_train_scores.json, share/sarcasm_examples_james.png and share/sarcasm_examples_james.pdf.
 """
 
 import json
@@ -25,8 +25,8 @@ from probe_evasion.missions import m3a_sarcasm as m3a
 from probe_evasion.missions import m13_blind_search as m13
 
 APP_NAME = "probe-evasion_nabil-baugher_m3a2-trainscore_kill-2026-11-30"
-TRAIN_SCORES = REPO / "analysis/fa_cost/sarcasm_train_scores.json"
-PNG = REPO / "share/sarcasm_examples_james.png"
+TRAIN_SCORES = REPO / "experimental/analysis/fa_cost/sarcasm_train_scores.json"
+PNG = REPO / "experimental/share/sarcasm_examples_james.png"
 PDF = PNG.with_suffix(".pdf")
 NEUTRAL_REQUEST = "Reply to them with a short remark (one or two sentences)."  # training rows with no tone asked for
 
@@ -94,7 +94,7 @@ def load() -> dict:
     cal_rows = m13.calibration_rows("sarcasm")
     cal = emas(cache, pid, [(r["prompt"], r["reply"]) for r in cal_rows], "calibration")
     line = float(logit(np.array([np.quantile(cal, 0.99)]))[0])  # m3a2's 1% line (a quantile of probabilities)
-    attacks = jl(M / "m3a2_sarcasm_patch/attacks.jsonl")
+    attacks = jl(M.parent / "experimental" / "missions" / "m3a2_sarcasm_patch/attacks.jsonl")
     plain = [r for r in attacks if r["arm"] == "plain" and r["present"]]
     search = [r for r in attacks if r["arm"] == "r0_search" and r["present"]]
     removed = lambda rows: logit(emas(cache, pid, [(r["task"]["task"], r["reply"]) for r in rows], "attack"))
@@ -122,7 +122,7 @@ def load() -> dict:
     counts = {"plain_valid": len(plain), "plain_caught": int(np.sum(plain_s > line)),
               "search_valid": len(search), "search_missed": int(np.sum(search_s <= line)),
               "calibration": len(cal_rows), "calibration_flagged": int(np.sum(cal_s > line)), "train": train_counts}
-    frozen = json.loads((M / "m3a2_sarcasm_patch/frozen_prompts.json").read_text())["r0_search"]
+    frozen = json.loads((M.parent / "experimental" / "missions" / "m3a2_sarcasm_patch/frozen_prompts.json").read_text())["r0_search"]
     return {"line": line, "ordinary": ordinary, "attack": attack, "counts": counts, "frozen": frozen,
             "plain_request": plain[0]["task"]["task"].split("\n\n", 1)[1],
             "sincere_request": cal_rows[0]["prompt"].split("\n\n", 1)[1]}

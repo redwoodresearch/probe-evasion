@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 RUN = Path("missions/m38_volitional_track/runs/m27_on")
-OUT = Path("analysis/m38_volitional_dots/volitional_27b_reasoning_on.png")
+OUT = Path("experimental/analysis/m38_volitional_dots/volitional_27b_reasoning_on.png")
 PROBE = "onpk@L48@s0"
 FLAG_RATE = "0.01"
 

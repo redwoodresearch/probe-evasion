@@ -12,7 +12,7 @@ import numpy as np
 from probe_evasion.missions import m3a2_sarcasm_patch as m2
 from probe_evasion.missions import m3a3_sarcasm_onpolicy as m3
 
-OUT = Path(__file__).resolve().parents[2] / "share/sarcasm_on_vs_off_dots.png"
+OUT = Path(__file__).resolve().parents[3] / "experimental/share/sarcasm_on_vs_off_dots.png"
 INK, MUTED, GRID = "#1b1f25", "#6b7380", "#e4e7ec"
 PROBES = {"r0_peak@L48": "Off-policy probe (trained on Claude's replies)", "on_peak@L48": "On-policy probe (trained on Qwen's own replies)"}
 ATTACKS = [("r0_search", "“Good news,\nI was just hoping to…”\n(searched vs off-policy)"),

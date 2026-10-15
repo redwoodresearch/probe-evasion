@@ -10,8 +10,8 @@ from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[1]
-OUT = REPO / "share/sarcasm_register_check.html"
+REPO = HERE.parents[2]
+OUT = REPO / "experimental/share/sarcasm_register_check.html"
 LINE_LOGIT = math.log(0.9950 / 0.0050)
 REGISTERS = ("deadpan", "mixed", "exaggerated")
 COLOR = {"deadpan": "var(--dead)", "mixed": "var(--mixed)", "exaggerated": "var(--exag)"}

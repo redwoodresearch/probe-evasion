@@ -17,9 +17,9 @@ from sklearn.metrics import roc_auc_score
 
 from probe_evasion.missions import m3a2_sarcasm_patch as m
 
-REPO = Path(__file__).resolve().parents[2]
-OUT1 = REPO / "share/sarcasm_james_1_evidence.png"
-OUT2 = REPO / "share/sarcasm_james_2_examples.png"
+REPO = Path(__file__).resolve().parents[3]
+OUT1 = REPO / "experimental/share/sarcasm_james_1_evidence.png"
+OUT2 = REPO / "experimental/share/sarcasm_james_2_examples.png"
 INK, MUTED, GRID = "#1b1f25", "#6b7380", "#e4e7ec"
 GREY, DARK, RED, GREEN, AMBER = "#9aa1ac", "#4a515c", "#cf3f36", "#1d8467", "#c98a1c"
 MAIN, PATCHED = "r0_peak@L48", "r1_peak@L48"

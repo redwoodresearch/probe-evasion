@@ -7,10 +7,10 @@ Saved scores only, no scoring:
     test_no_instruction.jsonl, scored by that run's probe;
   - the run's own frozen searched prompt, instruction visible: its test_optimized.jsonl;
   - the same replies with the instruction removed: per-reply scores exist only for layer 6
-    (analysis/fa_cost/gemma_scores.json, "attack_removed"). gepa.test saved only the count for layers 12 and 36, so
+    (experimental/analysis/fa_cost/gemma_scores.json, "attack_removed"). gepa.test saved only the count for layers 12 and 36, so
     those strips are left empty and the count from summary.json is written in their place.
 
-    uv run python analysis/gemma_readout/dots_layers.py
+    uv run python experimental/analysis/gemma_readout/dots_layers.py
 Writes share/gemma_maths_dots.png.
 """
 
@@ -23,14 +23,14 @@ import numpy as np
 from probe_evasion import gepa
 from probe_evasion.generation import read_jsonl
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
 RUNS = {layer: REPO / f"results/gepa/gemma_maths_peakL{layer}_s0" for layer in (6, 12, 36)}
-REMOVED_SCORES = REPO / "analysis/fa_cost/gemma_scores.json"  # layer-6 run's attack replies, instruction removed
-OUT = REPO / "share/gemma_maths_dots.png"
+REMOVED_SCORES = REPO / "experimental/analysis/fa_cost/gemma_scores.json"  # layer-6 run's attack replies, instruction removed
+OUT = REPO / "experimental/share/gemma_maths_dots.png"
 FALSE_ALARM_RATES = (0.001, 0.01, 0.05)
 LINE_STYLE = {0.001: ":", 0.01: "-", 0.05: "--"}
 REMOVED_REPRODUCE_TOL = 0.05  # log-odds; the scorer rounds per-token logits to 3 decimals
-# Counts verified earlier (summary.json and analysis/fa_cost/examples_gemma.py): (removed missed, valid, plain missed)
+# Counts verified earlier (summary.json and experimental/analysis/fa_cost/examples_gemma.py): (removed missed, valid, plain missed)
 EXPECTED = {6: (12, 87, 1), 12: (0, 82, 0), 36: (0, 89, 0)}
 
 GROUPS = ("calibration", "plain", "removed", "visible")

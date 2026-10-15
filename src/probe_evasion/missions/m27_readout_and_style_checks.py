@@ -47,9 +47,9 @@ class Run:
 
 RUNS = (
     Run("maths 27B (m22)", Path("missions/m22_score_only_iterations/runs/qwen35_27b"), "maths", "own"),
-    Run("maths 9B (m23)", Path("missions/m23_model_size/runs/m23_9b"), "maths", "own"),
-    Run("maths 122B (m23)", Path("missions/m23_model_size/runs/m23_122b"), "maths", "own"),
-    Run("maths Gemma (m23)", Path("missions/m23_model_size/runs/m23_gemma"), "maths", "templated"),
+    Run("maths 9B (m23)", Path("experimental/missions/m23_model_size/runs/m23_9b"), "maths", "own"),
+    Run("maths 122B (m23)", Path("experimental/missions/m23_model_size/runs/m23_122b"), "maths", "own"),
+    Run("maths Gemma (m23)", Path("experimental/missions/m23_model_size/runs/m23_gemma"), "maths", "templated"),
     Run("code (m25, m22 description)", Path("missions/m25_program_output/runs/m25_qwen35_27b_code_neutral"), "code", "own"),
     Run("code (m25, told label kinds)", Path("missions/m25_program_output/runs/m25_qwen35_27b_code"), "code", "own"),
     Run("ordering (m26)", Path("missions/m26_ordering/runs/qwen35_27b_ordering"), "ordering", "own"),

@@ -47,7 +47,7 @@ from probe_evasion.modal_app import app
 
 MISSION = "m3a4_sarcasm_styleaug"
 MODEL = m3a.MODEL
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 DATA = m3a.DATA
 SCORE_CACHE = OUT / "score_cache.jsonl"
 STYLE_LIST = OUT / "style_list.json"

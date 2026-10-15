@@ -35,7 +35,7 @@ from probe_evasion.missions import m36_attacker_capability_sweep as m36
 from probe_evasion.modal_app import Sampler, app, hf_cache
 
 MISSION = "m40_habit_across_capability"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"
 INPUTS = OUT / "inputs"
 FIGURES = OUT / "figures"

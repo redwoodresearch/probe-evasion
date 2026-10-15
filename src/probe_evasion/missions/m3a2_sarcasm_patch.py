@@ -41,7 +41,7 @@ from probe_evasion.modal_app import app
 
 MISSION = "m3a2_sarcasm_patch"
 MODEL = m3a.MODEL
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 DATA = m3a.DATA
 RUNS = Path("results/gepa")
 SCORE_CACHE = OUT / "score_cache.jsonl"

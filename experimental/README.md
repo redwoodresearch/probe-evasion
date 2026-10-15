@@ -5,8 +5,10 @@ record: earlier concepts and designs, side projects, and the drafts, reports and
 Each mission folder has a `STATUS.md` (run log) and usually a `RESULT.md`.
 
 **Paths.** These folders were moved here from `missions/`, `analysis/` and the repo root on 15 Oct 2026. Their code
-still lives in `src/probe_evasion/` and still refers to the old locations (`missions/<name>/…`), so rerunning one
-means moving its folder back, or checking out commit `13a0ae7c`, the last commit before the move.
+stays in `src/probe_evasion/` and has been re-pointed at the new locations, so it runs from here (checked: every module
+imports and every hard-coded path resolves). Two things were not updated: commands quoted in old `STATUS.md` files, and
+files already saved inside Modal volumes, which keep their old relative paths. Commit `13a0ae7c` is the last commit
+before the move.
 
 ## Missions (`missions/`)
 

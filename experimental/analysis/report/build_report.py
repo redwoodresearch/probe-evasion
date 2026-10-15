@@ -4,27 +4,27 @@ Every number is in RESULTS / EXAMPLES below with the file it came from (as of 20
 import html
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
-OUT = REPO / "share/probe_evasion_report.html"
+REPO = Path(__file__).resolve().parents[3]
+OUT = REPO / "experimental/share/probe_evasion_report.html"
 
 # Valid evasions per attempt at the 1% false-alarm line, scored with the attack instruction hidden from the probe.
 # visible = the same replies scored with the instruction left in what the probe reads (only where it differs).
 RESULTS = [
     dict(group="evaded", name="Sarcasm", verdict="Strong", how="searched", n="100 tasks × 5 samples",
          probe="sarcasm probe A: off-policy, layer 48 of 64", plain=(29, 500), attack=(171, 500), visible=(271, 500),
-         src="missions/m3a_sarcasm/RESULT.md, main table (off-policy, peak-trained, L48; 1%, instruction removed)"),
+         src="experimental/missions/m3a_sarcasm/RESULT.md, main table (off-policy, peak-trained, L48; 1%, instruction removed)"),
     dict(group="evaded", name="Anger", verdict="Weak", how="searched", n="100 tasks × 2 samples",
          probe="off-policy, layer 48 of 64", plain=(6, 200), attack=(126, 200), visible=(196, 200),
-         src="missions/m3c_anger/RESULT.md, main table and 'Instruction text alone'"),
+         src="experimental/missions/m3c_anger/RESULT.md, main table and 'Instruction text alone'"),
     dict(group="evaded", name="Criticism", verdict="Weak", how="hand-written", n="100 tasks × 1",
          probe="off-policy, layer 16 of 64 (secondary probe)", plain=(1, 100), attack=(41, 100), visible=None,
-         src="missions/m3b_criticism/RESULT.md, layer 16, instruction removed"),
+         src="experimental/missions/m3b_criticism/RESULT.md, layer 16, instruction removed"),
     dict(group="evaded", name="Deception: add ~100 honest words", verdict="Moderate", how="hand-written", n="274 scenarios × 1",
          probe="AISI's released probe, averaged", plain=(3, 274), attack=(45, 274), visible=None,
-         src="missions/m4_aisi_deception/RESULT.md, main table (apollo, instruction removed)"),
+         src="experimental/missions/m4_aisi_deception/RESULT.md, main table (apollo, instruction removed)"),
     dict(group="evaded", name="Deception: searched prompt", verdict="Unresolved", how="searched", n="274 scenarios × 1",
          probe="AISI's released probe, averaged", plain=(3, 274), attack=(38, 274), visible=None,
-         src="missions/m4_aisi_deception/RESULT.md, main table"),
+         src="experimental/missions/m4_aisi_deception/RESULT.md, main table"),
     dict(group="evaded", name="Maths, Gemma, layer 6", verdict="Moderate", how="searched", n="100 tasks × 1",
          probe="probe trained for its reading; layer 6 of 42", plain=(1, 100), attack=(12, 100), visible=(33, 100),
          src="results/gepa/gemma_maths_peakL6_s0/summary.json: fresh search against the peak-trained layer-6 probe; 87 of 100 valid"),
@@ -38,12 +38,12 @@ RESULTS = [
          probe="trained on Gemma's own replies", plain=(0, 1000), attack=(0, 1000), visible=None, src="earlier maths runs (7-8 Oct)"),
     dict(group="held", name="Chemistry, Claude-written training text", how="searched", n="100 tasks × 1",
          probe="off-policy, layer 48 of 64", plain=(0, 100), attack=(0, 100), visible=None,
-         src="missions/m1b_offpolicy_chem/RESULT.md (saved analogy attack on 100 test tasks; no attack had a valid answer under the line)"),
+         src="experimental/missions/m1b_offpolicy_chem/RESULT.md (saved analogy attack on 100 test tasks; no attack had a valid answer under the line)"),
     dict(group="other", name="Anger replies, layer-16 probe", how="searched", n="100 tasks × 2",
          probe="the anger row's replies, scored by a second probe", plain=(4, 200), attack=(0, 200), visible=None,
-         src="missions/m3c_anger/RESULT.md, other probes table"),
+         src="experimental/missions/m3c_anger/RESULT.md, other probes table"),
     dict(group="other", name="Criticism replies, layer-48 probe (primary)", how="hand-written", n="100 tasks × 1",
-         probe="the criticism row's replies, scored by the primary probe", plain=(1, 100), attack=(2, 100), visible=None, src="missions/m3b_criticism/RESULT.md"),
+         probe="the criticism row's replies, scored by the primary probe", plain=(1, 100), attack=(2, 100), visible=None, src="experimental/missions/m3b_criticism/RESULT.md"),
 ]
 
 PCT = lambda kn: 100 * kn[0] / kn[1]
@@ -147,7 +147,7 @@ def scorecard() -> str:
 
 
 def register_chart() -> str:
-    # analysis/sarcasm_register/register_labels.jsonl (Claude Sonnet judge)
+    # experimental/analysis/sarcasm_register/register_labels.jsonl (Claude Sonnet judge)
     data = [("Probe training data (Claude)", 127, 799, 919), ("Qwen, plain prompt", 9, 96, 372),
             ("Qwen, searched prompt (all valid replies)", 295, 47, 6)]
     rows = []
@@ -535,8 +535,8 @@ standard checks, by moving into a style the training data missed. Whether that i
 weakness is the question the next experiments answer.</div>
 
 <p class="foot prose">Sources: each mission's RESULT.md under <code>missions/</code> in the probe-evasion repository, the Gemma layer audit,
-and <code>analysis/sarcasm_register/</code>. Valid replies are judged by Claude Sonnet 5.5. Rates are valid evasions per attempt at the 1% line.
-Built by <code>analysis/report/build_report.py</code>.</p>
+and <code>experimental/analysis/sarcasm_register/</code>. Valid replies are judged by Claude Sonnet 5.5. Rates are valid evasions per attempt at the 1% line.
+Built by <code>experimental/analysis/report/build_report.py</code>.</p>
 </main>
 """
 

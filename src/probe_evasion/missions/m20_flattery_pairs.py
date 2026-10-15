@@ -1,7 +1,7 @@
 """Mission m20_onoff_pairs, flattery (agent A): matched off-policy / on-policy flattery probes, attacked fairly.
 
 Concept, judges, keep rules, tasks, calibration and Qwen evaluation sets are m8a_flattery's (read only). The shared
-machinery is in m20_pairs_agent_a.py. Folder: missions/m20_onoff_pairs/flattery/.
+machinery is in m20_pairs_agent_a.py. Folder: experimental/missions/m20_onoff_pairs/flattery/.
 
     uv run modal run -n probe-evasion_nabil-baugher_m20-flattery-data_kill-2026-11-30 -m probe_evasion.missions.m20_flattery_pairs::m20f_data
     uv run python -m probe_evasion.missions.m20_flattery_pairs residual
@@ -21,7 +21,7 @@ from probe_evasion.missions import m20_pairs_agent_a as A
 from probe_evasion.modal_app import app
 
 CONCEPT = "flattery"
-OUT = Path("missions/m20_onoff_pairs/flattery")
+OUT = Path("experimental/missions/m20_onoff_pairs/flattery")
 m3a2.SCORE_CACHE = OUT / "score_cache.jsonl"  # m8a's import pointed it at m8a's folder
 PRAISE_WORDS = (r"\b(amazing|brilliant|incredible|fantastic|wonderful|love|lovely|perfect|stunning|masterpiece|genius|outstanding|"
                 r"impressive|excellent|beautiful|great|awesome|superb|phenomenal|remarkable|absolutely|truly|gorgeous|delightful)\b")
@@ -87,7 +87,7 @@ def m20f_quality():
 TRANSFER = {  # source -> file of saved, judged Qwen replies (all arms)
     "m8a_test": m8a.OUT / "test_frozen.jsonl",  # round 0: 100 search test tasks x seeds 10-14
     "m8a_fresh": m8a.OUT / "fresh_all.jsonl",  # round 1: 100 fresh tasks x seeds 20-24
-    "m13_blind": Path("missions/m13_blind_search/test_flattery_blind.jsonl"),  # fresh tasks x 20-24
+    "m13_blind": Path("experimental/missions/m13_blind_search/test_flattery_blind.jsonl"),  # fresh tasks x 20-24
 }
 TEST_FILE = OUT / "test_frozen.jsonl"
 

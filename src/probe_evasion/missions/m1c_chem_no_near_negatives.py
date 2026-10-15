@@ -26,7 +26,7 @@ from probe_evasion.modal_app import app
 
 MISSION = "m1c_chem_no_near_negatives"
 MODEL = "qwen35"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 TRAIN_FILE = DATA / f"{MISSION}_train.jsonl"
 REPLACEMENT_REPLIES = DATA / f"{MISSION}_replacement_negatives.jsonl"  # every generated reply, cleaned or not
 OVERGENERATE = 1.15  # about 5% of distant-topic replies fail the no-chemistry check

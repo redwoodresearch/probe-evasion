@@ -28,7 +28,7 @@ from probe_evasion.missions.m1a_peak_probe import load_seeded_probes
 from probe_evasion.modal_app import Sampler, app
 
 MISSION = "m32_reasoning_on"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"
 PREP = RUNS / "prepare"  # calibration and plain replies, scored once (whole output); copied into each reading's root
 M22_ROOT = m22.RUNS / "qwen35_27b"  # read-only: m22's calibration requests (1,301) and reasoning-off plain replies

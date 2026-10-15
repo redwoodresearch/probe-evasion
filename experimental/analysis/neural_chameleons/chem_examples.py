@@ -7,7 +7,7 @@ import random
 from pathlib import Path
 
 DATA = Path("external/minimal_neural_chameleons/data/mega_dataset_evaluated_20250729_144844_harm_batch_train.json")
-OUT = Path("analysis/neural_chameleons/chem_examples.md")
+OUT = Path("experimental/analysis/neural_chameleons/chem_examples.md")
 CONCEPT = "chemistry-based"
 POSITIVE, NEGATIVE = 0.75, 0.0
 CHARS = 350

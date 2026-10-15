@@ -12,7 +12,7 @@ uses m11's full strength + answers rule (both judges 5/5 and a cached Haiku "ans
 Contexts: "removed" = the reply re-read after the request alone (attack instruction deleted), the headline;
 "visible" = the reply read in its generation context, instruction included.
 
-    uv run python analysis/fa_cost/fa_cost.py      (from the repo root)
+    uv run python experimental/analysis/fa_cost/fa_cost.py      (from the repo root)
 """
 
 import hashlib
@@ -24,7 +24,7 @@ from pathlib import Path
 import attrs
 import numpy as np
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
 os.chdir(REPO)  # the mission modules use repo-relative paths
 
 from probe_evasion import judge  # noqa: E402
@@ -38,18 +38,18 @@ from probe_evasion.missions import m10_sarcasm_122b as m10  # noqa: E402
 from probe_evasion.missions import m11_long_search as m11  # noqa: E402
 from probe_evasion.missions import m13_blind_search as m13  # noqa: E402
 
-OUT_DIR = REPO / "analysis/fa_cost"
+OUT_DIR = REPO / "experimental/analysis/fa_cost"
 TARGETS = (0.5, 0.9, 0.99)  # share of valid attack replies the line must catch
 DEPLOYED_FA = 0.01  # the missions' headline line
 N_BOOT = 2000
 CONTEXTS = ("removed", "visible")
 
 M = Path("missions")
-SARCASM_27B_CACHES = tuple(str(M / f / "score_cache.jsonl") for f in (
+SARCASM_27B_CACHES = tuple(str(M.parent / "experimental" / "missions" / f / "score_cache.jsonl") for f in (
     "m3a2_sarcasm_patch", "m3a3_sarcasm_onpolicy", "m3a4_sarcasm_styleaug", "m13_blind_search", "m14_qwen_attacker"))
-CACHES_122B = (str(M / "m10_sarcasm_122b/score_cache.jsonl"),)
-CACHES_COND = (str(M / "m11_long_search/score_cache.jsonl"), str(M / "m8b_condescension/score_cache.jsonl"))  # m11.score order
-CACHES_FLATTERY = (str(M / "m8a_flattery/score_cache.jsonl"), str(M / "m13_blind_search/score_cache.jsonl"))  # m13 order
+CACHES_122B = (str(M.parent / "experimental" / "missions" / "m10_sarcasm_122b/score_cache.jsonl"),)
+CACHES_COND = (str(M / "m11_long_search/score_cache.jsonl"), str(M.parent / "experimental" / "missions" / "m8b_condescension/score_cache.jsonl"))  # m11.score order
+CACHES_FLATTERY = (str(M.parent / "experimental" / "missions" / "m8a_flattery/score_cache.jsonl"), str(M.parent / "experimental" / "missions" / "m13_blind_search/score_cache.jsonl"))  # m13 order
 
 PANEL_MAIN = "Sarcasm, main probe (layer 48, round 0)"
 PANEL_DEFENDED = "Sarcasm, patched and defended probes"
@@ -92,21 +92,21 @@ def saved_monitor(path: str, monitor: str, arm_name: str) -> dict:
 
 
 def saved_m13(concept: str, probe: str, arm_name: str) -> dict:
-    path = M / f"m13_blind_search/analysis_{concept}.json"
+    path = M.parent / "experimental" / "missions" / f"m13_blind_search/analysis_{concept}.json"
     p = json.loads(path.read_text())["arms"][arm_name]["probes"]
     return {"removed": p[f"{probe} hidden 0.01"]["per_attempt"], "visible": p[f"{probe} visible 0.01"]["per_attempt"],
             "source": f"{path} [{arm_name}]"}
 
 
 def saved_m14(arm_name: str) -> dict:
-    path = M / "m14_qwen_attacker/analysis.json"
+    path = M.parent / "experimental" / "missions" / "m14_qwen_attacker/analysis.json"
     p = json.loads(path.read_text())["arms"][arm_name]["probes"]
     return {"removed": p["r0_peak@L48 hidden 0.01"]["per_attempt"], "visible": p["r0_peak@L48 visible 0.01"]["per_attempt"],
             "source": f"{path} [{arm_name}]"}
 
 
 def saved_m10(arm_name: str) -> dict:
-    path = M / "m10_sarcasm_122b/eval.json"
+    path = M.parent / "experimental" / "missions" / "m10_sarcasm_122b/eval.json"
     a = json.loads(path.read_text())["pk@L36"]["attacks"][arm_name]
     return {"removed": a["removed 0.01"][0], "visible": a["0.01"][0], "source": f"{path} [pk@L36][{arm_name}]"}
 
@@ -123,17 +123,17 @@ def saved_m11(arm_name: str, probe: str) -> dict:
 
 def sarcasm_27b_settings() -> list[Setting]:
     calibration = [(r["prompt"], r["reply"]) for r in m13.calibration_rows("sarcasm")]  # = m3a2's clean set
-    m3a2_attacks = M / "m3a2_sarcasm_patch/attacks.jsonl"
+    m3a2_attacks = M.parent / "experimental" / "missions" / "m3a2_sarcasm_patch/attacks.jsonl"
     rows = {
         "plain": arm(m3a2_attacks, "plain"),
         "r0_search": arm(m3a2_attacks, "r0_search"),
         "r1_search": arm(m3a2_attacks, "r1_search"),
-        "r2b_search": arm(M / "m3a2_sarcasm_patch/attacks_r2b_search.jsonl", "r2b_search"),
-        "on_search": arm(M / "m3a3_sarcasm_onpolicy/fresh_on_search.jsonl", "on_search"),
-        "s4_search": arm(M / "m3a4_sarcasm_styleaug/attacks_s4_search.jsonl", "s4_search"),
-        "m13_blind": arm(M / "m13_blind_search/test_sarcasm_blind.jsonl", "blind"),
-        "m13_score_seeing_hidden": arm(M / "m13_blind_search/test_sarcasm_score_seeing_hidden.jsonl", "score_seeing_hidden"),
-        "m14_q122_run1": arm(M / "m14_qwen_attacker/test_q122_think.jsonl", "q122_think"),
+        "r2b_search": arm(M.parent / "experimental" / "missions" / "m3a2_sarcasm_patch/attacks_r2b_search.jsonl", "r2b_search"),
+        "on_search": arm(M.parent / "experimental" / "missions" / "m3a3_sarcasm_onpolicy/fresh_on_search.jsonl", "on_search"),
+        "s4_search": arm(M.parent / "experimental" / "missions" / "m3a4_sarcasm_styleaug/attacks_s4_search.jsonl", "s4_search"),
+        "m13_blind": arm(M.parent / "experimental" / "missions" / "m13_blind_search/test_sarcasm_blind.jsonl", "blind"),
+        "m13_score_seeing_hidden": arm(M.parent / "experimental" / "missions" / "m13_blind_search/test_sarcasm_score_seeing_hidden.jsonl", "score_seeing_hidden"),
+        "m14_q122_run1": arm(M.parent / "experimental" / "missions" / "m14_qwen_attacker/test_q122_think.jsonl", "q122_think"),
     }
     probes = {"r0_peak@L48": m3a2.round_probes("0")["r0_peak@L48"], "r1_peak@L48": m3a2.round_probes("1")["r1_peak@L48"],
               "on_peak@L48": m3a3.own_probes()["on_peak@L48"], "s4_peak@L48": m3a4.own_probes()["s4_peak@L48"]}
@@ -170,7 +170,7 @@ def sarcasm_27b_settings() -> list[Setting]:
 def sarcasm_122b_settings() -> list[Setting]:
     calibration = [(r["prompt"], r["reply"]) for r in jl(m10.FILES["calibration"]) if r["clean"] and not r["near_duplicate"]]
     probe = m10.probes_all()["pk@L36"]
-    assert json.loads((M / "m10_sarcasm_122b/primary.json").read_text())["primary"] == "pk@L36"
+    assert json.loads((M.parent / "experimental" / "missions" / "m10_sarcasm_122b/primary.json").read_text())["primary"] == "pk@L36"
     label = "122B sarcasm probe (layer 36)"
     return [Setting("122b/fresh_search", PANEL_OTHER, label, "m10 search", False, "pk@L36", probe, CACHES_122B, calibration,
                     attack_rows(arm(m10.FRESH, "fresh_search")), saved_m10("fresh_search"), "logit"),
@@ -214,7 +214,7 @@ def condescension_settings() -> list[Setting]:
 def flattery_settings() -> list[Setting]:
     calibration = [(r["prompt"], r["reply"]) for r in m13.calibration_rows("flattery")]
     probe = m13.probes("flattery")["pk@L48"]
-    fresh = M / "m8a_flattery/fresh_all.jsonl"
+    fresh = M.parent / "experimental" / "missions" / "m8a_flattery/fresh_all.jsonl"
     label = "flattery probe (m8a, layer 48)"
     return [Setting("flattery/hidden_a", PANEL_OTHER, label, "m8a hidden_a search", False, "pk@L48", probe, CACHES_FLATTERY,
                     calibration, attack_rows(arm(fresh, "hidden_a")), saved_m13("flattery", "pk@L48", "score_seeing")),
@@ -351,7 +351,7 @@ def fmt_ci(ci: list[float]) -> str:
 def markdown(results: dict) -> str:
     lines = ["# False-alarm cost of catching each attack",
              "",
-             "Generated by `analysis/fa_cost/fa_cost.py` from the missions' score caches (no new scoring). For each attack, the",
+             "Generated by `experimental/analysis/fa_cost/fa_cost.py` from the missions' score caches (no new scoring). For each attack, the",
              "flag line is moved down until it catches 50% / 90% / 99% of the attack's valid replies (per attempt, repeats",
              "counted); the cell is the share of clean calibration replies that line also flags. The mission headline line is",
              "1%. \"<x% (0 of n)\" means no calibration reply is flagged: the true rate is below what the calibration set can",
@@ -486,7 +486,7 @@ def main() -> None:
     results = {k: results[k] for k in order}
     (OUT_DIR / "fa_cost.json").write_text(json.dumps({"targets": TARGETS, "n_boot": N_BOOT, "results": results}, indent=1))
     (OUT_DIR / "fa_cost.md").write_text(markdown(results))
-    figure(results, REPO / "share/fa_cost_curve.png")
+    figure(results, REPO / "experimental/share/fa_cost_curve.png")
     bad = [(k, c) for k, r in results.items() for c, e in r["contexts"].items() if not e["reproduces_saved"]]
     print("reproduction mismatches:", bad or "none")
 

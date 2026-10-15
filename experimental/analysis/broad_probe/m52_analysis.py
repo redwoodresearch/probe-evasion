@@ -10,8 +10,8 @@ Attack movement uses post v9's headline measure (gap closed: median over pairs w
 divided by plain median - line; writer = mean of 3 chains; slope per 10 ECI with the two-stage bootstrap), with m45's
 strict validity and without the per-template leak exclusion (m45's audit: at most 0.006 on 8 arms).
 
-    .venv/bin/modal volume get probe-evasion_nabil-baugher_m52-state_kill-2026-11-30 missions/m52_broad_probes/run missions/m52_broad_probes/
-    PYTHONPATH=src .venv/bin/python analysis/broad_probe/m52_analysis.py
+    .venv/bin/modal volume get probe-evasion_nabil-baugher_m52-state_kill-2026-11-30 experimental/missions/m52_broad_probes/run experimental/missions/m52_broad_probes/
+    PYTHONPATH=src .venv/bin/python experimental/analysis/broad_probe/m52_analysis.py
 """
 
 import gzip

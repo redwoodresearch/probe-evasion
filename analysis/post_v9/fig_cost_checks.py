@@ -163,6 +163,7 @@ def cost_by_search(meta: dict) -> None:
 
 
 def main() -> None:
+    np.random.seed(0)  # adjustText nudges overlapping labels with numpy's global RNG; fix it so reruns match
     meta = {r["writer"]: r for r in F.writer_rows(F.load_m45(), "maths")}
     pass_vs_cost(meta)
     cost_by_search(meta)

@@ -15,7 +15,7 @@ Context management (the same for every chain; the writer is told up front):
 Everything else is m45's module, imported and re-pointed at runtime (this process only; lead-approved 10-12): m45's
 and m36's folder, volume, cap and freeze-point globals point at m47; m45.monitor and m45.ToggleChain are replaced by this
 module's versions so that m45.search runs the long chains. `check_settings` asserts all of it at every step. Design,
-pre-registration, log and spend: missions/m47_long_toggle_search/STATUS.md.
+pre-registration, log and spend: experimental/missions/m47_long_toggle_search/STATUS.md.
 """
 
 import hashlib
@@ -44,7 +44,7 @@ from probe_evasion.missions import m45_toggle_sweep as m45
 from probe_evasion.modal_app import app
 
 MISSION = "m47_long_toggle_search"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"
 FIGURES = OUT / "figures"
 M45_OUT = Path("missions") / "m45_toggle_sweep"  # read-only: m45's analysis (comparison at B <= 16)

@@ -128,7 +128,7 @@ def readings(out: Path) -> None:
 
 
 if __name__ == "__main__":
-    concepts(Path("share/design_concepts.png"))
-    loop(Path("share/design_loop.png"))
-    readings(Path("share/design_pooling.png"))
+    concepts(Path("experimental/share/design_concepts.png"))
+    loop(Path("experimental/share/design_loop.png"))
+    readings(Path("experimental/share/design_pooling.png"))
     print("wrote share/design_concepts.png, design_loop.png, design_pooling.png")

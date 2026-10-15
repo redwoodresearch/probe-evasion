@@ -5,7 +5,7 @@ replies. Some of those replies plausibly use the concept (a ranked list, a produ
 Claude Haiku 5.5 labels how much each reply involves each task, and the probe scores m50 already stored are split by
 that label. No GPU.
 
-    .venv/bin/python analysis/broad_probe/step0_concept_judge.py
+    .venv/bin/python experimental/analysis/broad_probe/step0_concept_judge.py
 """
 
 import gzip

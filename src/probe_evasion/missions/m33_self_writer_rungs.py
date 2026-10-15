@@ -10,7 +10,7 @@ own-reply probes), maths (m22's Task) and ordering (m26's Task and Monitor), plu
 
 Every writer output gets m28's Haiku refusal check (`m28.refusal_checked`, a refusal is a failed attempt) and m22's
 parser (leak rule, length). Reuses m22's runner and m28's helpers; edits neither. Entry points and the run log:
-missions/m33_self_writer_rungs/STATUS.md.
+experimental/missions/m33_self_writer_rungs/STATUS.md.
 """
 
 import json
@@ -32,7 +32,7 @@ from probe_evasion.missions import m28_baselines_and_writer_knowledge as m28  # 
 from probe_evasion.modal_app import app
 
 MISSION = "m33_self_writer_rungs"
-OUT = Path("missions") / MISSION
+OUT = Path("experimental/missions") / MISSION
 RUNS = OUT / "runs"
 FIGURES = OUT / "figures"
 TARGET = "own"
