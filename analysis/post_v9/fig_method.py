@@ -91,7 +91,7 @@ def draw_calibration(ax, fontsize: float = 12, show_axis: bool = True) -> None:
     ax.text(float(np.median(plain)), 1.36, "held-out positives\n(unattacked test answers)", ha="center", va="bottom",
             fontsize=fontsize, color=C["plain"], linespacing=1.2)
     # the look-alike cloud sits just left of the line, so both its labels go to the right of the line
-    ax.text(line + 0.4, -0.3, "held-out negatives\n(look-alike replies)", va="top", fontsize=fontsize, color=MUTED, linespacing=1.2)
+    ax.text(line + 0.4, -0.3, "held-out negatives\n(hard negatives)", va="top", fontsize=fontsize, color=MUTED, linespacing=1.2)
     ax.text(line + 0.4, 0.3, "1% of them are above", va="bottom", fontsize=fontsize - 1.5, color=C["line"])
     ax.plot([line, line], [-0.75, 1.6], color=C["line"], lw=2.5)
     ax.set_ylim(-1.05, 1.95)
@@ -180,7 +180,7 @@ def draw_score_line(ax, fontsize: float = 16) -> None:
     ax.plot([fx - 1.5, fx + 1.5], [0, 0], color=TEXT, lw=2)
     ax.text(fx, -0.38, f"{plain - line:.1f}", ha="center", va="center", fontsize=fontsize + 6, color=c["plain"], fontweight="bold")
     ax.text(fx + 2.0, 0, f"= {(off - on) / (plain - line):.2f}", ha="left", va="center", fontsize=fontsize + 6, color=TEXT, fontweight="bold")
-    ax.text(fx + 2.5, -0.95, "probe-dodging\nscore", ha="center", va="top", fontsize=fontsize - 3, color=MUTED, linespacing=1.15)
+    ax.text(fx + 2.5, -0.95, "probe-evasion\nscore", ha="center", va="top", fontsize=fontsize - 3, color=MUTED, linespacing=1.15)
     ax.set_xlim(left - 0.3, fx + 6.3)
     ax.set_ylim(-1.9, 1.9)
     ax.axis("off")

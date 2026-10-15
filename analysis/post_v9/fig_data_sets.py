@@ -20,7 +20,7 @@ ROWS = ["5 other training styles\n(email, casual text, report,\nnames only, answ
 CELLS = [
     (0, (0, 1), "#3d6fb6", "Training set\n1,848 replies\n(+ and −)", "fit the probe (80%)\nearly stopping (20%)"),
     (1, (2,), "#2f8a5f", "Held-out set\n531 replies (+ and −)", "report held-out\naccuracy only"),
-    (2, (1,), "#d9822b", "Calibration pool\n1,697 look-alikes\n(− only)", "set the 1% threshold"),
+    (2, (1,), "#d9822b", "Calibration pool\n1,697 hard negatives\n(− only)", "set the 1% threshold"),
     (3, (3,), "#7a5bb5", "Practice runs\n80 per template", "writer feedback,\n16 rounds"),
     (4, (3,), "#c0392b", "Test runs\n500 ON/OFF pairs\nper template", "the results"),
     (4, (1,), "#3b4440", "Unattacked answers\n(held-out +)", "score reference"),

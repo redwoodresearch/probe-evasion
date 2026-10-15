@@ -69,7 +69,7 @@ def main() -> None:
     for ax, (task, title) in zip(axes.flat, FIG.PANELS.items()):
         panel(ax, task, title, meta)
     for ax in axes[-1]:
-        ax.set_xlabel("probe-dodging score after 16 rounds", fontsize=14)
+        ax.set_xlabel("probe-evasion score after 16 rounds", fontsize=14)
     for ax in axes[:, 0]:
         ax.set_ylabel(Y_LABEL, fontsize=15, labelpad=24)
         ax.text(Y_NOTE_X, 0.5, Y_LABEL_NOTE, transform=ax.transAxes, rotation=90, ha="center", va="center", fontsize=11,

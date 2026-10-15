@@ -7,7 +7,7 @@
    sits on y = x / (1 - c), where c is the accuracy of the best fixed guess (always the middle location; always
    sentence 7). Points above that line get past the probe more often than they break answers.
 
-2. figures/cost_by_search.png (all four tasks): probe-dodging score vs accuracy cost for each of the 42 searches
+2. figures/cost_by_search.png (all four tasks): probe-evasion score vs accuracy cost for each of the 42 searches
    (14 writers x 3), with spokes to the writer's average, and the correlation within writers (each search minus its
    writer's average) in the corner.
 
@@ -146,7 +146,7 @@ def cost_by_search(meta: dict) -> None:
         ax.set_xlim(-0.25, 0.85)
         ax.set_ylim(-25, 90)
     for ax in axes[-1]:
-        ax.set_xlabel("probe-dodging score after 16 rounds", fontsize=14)
+        ax.set_xlabel("probe-evasion score after 16 rounds", fontsize=14)
     for ax in axes[:, 0]:
         ax.set_ylabel(COST.Y_LABEL, fontsize=15, labelpad=24)
         ax.text(COST.Y_NOTE_X, 0.5, COST.Y_LABEL_NOTE, transform=ax.transAxes, rotation=90, ha="center", va="center",

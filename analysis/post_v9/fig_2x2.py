@@ -38,7 +38,7 @@ GEMINI_LABEL_OFFSET = (-3.5, 0.2)  # (ECI units, score units) from the dot to th
 LABEL_X = 170.5        # labels sit in a column right of the data, with leader lines to their dots
 LABEL_GAP = 0.06       # minimum vertical gap between labels (score units)
 Y_LIMITS = (-0.15, 0.82)
-Y_LABEL = "probe-dodging score"
+Y_LABEL = "probe-evasion score"
 Y_LABEL_NOTE = "(0 = no move; 1 or more = past the threshold)"  # smaller, beside the main label
 EXAMPLE_TASK = "ordering"  # the worked example: Fable 5.1 (make_dots' writer for ordering), medians over correct pairs
 EXAMPLE_COLOURS = {"plain": "#3b4440", "off": "#3d5a80", "on": "#c2541b", "line": "#b3261e"}
@@ -217,7 +217,7 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
         slopes = "Shaded: 95% bands on each fit (dotted edges = round 0; resampling writers then searches); "
     if uncertainty in ("bands_gold0", "bands_gold16"):
         slopes = "Shaded: 95% band on each fit (resampling writers then searches); "
-    fig.text(0.5, 0.06, f"{slopes}{bars}; threshold at a 1% false-positive rate on look-alike replies",
+    fig.text(0.5, 0.06, f"{slopes}{bars}; threshold at a 1% false-positive rate on hard negatives",
              ha="center", fontsize=11, color=F.v6.MUTED)
     fig.subplots_adjust(left=0.08, right=0.97, top=0.9 if suptitle else 0.95, bottom=0.13)
     fig.savefig(HERE / "figures" / name, bbox_inches="tight")
