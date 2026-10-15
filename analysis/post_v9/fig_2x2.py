@@ -77,7 +77,7 @@ def xpos(w: str, meta: dict) -> float:
     return meta[w]["eci"] + F.DISPLAY_SHIFT.get(w, 0.0)
 
 
-ROUND0_BAR_SHIFT = 0.45  # ECI units: round-0 range bars sit just right of their dot, clear of the round-16 bar
+ROUND0_BAR_SHIFT = 0.0  # ECI units; 0 = round-0 bars run through their own dot
 
 
 def plot_round(ax, t: dict, meta: dict, hollow: bool, bars: bool, fit_style: str, fit_colour: str | None = None) -> None:
