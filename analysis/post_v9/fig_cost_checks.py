@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from adjustText import adjust_text
 from matplotlib.lines import Line2D
-from scipy.stats import pearsonr
+from scipy.stats import t as t_dist
 
 HERE = Path(__file__).resolve().parent
 
@@ -116,9 +116,13 @@ def pass_vs_cost(meta: dict) -> None:
 
 
 def within_writer_r(score: dict, cost: dict) -> tuple[float, float]:
+    """Correlation of each search's score and cost after subtracting its writer's averages. The p-value counts the
+    degrees of freedom those averages use up: n searches - n writers - 1."""
     dx = [s - np.mean(score[w]) for w in score for s in score[w]]
     dy = [c - np.mean(cost[w]) for w in score for c in cost[w]]
-    return pearsonr(dx, dy)
+    r = float(np.corrcoef(dx, dy)[0, 1])
+    df = len(dx) - len(score) - 1
+    return r, float(2 * t_dist.sf(abs(r) * np.sqrt(df / (1 - r**2)), df))
 
 
 def cost_by_search(meta: dict) -> None:

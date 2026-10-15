@@ -41,7 +41,7 @@ LABEL_X = 170.5        # labels sit in a column right of the data, with leader l
 LABEL_GAP = 0.06       # minimum vertical gap between labels (score units)
 Y_LIMITS = (-0.15, 0.82)
 Y_LABEL = "probe-evasion score"
-Y_LABEL_NOTE = "(0 = no move; 1 or more = past the threshold)"  # smaller, beside the main label
+Y_LABEL_NOTE = "(0 = no move; 1 = moved the full distance\nfrom a normal answer to the threshold)"  # smaller, beside the main label
 EXAMPLE_TASK = "ordering"  # the worked example: Fable 5.1 (make_dots' writer for ordering), medians over correct pairs
 EXAMPLE_COLOURS = {"plain": "#3b4440", "off": "#3d5a80", "on": "#c2541b", "line": "#b3261e"}
 # Uncertainty on the round-16 fit, two ways to show it: "slopes" writes each round's slope and interval in the panel,
@@ -222,8 +222,8 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
     for ax in axes[-1]:
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
     for ax in axes[:, 0]:
-        ax.set_ylabel(Y_LABEL, fontsize=15, labelpad=26)
-        ax.text(-0.085, 0.5, Y_LABEL_NOTE, transform=ax.transAxes, rotation=90, ha="center", va="center", fontsize=11,
+        ax.set_ylabel(Y_LABEL, fontsize=15, labelpad=40)
+        ax.text(-0.095, 0.5, Y_LABEL_NOTE, transform=ax.transAxes, rotation=90, ha="center", va="center", fontsize=11, linespacing=1.3,
                 color=F.v6.MUTED)
     if suptitle:
         fig.suptitle(suptitle, fontsize=15, x=0.02, ha="left")
