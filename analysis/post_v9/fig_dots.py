@@ -1,6 +1,8 @@
 """Moves vs gets past: where Fable 5.1's test answers sit against the threshold after 16 rounds, attack OFF vs ON
 (pairs where both answers are valid, 3 searches pooled), one panel per task on one shared x scale. The region under the
-threshold (where the probe is passed) is shaded, and each panel states the share of ON answers that land there.
+threshold (where the probe is passed) is shaded. Each panel states the net crossing rate, the measure the post quotes:
+pairs where ON is at or under the threshold and OFF is over it, minus the reverse, over all 1,500 pairs (3 searches x 500
+problems; a pair with an invalid answer counts as no crossing). It must equal numbers.json's value for the writer.
 
     .venv/bin/python analysis/post_v9/fig_dots.py   # writes figures/dots_2x2.png (dots) and figures/dots_2x2_density.png
 """
@@ -44,9 +46,26 @@ TASKS = {
 }
 
 
-def task_data(cfg) -> dict:
+def net_crossing_rate(cfg, line: float) -> float:
+    pairs: dict = {}
+    for r in DOTS.read(cfg.writer_rows):
+        arm, side = r["key"].rsplit("#", 1)
+        if arm.endswith(f"@B{DOTS.B}"):
+            pairs.setdefault((arm, r["seed"], r["task"]["id"]), {})[side] = r
+    score = lambda r: r["peaks_visible"][cfg.probe]
+    valid = [p for p in pairs.values() if p["on"]["valid"] and p["off"]["valid"]]
+    forward = sum(score(p["on"]) <= line < score(p["off"]) for p in valid)
+    reverse = sum(score(p["off"]) <= line < score(p["on"]) for p in valid)
+    return (forward - reverse) / len(pairs)
+
+
+def task_data(task: str, cfg) -> dict:
     _, _, off, on = (xs for _, xs, _ in DOTS.strips(cfg))
-    return {"off": off, "on": on, "line": DOTS.flag_line(cfg)}
+    line = DOTS.flag_line(cfg)
+    net = net_crossing_rate(cfg, line)
+    reported = FIG.NUMBERS[task]["B16"]["crossings"][WRITER]["net"]
+    assert abs(net - reported) < 0.005, (task, net, reported)
+    return {"off": off, "on": on, "line": line, "net": net}
 
 
 def draw_dots(ax, xs: np.ndarray, y: float, colour: str, rng) -> None:
@@ -69,9 +88,8 @@ def panel(ax, title: str, d: dict, draw, rng) -> None:
         med = float(np.median(d[key]))
         ax.plot([med, med], [y - 0.38, y + 0.38], color=COLOURS[key], lw=4, zorder=4, solid_capstyle="butt")
         ax.text(X_LIMITS[0] - 0.4, y, label, ha="right", va="center", fontsize=17, color=COLOURS[key], fontweight="bold")
-    passed = float(np.mean(d["on"] < line))
-    ax.text(X_LIMITS[1], 0.05, f"{passed:.0%}", ha="right", va="center", fontsize=26, color=COLOURS["on"], fontweight="bold")
-    ax.text(X_LIMITS[1], -0.5, "of ON answers pass", ha="right", va="center", fontsize=12.5, color=COLOURS["on"])
+    ax.text(X_LIMITS[1], 0.05, f"{d['net']:.0%}", ha="right", va="center", fontsize=26, color=COLOURS["on"], fontweight="bold")
+    ax.text(X_LIMITS[1], -0.5, "of attacks get past", ha="right", va="center", fontsize=12.5, color=COLOURS["on"])
     ax.set_title(title, fontsize=19, pad=10)
     ax.set_xlim(*X_LIMITS)
     ax.set_ylim(-0.75, len(ROWS) - 0.45)
@@ -82,7 +100,7 @@ def panel(ax, title: str, d: dict, draw, rng) -> None:
 
 
 def figure(draw, name: str) -> None:
-    data = {k: task_data(cfg) for k, cfg in TASKS.items()}
+    data = {k: task_data(k, cfg) for k, cfg in TASKS.items()}
     rng = np.random.default_rng(0)
     fig, axes = plt.subplots(2, 2, figsize=(15, 7.6), sharex=True, gridspec_kw={"hspace": 0.38, "wspace": 0.16})
     for ax, (k, cfg) in zip(axes.flat, TASKS.items()):
