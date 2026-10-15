@@ -13,7 +13,9 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.legend_handler import HandlerTuple
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 
 HERE = Path(__file__).resolve().parent
 _spec = importlib.util.spec_from_file_location("post_v8_figures", HERE.parent / "post_v8" / "make_figures.py")
@@ -191,8 +193,28 @@ def how_to_read() -> None:
     plt.close(fig)
 
 
+ROUND_KEY_LABELS = {"top": ("after 16 rounds of score feedback", "round 0, before any feedback"),
+                    "side": ("after 16 rounds\nof score feedback", "round 0,\nbefore any\nfeedback")}
+
+
+def round_key(fig, uncertainty: str | None, where: str) -> None:
+    """The round 16 / round 0 key on its own, larger, at the top or the right (James: it was lost among the labs)."""
+    styles = BAND_STYLES.get(uncertainty, {})
+    entries = []
+    for b, hollow, ls in (("B16", False, "-"), ("B0", True, "--")):
+        line_colour, band_colour, alpha = styles.get(b, (None, None, 0.0))
+        line = Line2D([], [], marker="o", ms=10, color=line_colour or F.v6.TEXT, mfc="white" if hollow else F.v6.TEXT,
+                      mec=F.v6.TEXT, mew=1.8, ls=ls, lw=2.2)
+        entries.append((Patch(color=band_colour or F.v6.TEXT, alpha=alpha, lw=0), line) if alpha else line)
+    kw = dict(handler_map={tuple: HandlerTuple(ndivide=None, pad=0)}, frameon=False, fontsize=15, handlelength=3.2)
+    if where == "top":
+        fig.legend(entries, ROUND_KEY_LABELS["top"], loc="lower center", ncol=2, bbox_to_anchor=(0.5, 0.95), columnspacing=3, **kw)
+    else:
+        fig.legend(entries, ROUND_KEY_LABELS["side"], loc="center left", ncol=1, bbox_to_anchor=(0.975, 0.5), labelspacing=2.2, **kw)
+
+
 def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None = None, uncertainty: str | None = None,
-           round0_bars: bool = False) -> None:
+           round0_bars: bool = False, key: str = "bottom") -> None:
     fig, axes = plt.subplots(2, 2, figsize=(15, 11.5 if len(rounds) == 2 else 11), sharex=True, sharey=True,
                              gridspec_kw={"hspace": 0.2, "wspace": 0.08})
     for ax, (task, title) in zip(axes.flat, PANELS.items()):
@@ -206,7 +228,9 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
     if suptitle:
         fig.suptitle(suptitle, fontsize=15, x=0.02, ha="left")
     handles = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
-    if len(rounds) == 2:
+    if len(rounds) == 2 and key != "bottom":
+        round_key(fig, uncertainty, key)
+    elif len(rounds) == 2:
         styles = BAND_STYLES.get(uncertainty, {})
         c16, c0 = (styles.get(b, (None,))[0] or F.v6.TEXT for b in ("B16", "B0"))
         handles += [Line2D([], [], marker="o", color=c16, mfc=F.v6.TEXT, mec=F.v6.TEXT, ls="-", ms=8, label="after 16 rounds"),
@@ -228,7 +252,7 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
         slopes = "Shaded: 95% band on each fit (resampling writers then searches); "
     fig.text(0.5, 0.06, f"{slopes}{bars}; threshold at a 1% false-positive rate on hard negatives",
              ha="center", fontsize=11, color=F.v6.MUTED)
-    fig.subplots_adjust(left=0.08, right=0.97, top=0.9 if suptitle else 0.95, bottom=0.13)
+    fig.subplots_adjust(left=0.08, right=0.97, top=0.9 if suptitle else 0.925 if key == "top" else 0.95, bottom=0.13)
     fig.savefig(HERE / "figures" / name, bbox_inches="tight")
     plt.close(fig)
 
@@ -241,6 +265,8 @@ def main() -> None:
     for style in ("slopes", *BAND_STYLES):
         figure(("B16", "B0"), meta, f"trend_2x2_combined_{style}.png", uncertainty=style)
     figure(("B16", "B0"), meta, "trend_2x2_combined_bands_gold0_bars.png", uncertainty="bands_gold0", round0_bars=True)
+    for key in ("top", "side"):
+        figure(("B16", "B0"), meta, f"trend_2x2_combined_bands_gold0_key_{key}.png", uncertainty="bands_gold0", key=key)
     how_to_read()
 
 
