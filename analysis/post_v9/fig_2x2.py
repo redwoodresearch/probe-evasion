@@ -266,7 +266,7 @@ def main() -> None:
         figure(("B16", "B0"), meta, f"trend_2x2_combined_{style}.png", uncertainty=style)
     figure(("B16", "B0"), meta, "trend_2x2_combined_bands_gold0_bars.png", uncertainty="bands_gold0", round0_bars=True)
     for key in ("top", "side"):
-        figure(("B16", "B0"), meta, f"trend_2x2_combined_bands_gold0_key_{key}.png", uncertainty="bands_gold0", key=key)
+        figure(("B16", "B0"), meta, f"trend_2x2_combined_bands_gold0_key_{key}.png", uncertainty="bands_gold0", round0_bars=True, key=key)
     how_to_read()
 
 
