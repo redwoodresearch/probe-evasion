@@ -265,19 +265,31 @@ TFIDF_SKIP = {"contradiction": "Word classifier not shown: normal answers sit on
                                "swings from {lo:+.1f} to {hi:+.1f} across writers"}
 
 
-def figure_vs_tfidf(meta: dict, name: str) -> None:
-    """Round 16 only: the probe's trend (as the main figure) and the word classifier's on the same answers, each scored
-    against its own threshold (numbers/tfidf_trend.py). The attacks were tuned against the probe."""
+SEPARATION_Y_FLOOR = -0.22  # Fable 5.1's word-classifier mean on contradiction is -0.15
+SEPARATION_NOTE = "(0 = no move; 1 = moved as far as a normal answer\nsits from a typical hard negative, for that detector)"
+
+
+def figure_vs_tfidf(meta: dict, name: str, separation: bool = False) -> None:
+    """Round 16 only: the probe's trend (as the main figure) and the word classifier's on the same answers, each on its
+    own scale (numbers/tfidf_trend.py). Default: each detector's distance to its own threshold (contradiction's classifier
+    left out: its threshold is too close to normal answers). separation=True: each detector's distance from normal
+    answers to a typical hard negative, all four panels, with each threshold's place on that scale marked. The attacks
+    were tuned against the probe."""
     fig, axes = plt.subplots(2, 2, figsize=(15, 11), sharex=True, sharey=True, gridspec_kw={"hspace": 0.2, "wspace": 0.08})
     for ax, (task, title) in zip(axes.flat, PANELS.items()):
         probe, words = NUMBERS[task]["B16"], TFIDF_TREND[task]
+        if separation:
+            sep = TFIDF_TREND[task]["separation"]
+            probe, words = sep["probe"], sep["tfidf"]
+            ax.text(0.02, 0.97, f"threshold at {sep['probe']['threshold_at']:.2f} (probe), {sep['tfidf']['threshold_at']:.2f} (word classifier)",
+                    transform=ax.transAxes, va="top", ha="left", fontsize=10.5, color=F.v6.MUTED)  # top left: empty in every panel
         lo, hi = fit_band(probe["writer_chains"], meta)
         ax.fill_between(FIT_XS, lo, hi, color=F.v6.TEXT, alpha=0.13, lw=0, zorder=1)
         plot_round(ax, probe, meta, hollow=False, bars=True, fit_style="-")
-        if task in TFIDF_SKIP:
+        if task in TFIDF_SKIP and not separation:
             means = words["writer_means"].values()
-            ax.text(0.98, 0.03, TFIDF_SKIP[task].format(gap=words["gap"], lo=min(means), hi=max(means)), transform=ax.transAxes,
-                    va="bottom", ha="right", fontsize=11, color=TFIDF_LINE, linespacing=1.35)  # bottom right: empty there
+            ax.text(0.02, 0.97, TFIDF_SKIP[task].format(gap=words["gap"], lo=min(means), hi=max(means)), transform=ax.transAxes,
+                    va="top", ha="left", fontsize=11, color=TFIDF_LINE, linespacing=1.35)  # top left: empty there
         else:
             lo, hi = fit_band(words["writer_chains"], meta)
             ax.fill_between(FIT_XS, lo, hi, color=TFIDF_BAND, alpha=0.22, lw=0, zorder=1)
@@ -288,23 +300,25 @@ def figure_vs_tfidf(meta: dict, name: str) -> None:
         ax.grid(axis="y", color=F.v6.GRID)
         ax.set_xlim(130, 179)
         ax.set_xticks(range(130, 171, 10))
-        ax.set_ylim(*Y_LIMITS)
+        ax.set_ylim(SEPARATION_Y_FLOOR if separation else Y_LIMITS[0], Y_LIMITS[1])
     for ax in axes[-1]:
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
     for ax in axes[:, 0]:
-        ax.set_ylabel("evasion score", fontsize=15, labelpad=40)
-        ax.text(-0.095, 0.5, "(0 = no move; 1 = moved the full distance from a\nnormal answer to that detector's threshold)",
+        ax.set_ylabel("evasion score", fontsize=15, labelpad=48)
+        ax.text(-0.11, 0.5, SEPARATION_NOTE if separation else "(0 = no move; 1 = moved the full distance from a\nnormal answer to that detector's threshold)",
                 transform=ax.transAxes, rotation=90, ha="center", va="center", fontsize=11, linespacing=1.3, color=F.v6.MUTED)
     detectors = [Line2D([], [], marker="o", ms=10, color=F.v6.TEXT, mfc=F.v6.TEXT, mec=F.v6.TEXT, lw=2.2, label="probe (reads activations)"),
                  Line2D([], [], marker="s", ms=9, color=TFIDF_LINE, mfc="white", mec=TFIDF_LINE, mew=1.8, lw=2.2, label=TFIDF_LABEL)]
     fig.legend(handles=detectors, loc="lower center", ncol=2, frameon=False, fontsize=15, bbox_to_anchor=(0.5, 0.95),
                columnspacing=3, handlelength=3.2)
     labs = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
-    fig.legend(handles=labs, loc="lower center", ncol=len(labs), frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.01))
-    fig.text(0.5, 0.06, "After 16 rounds of feedback against the probe; the same answers scored by both detectors, each against its own "
-             "threshold (1% false positives on hard negatives); shaded: 95% bands; bars: range over 3 searches (probe)",
+    fig.legend(handles=labs, loc="lower center", ncol=len(labs), frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.04))
+    scale = ("each on its own scale (median normal answer to median hard negative);\nthresholds at 1% false positives on hard negatives"
+             if separation else "each against its own threshold\n(1% false positives on hard negatives)")
+    fig.text(0.5, 0.025, f"After 16 rounds of feedback against the probe; the same answers scored by both detectors, {scale}; "
+             "shaded: 95% bands; bars: range over 3 searches (probe)",
              ha="center", fontsize=11, color=F.v6.MUTED)
-    fig.subplots_adjust(left=0.08, right=0.97, top=0.925, bottom=0.13)
+    fig.subplots_adjust(left=0.08, right=0.97, top=0.925, bottom=0.12)
     fig.savefig(HERE / "figures" / name, bbox_inches="tight")
     plt.close(fig)
 
@@ -320,6 +334,7 @@ def main() -> None:
     for key in ("top", "side"):
         figure(("B16", "B0"), meta, f"trend_2x2_combined_bands_gold0_key_{key}.png", uncertainty="bands_gold0", round0_bars=True, key=key)
     figure_vs_tfidf(meta, "trend_2x2_probe_vs_tfidf.png")
+    figure_vs_tfidf(meta, "trend_2x2_probe_vs_tfidf_separation.png", separation=True)
     how_to_read()
 
 

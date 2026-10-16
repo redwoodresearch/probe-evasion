@@ -5,6 +5,12 @@ and the reply; analysis/tfidf_baseline), its line is its own 1% false-positive r
 answers and grades are the probe's (arithmetic: the consistent grade). Per writer: mean of its 3 searches; slope per 10
 ECI with compute.py's two-stage bootstrap. The attacks were tuned against the probe, so this measures carry-over.
 
+Second measure, for comparing detectors (key "separation"): the same median drop divided by (median correct unattacked
+score - median hard-negative score), for the probe and the word classifier alike. 0 = no move, 1 = moved as far as a
+normal answer sits from a typical hard negative. Needed for contradiction, where the classifier's threshold sits only
+0.7 log-odds below normal answers, so the threshold-referenced score is unstable; "threshold_at" is where each
+detector's threshold falls on this scale.
+
     PYTHONPATH=src .venv/bin/python analysis/post_v9/numbers/tfidf_trend.py   # writes tfidf_trend.json
 """
 
@@ -62,9 +68,30 @@ def task_result(task: str, rng) -> dict:
             "all14": compute.two_stage(dict(chains), rng)}
 
 
+def rescaled(chains: dict[str, list[float]], gap: float, separation: float, rng) -> dict:
+    """Threshold-referenced scores (median drop / gap) re-expressed as median drop / separation."""
+    out = {w: [v * gap / separation for v in vs] for w, vs in chains.items()}
+    return {"writer_chains": out, "writer_means": {w: float(np.mean(v)) for w, v in sorted(out.items(), key=lambda x: compute.ECI[x[0]])},
+            "all14": compute.two_stage(out, rng)}
+
+
+def separation_result(task: str, words: dict, probe: dict, rng) -> dict:
+    hard_negatives = json.loads((TFIDF.BASELINE / "results" / f"{task}.json").read_text())
+    out = {}
+    for det, plain, line, gap, chains in (("probe", probe["plain_median"], probe["line"]["stored_line"], probe["gap"], probe["B16"]["writer_chains"]),
+                                          ("tfidf", words["plain_median"], words["line"], words["gap"], words["writer_chains"])):
+        hard = hard_negatives["probe" if det == "probe" else TFIDF.DETECTOR]["calibration_median"]
+        out[det] = rescaled(chains, gap, plain - hard, rng) | {"hard_negative_median": hard, "separation": plain - hard,
+                                                               "threshold_at": (plain - line) / (plain - hard)}
+    return out
+
+
 def main() -> None:
     rng = np.random.default_rng(compute.SEED)
     res = {t: task_result(t, rng) for t in TASKS}
+    probe_numbers = json.loads((HERE / "numbers.json").read_text())["tasks"]
+    for t in TASKS:
+        res[t]["separation"] = separation_result(t, res[t], probe_numbers[t], rng)
     (HERE / "tfidf_trend.json").write_text(json.dumps(res, indent=1))
     probe = json.loads((HERE / "numbers.json").read_text())["tasks"]
     for t, r in res.items():
@@ -72,6 +99,10 @@ def main() -> None:
         print(f"{t:14s} gap {r['gap']:5.2f}  word classifier slope {r['all14']['slope']:+.3f} {np.round(r['all14']['ci'], 3)}  "
               f"mean {np.mean(list(r['writer_means'].values())):+.2f}  range {min(r['writer_means'].values()):+.2f}..{max(r['writer_means'].values()):+.2f}"
               f"  | probe slope {p['slope']:+.3f} {np.round(p['ci'], 3)}")
+        sep = r["separation"]
+        print(f"{'':14s} separation-referenced: " + "; ".join(
+            f"{d} slope {sep[d]['all14']['slope']:+.3f} {np.round(sep[d]['all14']['ci'], 3)}, means {min(sep[d]['writer_means'].values()):+.2f}.."
+            f"{max(sep[d]['writer_means'].values()):+.2f}, threshold at {sep[d]['threshold_at']:.2f}" for d in ("probe", "tfidf")))
 
 
 if __name__ == "__main__":
