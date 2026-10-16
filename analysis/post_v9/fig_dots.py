@@ -92,9 +92,9 @@ def draw_row(ax, d: dict, y: float, colour: str, rng) -> None:
                zorder=2)
 
 
-def panel(ax, title: str, d: dict, rng, draw) -> None:
+def panel(ax, title: str, d: dict, rng, draw, x_limits=X_LIMITS) -> None:
     line = d["line"]
-    ax.axvspan(X_LIMITS[0], line, color=PASS_SHADE, zorder=0)
+    ax.axvspan(x_limits[0], line, color=PASS_SHADE, zorder=0)
     ax.axvline(line, color=COLOURS["line"], lw=2.5, zorder=3)
     for i, (label, key) in enumerate(ROWS):
         y = len(ROWS) - 1 - i
@@ -105,14 +105,14 @@ def panel(ax, title: str, d: dict, rng, draw) -> None:
         med = float(np.median(shown))
         ax.plot([med, med], [y - 0.38, y + 0.38], color=COLOURS[key], lw=4, zorder=4, solid_capstyle="butt")
     for i, (label, key) in enumerate(ROWS):
-        ax.text(X_LIMITS[0] - 0.4, len(ROWS) - 1 - i, label, ha="right", va="center", fontsize=17, color=COLOURS[key],
+        ax.text(x_limits[0] - 0.4 * np.ptp(x_limits) / np.ptp(X_LIMITS), len(ROWS) - 1 - i, label, ha="right", va="center", fontsize=17, color=COLOURS[key],
                 fontweight="bold")
     if getattr(draw, "kind", "correct") == "correct":
-        ax.text(X_LIMITS[1], 0.05, f"{d['passed']:.0%}", ha="right", va="center", fontsize=26, color=COLOURS["on"],
+        ax.text(x_limits[1], 0.05, f"{d['passed']:.0%}", ha="right", va="center", fontsize=26, color=COLOURS["on"],
                 fontweight="bold")
-        ax.text(X_LIMITS[1], -0.5, "of attacks get past, correct", ha="right", va="center", fontsize=12.5, color=COLOURS["on"])
+        ax.text(x_limits[1], -0.5, "of attacks get past, correct", ha="right", va="center", fontsize=12.5, color=COLOURS["on"])
     ax.set_title(title, fontsize=19, pad=16)
-    ax.set_xlim(*X_LIMITS)
+    ax.set_xlim(*x_limits)
     ax.set_ylim(-0.75, len(ROWS) - 0.45)
     ax.set_yticks([])
     ax.tick_params(axis="x", labelsize=13)
@@ -120,18 +120,19 @@ def panel(ax, title: str, d: dict, rng, draw) -> None:
         ax.spines[side].set_visible(False)
 
 
-def figure(data: dict, draw, name: str) -> None:
+def figure(data: dict, draw, name: str, x_limits=X_LIMITS, xlabel: str = "probe score (log-odds)",
+           pass_label: str = "passes the probe") -> None:
     rng = np.random.default_rng(0)
     fig, axes = plt.subplots(2, 2, figsize=(15, 9.6), sharex=True, gridspec_kw={"hspace": 0.38, "wspace": 0.3})
     for ax, (k, cfg) in zip(axes.flat, TASKS.items()):
-        panel(ax, cfg.title, data[k], rng, draw)
+        panel(ax, cfg.title, data[k], rng, draw, x_limits)
     # name the shaded region and the threshold once, in contradiction, whose shaded region is widest
     ax, line = axes[1, 1], data["contradiction"]["line"]
     top = len(ROWS) - 1 + 0.42
-    ax.text(X_LIMITS[0] + 0.3, top, "passes the probe", ha="left", va="bottom", fontsize=13, color=PASS_TEXT)
+    ax.text(x_limits[0] + 0.3, top, pass_label, ha="left", va="bottom", fontsize=13, color=PASS_TEXT)
     ax.text(line + 0.3, top, "threshold", ha="left", va="bottom", fontsize=13, color=COLOURS["line"])
     for ax in axes[1]:
-        ax.set_xlabel("probe score (log-odds)", fontsize=15)
+        ax.set_xlabel(xlabel, fontsize=15)
     kind = getattr(draw, "kind", None)
     if kind is None:
         handles = [plt.Line2D([], [], marker="o", ls="", ms=6, color=COLOURS["on"], alpha=0.6, label="correct answer"),
