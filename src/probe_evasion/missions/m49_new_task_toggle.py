@@ -36,16 +36,17 @@ STATE_VOLUME = "probe-evasion_nabil-baugher_m49-state_kill-2026-11-30"
 STATE = modal.Volume.from_name(STATE_VOLUME, create_if_missing=True, version=2)
 VOLUME_MARKER = "VOLUME_NAME"
 JUDGE_CACHE_REMOTE = Path("cache/judge_m49_2")  # see m49_remote
-JUDGE_CACHE_BY_BATCH = {"d": Path("cache/judge_m49_d")}  # sharded per task under this (see m49_remote)
+JUDGE_CACHE_BY_BATCH = {"d": Path("cache/judge_m49_d"), "e": Path("cache/judge_m49_e")}  # sharded per task under this (see m49_remote)
 EFFORT_POINTS = (0, 4, 8, 16)  # as m45
 # Mission caps (all batches on this disk / volume). Smoke + main spent ~$717 Claude and ~$50 OpenRouter under $900 / $150;
 # batch d (13 Oct, lead: the three newest writers) adds hard caps of $800 Claude and $200 OpenRouter on top (OpenRouter
 # first $150, raised to $200 by the lead after the smoke's projection).
-CLAUDE_CAP = 1520.0  # dollars, estimated as m36 (validity judges for both versions dominate); the smoke cost ~$3.5
-OPENROUTER_CAP = 249.0  # raised from $40 (12 Oct) when the main sweep's writers reached $50: speed over cost (Nabil); +$200 batch d
+CLAUDE_CAP = 1770.0  # + $250 for batch e (Qwen3.5-27B writing for itself, 16 Oct)  # dollars, estimated as m36 (validity judges for both versions dominate); the smoke cost ~$3.5
+OPENROUTER_CAP = 265.0  # + $16 for batch e  # raised from $40 (12 Oct) when the main sweep's writers reached $50: speed over cost (Nabil); +$200 batch d
 ROOT_SHARE = {**{("smoke", t): 0.05 for t in TASKS}, **{("main", t): 0.3 for t in TASKS},
               **{("dsmoke", t): 0.01 for t in TASKS},  # batch d's smoke (Fable 5.1, 1 chain, rounds 0-1)
-              ("d", "false_belief"): 0.16, ("d", "contradiction"): 0.16, ("d", "acrostic"): 0.2}  # batch d: $790 of 1520
+              ("d", "false_belief"): 0.16, ("d", "contradiction"): 0.16, ("d", "acrostic"): 0.2,
+              ("e", "false_belief"): 0.06, ("e", "contradiction"): 0.06}  # batch d: $790 of 1520
 WARM = 900
 MAX_WORDS = {"false_belief": 40, "contradiction": 40, "acrostic": 90}
 MAX_REPLY_TOKENS = 96  # m22 / m45: every task's plain replies fit (pilot: 0-4% unfinished at 96)
@@ -522,7 +523,8 @@ SPEED_GROUPS = {"fast": ("opus55,sonnet55,gpt6sol,gemini38flash,gpt54mini,qwen35
                 "mid": ("opus48,haiku45", 2), "slow": ("qwen35_9b", 1)}  # m45's groups; fewer GPUs each (m45's own sweep shares the pool)
 BATCH_SPEED_GROUPS = {  # batch d (13 Oct): m45's batch d writers, one driver each (each writer's 3 chains move at its own pace)
     "d": {"fable": ("fable51", 3), "astra": ("gpt6astra", 3), "sol": ("gpt61sol", 3)},
-    "dsmoke": {"fable": ("fable51", 2)}}
+    "dsmoke": {"fable": ("fable51", 2)},
+    "e": {"q27": ("qwen35_27b_self", 4)}}  # batch e (16 Oct): Qwen3.5-27B writing for itself; false belief and contradiction only
 
 
 def speed_groups(batch: str) -> dict:

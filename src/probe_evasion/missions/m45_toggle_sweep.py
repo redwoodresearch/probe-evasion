@@ -54,12 +54,13 @@ N_ROUNDS = m36.N_ROUNDS  # 17: rounds 0-16
 N_CHAINS = m36.N_CHAINS
 EFFORT_POINTS = (0, 4, 8, 16)  # brief
 MAIN_BATCH = "c"  # lead, 10-12: batch c (switch v1, compliance feedback, valid-pair headline) is the run that counts
-OPENROUTER_CAP = 130.0  # $60 + $40 for batch d + $30 (lead, 10-12 ~17:00)
-CLAUDE_CAP = 2100.0  # lead (10-12): $1,400 for batch c and the earlier runs + $700 for batch d (frontier writers)
+OPENROUTER_CAP = 145.0  # $60 + $40 for batch d + $30 (lead, 10-12 ~17:00) + $15 for batch e
+CLAUDE_CAP = 2350.0  # lead (10-12): $1,400 for batch c and the earlier runs + $700 for batch d (frontier writers) + $250 for batch e
 # batch a = the slot-swap full run, stopped before any round finished (Nabil's switch redesign); b = the switch full run
 # shares of CLAUDE_CAP ($2,100): batch c maths $924 and ordering $336 as before; batch d maths $460, ordering $230
 ROOT_SHARE = {("a", "maths"): 0.007, ("a", "ordering"): 0.007, ("b", "maths"): 0.007, ("b", "ordering"): 0.007, ("c", "maths"): 0.44,
-              ("c", "ordering"): 0.16, ("d", "maths"): 0.22, ("d", "ordering"): 0.11, ("smoke", "maths"): 0.007, ("smoke", "ordering"): 0.007,
+              ("c", "ordering"): 0.16, ("d", "maths"): 0.22, ("d", "ordering"): 0.11,
+              ("e", "maths"): 0.06, ("e", "ordering"): 0.04, ("smoke", "maths"): 0.007, ("smoke", "ordering"): 0.007,
               ("smoke2", "maths"): 0.007, ("smoke2", "ordering"): 0.007, ("smoke3", "maths"): 0.007, ("smoke3", "ordering"): 0.007}
 GPU = {"containers": 6}
 # lead (10-12, after round 1 of batch c): speed matters more than cost; GPUs stay warm through the writer and judge phases
@@ -471,7 +472,7 @@ def provider_filter_as_refusal(ask, name: str):
 
 
 CHARS_PER_TOKEN = 2.2  # measured 2.4 (feedback with traces) to 3.3 (pair tables) with Qwen3.5's tokenizer: overestimates tokens
-CONTEXT_LIMITS = {"qwen35_397b": 262_144, "qwen35_9b": 262_144, "haiku45": 200_000}  # tokens; every other writer's endpoint has >= 400k
+CONTEXT_LIMITS = {"qwen35_397b": 262_144, "qwen35_9b": 262_144, "qwen35_27b_self": 262_144, "haiku45": 200_000}  # tokens; every other writer's endpoint has >= 400k
 DEFAULT_CONTEXT = 400_000
 CONTEXT_MARGIN = 8_000
 KEEP_RECENT = 4  # feedback messages kept whole when trimming
@@ -663,6 +664,9 @@ NEW_WRITERS = [
                "GPT-6 Astra"),
     m36.Writer("gpt61sol", "GPT-6.1 Sol", "openrouter", "openai/gpt-6.1-sol", "openai", "OpenAI", m36.OR_REASONING, 166.09, (162.89, 170.63),
                "GPT-6.1 Sol"),
+    # batch e (Nabil, 16 Oct): the monitored model as its own writer, same design; bf16 on Novita (m22's self-writer endpoint)
+    m36.Writer("qwen35_27b_self", "Qwen3.5-27B (writes for itself)", "openrouter", "qwen/qwen3.5-27b", "novita/bf16", "Novita",
+               m36.OR_REASONING, proxy="no Epoch score; Epoch has Qwen3.5-9B (139.5) and Qwen3.5-35B-A3B"),
 ]
 for _w in NEW_WRITERS:
     m36.WRITERS[_w.name] = _w
@@ -1320,6 +1324,7 @@ def compliance_judge(rows: list[dict], frozen: dict, task: str) -> int | None:
 
 
 JUDGE_CACHE_REMOTE = m36.WORK / "cache" / "judge_2"
+JUDGE_CACHE_BY_BATCH = {"e": m36.WORK / "cache" / "judge_m45_e"}  # batch e: a fresh directory (judge_2 is near Modal's per-directory file limit)
 
 
 @app.function(image=remote_search.driver_image, volumes={str(m36.WORK): STATE}, secrets=[remote_search.anthropic_key, m22.openrouter_key],
@@ -1334,8 +1339,9 @@ def m45_remote(name: str, steps: list[list]) -> str:
     print(f"mounted volume: {marker.read_text().strip()}", flush=True)
     # 10-12 17:10: the volume's cache/judge directory hit Modal's per-directory file limit (~395k files; writes there fail
     # with "No space left on device", new directories work); judge cache writes after that go to a fresh directory
-    judge_module.CACHE_DIR = JUDGE_CACHE_REMOTE
-    JUDGE_CACHE_REMOTE.mkdir(parents=True, exist_ok=True)
+    cache = JUDGE_CACHE_BY_BATCH.get(name.split("_")[2], JUDGE_CACHE_REMOTE)  # names are m45_<step>_<batch>_<task>
+    judge_module.CACHE_DIR = cache
+    cache.mkdir(parents=True, exist_ok=True)
     return m36.m36_remote.local(name, steps)
 
 
