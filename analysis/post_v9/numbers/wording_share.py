@@ -10,6 +10,9 @@ its own log-odds.
           are divided by the probe's gap (normal answer to threshold), so the raw median shift / gap is the post's
           probe-evasion score, and each part gets the post's slope per 10 ECI (two-stage bootstrap).
 
+  share: the predicted part's trend over the whole trend, with a 95% interval from the same two-stage bootstrap
+          (writers, then each drawn writer's searches) applied to both trends jointly; the regression fit is held fixed.
+
 A word classifier is an imperfect stand-in for "wording": what it misses (word order, for one) lands in the residual.
 
     PYTHONPATH=src .venv/bin/python analysis/post_v9/numbers/wording_share.py   # writes wording_share.json
@@ -28,6 +31,22 @@ import compute  # noqa: E402
 import tfidf_trend  # noqa: E402
 
 TASKS = tfidf_trend.TASKS
+
+
+def share_interval(raw: dict[str, list[float]], fitted: dict[str, list[float]], rng) -> list[float]:
+    """compute.two_stage's resampling, drawing the same writers and searches for both trends, so the ratio is paired."""
+    names = sorted(raw, key=compute.ECI.get)
+    x = np.array([compute.ECI[w] for w in names])
+    ratios = []
+    for _ in range(compute.N_BOOT):
+        pick = rng.integers(0, len(names), len(names))
+        if np.ptp(x[pick]) == 0:
+            continue
+        draws = [rng.integers(0, 3, 3) for _ in pick]
+        y_raw = np.array([np.mean(np.array(raw[names[i]])[d]) for i, d in zip(pick, draws)])
+        y_fit = np.array([np.mean(np.array(fitted[names[i]])[d]) for i, d in zip(pick, draws)])
+        ratios.append(compute.ols10(x[pick], y_fit) / compute.ols10(x[pick], y_raw))
+    return [float(np.quantile(ratios, 0.025)), float(np.quantile(ratios, 0.975))]
 
 
 def r_squared(x: np.ndarray, y: np.ndarray) -> float:
@@ -65,7 +84,10 @@ def task_result(task: str, gap: float, rng) -> dict:
         for w in compute.ECI:  # a search with no correct pair moves nothing, as in the post
             out[w] += [0.0] * (3 - len(out[w]))
         return dict(out)
-    return {"n_pairs": len(pairs), "pairs_r2": r_squared(w_all, p_all), "pairs_within_search_r2": r_squared(w_within, p_within),
+    raw_w, fit_w = by_writer(mp / gap), by_writer(fitted)
+    share = compute.ols10(np.array([compute.ECI[w] for w in sorted(raw_w)]), np.array([np.mean(fit_w[w]) for w in sorted(raw_w)])) / \
+        compute.ols10(np.array([compute.ECI[w] for w in sorted(raw_w)]), np.array([np.mean(raw_w[w]) for w in sorted(raw_w)]))
+    return {"share": float(share), "share_ci": share_interval(raw_w, fit_w, rng), "n_pairs": len(pairs), "pairs_r2": r_squared(w_all, p_all), "pairs_within_search_r2": r_squared(w_within, p_within),
             "searches_r2": r_squared(mw, mp), "searches_fit": {"probe_per_classifier_logodds": float(slope), "intercept": float(intercept)},
             "trend_raw": compute.two_stage(by_writer(mp / gap), rng), "trend_predicted_by_wording": compute.two_stage(by_writer(fitted), rng),
             "trend_residual": compute.two_stage(by_writer(residual), rng)}
@@ -80,7 +102,8 @@ def main() -> None:
     for t, r in res.items():
         print(f"{t:14s} pairs {r['n_pairs']:6d}: R2 {r['pairs_r2']:.2f} (within searches {r['pairs_within_search_r2']:.2f}); "
               f"searches R2 {r['searches_r2']:.2f}; slope per 10 ECI: raw {f(r['trend_raw'])}, predicted by wording "
-              f"{f(r['trend_predicted_by_wording'])}, residual {f(r['trend_residual'])}")
+              f"{f(r['trend_predicted_by_wording'])}, residual {f(r['trend_residual'])}; share {r['share']:.0%} "
+              f"[{r['share_ci'][0]:.0%}, {r['share_ci'][1]:.0%}]")
 
 
 if __name__ == "__main__":
