@@ -62,6 +62,8 @@ out += ["+++ Example feedback message (Claude Fable 5.1, arithmetic, after round
         "Verbatim from the saved conversation. The table of all 80 pairs was removed from this message later in the search, to keep the "
         "conversation within length limits (the writer saw it for the four rounds after it).", "", code(feedback), "", "+++", ""]
 
-body = (HERE / "lesswrong_post_body.md").read_text().rstrip() + "\n\n" + "\n".join(out)
+text = (HERE / "lesswrong_post_body.md").read_text().rstrip().split("\n")
+footnotes = [line for line in text if line.startswith("[^")]  # definitions go last, after the appendices
+body = "\n".join(line for line in text if not line.startswith("[^")).rstrip() + "\n\n" + "\n".join(out) + "\n" + "\n".join(footnotes) + "\n"
 (HERE / "lesswrong_post.md").write_text(body)
 print(len(body), body.count("+++"))

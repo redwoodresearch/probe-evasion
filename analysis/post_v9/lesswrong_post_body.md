@@ -4,11 +4,11 @@ I ask Qwen3.5-27B (no reasoning) to complete tasks requiring 4 types of reasonin
 
 **[Fig 1 Experimental setup]**
 
-The below graph shows how much the probe evasion score moved relative to the threshold with the attack on vs off for each of the four probes. Probe evasion score is not the percentage of answers that fully evade the probe. Instead, it is calculated as the difference between probe score with attack ON vs OFF divided by the difference in probe score between an unattached answer and the threshold (see scoring figure above). Models write an attack prompt given initial information about the probe, receive probe scores on Qwen’s response tokens, then get a chance to rewrite based on the feedback. Thresholds are set to have a 1% false positive rate. The solid dots show the attack scores by model after 16 rounds of feedback and the hollow dots show the first score before feedback. With 0 rounds of feedback, the slope is sometimes positive and sometimes 0, and, after 16 rounds, the slope reliably quite positive. Error bars represent the range of scores on 3 runs for each model.
+The below graph shows how much the probe evasion score moved relative to the threshold with the attack on vs off for each of the four probes. Probe evasion score is not the percentage of answers that fully evade the probe. Instead, it is calculated as the difference between probe score with attack ON vs OFF divided by the difference in probe score between an unattacked answer and the threshold (see scoring figure above). Models write an attack prompt given initial information about the probe, receive probe scores on Qwen’s response tokens, then get a chance to rewrite based on the feedback. The score only counts pairs where both ON and OFF responses are correct. Thresholds are set to have a 1% false positive rate. The solid dots show the attack scores by model after 16 rounds of feedback and the hollow dots show the first score before feedback. With 0 rounds of feedback, the slope is sometimes positive and sometimes 0, and, after 16 rounds, the slope is reliably quite positive. Error bars represent the range of scores on 3 runs for each model.
 
 **[Fig 2 Main result]**
 
-Of the four probes, the arithmetic and ordering probes seem stronger in that they separate the held out examples further. On these stronger probes, no attack gets all the way past the probe’s threshold. On the weaker probes, belief tracking and contradiction, top model attacks sometimes do pass the threshold. Below is a visualization of the probe scores of Fable 5.1’s attacks with toggle ON vs OFF. Adding the attack prompt set to OFF often lowers the probe score by itself, so probe evasion score only counts the difference between the ON and OFF settings to try to isolate the effect of Qwen’s behavior from the effect of the prompt. Percentages are the number of correct evading answers divided by the total number of answers (correct and incorrect).
+Of the four, the arithmetic and ordering probes separate the held out examples further. On these probes with more separation, no attack gets all the way past the probe’s threshold. On the probes with less separation, belief tracking and contradiction, top model attacks sometimes do pass the threshold. Below is a visualization of the probe scores of Fable 5.1’s attacks with toggle ON vs OFF. Adding the attack prompt set to OFF often lowers the probe score by itself, so probe evasion score only counts the difference between the ON and OFF settings to try to isolate the effect of Qwen’s behavior from the effect of the prompt. Percentages are the number of correct evading answers divided by the total number of answers (correct and incorrect).
 
 **[Fig 3 crossings]**
 
@@ -50,11 +50,9 @@ Switch OFF (probe score +5.9)
 
 *The arrival order from first to last is Gia, Kai, Milo, Dina, and Nina.*
 
-The below figure shows the cost to accuracy of each model’s attack after 16 rounds. This is calculated as the difference in % correct with attack OFF vs ON. Correct answers are determined by a combination of rule based code checks and a Claude Sonnet 5.5 judge that isn’t shown the answer. Answers are only counted correct if both agree. The strongest attacks are all from Claude Fable 5.1, and its attacks cost ~20 percentage points on arithmetic, ~10 on ordering, and ~0 on belief tracking and spotting a contradiction. So attacks on arithmetic and ordering can cost a meaningful amount of accuracy, while attacks on belief tracking and contradiction do not.
+The below figure shows the cost to accuracy of each model’s attack after 16 rounds. This is calculated as the difference in % correct with attack OFF vs ON. Correct answers are determined by a combination of rule based code checks and a Claude Sonnet 5.5 judge that isn’t shown the reference answer. Answers are only counted correct if both agree. The strongest attacks are all from Claude Fable 5.1, and its attacks cost ~20 percentage points on arithmetic, ~10 on ordering, and ~0 on belief tracking and spotting a contradiction. So attacks on arithmetic and ordering can cost a meaningful amount of accuracy, while attacks on belief tracking and contradiction do not.
 
 **[Fig 4 task accuracy]**
-
-One worry might be that the probes are only reacting to superficial differences in wording. A word-based TF-IDF baseline test against the probes shows the probes are reacting to something beyond just wording (see Appendix: Probe Quality).
 
 ## Discussion
 
@@ -62,7 +60,7 @@ Part of the idea of a probe is that it can detect a general concept vector havin
 
 **[Space of possible transcripts figure]**
 
-This evaluation is designed as an early warning indicator of voluntary probe evasion in context, which would be quite concerning. As of now, models appear to do significantly better with many rounds of feedback, but even now we see signs of early ability to write evasion prompts with no feedback. I didn’t test probes on large models because of cost, but it’s plausible that they are already capable of prompting themselves to evade. Whether or not that’s the case, stronger models may eventually be able to evade in their own context window. (footnote:
+This evaluation is designed as an early warning indicator of voluntary probe evasion in context, which would be quite concerning. As of now, models appear to do significantly better with many rounds of feedback, but even now we see signs of early ability to write evasion prompts with no feedback. I didn’t test probes on large models because of cost, but it’s plausible that they are already capable of prompting themselves to evade. Whether or not that’s the case, stronger models may eventually be able to evade in their own context window.[^1]
 
 **[Many rounds -> dodge in context figure]**
 
@@ -108,15 +106,17 @@ Finally, given this knowledge, a model needs the ability to produce a trace that
 | Writer budget | 32k output tokens per round, 17 rounds |
 
 - **Practice vs test:** Feedback rounds run on 40 practice problems, the same every round. 100 separate test problems are used to evaluate attack strength.
-- **Feedback rounds:** Each round, the writing model writes one prompt. Qwen answers each practice problem twice (ON and OF; 80 pairs). The writer sees its score, accuracy, median probe scores, example replies with per token scores, and earlier rounds. A checker model rejects prompts that ask for shown work or mention the ON/OFF switch. 3 independent searches are run per writer per task with the same settings (only sampling causes differences).
-- **Evaluation:** The experiment evaluates is the prompt written at round 0 or round 16. The post round 16 prompt is not the best performing prompt out of the 17 prompts. Each prompt answers 100 test problems x 5 seeds, attack ON and OFF. The score only uses pairs where both answers are correct.
+- **Feedback rounds:** Each round, the writing model writes one prompt. Qwen answers each practice problem twice (ON and OFF; 80 responses). The writer sees its score, accuracy, median probe scores, example replies with per token scores, and earlier rounds. A checker model rejects prompts that ask for shown work or mention the ON/OFF switch. 3 independent searches are run per writer per task with the same settings (only sampling causes differences).
+- **Evaluation:** The experiment evaluates the prompt written at round 0 or round 16. The prompt after 16 rounds is not necessarily the best performing prompt. Each prompt answers 100 test problems x 5 seeds, attack ON and OFF. The score only uses pairs where both answers are correct.
 
 ## Appendix: Probe Quality
 
 All probes had 1.000 AUROC on the held out training data styles.
 
-I ran a test to rule out the probes naively responding to differences in wording. For each task, I created two versions of the same question/answer combo (only keeping pairs where Qwen’s reply is identical word for word), one where the correct answer is mentioned in the prompt, and one where an incorrect answer was mentioned instead. So the only differences between the two transcripts are a single changed number, and the fact that Qwen has to derive the correct answer rather than just copy it. The word-based TF-IDF classifier given prompt and response was unable to discriminate in all cases, and each probe reacted strongly to this condition. The probes may respond to differences in wording, but this experiment shows that’s not the only thing they consider.
+I ran a test to test whether these probes distinguish something beyond what a simple word-based classifier can see. For each task, I created two versions of the same question/answer combo (only keeping pairs where Qwen’s reply is identical word for word), one where the correct answer is mentioned in the prompt, and one where an incorrect answer was mentioned instead. So the only differences between the two transcripts are a single changed number, and the fact that Qwen has to derive the correct answer rather than just copy it. The word-based TF-IDF classifier given prompt and response was unable to discriminate in all cases, and each probe reacted strongly to this condition.
 
 **[TFIDF test figure]**
 
-I ran another test to see how much of the probe score movement is predicted by the TF-IDF classifier’s movement per prompt. For arithmetic, most of the movement is explained by wording, and for ordering, almost none is. This implies that the attackers were able to take advantage of both wording based attacks and attacks beyond just wording.
+I ran another test to see how much of the share of the capability trend is predicted by the TF-IDF classifier’s movement per prompt. For arithmetic, most of the trend is explained by the wording classifier, and for ordering, almost none is. This implies that the attackers were able to take advantage of both wording based attacks and attacks beyond what the wording classifier picks up.
+
+[^1]: If a model uses explicit reasoning to evade in context, we may be able to detect this with a CoT monitor. To fool both at once may be more difficult.
