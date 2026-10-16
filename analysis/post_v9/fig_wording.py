@@ -3,7 +3,7 @@
 trend exactly; numbers/wording_share.py). Whisker: 95% interval on the whole trend. Clean style as fig_method.py.
 
 Also figures/wording_share_pct.png: every bar the same length (100% of its task's trend), so only the split shows,
-with the bootstrap 95% interval on the wording share drawn across the boundary (clipped to 0-100%).
+with the bootstrap 95% interval on the TF-IDF-predicted share drawn across the boundary (clipped to 0-100%).
 
     .venv/bin/python analysis/post_v9/fig_wording.py   # writes figures/wording_share.png and figures/wording_share_pct.png
 """
@@ -26,8 +26,8 @@ BAR_H = 0.56
 
 
 def legend(ax, interval_label: str) -> None:
-    handles = [plt.Rectangle((0, 0), 1, 1, color=WORDING, label="predicted by a word classifier's shift (wording)"),
-               plt.Rectangle((0, 0), 1, 1, color=REST, label="not predicted by it"),
+    handles = [plt.Rectangle((0, 0), 1, 1, color=WORDING, label="TF-IDF-predicted share"),
+               plt.Rectangle((0, 0), 1, 1, color=REST, label="not predicted by TF-IDF"),
                plt.Line2D([], [], color=METHOD.MUTED, lw=1.4, label=interval_label)]
     ax.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.45, 1.0), ncol=3, frameon=False, fontsize=11.5, handlelength=1.6)
 
@@ -57,7 +57,7 @@ def shares_figure() -> None:
     ax.tick_params(axis="x", labelsize=12)
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
-    legend(ax, "95% interval on the wording share")
+    legend(ax, "95% interval on the TF-IDF-predicted share")
     fig.savefig(HERE / "figures" / "wording_share_pct.png", dpi=160, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
