@@ -5,13 +5,14 @@ correct answers. The region under the threshold (where the probe is passed) is s
 share of attacks that get past with a correct answer: ON answers that are correct and at or under the threshold, out of
 all 1,500 ON answers.
 
-    .venv/bin/python analysis/post_v9/fig_dots.py   # writes figures/dots_2x2.png
+    .venv/bin/python analysis/post_v9/fig_dots.py   # writes figures/dots_2x2.png (dots) and figures/dots_2x2_hist.png
 """
 
 import importlib.util
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
@@ -65,6 +66,24 @@ def task_data(cfg) -> dict:
     return d
 
 
+BINS = np.arange(-10, 17.01, 0.5)  # log-odds; fine enough to show the edge of each cloud honestly
+
+
+def draw_hist(ax, d: dict, y: float, colour: str, rng) -> None:
+    """The row as a histogram: correct answers filled in the row's colour, wrong ones stacked on top, hatched grey. Heights
+    are counts, scaled so the tallest bin of any row reaches 0.75 of the row spacing."""
+    correct, _ = np.histogram(d["correct"], BINS)
+    wrong, _ = np.histogram(d["wrong"], BINS)
+    scale = 0.75 / HIST_PEAK
+    base = y - 0.35
+    ax.stairs(base + correct * scale, BINS, baseline=base, fill=True, color=colour, alpha=0.55, zorder=2)
+    ax.stairs(base + (correct + wrong) * scale, BINS, baseline=base + correct * scale, fill=True, facecolor="white",
+              edgecolor=WRONG, hatch="/////", linewidth=0, zorder=2)
+
+
+HIST_PEAK = 1  # set in main(): the tallest bin (correct + wrong) over every row of every panel
+
+
 def draw_row(ax, d: dict, y: float, colour: str, rng) -> None:
     ax.scatter(d["wrong"], y + rng.uniform(-0.3, 0.3, len(d["wrong"])), s=14, marker="x", color=WRONG, alpha=0.6,
                linewidths=0.8, zorder=2)
@@ -72,13 +91,13 @@ def draw_row(ax, d: dict, y: float, colour: str, rng) -> None:
                zorder=2)
 
 
-def panel(ax, title: str, d: dict, rng) -> None:
+def panel(ax, title: str, d: dict, rng, draw) -> None:
     line = d["line"]
     ax.axvspan(X_LIMITS[0], line, color=PASS_SHADE, zorder=0)
     ax.axvline(line, color=COLOURS["line"], lw=2.5, zorder=3)
     for i, (label, key) in enumerate(ROWS):
         y = len(ROWS) - 1 - i
-        draw_row(ax, d[key], y, COLOURS[key], rng)
+        draw(ax, d[key], y, COLOURS[key], rng)
         med = float(np.median(d[key]["correct"]))
         ax.plot([med, med], [y - 0.38, y + 0.38], color=COLOURS[key], lw=4, zorder=4, solid_capstyle="butt")
         ax.text(X_LIMITS[0] - 0.4, y, label, ha="right", va="center", fontsize=17, color=COLOURS[key], fontweight="bold")
@@ -93,12 +112,11 @@ def panel(ax, title: str, d: dict, rng) -> None:
         ax.spines[side].set_visible(False)
 
 
-def main() -> None:
-    data = {k: task_data(cfg) for k, cfg in TASKS.items()}
+def figure(data: dict, draw, name: str) -> None:
     rng = np.random.default_rng(0)
     fig, axes = plt.subplots(2, 2, figsize=(15, 9.6), sharex=True, gridspec_kw={"hspace": 0.38, "wspace": 0.3})
     for ax, (k, cfg) in zip(axes.flat, TASKS.items()):
-        panel(ax, cfg.title, data[k], rng)
+        panel(ax, cfg.title, data[k], rng, draw)
     # name the shaded region and the threshold once, in contradiction, whose shaded region is widest
     ax, line = axes[1, 1], data["contradiction"]["line"]
     top = len(ROWS) - 1 + 0.42
@@ -106,11 +124,26 @@ def main() -> None:
     ax.text(line + 0.3, top, "threshold", ha="left", va="bottom", fontsize=13, color=COLOURS["line"])
     for ax in axes[1]:
         ax.set_xlabel("probe score (log-odds)", fontsize=15)
-    fig.legend(handles=[plt.Line2D([], [], marker="o", ls="", ms=6, color=COLOURS["on"], alpha=0.6, label="correct answer"),
-                        plt.Line2D([], [], marker="x", ls="", ms=7, color=WRONG, label="wrong answer")],
+    if draw is draw_row:
+        handles = [plt.Line2D([], [], marker="o", ls="", ms=6, color=COLOURS["on"], alpha=0.6, label="correct answer"),
+                   plt.Line2D([], [], marker="x", ls="", ms=7, color=WRONG, label="wrong answer")]
+    else:
+        handles = [Patch(color=COLOURS["on"], alpha=0.55, label="correct answer"),
+                   Patch(facecolor="white", edgecolor=WRONG, hatch="/////", lw=0, label="wrong answer")]
+    fig.legend(handles=handles,
                loc="lower center", ncol=2, frameon=False, fontsize=13, bbox_to_anchor=(0.5, -0.04))
-    fig.savefig(HERE / "figures" / "dots_2x2.png", dpi=160, bbox_inches="tight", facecolor="white")
+    fig.savefig(HERE / "figures" / name, dpi=160, bbox_inches="tight", facecolor="white")
     plt.close(fig)
+
+
+
+def main() -> None:
+    global HIST_PEAK
+    data = {k: task_data(cfg) for k, cfg in TASKS.items()}
+    HIST_PEAK = max(int((np.histogram(d[r]["correct"], BINS)[0] + np.histogram(d[r]["wrong"], BINS)[0]).max())
+                    for d in data.values() for r in ("plain", "off", "on"))
+    figure(data, draw_row, "dots_2x2.png")
+    figure(data, draw_hist, "dots_2x2_hist.png")
 
 
 if __name__ == "__main__":
