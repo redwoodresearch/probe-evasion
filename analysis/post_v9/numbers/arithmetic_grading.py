@@ -12,16 +12,21 @@ This replaces both of arithmetic's earlier rules (m19's strict rule for the prob
 correctness-only re-check for the accuracy cost) with one rule used for both. Writes <root>/consistent_grading.json
 {row id: valid} for m45's arithmetic roots, round-0 and round-16 arms plus the unattacked (plain) answers.
 
-    PYTHONPATH=src .venv/bin/python analysis/post_v9/numbers/arithmetic_grading.py
+    PYTHONPATH=src .venv/bin/python analysis/post_v9/numbers/arithmetic_grading.py [batch ...]   # default: c d
 """
 
 import json
 import re
+import sys
 import unicodedata
 from collections import Counter
 from pathlib import Path
 
-ROOTS = [Path(f"missions/m45_toggle_sweep/runs/{b}/qwen35_27b") for b in ("c", "d")]
+def root_of(batch: str) -> Path:
+    return Path(f"missions/m45_toggle_sweep/runs/{batch}/qwen35_27b")
+
+
+DEFAULT_BATCHES = ("c", "d")
 OUT_NAME = "consistent_grading.json"
 EFFORT_POINTS = ("@B0#", "@B16#")
 MAX_WORDS, MAX_REPLY_TOKENS = 40, 96
@@ -188,7 +193,7 @@ def apply(rows: list[dict], test_file: Path) -> list[dict]:
 
 
 def main() -> None:
-    for root in ROOTS:
+    for root in map(root_of, sys.argv[1:] or DEFAULT_BATCHES):
         rows = rows_to_grade(root)
         graded = grade(rows)
         (root / OUT_NAME).write_text(json.dumps(graded))
