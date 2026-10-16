@@ -35,18 +35,32 @@ def code(text: str) -> str:
 training_heads = [f"### {t}: training samples" for _, t in TASKS]
 attacks_start = SAMPLES.index("## Attacks after 16 rounds")
 attack_heads = [f"### {t}\n" for _, t in TASKS]
+def first_example(training: str, kind: str) -> str:
+    """The first <details> block of a task's training samples whose title starts with kind ("Positive" / "Negative")."""
+    return next(b for b in re.findall(r"<details>.*?</details>", training, re.S) if b.startswith(f"<details><summary>{kind}"))
+
+
+def searches(text: str) -> str:
+    """'chain' -> 'search' (the post's word) on the "Chain shown: ..." description line only, never in verbatim text."""
+    return re.sub(r"^Chain shown:.*$", lambda m: m[0].replace("chains", "searches").replace("chain", "search").replace("Chain", "Search"),
+                  text, flags=re.M)
+
+
 out = ["## Appendix: Probe Data", "",
        "All text is copied verbatim from the data files. Scores are probe log-odds, read with the whole prompt in view. "
-       "Training examples show Qwen's reply to a training question (positives need the task's reasoning; negatives don't). "
-       "Attack examples are round-16 prompts from a writer in the middle of the field and from the top writer (Claude Fable 5.1), "
-       "Each attack example shows that writer's median search, on the test problem where that search has its median ON/OFF drop.", ""]
+       "For each task: one positive and one negative training example (Qwen's reply to a training question; positives need the "
+       "task's reasoning, negatives don't), and one attack after 16 rounds from the top writer, Claude Fable 5.1. The attack shows "
+       "Fable 5.1's median search, on the test problem where that search has its median ON/OFF drop.", ""]
 for n, (heading, task) in enumerate(TASKS):
-    out += [f"### {heading} Probe Data", "", "**Training examples**", ""]
     nxt = training_heads[n + 1] if n + 1 < len(TASKS) else "## Attacks after 16 rounds"
-    out += [collapsibles(section(training_heads[n], nxt)), ""]
+    training = section(training_heads[n], nxt)
     a0 = SAMPLES.index(attack_heads[n], attacks_start) + len(attack_heads[n])
     a1 = SAMPLES.index(attack_heads[n + 1], a0) if n + 1 < len(TASKS) else len(SAMPLES)
-    out += ["**Attack examples (after 16 rounds)**", "", collapsibles(SAMPLES[a0:a1].strip()), ""]
+    attack = SAMPLES[a0:a1]
+    attack = attack[attack.index("#### Top writer"):].strip()
+    out += [f"### {heading} Probe Data", "", "**Training examples**", "",
+            collapsibles(first_example(training, "Positive")), "", collapsibles(first_example(training, "Negative")), "",
+            "**Attack (after 16 rounds)**", "", searches(collapsibles(attack)), ""]
 
 out += ["## Appendix: Prompts", "",
         "Every writer gets the same system prompt for a task (below) and the opening message “Round 0 of 16. You have not seen any scores yet. "
