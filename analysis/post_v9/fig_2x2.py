@@ -82,7 +82,7 @@ def xpos(w: str, meta: dict) -> float:
 ROUND0_BAR_SHIFT = 0.0  # ECI units; 0 = round-0 bars run through their own dot
 
 
-def plot_round(ax, t: dict, meta: dict, hollow: bool, bars: bool, fit_style: str, fit_colour: str | None = None) -> None:
+def plot_round(ax, t: dict, meta: dict, hollow: bool, bars: bool, fit_style: str, fit_colour: str | None = None, marker: str = "o") -> None:
     means, chains = t["writer_means"], t["writer_chains"]
     for w, m in means.items():
         x, colour = xpos(w, meta), F.LAB_COLOUR[meta[w]["lab"]]
@@ -90,7 +90,7 @@ def plot_round(ax, t: dict, meta: dict, hollow: bool, bars: bool, fit_style: str
             ax.vlines(x, min(chains[w]), max(chains[w]), color=colour, lw=1.8, alpha=0.5)
         elif bars:  # round 0: thinner and dashed, so the two rounds' bars stay distinguishable
             ax.vlines(x + ROUND0_BAR_SHIFT, min(chains[w]), max(chains[w]), color=colour, lw=1.2, alpha=0.6, linestyles=(0, (2, 1.5)))
-        ax.plot(x, m, "o", ms=9 if hollow else 10, mfc="white" if hollow else colour, mec=colour, mew=1.8, zorder=3)
+        ax.plot(x, m, marker, ms=9 if hollow else 10, mfc="white" if hollow else colour, mec=colour, mew=1.8, zorder=3)
     k, c0 = np.polyfit([meta[w]["eci"] for w in means], list(means.values()), 1)
     ax.plot(FIT_XS, k * FIT_XS + c0, fit_style, color=fit_colour or F.v6.TEXT, lw=2.2 if fit_colour else 1.8)
 
@@ -257,6 +257,58 @@ def figure(rounds: tuple[str, ...], meta: dict, name: str, suptitle: str | None 
     plt.close(fig)
 
 
+TFIDF_TREND = json.loads((HERE / "numbers" / "tfidf_trend.json").read_text())
+TFIDF_LINE, TFIDF_BAND = "#2a7f8f", "#5fb3c2"  # teal: not a lab colour and not the probe's grey
+TFIDF_LABEL = "word classifier (TF-IDF on request + reply)"
+TFIDF_SKIP = {"contradiction": "Word classifier not shown: normal answers sit only\n"
+                               "{gap:.1f} log-odds above its threshold, so this score\n"
+                               "swings from {lo:+.1f} to {hi:+.1f} across writers"}
+
+
+def figure_vs_tfidf(meta: dict, name: str) -> None:
+    """Round 16 only: the probe's trend (as the main figure) and the word classifier's on the same answers, each scored
+    against its own threshold (numbers/tfidf_trend.py). The attacks were tuned against the probe."""
+    fig, axes = plt.subplots(2, 2, figsize=(15, 11), sharex=True, sharey=True, gridspec_kw={"hspace": 0.2, "wspace": 0.08})
+    for ax, (task, title) in zip(axes.flat, PANELS.items()):
+        probe, words = NUMBERS[task]["B16"], TFIDF_TREND[task]
+        lo, hi = fit_band(probe["writer_chains"], meta)
+        ax.fill_between(FIT_XS, lo, hi, color=F.v6.TEXT, alpha=0.13, lw=0, zorder=1)
+        plot_round(ax, probe, meta, hollow=False, bars=True, fit_style="-")
+        if task in TFIDF_SKIP:
+            means = words["writer_means"].values()
+            ax.text(0.98, 0.03, TFIDF_SKIP[task].format(gap=words["gap"], lo=min(means), hi=max(means)), transform=ax.transAxes,
+                    va="bottom", ha="right", fontsize=11, color=TFIDF_LINE, linespacing=1.35)  # bottom right: empty there
+        else:
+            lo, hi = fit_band(words["writer_chains"], meta)
+            ax.fill_between(FIT_XS, lo, hi, color=TFIDF_BAND, alpha=0.22, lw=0, zorder=1)
+            plot_round(ax, words, meta, hollow=True, bars=False, fit_style="-", fit_colour=TFIDF_LINE, marker="s")
+        label_writers(ax, probe["writer_means"], probe["writer_chains"], meta)
+        ax.set_title(title, fontsize=16)
+        ax.axhline(0, color=F.v6.MUTED, lw=0.8)
+        ax.grid(axis="y", color=F.v6.GRID)
+        ax.set_xlim(130, 179)
+        ax.set_xticks(range(130, 171, 10))
+        ax.set_ylim(*Y_LIMITS)
+    for ax in axes[-1]:
+        ax.set_xlabel("writer capability (Epoch Capabilities Index)")
+    for ax in axes[:, 0]:
+        ax.set_ylabel("evasion score", fontsize=15, labelpad=40)
+        ax.text(-0.095, 0.5, "(0 = no move; 1 = moved the full distance from a\nnormal answer to that detector's threshold)",
+                transform=ax.transAxes, rotation=90, ha="center", va="center", fontsize=11, linespacing=1.3, color=F.v6.MUTED)
+    detectors = [Line2D([], [], marker="o", ms=10, color=F.v6.TEXT, mfc=F.v6.TEXT, mec=F.v6.TEXT, lw=2.2, label="probe (reads activations)"),
+                 Line2D([], [], marker="s", ms=9, color=TFIDF_LINE, mfc="white", mec=TFIDF_LINE, mew=1.8, lw=2.2, label=TFIDF_LABEL)]
+    fig.legend(handles=detectors, loc="lower center", ncol=2, frameon=False, fontsize=15, bbox_to_anchor=(0.5, 0.95),
+               columnspacing=3, handlelength=3.2)
+    labs = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
+    fig.legend(handles=labs, loc="lower center", ncol=len(labs), frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.01))
+    fig.text(0.5, 0.06, "After 16 rounds of feedback against the probe; the same answers scored by both detectors, each against its own "
+             "threshold (1% false positives on hard negatives); shaded: 95% bands; bars: range over 3 searches (probe)",
+             ha="center", fontsize=11, color=F.v6.MUTED)
+    fig.subplots_adjust(left=0.08, right=0.97, top=0.925, bottom=0.13)
+    fig.savefig(HERE / "figures" / name, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main() -> None:
     meta = {r["writer"]: r for r in F.writer_rows(F.load_m45(), "maths")}  # ECI and lab per writer
     for b, when in ROUNDS.items():
@@ -267,6 +319,7 @@ def main() -> None:
     figure(("B16", "B0"), meta, "trend_2x2_combined_bands_gold0_bars.png", uncertainty="bands_gold0", round0_bars=True)
     for key in ("top", "side"):
         figure(("B16", "B0"), meta, f"trend_2x2_combined_bands_gold0_key_{key}.png", uncertainty="bands_gold0", round0_bars=True, key=key)
+    figure_vs_tfidf(meta, "trend_2x2_probe_vs_tfidf.png")
     how_to_read()
 
 
