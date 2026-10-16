@@ -281,8 +281,6 @@ def figure_vs_tfidf(meta: dict, name: str, separation: bool = False) -> None:
         if separation:
             sep = TFIDF_TREND[task]["separation"]
             probe, words = sep["probe"], sep["tfidf"]
-            ax.text(0.02, 0.97, f"threshold at {sep['probe']['threshold_at']:.2f} (probe), {sep['tfidf']['threshold_at']:.2f} (word classifier)",
-                    transform=ax.transAxes, va="top", ha="left", fontsize=10.5, color=F.v6.MUTED)  # top left: empty in every panel
         lo, hi = fit_band(probe["writer_chains"], meta)
         ax.fill_between(FIT_XS, lo, hi, color=F.v6.TEXT, alpha=0.13, lw=0, zorder=1)
         plot_round(ax, probe, meta, hollow=False, bars=True, fit_style="-")
@@ -304,8 +302,9 @@ def figure_vs_tfidf(meta: dict, name: str, separation: bool = False) -> None:
     for ax in axes[-1]:
         ax.set_xlabel("writer capability (Epoch Capabilities Index)")
     for ax in axes[:, 0]:
-        ax.set_ylabel("evasion score", fontsize=15, labelpad=48)
-        ax.text(-0.11, 0.5, SEPARATION_NOTE if separation else "(0 = no move; 1 = moved the full distance from a\nnormal answer to that detector's threshold)",
+        ax.set_ylabel("evasion score", fontsize=15)
+        ax.yaxis.set_label_coords(-0.16, 0.5)  # just left of the note below, which sits just left of the tick labels
+        ax.text(-0.12, 0.5, SEPARATION_NOTE if separation else "(0 = no move; 1 = moved the full distance from a\nnormal answer to that detector's threshold)",
                 transform=ax.transAxes, rotation=90, ha="center", va="center", fontsize=11, linespacing=1.3, color=F.v6.MUTED)
     detectors = [Line2D([], [], marker="o", ms=10, color=F.v6.TEXT, mfc=F.v6.TEXT, mec=F.v6.TEXT, lw=2.2, label="probe (reads activations)"),
                  Line2D([], [], marker="s", ms=9, color=TFIDF_LINE, mfc="white", mec=TFIDF_LINE, mew=1.8, lw=2.2, label=TFIDF_LABEL)]
@@ -313,7 +312,7 @@ def figure_vs_tfidf(meta: dict, name: str, separation: bool = False) -> None:
                columnspacing=3, handlelength=3.2)
     labs = [Line2D([], [], marker="o", ls="", ms=9, color=c, label=lab) for lab, c in F.LAB_COLOUR.items()]
     fig.legend(handles=labs, loc="lower center", ncol=len(labs), frameon=False, fontsize=11.5, bbox_to_anchor=(0.5, -0.04))
-    scale = ("each on its own scale (median normal answer to median hard negative);\nthresholds at 1% false positives on hard negatives"
+    scale = ("each on its own scale\n(from the median normal answer to the median hard negative)"
              if separation else "each against its own threshold\n(1% false positives on hard negatives)")
     fig.text(0.5, 0.025, f"After 16 rounds of feedback against the probe; the same answers scored by both detectors, {scale}; "
              "shaded: 95% bands; bars: range over 3 searches (probe)",
