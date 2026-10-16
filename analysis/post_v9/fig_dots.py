@@ -1,10 +1,11 @@
-"""Moves vs gets past: where Fable 5.1's test answers sit against the threshold after 16 rounds, attack OFF vs ON
-(pairs where both answers are valid, 3 searches pooled), one panel per task on one shared x scale. The region under the
-threshold (where the probe is passed) is shaded. Each panel states the net crossing rate, the measure the post quotes:
-pairs where ON is at or under the threshold and OFF is over it, minus the reverse, over all 1,500 pairs (3 searches x 500
-problems; a pair with an invalid answer counts as no crossing). It must equal numbers.json's value for the writer.
+"""Moves vs gets past: where Fable 5.1's test answers sit against the threshold after 16 rounds, with no attack, attack
+OFF and attack ON (3 searches pooled: 1,500 answers per row; the unattacked row is the 500 plain answers), one panel per
+task on one shared x scale. Correct answers are coloured dots, wrong ones grey crosses; the tick marks the median of the
+correct answers. The region under the threshold (where the probe is passed) is shaded. Each panel's big number is the
+share of attacks that get past with a correct answer: ON answers that are correct and at or under the threshold, out of
+all 1,500 ON answers.
 
-    .venv/bin/python analysis/post_v9/fig_dots.py   # writes figures/dots_2x2.png (dots) and figures/dots_2x2_density.png
+    .venv/bin/python analysis/post_v9/fig_dots.py   # writes figures/dots_2x2.png
 """
 
 import importlib.util
@@ -12,7 +13,6 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.stats import gaussian_kde
 
 HERE = Path(__file__).resolve().parent
 _spec = importlib.util.spec_from_file_location("fig_2x2", HERE / "fig_2x2.py")
@@ -23,6 +23,7 @@ M45, M49 = DOTS.M45, Path("missions/m49_new_task_toggle/runs")
 WRITER, WRITER_LABEL = "fable51", "Claude Fable 5.1"
 COLOURS = FIG.EXAMPLE_COLOURS
 PASS_SHADE, PASS_TEXT = "#e9f2ec", "#2f6b45"
+WRONG = "#9aa3a0"  # wrong answers, in every row
 ROWS = (("no attack", "plain"), ("OFF", "off"), ("ON", "on"))  # top to bottom; "no attack" = the unattacked test answers
 X_LIMITS = (-10, 17)  # wide enough that ordering's OFF tail is not cut
 
@@ -46,50 +47,43 @@ TASKS = {
 }
 
 
-def net_crossing_rate(cfg, line: float) -> float:
-    pairs: dict = {}
-    for r in DOTS.read(cfg.writer_rows):
-        arm, side = r["key"].rsplit("#", 1)
-        if arm.endswith(f"@B{DOTS.B}"):
-            pairs.setdefault((arm, r["seed"], r["task"]["id"]), {})[side] = r
-    score = lambda r: r["peaks_visible"][cfg.probe]
-    valid = [p for p in pairs.values() if p["on"]["valid"] and p["off"]["valid"]]
-    forward = sum(score(p["on"]) <= line < score(p["off"]) for p in valid)
-    reverse = sum(score(p["off"]) <= line < score(p["on"]) for p in valid)
-    return (forward - reverse) / len(pairs)
+def answers(rows: list[dict], probe: str, keep) -> dict[str, np.ndarray]:
+    """Probe scores (prompt in view) of the kept rows, split by correct / wrong."""
+    kept = [r for r in rows if keep(r)]
+    return {"correct": np.array([r["peaks_visible"][probe] for r in kept if r["valid"]]),
+            "wrong": np.array([r["peaks_visible"][probe] for r in kept if not r["valid"]])}
 
 
-def task_data(task: str, cfg) -> dict:
-    _, plain, off, on = (xs for _, xs, _ in DOTS.strips(cfg))
-    line = DOTS.flag_line(cfg)
-    net = net_crossing_rate(cfg, line)
-    reported = FIG.NUMBERS[task]["B16"]["crossings"][WRITER]["net"]
-    assert abs(net - reported) < 0.005, (task, net, reported)
-    return {"plain": plain, "off": off, "on": on, "line": line, "net": net}
+def task_data(cfg) -> dict:
+    rows = DOTS.read(cfg.writer_rows)
+    d = {side: answers(rows, cfg.probe, lambda r, s=side: r["key"].endswith(f"@B{DOTS.B}#{s}")) for side in ("on", "off")}
+    d["plain"] = answers(DOTS.read(cfg.plain), cfg.probe, lambda r: r["key"] == "plain")
+    n_on = len(d["on"]["correct"]) + len(d["on"]["wrong"])
+    assert n_on == 1500, (cfg.title, n_on)
+    d["line"] = DOTS.flag_line(cfg)
+    d["passed"] = float(np.sum(d["on"]["correct"] <= d["line"])) / n_on
+    return d
 
 
-def draw_dots(ax, xs: np.ndarray, y: float, colour: str, rng) -> None:
-    ax.scatter(xs, y + rng.uniform(-0.3, 0.3, len(xs)), s=7, color=colour, alpha=0.28, linewidths=0, zorder=2)
+def draw_row(ax, d: dict, y: float, colour: str, rng) -> None:
+    ax.scatter(d["wrong"], y + rng.uniform(-0.3, 0.3, len(d["wrong"])), s=14, marker="x", color=WRONG, alpha=0.6,
+               linewidths=0.8, zorder=2)
+    ax.scatter(d["correct"], y + rng.uniform(-0.3, 0.3, len(d["correct"])), s=7, color=colour, alpha=0.28, linewidths=0,
+               zorder=2)
 
 
-def draw_density(ax, xs: np.ndarray, y: float, colour: str, rng) -> None:
-    grid = np.linspace(*X_LIMITS, 400)
-    dens = gaussian_kde(xs)(grid)
-    ax.fill_between(grid, y - 0.35, y - 0.35 + 0.75 * dens / dens.max(), color=colour, alpha=0.55, lw=0, zorder=2)
-
-
-def panel(ax, title: str, d: dict, draw, rng) -> None:
+def panel(ax, title: str, d: dict, rng) -> None:
     line = d["line"]
     ax.axvspan(X_LIMITS[0], line, color=PASS_SHADE, zorder=0)
     ax.axvline(line, color=COLOURS["line"], lw=2.5, zorder=3)
     for i, (label, key) in enumerate(ROWS):
         y = len(ROWS) - 1 - i
-        draw(ax, d[key], y, COLOURS[key], rng)
-        med = float(np.median(d[key]))
+        draw_row(ax, d[key], y, COLOURS[key], rng)
+        med = float(np.median(d[key]["correct"]))
         ax.plot([med, med], [y - 0.38, y + 0.38], color=COLOURS[key], lw=4, zorder=4, solid_capstyle="butt")
         ax.text(X_LIMITS[0] - 0.4, y, label, ha="right", va="center", fontsize=17, color=COLOURS[key], fontweight="bold")
-    ax.text(X_LIMITS[1], 0.05, f"{d['net']:.0%}", ha="right", va="center", fontsize=26, color=COLOURS["on"], fontweight="bold")
-    ax.text(X_LIMITS[1], -0.5, "of attacks get past", ha="right", va="center", fontsize=12.5, color=COLOURS["on"])
+    ax.text(X_LIMITS[1], 0.05, f"{d['passed']:.0%}", ha="right", va="center", fontsize=26, color=COLOURS["on"], fontweight="bold")
+    ax.text(X_LIMITS[1], -0.5, "of attacks get past, correct", ha="right", va="center", fontsize=12.5, color=COLOURS["on"])
     ax.set_title(title, fontsize=19, pad=16)
     ax.set_xlim(*X_LIMITS)
     ax.set_ylim(-0.75, len(ROWS) - 0.45)
@@ -99,12 +93,12 @@ def panel(ax, title: str, d: dict, draw, rng) -> None:
         ax.spines[side].set_visible(False)
 
 
-def figure(draw, name: str) -> None:
-    data = {k: task_data(k, cfg) for k, cfg in TASKS.items()}
+def main() -> None:
+    data = {k: task_data(cfg) for k, cfg in TASKS.items()}
     rng = np.random.default_rng(0)
     fig, axes = plt.subplots(2, 2, figsize=(15, 9.6), sharex=True, gridspec_kw={"hspace": 0.38, "wspace": 0.3})
     for ax, (k, cfg) in zip(axes.flat, TASKS.items()):
-        panel(ax, cfg.title, data[k], draw, rng)
+        panel(ax, cfg.title, data[k], rng)
     # name the shaded region and the threshold once, in contradiction, whose shaded region is widest
     ax, line = axes[1, 1], data["contradiction"]["line"]
     top = len(ROWS) - 1 + 0.42
@@ -112,13 +106,11 @@ def figure(draw, name: str) -> None:
     ax.text(line + 0.3, top, "threshold", ha="left", va="bottom", fontsize=13, color=COLOURS["line"])
     for ax in axes[1]:
         ax.set_xlabel("probe score (log-odds)", fontsize=15)
-    fig.savefig(HERE / "figures" / name, dpi=160, bbox_inches="tight", facecolor="white")
+    fig.legend(handles=[plt.Line2D([], [], marker="o", ls="", ms=6, color=COLOURS["on"], alpha=0.6, label="correct answer"),
+                        plt.Line2D([], [], marker="x", ls="", ms=7, color=WRONG, label="wrong answer")],
+               loc="lower center", ncol=2, frameon=False, fontsize=13, bbox_to_anchor=(0.5, -0.04))
+    fig.savefig(HERE / "figures" / "dots_2x2.png", dpi=160, bbox_inches="tight", facecolor="white")
     plt.close(fig)
-
-
-def main() -> None:
-    figure(draw_dots, "dots_2x2.png")
-    figure(draw_density, "dots_2x2_density.png")
 
 
 if __name__ == "__main__":
