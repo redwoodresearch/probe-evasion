@@ -70,10 +70,10 @@ def task_result(task: str, numbers: dict) -> dict:
         out[f"B{b}"] = {
             "chains": [c["gap_closed"] for c in chains], "mean": float(np.mean([c["gap_closed"] for c in chains])),
             "on_correct": [c.get("on_correct_share") for c in chains], "off_correct": [c.get("off_correct_share") for c in chains],
-            "on_correct_under_line": [c.get("on_valid_under_line", 0) for c in chains],
+            "on_correct_under_line": [int(c.get("on_valid_under_line", 0)) for c in chains],
             "fit_at_qwen_eci_range": [float(slope * e + intercept) for e in QWEN_ECI_RANGE],
             "qwen35_9b": means["qwen35_9b"], "qwen35_397b": means["qwen35_397b"],
-            "writers_below": sum(v < np.mean([c["gap_closed"] for c in chains]) for v in means.values())}
+            "writers_below": int(sum(v < np.mean([c["gap_closed"] for c in chains]) for v in means.values()))}
     return out
 
 
