@@ -1,19 +1,20 @@
 """Moves vs gets past: where Fable 5.1's test answers sit against the threshold after 16 rounds, with no attack, attack
 OFF and attack ON (3 searches pooled: 1,500 answers per row; the unattacked row is the 500 plain answers), one panel per
 task on one shared x scale. Correct answers are coloured dots, wrong ones grey crosses; the tick marks the median of the
-correct answers. The region under the threshold (where the probe is passed) is shaded. Each panel's big number is the
+correct answers. The histogram versions split the answers into two figures, dots_2x2_hist_correct.png and
+dots_2x2_hist_wrong.png (the latter's ticks mark the median wrong answer). The region under the threshold (where the probe is passed) is shaded. Each panel's big number is the
 share of attacks that get past with a correct answer: ON answers that are correct and at or under the threshold, out of
 all 1,500 ON answers.
 
-    .venv/bin/python analysis/post_v9/fig_dots.py   # writes figures/dots_2x2.png (dots) and figures/dots_2x2_hist.png
+    .venv/bin/python analysis/post_v9/fig_dots.py   # writes figures/dots_2x2.png and figures/dots_2x2_hist_{correct,wrong}.png
 """
 
 import importlib.util
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import Patch
 import numpy as np
+from matplotlib.patches import Patch
 
 HERE = Path(__file__).resolve().parent
 _spec = importlib.util.spec_from_file_location("fig_2x2", HERE / "fig_2x2.py")
@@ -67,21 +68,21 @@ def task_data(cfg) -> dict:
 
 
 BINS = np.arange(-10, 17.01, 0.5)  # log-odds; fine enough to show the edge of each cloud honestly
+HIST_HEIGHT = 0.8  # of the row spacing, for the tallest bin in the figure
 
 
-def draw_hist(ax, d: dict, y: float, colour: str, rng) -> None:
-    """The row as a histogram: correct answers filled in the row's colour, wrong ones stacked on top, hatched grey. Heights
-    are counts, scaled so the tallest bin of any row reaches 0.75 of the row spacing."""
-    correct, _ = np.histogram(d["correct"], BINS)
-    wrong, _ = np.histogram(d["wrong"], BINS)
-    scale = 0.75 / HIST_PEAK
-    base = y - 0.35
-    ax.stairs(base + correct * scale, BINS, baseline=base, fill=True, color=colour, alpha=0.55, zorder=2)
-    ax.stairs(base + (correct + wrong) * scale, BINS, baseline=base + correct * scale, fill=True, facecolor="white",
-              edgecolor=WRONG, hatch="/////", linewidth=0, zorder=2)
-
-
-HIST_PEAK = 1  # set in main(): the tallest bin (correct + wrong) over every row of every panel
+def hist_drawer(kind: str, peak: int):
+    """Draws one row as a histogram of only the correct or only the wrong answers. Heights are counts, on one scale
+    across the figure (peak = its tallest bin)."""
+    def draw(ax, d: dict, y: float, colour: str, rng) -> None:
+        counts, _ = np.histogram(d[kind], BINS)
+        base = y - 0.38
+        ax.stairs(base + counts * HIST_HEIGHT / peak, BINS, baseline=base, fill=True,
+                  color=colour if kind == "correct" else WRONG, alpha=0.6 if kind == "correct" else 0.8, lw=0, zorder=2)
+        if kind == "wrong":
+            ax.text(X_LIMITS[1], y, f"{len(d['wrong'])} wrong", ha="right", va="center", fontsize=13, color="#6b7470")
+    draw.kind = kind
+    return draw
 
 
 def draw_row(ax, d: dict, y: float, colour: str, rng) -> None:
@@ -98,11 +99,18 @@ def panel(ax, title: str, d: dict, rng, draw) -> None:
     for i, (label, key) in enumerate(ROWS):
         y = len(ROWS) - 1 - i
         draw(ax, d[key], y, COLOURS[key], rng)
-        med = float(np.median(d[key]["correct"]))
+        shown = d[key][getattr(draw, "kind", "correct")]
+        if not len(shown):
+            continue
+        med = float(np.median(shown))
         ax.plot([med, med], [y - 0.38, y + 0.38], color=COLOURS[key], lw=4, zorder=4, solid_capstyle="butt")
-        ax.text(X_LIMITS[0] - 0.4, y, label, ha="right", va="center", fontsize=17, color=COLOURS[key], fontweight="bold")
-    ax.text(X_LIMITS[1], 0.05, f"{d['passed']:.0%}", ha="right", va="center", fontsize=26, color=COLOURS["on"], fontweight="bold")
-    ax.text(X_LIMITS[1], -0.5, "of attacks get past, correct", ha="right", va="center", fontsize=12.5, color=COLOURS["on"])
+    for i, (label, key) in enumerate(ROWS):
+        ax.text(X_LIMITS[0] - 0.4, len(ROWS) - 1 - i, label, ha="right", va="center", fontsize=17, color=COLOURS[key],
+                fontweight="bold")
+    if getattr(draw, "kind", "correct") == "correct":
+        ax.text(X_LIMITS[1], 0.05, f"{d['passed']:.0%}", ha="right", va="center", fontsize=26, color=COLOURS["on"],
+                fontweight="bold")
+        ax.text(X_LIMITS[1], -0.5, "of attacks get past, correct", ha="right", va="center", fontsize=12.5, color=COLOURS["on"])
     ax.set_title(title, fontsize=19, pad=16)
     ax.set_xlim(*X_LIMITS)
     ax.set_ylim(-0.75, len(ROWS) - 0.45)
@@ -124,26 +132,27 @@ def figure(data: dict, draw, name: str) -> None:
     ax.text(line + 0.3, top, "threshold", ha="left", va="bottom", fontsize=13, color=COLOURS["line"])
     for ax in axes[1]:
         ax.set_xlabel("probe score (log-odds)", fontsize=15)
-    if draw is draw_row:
+    kind = getattr(draw, "kind", None)
+    if kind is None:
         handles = [plt.Line2D([], [], marker="o", ls="", ms=6, color=COLOURS["on"], alpha=0.6, label="correct answer"),
                    plt.Line2D([], [], marker="x", ls="", ms=7, color=WRONG, label="wrong answer")]
+    elif kind == "correct":
+        handles = [Patch(color=COLOURS["on"], alpha=0.6, label="correct answers only (wrong answers in the companion figure)")]
     else:
-        handles = [Patch(color=COLOURS["on"], alpha=0.55, label="correct answer"),
-                   Patch(facecolor="white", edgecolor=WRONG, hatch="/////", lw=0, label="wrong answer")]
+        handles = [Patch(color=WRONG, alpha=0.8, label="wrong answers only (heights on their own scale)")]
     fig.legend(handles=handles,
-               loc="lower center", ncol=2, frameon=False, fontsize=13, bbox_to_anchor=(0.5, -0.04))
+               loc="lower center", ncol=len(handles), frameon=False, fontsize=13, bbox_to_anchor=(0.5, -0.04))
     fig.savefig(HERE / "figures" / name, dpi=160, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 
 
 def main() -> None:
-    global HIST_PEAK
     data = {k: task_data(cfg) for k, cfg in TASKS.items()}
-    HIST_PEAK = max(int((np.histogram(d[r]["correct"], BINS)[0] + np.histogram(d[r]["wrong"], BINS)[0]).max())
-                    for d in data.values() for r in ("plain", "off", "on"))
     figure(data, draw_row, "dots_2x2.png")
-    figure(data, draw_hist, "dots_2x2_hist.png")
+    for kind in ("correct", "wrong"):
+        peak = max(int(np.histogram(d[r][kind], BINS)[0].max()) for d in data.values() for r in ("plain", "off", "on"))
+        figure(data, hist_drawer(kind, peak), f"dots_2x2_hist_{kind}.png")
 
 
 if __name__ == "__main__":
