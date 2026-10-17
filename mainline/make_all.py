@@ -72,7 +72,7 @@ def figures() -> None:
     for name, source in FIGURES.items():
         shutil.copyfile(source, out / name)
     print(f"copied {len(FIGURES)} figures to {out.relative_to(REPO)}")
-    run([PY, "analysis/post_v9/build_lesswrong_post.py"])
+    run([PY, "analysis/post_v9/build_lesswrong_post.py"], pythonpath_src=True)
 
 
 def main() -> None:

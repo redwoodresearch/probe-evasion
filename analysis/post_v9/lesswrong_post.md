@@ -119,6 +119,27 @@ I ran a test to test whether these probes distinguish something beyond what a si
 
 I ran another test to see how much of the share of the capability trend is predicted by the TF-IDF classifier’s movement per prompt. For arithmetic, most of the trend is explained by the wording classifier, and for ordering, almost none is. This implies that the attackers were able to take advantage of both wording based attacks and attacks beyond what the wording classifier picks up.
 
+## Appendix: Writer Models
+
+The 14 models that wrote attack prompts, by Epoch Capabilities Index (ECI). Every writer had the same prompt, the same 32,000-token output budget per round (reasoning included), no fallback to another model or provider, and 3 independent searches per task.
+
+| Model | Developer | ECI [Epoch's interval] | Model ID | Served by | Reasoning |
+|---|---|---|---|---|---|
+| Claude Opus 5.5 | Anthropic | 167.3 [164.1, 171.7] | `claude-opus-5-5` | Anthropic API | Adaptive thinking, effort high |
+| GPT-6 Astra | OpenAI | 166.4 [163.3, 171.5] | `openai/gpt-6-astra` | OpenRouter, pinned to OpenAI | Reasoning on, default effort |
+| GPT-6.1 Sol | OpenAI | 166.1 [162.9, 170.6] | `openai/gpt-6.1-sol` | OpenRouter, pinned to OpenAI | Reasoning on, default effort |
+| Claude Sonnet 5.5 | Anthropic | 165.0 [161.7, 169.1] | `claude-sonnet-5-5` | Anthropic API | Adaptive thinking, effort high |
+| Claude Fable 5.1 | Anthropic | 164.7 [161.6, 168.8] | `claude-fable-5-1` | Anthropic API | Adaptive thinking, effort high |
+| GPT-6 Sol | OpenAI | 162.7 [160.1, 166.6] | `openai/gpt-6-sol` | OpenRouter, pinned to OpenAI | Reasoning on, default effort |
+| Claude Opus 4.8 | Anthropic | 158.2 [156.0, 160.8] | `claude-opus-4-8` | Anthropic API | Adaptive thinking, effort high |
+| Gemini 3.8 Flash | Google | 156.7 [154.4, 160.3] | `google/gemini-3.8-flash` | OpenRouter, pinned to Google AI Studio | Reasoning on, default effort |
+| GPT-5.4 Mini | OpenAI | 148.8 [147.1, 150.3] | `openai/gpt-5.4-mini` | OpenRouter, pinned to OpenAI | Reasoning on, default effort |
+| Qwen3.5-397B-A17B | Alibaba | 146.7 [144.9, 148.3] | `qwen/qwen3.5-397b-a17b` | OpenRouter, pinned to Alibaba | Reasoning on, default effort |
+| Claude Haiku 4.5 | Anthropic | 142.4 [139.4, 144.1] | `claude-haiku-4-5` | Anthropic API | Extended thinking, 16,000-token budget |
+| Qwen3.5-9B | Alibaba | 139.5 [136.2, 141.5] | `qwen/qwen3.5-9b` | OpenRouter, pinned to Parasail (bf16; the first rounds of the arithmetic and ordering searches ran on DeepInfra, bf16) | Reasoning on, default effort |
+| GPT-5 nano | OpenAI | 139.4 [134.1, 141.4] | `openai/gpt-5-nano` | OpenRouter, pinned to OpenAI | Reasoning on, default effort |
+| Llama 4 Maverick | Meta | 132.2 [127.7, 134.3] | `meta-llama/llama-4-maverick` | OpenRouter, pinned to Parasail (fp8) | None (no reasoning mode) |
+
 ## Appendix: Probe Data
 
 All text is copied verbatim from the data files. Scores are probe log-odds, read with the whole prompt in view. For each task: one positive and one negative training example (Qwen's reply to a training question; positives need the task's reasoning, negatives don't), and one attack after 16 rounds from the top writer, Claude Fable 5.1. The attack shows Fable 5.1's median search, on the test problem where that search has its median ON/OFF drop.

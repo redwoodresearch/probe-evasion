@@ -5,6 +5,7 @@ formatting changes) plus the two filled appendices, Probe Data and Prompts, with
 """
 import json
 import re
+import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -35,6 +36,31 @@ def code(text: str) -> str:
 training_heads = [f"### {t}: training samples" for _, t in TASKS]
 attacks_start = SAMPLES.index("## Attacks after 16 rounds")
 attack_heads = [f"### {t}\n" for _, t in TASKS]
+REASONING = {  # the sweep's recorded setting (m36_attacker_capability_sweep.Writer.reasoning), in plain words
+    "adaptive thinking": "Adaptive thinking, effort high",
+    "extended thinking": "Extended thinking, 16,000-token budget",
+    "reasoning on": "Reasoning on, default effort",
+    "none": "None (no reasoning mode)",
+}
+SERVED_NOTE = {"qwen35_9b": " (bf16; the first rounds of the arithmetic and ordering searches ran on DeepInfra, bf16)",
+               "llama4maverick": " (fp8)"}
+
+
+def writer_table() -> list[str]:
+    """The 14 writers from the sweep's own registry (m36 + m45's later writers), by ECI."""
+    from probe_evasion.missions import m45_toggle_sweep as m45
+    sys.path.insert(0, str(HERE / "numbers"))
+    import compute
+
+    rows = ["| Model | Developer | ECI [Epoch's interval] | Model ID | Served by | Reasoning |", "|---|---|---|---|---|---|"]
+    for name in sorted(compute.ECI, key=lambda n: -compute.ECI[n]):
+        w = m45.m36.WRITERS[name]
+        served = "Anthropic API" if w.api == "anthropic" else f"OpenRouter, pinned to {w.provider_name}{SERVED_NOTE.get(name, '')}"
+        reasoning = next(v for k, v in REASONING.items() if w.reasoning.startswith(k))
+        rows.append(f"| {w.label} | {w.lab} | {w.eci:.1f} [{w.eci_ci[0]:.1f}, {w.eci_ci[1]:.1f}] | `{w.model}` | {served} | {reasoning} |")
+    return rows
+
+
 def first_example(training: str, kind: str) -> str:
     """The first <details> block of a task's training samples whose title starts with kind ("Positive" / "Negative")."""
     return next(b for b in re.findall(r"<details>.*?</details>", training, re.S) if b.startswith(f"<details><summary>{kind}"))
@@ -46,7 +72,11 @@ def searches(text: str) -> str:
                   text, flags=re.M)
 
 
-out = ["## Appendix: Probe Data", "",
+out = ["## Appendix: Writer Models", "",
+       "The 14 models that wrote attack prompts, by Epoch Capabilities Index (ECI). Every writer had the same prompt, the same "
+       "32,000-token output budget per round (reasoning included), no fallback to another model or provider, and 3 independent "
+       "searches per task.", "", *writer_table(), "",
+       "## Appendix: Probe Data", "",
        "All text is copied verbatim from the data files. Scores are probe log-odds, read with the whole prompt in view. "
        "For each task: one positive and one negative training example (Qwen's reply to a training question; positives need the "
        "task's reasoning, negatives don't), and one attack after 16 rounds from the top writer, Claude Fable 5.1. The attack shows "
