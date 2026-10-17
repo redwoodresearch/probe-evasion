@@ -3,7 +3,10 @@ how far it moves the probe and how far it moves the TF-IDF word classifier, each
 over pairs with both answers correct, divided by the median unattacked score minus the median hard-negative score;
 numbers/tfidf_trend.py, "separation"). Prompts sorted by the probe's score. The companion of fig_wording.py's summary.
 
-    .venv/bin/python analysis/post_v9/fig_attack_pairs.py   # writes figures/attack_pairs_probe_vs_tfidf.png
+Also figures/attack_scatter_probe_vs_tfidf.png: the same numbers as a scatter, one dot per prompt (TF-IDF on x, probe on
+y, coloured by the writer's lab), with the least-squares line and the dashed line where the two move equally.
+
+    .venv/bin/python analysis/post_v9/fig_attack_pairs.py   # writes figures/attack_pairs_probe_vs_tfidf.png and the scatter
 """
 
 import importlib.util
@@ -14,6 +17,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
+_spec_v8 = importlib.util.spec_from_file_location("post_v8_figures", HERE.parent / "post_v8" / "make_figures.py")
+V8 = importlib.util.module_from_spec(_spec_v8)
+_spec_v8.loader.exec_module(V8)  # LAB_COLOUR: the lab colours of every other figure
 _spec = importlib.util.spec_from_file_location("fig_method", HERE / "fig_method.py")
 METHOD = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(METHOD)
@@ -27,6 +33,11 @@ SHORT = {"opus55": "Opus 5.5", "gpt6astra": "GPT-6 Astra", "gpt61sol": "GPT-6.1 
          "qwen35_397b": "Qwen3.5-397B", "haiku45": "Haiku 4.5", "qwen35_9b": "Qwen3.5-9B", "gpt5nano": "GPT-5 nano",
          "llama4maverick": "Llama 4 Maverick"}
 WIDTH = 0.4
+
+
+LAB = {"opus55": "Anthropic", "sonnet55": "Anthropic", "fable51": "Anthropic", "opus48": "Anthropic", "haiku45": "Anthropic",
+       "gpt6astra": "OpenAI", "gpt61sol": "OpenAI", "gpt6sol": "OpenAI", "gpt54mini": "OpenAI", "gpt5nano": "OpenAI",
+       "gemini38flash": "Google", "qwen35_397b": "Alibaba", "qwen35_9b": "Alibaba", "llama4maverick": "Meta"}
 
 
 def prompts(task: str) -> list[tuple[str, float, float]]:
@@ -65,5 +76,44 @@ def main() -> None:
     plt.close(fig)
 
 
+def scatter() -> None:
+    fig, axes = plt.subplots(2, 2, figsize=(13, 11.5), gridspec_kw={"hspace": 0.32, "wspace": 0.22})
+    for ax, (task, title) in zip(axes.flat, TASKS.items()):
+        sep = TREND[task]["separation"]
+        xs, ys = [], []
+        for w, probe_chains in sep["probe"]["writer_chains"].items():
+            words = sep["tfidf"]["writer_chains"][w]
+            ax.scatter(words, probe_chains, s=46, color=V8.LAB_COLOUR[LAB[w]], alpha=0.85, edgecolor="white", lw=0.6, zorder=3)
+            xs += words
+            ys += probe_chains
+        xs, ys = np.array(xs), np.array(ys)
+        lo, hi = min(xs.min(), ys.min(), 0) - 0.05, max(xs.max(), ys.max()) + 0.05
+        ax.plot([lo, hi], [lo, hi], "--", color="#b9c0bd", lw=1, zorder=1)  # equal movement on both detectors' own scales
+        k, c0 = np.polyfit(xs, ys, 1)
+        ax.plot([lo, hi], [c0 + k * lo, c0 + k * hi], color=METHOD.TEXT, lw=1.6, zorder=2)
+        ax.axhline(0, color="#d5dad8", lw=0.8, zorder=0)
+        ax.axvline(0, color="#d5dad8", lw=0.8, zorder=0)
+        ax.set_xlim(lo, hi)
+        ax.set_ylim(lo, hi)
+        ax.set_aspect("equal")
+        r = np.corrcoef(xs, ys)[0, 1]
+        ax.set_title(f"{title}\nr = {r:.2f}; TF-IDF-predicted share of the trend {SHARE[task]['share']:.0%}", fontsize=13,
+                     loc="left", color=METHOD.TEXT)
+        ax.set_xlabel("TF-IDF word classifier's evasion score", fontsize=11)
+        ax.set_ylabel("probe's evasion score", fontsize=11)
+        for side in ("top", "right"):
+            ax.spines[side].set_visible(False)
+    labs = [plt.Line2D([], [], marker="o", ls="", ms=8, color=c, label=lab) for lab, c in V8.LAB_COLOUR.items()]
+    lines = [plt.Line2D([], [], color=METHOD.TEXT, lw=1.6, label="least-squares fit"),
+             plt.Line2D([], [], color="#b9c0bd", ls="--", lw=1, label="equal movement")]
+    fig.legend(handles=labs + lines, loc="lower center", ncol=7, frameon=False, fontsize=11, bbox_to_anchor=(0.5, 0.02))
+    fig.text(0.5, 0.0, "One dot per round-16 prompt (14 writers x 3 searches). Each detector: median OFF score minus ON score over pairs "
+             "with both answers correct,\ndivided by its median unattacked score minus its median hard-negative score.",
+             ha="center", va="top", fontsize=10.5, color=METHOD.MUTED)
+    fig.savefig(HERE / "figures" / "attack_scatter_probe_vs_tfidf.png", dpi=150, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     main()
+    scatter()
