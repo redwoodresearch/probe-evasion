@@ -1,7 +1,7 @@
 # Mainline: "More capable models write better probe-evasion prompts"
 
 This folder is the entry point to the code behind the post. The rest of the repo is a sprint's worth of exploratory
-experiments ("missions"); most of it is not needed to understand or reproduce the post. Nothing has been moved: this
+experiments ("missions"); most of it is not needed to understand or reproduce the post, and has been moved to `experimental/`. This
 README points to the files that matter, and `make_all.py` rebuilds the post's numbers and figures from the saved runs.
 
 **The experiment in one paragraph.** Qwen3.5-27B (reasoning off) answers four kinds of question that need a particular
@@ -19,6 +19,8 @@ normal answer to the threshold.
 
 | File | What it shows | Script |
 |---|---|---|
+| `concept_transcript_space.png` | Transcripts that use the concept, the probe's coverage, and the pockets an attack aims for | `analysis/post_v9/fig_concepts.py` |
+| `concept_ladder.png` | From a writer with many rounds of feedback to a model evading on its own; the steps this post measures | `analysis/post_v9/fig_concepts.py` |
 | `1_method.png` | The search loop, the prompt's structure, how the score is computed | `analysis/post_v9/fig_method.py` |
 | `2_main_result.png` | Probe-evasion score vs writer capability, round 16 and round 0, four tasks | `analysis/post_v9/fig_2x2.py` |
 | `3_crossings.png` | Fable 5.1's answers against the threshold; share that get past it | `analysis/post_v9/fig_dots.py` |
@@ -27,7 +29,18 @@ normal answer to the threshold.
 | `appendix_passes_vs_cost.png` | Extra passes vs accuracy cost, against a "skip the work and guess" line | `analysis/post_v9/fig_cost_checks.py` |
 | `appendix_cost_by_search.png` | Every individual search, not just writer averages | `analysis/post_v9/fig_cost_checks.py` |
 | `appendix_word_classifier_test.png` | A word-count (TF-IDF) classifier vs the probe, and whether attacks fool it too | `analysis/tfidf_baseline/for_james/make_original_figure.py` |
-| `appendix_matched_test.png` | Identical replies, wrong vs right answer in the prompt: the probe tells them apart, word classifiers can't | `analysis/tfidf_baseline/for_james/make_figure.py` |
+| `appendix_matched_test.png` | Identical replies, wrong vs right answer in the prompt: the probe tells them apart, word classifiers can't | `analysis/post_v9/fig_matched.py` (numbers from `analysis/tfidf_baseline/for_james/make_figure.py`) |
+| `appendix_tfidf_predicted_share.png` | Share of each task's capability trend predicted by how much the same attacks move a TF-IDF word classifier | `analysis/post_v9/fig_wording.py` (numbers from `analysis/post_v9/numbers/wording_share.py`) |
+
+The post itself, formatted for LessWrong with its appendices filled in, is `analysis/post_v9/lesswrong_post.md`, built by
+`analysis/post_v9/build_lesswrong_post.py` from `lesswrong_post_body.md` (also run by `make_all.py`).
+
+**Checks beyond the headline** (all CPU, from the saved runs, run by `make_all.py` after the numbers):
+- `analysis/post_v9/numbers/tfidf_trend.py` and `wording_share.py`: the same round-16 answers scored by a TF-IDF word
+  classifier trained on the probe's data, and how much of each task's capability trend its movement predicts.
+- `analysis/post_v9/numbers/self_writer.py`: Qwen3.5-27B as its own writer (batch e: same design, all four tasks, run
+  16 Oct; roots `missions/m45_toggle_sweep/runs/e/` and `missions/m49_new_task_toggle/runs/e/`). It lands roughly on the
+  trend for models of its size.
 
 Every number in the post is in `analysis/post_v9/numbers/numbers.json`, explained in
 `analysis/post_v9/numbers/NUMBERS.md`; `analysis/post_v9/claims_ledger.md` maps each claim to its number and source.

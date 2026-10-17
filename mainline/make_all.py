@@ -20,7 +20,8 @@ POST = REPO / "analysis" / "post_v9"
 PY = str(REPO / ".venv" / "bin" / "python")
 RAW_INPUTS = [REPO / "missions/m45_toggle_sweep/runs", REPO / "missions/m49_new_task_toggle/runs",
               REPO / "missions/m45_toggle_sweep/analysis.json", REPO / "missions/m45_toggle_sweep/analysis_d.json"]
-FIGURE_SCRIPTS = ["fig_method.py", "fig_2x2.py", "fig_dots.py", "fig_cost.py", "fig_cost_checks.py", "fig_data_sets.py", "fig_matched.py", "fig_concepts.py"]
+FIGURE_SCRIPTS = ["fig_method.py", "fig_2x2.py", "fig_dots.py", "fig_cost.py", "fig_cost_checks.py", "fig_data_sets.py", "fig_matched.py",
+                  "fig_concepts.py", "fig_wording.py"]
 TFIDF_SCRIPTS = ["analysis/tfidf_baseline/for_james/make_figure.py", "analysis/tfidf_baseline/for_james/make_original_figure.py"]  # numbers for fig_matched.py; run first
 # published name -> source, in the order they appear in the post
 FIGURES = {
@@ -35,7 +36,13 @@ FIGURES = {
     "appendix_cost_by_search.png": POST / "figures/cost_by_search.png",
     "appendix_word_classifier_test.png": REPO / "analysis/tfidf_baseline/for_james/original_test.png",
     "appendix_matched_test.png": POST / "figures/matched_test.png",
+    "appendix_tfidf_predicted_share.png": POST / "figures/wording_share_pct.png",
 }
+# after numbers.json: the word-classifier checks (slim copies of the raw rows first, then the analyses) and Qwen3.5-27B as its
+# own writer (batch e; reads the consistent_grading.json that numbers/arithmetic_grading.py wrote for it, not rerun here)
+CHECK_STEPS = [["analysis/tfidf_baseline/extract.py", "m45"], ["analysis/tfidf_baseline/extract.py", "m49"],
+               ["analysis/post_v9/numbers/tfidf_trend.py"], ["analysis/post_v9/numbers/wording_share.py"],
+               ["analysis/post_v9/numbers/self_writer.py"]]
 
 
 def run(args: list[str], pythonpath_src: bool = False) -> None:
@@ -50,6 +57,8 @@ def numbers() -> None:
         run([PY, "analysis/post_v9/numbers/compute.py", scratch], pythonpath_src=True)
     run([PY, "analysis/post_v9/numbers/verify.py"])
     run([PY, "analysis/post_v9/numbers/make_tables.py"])
+    for step in CHECK_STEPS:
+        run([PY, *step], pythonpath_src=True)
 
 
 def figures() -> None:
@@ -63,6 +72,7 @@ def figures() -> None:
     for name, source in FIGURES.items():
         shutil.copyfile(source, out / name)
     print(f"copied {len(FIGURES)} figures to {out.relative_to(REPO)}")
+    run([PY, "analysis/post_v9/build_lesswrong_post.py"])
 
 
 def main() -> None:
